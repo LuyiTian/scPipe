@@ -1,12 +1,12 @@
 
 #' Detect outliers based on robust linear regression of QQ plot
-#' 
+#'
 #' @param x a vector of mahalanobis distance
 #' @param df degree of freedom for chi-square distribution
 #' @param conf confidence for linear regression
-#' 
+#'
 #' @import MASS
-#' 
+#'
 #' @return cell names of outliers
 #' or both (`both`)
 .qq_outliers_robust = function(x, df, conf){
@@ -28,19 +28,19 @@
 
 #' Detect outliers based on QC metrics
 #'
-#' @param x an SCESet object containing expression values and
+#' @param scd an SCData object containing expression values and
 #' QC metrics. or just a matrix contains QC metrics.
 #' @param type only looking at low quality cells (`low`) or possible doublets (`high`)
 #' or both (`both`)
 #' @param conf confidence interval for linear regression at lower and upper tails.
-#' Usually this is smaller for lower tail because we hope to pick out more 
+#' Usually this is smaller for lower tail because we hope to pick out more
 #' low quality cells than doublets.
 #' @details detect outlier using Mahalanobis distances TODO
 #'
 #' @return boolean vector of outliers
-#' 
-#' @import mclust 
-#' 
+#'
+#' @import mclust
+#'
 #' @export
 #' @examples
 #' TODO
@@ -48,9 +48,20 @@
 #' Multivariate outlier detection in exploration geochemistry.
 #' \emph{Computers & Geosciences}, 31:579-587, 2005.
 #'
-detect_outlier = function(x, 
+detect_outlier = function(scd,
                           type = c("both","low","high"),
                           conf = c(0.9,0.99)){
+  # check format:
+  if (is(scd, "SCData")){
+    x = QC_metrics(scd)
+  }
+  else if (is.matrix(scd)){
+    x = scd
+  }
+  else{
+    stop("scd must be an SCESet object or a matrix.")
+  }
+
   dist = mahalanobis(x, center=colMeans(x), cov=cov(x))
   keep = !(dist>qchisq(0.99, ncol(x)))
   mod = Mclust(x[keep,],
@@ -90,8 +101,8 @@ detect_outlier = function(x,
     keep1 = rep(TRUE,nrow(x))
     keep1[keep][mod$classification == poor_comp] = FALSE
     sub_x = x[keep1,]
-    sub_dist = mahalanobis(sub_x, 
-                           center=mod$parameters$mean[,good_comp], 
+    sub_dist = mahalanobis(sub_x,
+                           center=mod$parameters$mean[,good_comp],
                            cov=mod$parameters$variance$sigma[,,good_comp])
 
     mean_diff = sign(t(sub_x)-mod$parameters$mean[,good_comp])

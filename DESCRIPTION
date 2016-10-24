@@ -1,10 +1,14 @@
 Package: scPipe
-Title: What the Package Does (one line, title case)
+Title: pipeline for single cell RNA-seq data analysis
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Authors@R: person("Luyi", "Tian", email = "tian.l@wehi.edu.au", role = c("aut", "cre"))
 Description: What the package does (one paragraph).
-Depends: R (>= 3.3.1)
-License: What license is it under?
+Depends: R (>= 3.3.1), Biobase, ggplot2, methods
+Imports: biomaRt, BiocGenerics, Biobase, edgeR, Rtsne, limma, shiny,
+        shinydashboard
+License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 5.0.1.9000
+URL: https://github.com/LuyiTian/scPipe
+BugReports: https://github.com/LuyiTian/scPipe

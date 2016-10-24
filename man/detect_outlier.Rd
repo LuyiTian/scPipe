@@ -4,17 +4,17 @@
 \alias{detect_outlier}
 \title{Detect outliers based on QC metrics}
 \usage{
-detect_outlier(x, type = c("both", "low", "high"), conf = c(0.9, 0.99))
+detect_outlier(scd, type = c("both", "low", "high"), conf = c(0.9, 0.99))
 }
 \arguments{
-\item{x}{an SCESet object containing expression values and
+\item{scd}{an SCData object containing expression values and
 QC metrics. or just a matrix contains QC metrics.}
 
 \item{type}{only looking at low quality cells (`low`) or possible doublets (`high`)
 or both (`both`)}
 
 \item{conf}{confidence interval for linear regression at lower and upper tails.
-Usually this is smaller for lower tail because we hope to pick out more 
+Usually this is smaller for lower tail because we hope to pick out more
 low quality cells than doublets.}
 }
 \value{
