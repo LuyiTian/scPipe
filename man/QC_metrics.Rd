@@ -3,15 +3,15 @@
 \docType{methods}
 \name{QC_metrics}
 \alias{QC_metrics}
-\alias{QC_metrics,SCData-method}
+\alias{QC_metrics.SCData}
 \alias{QC_metrics<-}
-\title{Get or set cell names from an SCData object}
+\title{Get or set quality control metrics from an SCData object}
 \usage{
 QC_metrics(object)
 
 QC_metrics(object) <- value
 
-QC_metrics(object)
+QC_metrics.SCData(object)
 
 \S4method{QC_metrics}{SCData}(object)
 
@@ -21,14 +21,17 @@ QC_metrics(object)
 \item{object}{An \code{\link{SCData}} object.}
 }
 \value{
-A matrix of quality control metrics.
+A \code{AnnotatedDataFrame} of quality control metrics.
 }
 \description{
-Get or set cell names from an SCData object
+Get or set quality control metrics from an SCData object
 }
 \examples{
 TODO
 
 
+}
+\author{
+Luyi Tian
 }
 

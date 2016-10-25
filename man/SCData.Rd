@@ -21,6 +21,11 @@ Methods that operate on SCData objects constitute the basic scPipe workflow.
    \item{\code{logged}:}{Scalar of class \code{"logical"}, indicating whether
    or not the expression data in the `exprs` slot have been log2-transformed
    or not.}
+   \item{\code{gene_id_type}}{the type of gene id. could be `ensembl_gene_id` or
+   `external_gene_name` or other type which can be assessed by \code{listAttributes} from \code{biomaRt} package}
+   \item{\code{organism}}{shows which organism the data comes from. names are
+   dataset names in ensembl database from \code{biomaRt}, which can be assessed by
+   \code{listDatasets} from \code{biomaRt} package}
    \item{\code{logExprsOffset}:}{Scalar of class \code{"numeric"}, providing an offset
    applied to expression data in the `exprs` slot when undergoing log2-transformation
    to avoid trying to take logs of zero.}
@@ -39,6 +44,13 @@ Methods that operate on SCData objects constitute the basic scPipe workflow.
    which expression representation both internal methods and external packages should use.
    Defaults to 'exprs'.}
 }
+}
+\examples{
+## list all dataset. the names can be used in organism attribute
+library(biomaRt)
+ensembl=useMart("ensembl")
+listDatasets(ensembl)
+
 }
 \references{
 the SCData class is adapted from SCESet from scater

@@ -3,7 +3,7 @@
 \docType{methods}
 \name{DimRd_expr}
 \alias{DimRd_expr}
-\alias{DimRd_expr,SCData-method}
+\alias{DimRd_expr.SCData}
 \alias{DimRd_expr<-}
 \title{Get or set \code{reducedExprDimension} from an SCData object}
 \usage{
@@ -11,7 +11,7 @@ DimRd_expr(object)
 
 DimRd_expr(object) <- value
 
-DimRd_expr(object)
+DimRd_expr.SCData(object)
 
 \S4method{DimRd_expr}{SCData}(object)
 
@@ -29,7 +29,9 @@ Get or set \code{reducedExprDimension} from an SCData object
 }
 \examples{
 TODO
-QC_metrics(example_data)
 
+}
+\author{
+Luyi Tian
 }
 

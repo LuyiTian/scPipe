@@ -14,7 +14,7 @@
 #' @return a new SCData object
 #' @author Luyi Tian
 #'
-#' @details TODO
+#' @details for more details see \code{SCData}
 #' @importFrom Biobase annotatedDataFrameFrom
 #' @importFrom Biobase AnnotatedDataFrame
 #' @importFrom Biobase assayDataNew
@@ -33,6 +33,8 @@ newSCData <- function(exprsData = NULL,
                       featureData = NULL,
                       experimentData = NULL,
                       logged = FALSE,
+                      gene_id_type = NULL,
+                      organism = NULL,
                       logExprsOffset = 1,
                       reducedExprDimension = NULL,
                       reducedFACSDimension = NULL,
@@ -68,6 +70,25 @@ newSCData <- function(exprsData = NULL,
     QualityControlInfo <- annotatedDataFrameFrom(exprs_mat, byrow = FALSE)
   }
 
+  # set ERCC spikein information
+  spikein = grepl("^ERCC", rownames(exprs_mat))
+  if(any(spikein)){
+    featureData$isSpike = spikein
+  }
+  else{
+    featureData$isSpike = spikein
+    print("cannot detect ERCC Spikeins from data.")
+  }
+
+  # check organism names or gene_id_type is set correctly
+  if(missing(organism)){
+    stop("organism cannot be NULL. \n List of possible names can be \nretrieved using the function `listDatasets`from `biomaRt` package. \n(i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)")
+  }
+  if(missing(gene_id_type)){
+    stop("gene_id_type cannot be NULL. \n A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. \nthe commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.")
+  }
+
+
   # Generate valid reducedExprDimension, onesense and reducedFACSDimension if not provided
   if (is.null(reducedExprDimension)){
     reducedExprDimension = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
@@ -88,7 +109,7 @@ newSCData <- function(exprsData = NULL,
                       lab = "<your lab here>",
                       contact = "<email address>",
                       title = "<title for this dataset>",
-                      abstract = "An SCData",
+                      abstract = "<abstract for this dataset>",
                       url = "<your website here>",
                       other = list(
                         notes = "This dataset created from ...",
@@ -115,6 +136,8 @@ newSCData <- function(exprsData = NULL,
                  experimentData = expData,
                  logExprsOffset = logExprsOffset,
                  logged = logged,
+                 gene_id_type = gene_id_type,
+                 organism = organism,
                  reducedExprDimension = reducedExprDimension,
                  reducedFACSDimension = reducedFACSDimension,
                  onesense = onesense,
@@ -162,11 +185,12 @@ setValidity("SCData", function(object) {
 
 
 
-#' Get or set cell names from an SCData object
-#'
+#' Get or set quality control metrics from an SCData object
+#' @name QC_metrics
+#' @rdname QC_metrics
 #' @param object An \code{\link{SCData}} object.
 #'
-#' @return A matrix of quality control metrics.
+#' @return A \code{AnnotatedDataFrame} of quality control metrics.
 #' @author Luyi Tian
 #'
 #' @export
@@ -174,15 +198,17 @@ setValidity("SCData", function(object) {
 #' TODO
 #'
 #'
-QC_metrics <- function(object) {
+QC_metrics.SCData <- function(object) {
   return(object@QualityControlInfo)
 }
 
+#' @name QC_metrics
 #' @rdname QC_metrics
 #' @aliases QC_metrics
 #' @export
+#'
 setMethod("QC_metrics", signature(object = "SCData"),
-          QC_metrics)
+          QC_metrics.SCData)
 
 #' @name QC_metrics<-
 #' @aliases QC_metrics
@@ -199,7 +225,8 @@ setReplaceMethod("QC_metrics",
 
 
 #' Get or set \code{reducedExprDimension} from an SCData object
-#'
+#' @name DimRd_expr
+#' @rdname DimRd_expr
 #' @param object An \code{\link{SCData}} object.
 #'
 #' @return A matrix of reduced-dimension coordinates for gene
@@ -209,18 +236,18 @@ setReplaceMethod("QC_metrics",
 #' @export
 #' @examples
 #' TODO
-#' QC_metrics(example_data)
 #'
-DimRd_expr <- function(object) {
+DimRd_expr.SCData <- function(object) {
   return(object@reducedExprDimension)
 }
 
-
+#' @name DimRd_expr
 #' @rdname DimRd_expr
 #' @aliases DimRd_expr
 #' @export
+#'
 setMethod("DimRd_expr", signature(object = "SCData"),
-          DimRd_expr)
+          DimRd_expr.SCData)
 
 
 #' @name DimRd_expr<-
@@ -234,6 +261,87 @@ setReplaceMethod("DimRd_expr",
                    validObject(object) # could add other checks
                    return(object)
                  })
+
+
+
+#' Get or set \code{organism} from an SCData object
+#' @name organism
+#' @rdname organism
+#' @param object An \code{\link{SCData}} object.
+#'
+#' @return organism string
+#' @author Luyi Tian
+#'
+#' @export
+#' @examples
+#' TODO
+#'
+organism.SCData <- function(object) {
+  return(object@organism)
+}
+
+
+#' @rdname organism
+#' @name organism
+#' @aliases organism
+#' @export
+setMethod("organism", signature(object = "SCData"),
+          organism.SCData)
+
+
+#' @name organism<-
+#' @aliases organism
+#' @rdname organism
+#' @exportMethod "organism<-"
+setReplaceMethod("organism",
+                 signature="SCData",
+                 function(object, value) {
+                   object@organism = value
+                   validObject(object) # could add other checks
+                   return(object)
+                 })
+
+
+
+#' Get or set \code{gene_id_type} from an SCData object
+#' @name gene_id_type
+#' @rdname gene_id_type
+#' @param object An \code{\link{SCData}} object.
+#'
+#' @return gene id type string
+#' @author Luyi Tian
+#'
+#' @export
+#' @examples
+#' TODO
+#'
+gene_id_type.SCData <- function(object) {
+  return(object@gene_id_type)
+}
+
+
+#' @name gene_id_type
+#' @rdname gene_id_type
+#' @aliases gene_id_type
+#' @export
+setMethod("gene_id_type", signature(object = "SCData"),
+          gene_id_type.SCData)
+
+
+#' @name gene_id_type<-
+#' @rdname gene_id_type
+#' @aliases gene_id_type
+#' @rdname gene_id_type
+#' @exportMethod "gene_id_type<-"
+setReplaceMethod("gene_id_type",
+                 signature="SCData",
+                 function(object, value) {
+                   object@gene_id_type = value
+                   validObject(object) # could add other checks
+                   return(object)
+                 })
+
+
 
 
 
@@ -356,6 +464,7 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
 #' @aliases cpm cpm,SCData-method cpm<-,SCData,matrix-method
 #'
 #' @examples
+#'
 cpmSCData <- function(object) {
   object@assayData$cpm
 }

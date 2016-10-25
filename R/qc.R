@@ -44,16 +44,13 @@
 #' @export
 #' @examples
 #' TODO
-#' @references P. Filzmoser, R.G. Garrett, and C. Reimann.
-#' Multivariate outlier detection in exploration geochemistry.
-#' \emph{Computers & Geosciences}, 31:579-587, 2005.
 #'
 detect_outlier = function(scd,
                           type = c("both","low","high"),
                           conf = c(0.9,0.99)){
   # check format:
   if (is(scd, "SCData")){
-    x = QC_metrics(scd)
+    x = pData(QC_metrics(scd))
   }
   else if (is.matrix(scd)){
     x = scd
@@ -67,6 +64,8 @@ detect_outlier = function(scd,
   mod = Mclust(x[keep,],
                G=1:2,
                modelNames="EEE")
+  print(summary(mod))
+  print(plot(mod,what="classification"))
   if(mod$G == 1){
     mean_diff = sign(t(x)-colMeans(x))
     QC_sign = c(-1,1)[as.factor(apply(mean_diff,2,function(t){sum(t)>0}))]
@@ -128,4 +127,63 @@ detect_outlier = function(scd,
     }
   }
   return(outlier_cells)
+}
+
+
+
+#' get QC metrics using gene counting matrix
+#'
+#' @param scd an SCData object containing count
+#' @details get QC metrics using gene counting matrix
+#' the QC statistics added are
+#' `total_count_per_cell`,
+#' `non_mt_percent`: 1- percent of mitochondrial gene counts
+#' mitochondrial genes are retrived by GO term GO:0005739
+#' `exon_to_ERCC_ratio`: ratio of exon counts to ERCC counts
+#' `non_ribo_percent`: 1- percent of ribosomal gene counts
+#' ribosomal genes are retrived by GO term GO:0005840
+#' @return no return
+#'
+#'
+#' @export
+#' @examples
+#' TODO
+#'
+calculate_QC_metrics = function(scd){
+  if (is(scd, "SCData")){
+    exprs_mat <- switch(scd@useForExprs,
+                        exprs = exprs(scd),
+                        tpm = tpm(scd),
+                        cpm = cpm(scd),
+                        fpkm = fpkm(scd),
+                        counts = counts(scd))
+  }
+  else{
+    stop("require a SCData object.")
+  }
+
+  # get ERCC ratio
+  spikein = fData(scd)$isSpike
+  exon_count = colSums(exprs_mat[!spikein,])
+  if(any(spikein)){
+    ERCC_count = colSums(exprs_mat[spikein,])
+    pData(QC_metrics(scd))$exon_to_ERCC_ratio = exon_count/ERCC_count
+  }
+  else{
+    print("cannot detect ERCC Spikeins from data. skip `exon_to_ERCC_ratio`.")
+  }
+
+  # get mt percentage
+  mt_genes = get_genes_by_GO(returns=gene_id_type(scd),
+                             dataset=organism(scd),
+                             go=c("GO:0005739"))
+  mt_count = colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes,])
+  pData(QC_metrics(scd))$non_mt_percent = (exon_count-mt_count)/exon_count
+
+  # get ribosomal percentage
+  ribo_genes = get_genes_by_GO(returns=gene_id_type(scd),
+                             dataset=organism(scd),
+                             go=c("GO:0005840"))
+  ribo_count = colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes,])
+  pData(QC_metrics(scd))$non_ribo_percent = (exon_count-ribo_count)/exon_count
 }

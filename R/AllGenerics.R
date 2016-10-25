@@ -35,6 +35,41 @@ setGeneric("QC_metrics<-", function(object, value) {
 
 
 
+#' @name organism
+#' @export
+#' @docType methods
+#' @rdname organism
+setGeneric("organism", function(object) {
+  standardGeneric("organism")
+})
+
+#' @name organism<-
+#' @export
+#' @docType methods
+#' @rdname organism
+setGeneric("organism<-", function(object, value) {
+  standardGeneric("organism<-")
+})
+
+
+#' @name gene_id_type
+#' @export
+#' @docType methods
+#' @rdname gene_id_type
+setGeneric("gene_id_type", function(object) {
+  standardGeneric("gene_id_type")
+})
+
+#' @name gene_id_type<-
+#' @export
+#' @docType methods
+#' @rdname gene_id_type
+setGeneric("gene_id_type<-", function(object, value) {
+  standardGeneric("gene_id_type<-")
+})
+
+
+
 #' @name tpm
 #' @export
 #' @docType methods

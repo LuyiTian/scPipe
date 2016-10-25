@@ -28,10 +28,6 @@ detect outlier using Mahalanobis distances TODO
 }
 \examples{
 TODO
-}
-\references{
-P. Filzmoser, R.G. Garrett, and C. Reimann.
-Multivariate outlier detection in exploration geochemistry.
-\emph{Computers & Geosciences}, 31:579-587, 2005.
+
 }
 

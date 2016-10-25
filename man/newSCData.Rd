@@ -7,9 +7,10 @@
 newSCData(exprsData = NULL, countData = NULL, tpmData = NULL,
   fpkmData = NULL, cpmData = NULL, phenoData = NULL, FACSData = NULL,
   featureData = NULL, experimentData = NULL, logged = FALSE,
-  logExprsOffset = 1, reducedExprDimension = NULL,
-  reducedFACSDimension = NULL, onesense = NULL, QualityControlInfo = NULL,
-  useForExprs = c("exprs", "tpm", "cpm", "counts", "fpkm"))
+  gene_id_type = NULL, organism = NULL, logExprsOffset = 1,
+  reducedExprDimension = NULL, reducedFACSDimension = NULL,
+  onesense = NULL, QualityControlInfo = NULL, useForExprs = c("exprs",
+  "tpm", "cpm", "counts", "fpkm"))
 }
 \value{
 a new SCData object
@@ -24,10 +25,13 @@ strongly encouraged. The SCData also includes a slot 'counts' to store an
 object containing raw count data.
 }
 \details{
-TODO
+for more details see \code{SCData}
 }
 \examples{
 TODO
 
+}
+\author{
+Luyi Tian
 }
 
