@@ -1,7 +1,5 @@
 ### all classes defined for the scPipe package
 
-################################################################################
-### defining the SCData class
 
 #' The "Single Cell Data" (SCData)  class
 #'

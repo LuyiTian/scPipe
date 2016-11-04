@@ -1,4 +1,29 @@
 
+#' merge matrix for multiple SCData object
+#' 
+#' 
+.merge_mat = function(scd_list,func){
+  if(all(unlist(lapply(scd_list,function(x){!is.null(func(x))})))){
+    all_exprs = lapply(scd_list, function(x){func(x)})
+    all_gene_id = rownames(all_exprs[[1]])
+    all_cell_id = colnames(all_exprs[[1]])
+    for(i in 2:length(all_exprs)){
+      all_gene_id = union(all_gene_id,rownames(all_exprs[[i]]))
+      all_cell_id = c(all_cell_id,colnames(all_exprs[[i]]))
+    }
+    merged_exprs = matrix(0, 
+                          nrow = length(all_gene_id), 
+                          ncol = length(all_cell_id),
+                          dimnames = list(all_gene_id,all_cell_id))
+    for(i in 1:length(all_exprs)){
+      merged_exprs[rownames(all_exprs[[i]]),colnames(all_exprs[[i]])] = all_exprs[[i]]
+    }
+  }
+  else{
+    stop("all data should contain expression matrix.")
+  }
+  return(merged_exprs)
+}
 
 
 #' Create a new SCData object.
@@ -104,7 +129,7 @@ newSCData <- function(exprsData = NULL,
   }
 
   # Check experimentData
-  expData_null <- new("MIAME",
+  expData_null = new("MIAME",
                       name = "<your name here>",
                       lab = "<your lab here>",
                       contact = "<email address>",
@@ -117,9 +142,9 @@ newSCData <- function(exprsData = NULL,
                       ))
   if ( !is.null( experimentData ) ) {
     if ( is(experimentData, "MIAME") )
-      expData <- experimentData
+      expData = experimentData
     else {
-      expData <- expData_null
+      expData = expData_null
       warning("experimentData supplied is not an 'MIAME' object. Thus, experimentData is being set to an empty MIAME object.\n Please supply a valid 'MIAME' class object containing experiment data to experimentData(object).")
     }
   } else {
@@ -127,8 +152,8 @@ newSCData <- function(exprsData = NULL,
   }
 
   # Generate new SCData object
-  assaydata <- assayDataNew("lockedEnvironment", exprs = exprs_mat)
-  scd <- new( "SCData",
+  assaydata = assayDataNew("lockedEnvironment", exprs = exprs_mat)
+  scd = new( "SCData",
                  assayData = assaydata,
                  phenoData = phenoData,
                  featureData = featureData,
@@ -146,13 +171,13 @@ newSCData <- function(exprsData = NULL,
 
   # Add non-null slots to assayData for SCData object, omitting null slots
   if ( !is.null(tpmData) )
-    tpm(scd) <- tpmData
+    tpm(scd) = tpmData
   if ( !is.null(fpkmData) )
-    fpkm(scd) <- fpkmData
+    fpkm(scd) = fpkmData
   if ( !is.null(countData) )
-    counts(scd) <- countData
+    counts(scd) = countData
   if ( !is.null(cpmData) )
-    cpm(scd) <- cpmData
+    cpm(scd) = cpmData
 
 
   # Check validity of object
@@ -169,12 +194,12 @@ setValidity("SCData", function(object) {
 
   # Check that the dimensions of the reducedExprDimension and
   # reducedFACSDimension slot are sensible
-  if ( (nrow(object@reducedExprDimension) != 0) &&
+  if ( (length(object@reducedExprDimension) != 0) &&
        (nrow(object@reducedExprDimension) != ncol(object)) ) {
     valid <- FALSE
     msg <- c(msg, "Number of cells in reducedExprDimension doesn't match number of cells in SCData.")
   }
-  if ( (nrow(object@reducedFACSDimension) != 0) &&
+  if ( (length(object@reducedFACSDimension) != 0) &&
        (nrow(object@reducedFACSDimension) != ncol(object)) ) {
     valid <- FALSE
     msg <- c(msg, "Number of cells in reducedFACSDimension doesn't match number of cells in SCData.")
@@ -182,6 +207,224 @@ setValidity("SCData", function(object) {
 
   if (valid) TRUE else msg
 })
+
+
+#' Subsetting SCData Objects
+#'
+#' Subset method for SCData objects, which subsets both the expression data,
+#' phenotype data, feature data and other slots in the object.
+#'
+#' @return an SCData object
+#' @rdname SCData-subset
+#' @name SCData-subset
+#' @inheritParams base::Extract
+#' @param i,j,... indices specifying elements to extract or replace. Indices
+#' are numeric or character vectors or empty (missing) or \code{NULL}. Numeric
+#' values are coerced to integer as by \code{\link[base]{as.integer}} (and hence
+#' truncated towards zero). Character vectors will be matched to the names of
+#' the object (or for matrices/arrays, the dimnames): see
+#' \code{\link[base]{Extract}} for further details.
+#'
+#' For \code{[}-indexing only: \code{i, j, ...} can be logical vectors, indicating
+#' elements/slices to select. Such vectors are recycled if necessary to match
+#' the corresponding extent. \code{i, j, ...} can also be negative integers,
+#' indicating elements/slices to leave out of the selection. When indexing
+#' arrays by \code{[} a single argument i can be a matrix with as many columns
+#' as there are dimensions of \code{x}; the result is then a vector with
+#' elements corresponding to the sets of indices in each row of \code{i}. An
+#' index value of \code{NULL} is treated as if it were \code{integer(0)}.
+#'
+#' @aliases [,SCData,ANY-method [,SCData,ANY,ANY-method [,SCData,ANY,ANY,ANY-method
+#' @rdname SCData-subset
+#' @export
+#' @seealso \code{\link[base]{Extract}}
+#'
+setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
+  if ( !missing(i) && missing(j) ) {
+    # select features
+    x = selectMethod('[', 'ExpressionSet')(x, i, , drop = drop)
+  }
+  else if ( missing(i) && !missing(j) ) {
+    # select cells
+    x = selectMethod('[', 'ExpressionSet')(x, , j, drop = drop)
+    if ( length(x@reducedExprDimension) != 0 ){
+      x@reducedExprDimension =
+        as.matrix(x@reducedExprDimension[j, , drop = drop])
+    }
+    if ( length(x@reducedFACSDimension) != 0 ){
+      x@reducedFACSDimension =
+        as.matrix(x@reducedFACSDimension[j, , drop = drop])
+    }
+    if ( length(x@onesense) != 0 ){
+      x@onesense =
+        as.matrix(x@onesense[j, , drop = drop])
+    }
+    if ( length(x@QualityControlInfo) != 0 ){
+      x@QualityControlInfo =
+        x@QualityControlInfo[j, , drop = drop]
+    }
+    x@FACSData = x@FACSData[j, , drop = drop]
+  }
+  else if ( !missing(i) && !missing(j) ) {
+    # selcet features (i) and cells (j)
+    x <- selectMethod('[', 'ExpressionSet')(x, i, j, drop = drop)
+    if ( length(x@reducedExprDimension) != 0 ){
+      x@reducedExprDimension =
+        as.matrix(x@reducedExprDimension[j, , drop = drop])
+    }
+    if ( length(x@reducedFACSDimension) != 0 ){
+      x@reducedFACSDimension =
+        as.matrix(x@reducedFACSDimension[j, , drop = drop])
+    }
+    if ( length(x@onesense) != 0 ){
+      x@onesense =
+        as.matrix(x@onesense[j, , drop = drop])
+    }
+    if ( length(x@QualityControlInfo) != 0 ){
+      x@QualityControlInfo =
+        x@QualityControlInfo[j, , drop = drop]
+    }
+    x@FACSData = x@FACSData[j, , drop = drop]
+  }
+  ## Check validity of object
+  validObject(x)
+  return(x)
+})
+
+#' merge multiple SCData object
+#' @rdname mergeSCData
+#' @name mergeSCData
+#' @param ... multiple SCDatas. they shold have the same value for class attribute.
+#' @param all only contains interset for features or union.
+#' @export
+#'
+mergeSCData <- function(..., 
+                        all = TRUE, 
+                        batch=NULL) {
+  scd_list <- list(...)
+  if (!is.null(batch)){
+    if (!(length(batch) == length(scd_list))){
+      stop("the length of batch should equal to the number of dataset")
+    }
+  }
+  else{
+    batch = 1:length(scd_list)
+  }
+
+
+  if(length(scd_list) < 2){
+    stop("should at least contain two SCData object.")
+  }
+  if(!all(unlist(lapply(scd_list,function(x){is(x, "SCData")})))){
+    stop("all data should be SCData object")
+  }
+  logged = scd_list[[1]]@logged
+  if(!all(unlist(lapply(scd_list,function(x){x@logged == logged})))){
+    stop("data do not have the same value for the 'logged' slot.")
+  }
+
+  useForExprs = scd_list[[1]]@useForExprs
+  if(!all(unlist(lapply(scd_list,function(x){x@useForExprs == useForExprs})))){
+    stop("data do not have the same value for the 'useForExprs' slot.")
+  }
+
+  logExprsOffset = scd_list[[1]]@logExprsOffset
+  if(!all(unlist(lapply(scd_list,function(x){x@logExprsOffset == logExprsOffset})))){
+    stop("data do not have the same value for the 'logExprsOffset' slot.")
+  }
+
+  the_organism = scd_list[[1]]@organism
+  if(!all(unlist(lapply(scd_list,function(x){x@organism == the_organism})))){
+    stop("data do not have the same value for the 'organism' slot.")
+  }
+
+  gene_id_type = scd_list[[1]]@gene_id_type
+  if(!all(unlist(lapply(scd_list,function(x){x@gene_id_type == gene_id_type})))){
+    stop("data do not have the same value for the 'gene_id_type' slot.")
+  }
+
+  print("merge expression matrix")
+  merged_exprs = .merge_mat(scd_list,exprs)
+
+  print("merge phenotype")
+  ph_col = varLabels(scd_list[[1]])
+  merged_ph = NULL
+  if(length(ph_col)>0 && all(unlist(lapply(scd_list, function(x){varLabels(x) == ph_col})))){
+    merged_ph = 
+      AnnotatedDataFrame(data=Reduce(rbind,lapply(scd_list,function(x){pData(x)})))
+  }
+  else{
+    stop("the colnames in phenoData should be the same for all data.")
+  }
+  if ("batch" %in% colnames(merged_ph)){
+    print("already contains batch information. ignore batch argument.")
+  }
+  else{
+    batch_num =unname(unlist(lapply(scd_list, function(x){nrow(pData(x))})))
+    merged_ph$batch = rep(batch,times=as.vector(batch_num))
+  }
+  
+
+  print("merge quality control metrics")
+  qc_col = varLabels(QC_metrics(scd_list[[1]]))
+  merged_qc = NULL
+  if(length(qc_col)>0 && all(unlist(lapply(scd_list, function(x){varLabels(QC_metrics(x)) == qc_col})))){
+    merged_qc = 
+      AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(QC_metrics(x))}))))
+  }
+  else{
+    stop("the colnames in QC_metrics should be the same for all data.")
+  }
+
+  
+  
+  print("merge FACS data")
+  fac_col = varLabels(FACSData(scd_list[[1]]))
+  merged_fac = NULL
+  if(length(fac_col)>0 && all(unlist(lapply(scd_list, function(x){varLabels(FACSData(x)) == fac_col})))){
+    merged_fac = 
+      AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(x)}))))
+  }
+  else{
+    stop("the colnames in phenoData should be the same for all data.")
+  }
+  
+  print("create new SCData object")
+  new_scd <- newSCData(exprsData = merged_exprs,
+              phenoData = merged_ph,
+              #featureData = NULL, #TODO
+              FACSData = merged_fac,
+              #experimentData = NULL, #TODO
+              logExprsOffset = logExprsOffset,
+              logged = logged,
+              gene_id_type = gene_id_type,
+              organism = the_organism,
+              #reducedExprDimension = NULL,
+              #reducedFACSDimension = NULL,
+              #onesense = NULL,
+              QualityControlInfo = merged_qc,
+              useForExprs = "exprs")
+  
+
+
+
+  if(!is.null(fpkm(scd_list[[1]]))){
+    fpkm(new_scd) = .merge_mat(scd_list,fpkm)
+  }
+
+  if(!is.null(cpm(scd_list[[1]]))){
+    cpm(new_scd) = .merge_mat(scd_list,cpm)
+  }
+
+  if(!is.null(counts(scd_list[[1]]))){
+    counts(new_scd) = .merge_mat(scd_list,counts)
+  }
+
+  if(!is.null(tpm(scd_list[[1]]))){
+    tpm(new_scd) = .merge_mat(scd_list,tpm)
+  }
+  return(new_scd)
+}
 
 
 
@@ -218,6 +461,44 @@ setReplaceMethod("QC_metrics",
                  signature="SCData",
                  function(object, value) {
                    object@QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(value))
+                   validObject(object) # could add other checks
+                   return(object)
+                 })
+
+
+#' Get or set FACs data for an SCData object
+#' @name FACSData
+#' @rdname FACSData
+#' @param object An \code{\link{SCData}} object.
+#'
+#' @return A \code{AnnotatedDataFrame} of FACS data.
+#' @author Luyi Tian
+#'
+#' @export
+#' @examples
+#' TODO
+#'
+#'
+FACSData.SCData <- function(object) {
+  return(object@FACSData)
+}
+
+#' @name FACSData
+#' @rdname FACSData
+#' @aliases FACSData
+#' @export
+#'
+setMethod("FACSData", signature(object = "SCData"),
+          FACSData.SCData)
+
+#' @name FACSData<-
+#' @aliases FACSData
+#' @rdname FACSData
+#' @exportMethod "FACSData<-"
+setReplaceMethod("FACSData",
+                 signature="SCData",
+                 function(object, value) {
+                   object@FACSData = new("AnnotatedDataFrame", data = as.data.frame(value))
                    validObject(object) # could add other checks
                    return(object)
                  })

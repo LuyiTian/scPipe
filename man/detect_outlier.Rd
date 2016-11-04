@@ -4,11 +4,16 @@
 \alias{detect_outlier}
 \title{Detect outliers based on QC metrics}
 \usage{
-detect_outlier(scd, type = c("both", "low", "high"), conf = c(0.9, 0.99))
+detect_outlier(scd, comp = 1, plot = TRUE, type = c("both", "low",
+  "high"), conf = c(0.9, 0.99))
 }
 \arguments{
 \item{scd}{an SCData object containing expression values and
-QC metrics. or just a matrix contains QC metrics.}
+QC metrics.}
+
+\item{comp}{the number of component used in GMM. can be one or two.}
+
+\item{plot}{logical, whether to generate a pairwise plot after}
 
 \item{type}{only looking at low quality cells (`low`) or possible doublets (`high`)
 or both (`both`)}
@@ -18,7 +23,7 @@ Usually this is smaller for lower tail because we hope to pick out more
 low quality cells than doublets.}
 }
 \value{
-boolean vector of outliers
+an updated SCData object with an outlier column in \code{QualityControlInfo}
 }
 \description{
 Detect outliers based on QC metrics
