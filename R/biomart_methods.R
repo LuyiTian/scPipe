@@ -22,7 +22,7 @@
 get_genes_by_GO = function(returns="ensembl_gene_id",
                 dataset="mmusculus_gene_ensembl",
                 go=NULL){
-  if(is.na(go)){
+  if(is.null(go)){
     stop("must provide GO term. (i.e go=c('GO:0005739'))")
   }
   mart <- useDataset(dataset, useMart("ensembl"))

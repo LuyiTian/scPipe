@@ -383,7 +383,7 @@ mergeSCData <- function(...,
   merged_fac = NULL
   if(length(fac_col)>0 && all(unlist(lapply(scd_list, function(x){varLabels(FACSData(x)) == fac_col})))){
     merged_fac = 
-      AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(x)}))))
+      AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(FACSData(x))}))))
   }
   else{
     stop("the colnames in phenoData should be the same for all data.")
