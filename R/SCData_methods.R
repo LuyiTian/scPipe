@@ -349,12 +349,14 @@ mergeSCData <- function(...,
   print("merge phenotype")
   ph_col = varLabels(scd_list[[1]])
   merged_ph = NULL
-  if(length(ph_col)>0 && all(unlist(lapply(scd_list, function(x){varLabels(x) == ph_col})))){
-    merged_ph = 
-      AnnotatedDataFrame(data=Reduce(rbind,lapply(scd_list,function(x){pData(x)})))
-  }
-  else{
-    stop("the colnames in phenoData should be the same for all data.")
+  if(length(ph_col)>0){
+    if(all(unlist(lapply(scd_list, function(x){varLabels(x) == ph_col})))){
+      merged_ph = 
+        AnnotatedDataFrame(data=Reduce(rbind,lapply(scd_list,function(x){pData(x)})))
+    }
+    else{
+      stop("the colnames in phenoData should be the same for all data.")
+    }
   }
   if ("batch" %in% colnames(merged_ph)){
     print("already contains batch information. ignore batch argument.")
@@ -368,12 +370,14 @@ mergeSCData <- function(...,
   print("merge quality control metrics")
   qc_col = varLabels(QC_metrics(scd_list[[1]]))
   merged_qc = NULL
-  if(length(qc_col)>0 && all(unlist(lapply(scd_list, function(x){varLabels(QC_metrics(x)) == qc_col})))){
-    merged_qc = 
-      AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(QC_metrics(x))}))))
-  }
-  else{
-    stop("the colnames in QC_metrics should be the same for all data.")
+  if (length(qc_col)>0){
+    if(all(unlist(lapply(scd_list, function(x){varLabels(QC_metrics(x)) == qc_col})))){
+      merged_qc = 
+        AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(QC_metrics(x))}))))
+    }
+    else{
+      stop("the colnames in QC_metrics should be the same for all data.")
+    }
   }
 
   
@@ -381,14 +385,15 @@ mergeSCData <- function(...,
   print("merge FACS data")
   fac_col = varLabels(FACSData(scd_list[[1]]))
   merged_fac = NULL
-  if(length(fac_col)>0 && all(unlist(lapply(scd_list, function(x){varLabels(FACSData(x)) == fac_col})))){
-    merged_fac = 
-      AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(FACSData(x))}))))
+  if(length(fac_col)>0){
+    if(all(unlist(lapply(scd_list, function(x){varLabels(FACSData(x)) == fac_col})))){
+      merged_fac = 
+        AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(FACSData(x))}))))
+    }
+    else{
+      stop("the colnames in phenoData should be the same for all data.")
+    }
   }
-  else{
-    stop("the colnames in phenoData should be the same for all data.")
-  }
-  
   print("create new SCData object")
   new_scd <- newSCData(exprsData = merged_exprs,
               phenoData = merged_ph,

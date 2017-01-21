@@ -4,7 +4,7 @@
 \alias{mergeSCData}
 \title{merge multiple SCData object}
 \usage{
-mergeSCData(..., all = TRUE)
+mergeSCData(..., all = TRUE, batch = NULL)
 }
 \arguments{
 \item{...}{multiple SCDatas. they shold have the same value for class attribute.}

@@ -18,10 +18,11 @@ get QC metrics using gene counting matrix
 \details{
 get QC metrics using gene counting matrix
 the QC statistics added are
-`total_count_per_cell`,
+`number_of_genes`: number of genes detected
+`total_count_per_cell`: sum of read number after UMI dedup
 `non_mt_percent`: 1- percent of mitochondrial gene counts
 mitochondrial genes are retrived by GO term GO:0005739
-`exon_to_ERCC_ratio`: ratio of exon counts to ERCC counts
+`non_ERCC_percent`: ratio of exon counts to ERCC counts
 `non_ribo_percent`: 1- percent of ribosomal gene counts
 ribosomal genes are retrived by GO term GO:0005840
 }
