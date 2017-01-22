@@ -20,8 +20,8 @@
 #' TODO
 #'
 get_genes_by_GO = function(returns="ensembl_gene_id",
-                dataset="mmusculus_gene_ensembl",
-                go=NULL){
+                           dataset="mmusculus_gene_ensembl",
+                           go=NULL){
   if(is.null(go)){
     stop("must provide GO term. (i.e go=c('GO:0005739'))")
   }
@@ -31,8 +31,69 @@ get_genes_by_GO = function(returns="ensembl_gene_id",
                   values=go,
                   mart=mart)
   return(G_list[,returns])
-
+  
 }
 
 
+#' convert the gene ids of a SCData object
+#'
+#' @param scd an SCData object
+#' @param returns the gene id which is set as return. default to be `external_gene_name`
+#' A possible list of attributes can be retrieved using the
+#' function \code{listAttributes} from \code{biomaRt} package. the commonly used
+#' id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.
+#' @param all logic. for genes that cannot covert to new gene id, keep them with the old
+#' id or delete them. the default is keep them.
+#' @details convert the gene id of all datas in SCData object
+#'
+#' @return scd with converted id
+#'
+#' @import biomaRt
+#'
+#' @export
+#' @examples
+#' TODO
+#'
+convert_geneid = function(scd, returns="external_gene_name",
+                          all=TRUE){
+  if (!is(scd, "SCData")){
+    stop("scd must be an SCESet object.")
+  }
+  if (returns == gene_id_type(scd)){
+    stop("SCData already in this id type. (scd@gene_id_type == returns)")
+  }
 
+  species = organism(scd)
+  mart <- useDataset(species, useMart("ensembl"))
+  G_list <- getBM(filters= gene_id_type(scd), attributes= c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
+  
+  G_list = G_list[match(rownames(scd), G_list[,gene_id_type(scd)]),]
+  na_num = sum(is.na(G_list[,returns]))
+  dup_ids = duplicated(G_list[,returns]) | duplicated(G_list[,returns], fromLast=TRUE)
+  dup_num = (sum(dup_ids)-na_num)/2
+  print(paste0("number of NA in new gene id: ",na_num,". duplicated id: ",dup_num))
+  if(dup_num>0){
+    print("first 5 duplicated:")
+    print(head(G_list[dup_ids & !(is.na(G_list[,returns])),]))
+  }
+  G_list[,returns][dup_ids] = NA
+  if (all){
+    # replace NA with old id
+    G_list[,returns][is.na(G_list[,returns])] = rownames(scd)[is.na(G_list[,returns])]
+    rownames(scd) = G_list[,returns]
+    if (!(gene_id_type(scd) %in% colnames(fData(scd)))){
+      fData(scd)[,gene_id_type(scd)] = rownames(scd)
+    }
+    if (!(returns %in% colnames(fData(scd)))){
+      fData(scd)[,returns] = G_list[,returns]
+    }
+    if (!("description" %in% colnames(fData(scd)))){
+      fData(scd)[,"description"] = G_list[,"description"]
+    }
+  }
+  else {
+    stop("not implemented.")
+  }
+  gene_id_type(scd) = returns
+  return(scd)
+}
