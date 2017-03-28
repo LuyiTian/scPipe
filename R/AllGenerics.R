@@ -51,22 +51,6 @@ setGeneric("FACSData<-", function(object, value) {
 
 
 
-#' @name organism
-#' @export
-#' @docType methods
-#' @rdname organism
-setGeneric("organism", function(object) {
-  standardGeneric("organism")
-})
-
-#' @name organism<-
-#' @export
-#' @docType methods
-#' @rdname organism
-setGeneric("organism<-", function(object, value) {
-  standardGeneric("organism<-")
-})
-
 
 #' @name gene_id_type
 #' @export

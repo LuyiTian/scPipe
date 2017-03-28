@@ -18,9 +18,6 @@
 #'    or not.}
 #'    \item{\code{gene_id_type}}{the type of gene id. could be `ensembl_gene_id` or
 #'    `external_gene_name` or other type which can be assessed by \code{listAttributes} from \code{biomaRt} package}
-#'    \item{\code{organism}}{shows which organism the data comes from. names are
-#'    dataset names in ensembl database from \code{biomaRt}, which can be assessed by
-#'    \code{listDatasets} from \code{biomaRt} package}
 #'    \item{\code{logExprsOffset}:}{Scalar of class \code{"numeric"}, providing an offset
 #'    applied to expression data in the `exprs` slot when undergoing log2-transformation
 #'    to avoid trying to take logs of zero.}
@@ -42,7 +39,6 @@
 #' @name SCData
 #' @rdname SCData
 #' @inheritParams Biobase ExpressionSet
-#' @import Biobase
 #' @aliases SCData-class
 #' @references  the SCData class is adapted from SCESet from scater
 #' (github.com/davismcc/scater/). Thank Davis for creating such a wonderful package
@@ -57,7 +53,6 @@ setClass("SCData",
          contains = "ExpressionSet",
          slots = c(logged = "logical",
                    gene_id_type = "character",
-                   organism = "character",
                    logExprsOffset = "numeric",
                    FACSData = "AnnotatedDataFrame",
                    reducedExprDimension = "matrix",

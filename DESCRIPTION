@@ -4,11 +4,15 @@ Version: 0.0.0.9000
 Authors@R: person("Luyi", "Tian", email = "tian.l@wehi.edu.au", role = c("aut", "cre"))
 Description: What the package does (one paragraph).
 Depends: R (>= 3.3.1), Biobase, ggplot2, methods
-Imports: biomaRt, BiocGenerics, Biobase, edgeR, Rtsne, limma, shiny,
-        shinydashboard
+LinkingTo: Rcpp
+Imports: biomaRt, GGally, MASS, destiny, mclust, reshape, robustbase, scales, BiocGenerics, Biobase, edgeR, Rtsne, limma, shiny,
+        shinydashboard, Rcpp (>= 0.11.3)
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 5.0.1.9000
+RoxygenNote: 6.0.1
 URL: https://github.com/LuyiTian/scPipe
 BugReports: https://github.com/LuyiTian/scPipe
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

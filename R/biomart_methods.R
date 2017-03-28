@@ -14,10 +14,11 @@
 #' @return a vector of gene ids.
 #'
 #' @import biomaRt
+#' @importFrom biomaRt useDataset getBM
 #'
 #' @export
 #' @examples
-#' TODO
+#' #TODO
 #'
 get_genes_by_GO = function(returns="ensembl_gene_id",
                            dataset="mmusculus_gene_ensembl",
@@ -31,7 +32,7 @@ get_genes_by_GO = function(returns="ensembl_gene_id",
                   values=go,
                   mart=mart)
   return(G_list[,returns])
-  
+
 }
 
 
@@ -48,11 +49,11 @@ get_genes_by_GO = function(returns="ensembl_gene_id",
 #'
 #' @return scd with converted id
 #'
-#' @import biomaRt
+#' @importFrom biomaRt useDataset getBM
 #'
 #' @export
 #' @examples
-#' TODO
+#' #TODO
 #'
 convert_geneid = function(scd, returns="external_gene_name",
                           all=TRUE){
@@ -66,7 +67,7 @@ convert_geneid = function(scd, returns="external_gene_name",
   species = organism(scd)
   mart <- useDataset(species, useMart("ensembl"))
   G_list <- getBM(filters= gene_id_type(scd), attributes= c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
-  
+
   G_list = G_list[match(rownames(scd), G_list[,gene_id_type(scd)]),]
   na_num = sum(is.na(G_list[,returns]))
   dup_ids = duplicated(G_list[,returns]) | duplicated(G_list[,returns], fromLast=TRUE)

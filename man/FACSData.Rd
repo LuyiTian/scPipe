@@ -3,8 +3,12 @@
 \docType{methods}
 \name{FACSData}
 \alias{FACSData}
-\alias{FACSData.SCData}
 \alias{FACSData<-}
+\alias{FACSData}
+\alias{FACSData.SCData}
+\alias{FACSData}
+\alias{FACSData<-}
+\alias{FACSData}
 \title{Get or set FACs data for an SCData object}
 \usage{
 FACSData(object)
@@ -27,11 +31,10 @@ A \code{AnnotatedDataFrame} of FACS data.
 Get or set FACs data for an SCData object
 }
 \examples{
-TODO
+#TODO
 
 
 }
 \author{
 Luyi Tian
 }
-

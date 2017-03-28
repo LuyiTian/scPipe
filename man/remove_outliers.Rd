@@ -12,4 +12,3 @@ remove_outliers(scd)
 \description{
 remove outliers for SCData
 }
-

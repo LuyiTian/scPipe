@@ -28,10 +28,9 @@ object containing raw count data.
 for more details see \code{SCData}
 }
 \examples{
-TODO
+#TODO
 
 }
 \author{
 Luyi Tian
 }
-

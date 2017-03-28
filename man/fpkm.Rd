@@ -3,8 +3,13 @@
 \docType{methods}
 \name{fpkm}
 \alias{fpkm}
-\alias{fpkm,SCData-method}
+\alias{fpkm<-}
+\alias{fpkm}
 \alias{fpkm.SCData}
+\alias{fpkm,SCData-method}
+\alias{fpkm<-,SCData,matrix-method}
+\alias{fpkm}
+\alias{fpkm,SCData-method}
 \alias{fpkm<-}
 \alias{fpkm<-,SCData,matrix-method}
 \title{Accessors for the 'fpkm' (fragments per kilobase of exon per million reads mapped) element of an SCData object.}
@@ -42,4 +47,3 @@ respectively.
 \author{
 Luyi Tian
 }
-

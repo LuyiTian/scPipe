@@ -19,4 +19,3 @@ by default it will be the mapping result.}
 \description{
 plot mapping statistics for SCData object.
 }
-

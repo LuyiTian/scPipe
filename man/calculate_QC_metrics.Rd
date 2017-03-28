@@ -27,7 +27,6 @@ mitochondrial genes are retrived by GO term GO:0005739
 ribosomal genes are retrived by GO term GO:0005840
 }
 \examples{
-TODO
+#TODO
 
 }
-

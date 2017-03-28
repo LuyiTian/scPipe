@@ -3,9 +3,9 @@
 \docType{methods}
 \name{SCData-subset}
 \alias{SCData-subset}
-\alias{[,SCData,ANY,ANY,ANY-method}
-\alias{[,SCData,ANY,ANY-method}
 \alias{[,SCData,ANY-method}
+\alias{[,SCData,ANY,ANY-method}
+\alias{[,SCData,ANY,ANY,ANY-method}
 \title{Subsetting SCData Objects}
 \usage{
 \S4method{[}{SCData,ANY,ANY,ANY}(x, i, j, drop = FALSE)
@@ -47,4 +47,3 @@ phenotype data, feature data and other slots in the object.
 \seealso{
 \code{\link[base]{Extract}}
 }
-

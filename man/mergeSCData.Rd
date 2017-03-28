@@ -14,4 +14,3 @@ mergeSCData(..., all = TRUE, batch = NULL)
 \description{
 merge multiple SCData object
 }
-

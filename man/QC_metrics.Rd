@@ -3,8 +3,12 @@
 \docType{methods}
 \name{QC_metrics}
 \alias{QC_metrics}
-\alias{QC_metrics.SCData}
 \alias{QC_metrics<-}
+\alias{QC_metrics}
+\alias{QC_metrics.SCData}
+\alias{QC_metrics}
+\alias{QC_metrics<-}
+\alias{QC_metrics}
 \title{Get or set quality control metrics from an SCData object}
 \usage{
 QC_metrics(object)
@@ -27,11 +31,10 @@ A \code{AnnotatedDataFrame} of quality control metrics.
 Get or set quality control metrics from an SCData object
 }
 \examples{
-TODO
+#TODO
 
 
 }
 \author{
 Luyi Tian
 }
-

@@ -22,7 +22,6 @@ a matrix contains t-SNE output
 TODO
 }
 \examples{
-TODO
+#TODO
 
 }
-

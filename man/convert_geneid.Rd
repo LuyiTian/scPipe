@@ -27,7 +27,6 @@ convert the gene ids of a SCData object
 convert the gene id of all datas in SCData object
 }
 \examples{
-TODO
+#TODO
 
 }
-

@@ -12,7 +12,8 @@
 #'
 #' @import destiny Rtsne
 #' @export
-#' @examples TODO
+#' @examples
+#' #TODO
 #'
 sc_dim_reduction = function(scd,
                             k=20,

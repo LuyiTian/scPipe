@@ -3,10 +3,15 @@
 \docType{methods}
 \name{cpm}
 \alias{cpm}
+\alias{cpm<-}
+\alias{cpm}
+\alias{cpmSCData}
+\alias{cpm,SCData-method}
+\alias{cpm<-,SCData,matrix-method}
+\alias{cpm}
 \alias{cpm,SCData-method}
 \alias{cpm<-}
 \alias{cpm<-,SCData,matrix-method}
-\alias{cpmSCData}
 \title{Accessors for the 'cpm' (counts per million) element of an SCData object.}
 \usage{
 cpm(object)
@@ -41,4 +46,3 @@ data and count data, respectively.
 \author{
 Luyi Tian
 }
-

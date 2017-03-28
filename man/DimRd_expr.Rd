@@ -3,8 +3,12 @@
 \docType{methods}
 \name{DimRd_expr}
 \alias{DimRd_expr}
-\alias{DimRd_expr.SCData}
 \alias{DimRd_expr<-}
+\alias{DimRd_expr}
+\alias{DimRd_expr.SCData}
+\alias{DimRd_expr}
+\alias{DimRd_expr<-}
+\alias{DimRd_expr}
 \title{Get or set \code{reducedExprDimension} from an SCData object}
 \usage{
 DimRd_expr(object)
@@ -28,10 +32,9 @@ expression of single cell.
 Get or set \code{reducedExprDimension} from an SCData object
 }
 \examples{
-TODO
+#TODO
 
 }
 \author{
 Luyi Tian
 }
-

@@ -3,8 +3,12 @@
 \docType{methods}
 \name{gene_id_type}
 \alias{gene_id_type}
-\alias{gene_id_type.SCData}
 \alias{gene_id_type<-}
+\alias{gene_id_type}
+\alias{gene_id_type.SCData}
+\alias{gene_id_type}
+\alias{gene_id_type<-}
+\alias{gene_id_type}
 \title{Get or set \code{gene_id_type} from an SCData object}
 \usage{
 gene_id_type(object)
@@ -27,10 +31,9 @@ gene id type string
 Get or set \code{gene_id_type} from an SCData object
 }
 \examples{
-TODO
+#TODO
 
 }
 \author{
 Luyi Tian
 }
-

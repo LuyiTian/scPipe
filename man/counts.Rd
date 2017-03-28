@@ -3,9 +3,11 @@
 \docType{methods}
 \name{counts}
 \alias{counts}
-\alias{counts,SCData-method}
 \alias{counts.SCData}
+\alias{counts,SCData-method}
 \alias{counts<-,SCData,matrix-method}
+\alias{counts,SCData-method}
+\alias{counts}
 \title{Accessors for the 'counts' element of an SCData object.}
 \usage{
 \S4method{counts}{SCData}(object)
@@ -33,4 +35,3 @@ object.
 \author{
 Luyi Tian
 }
-

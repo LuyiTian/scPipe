@@ -33,7 +33,6 @@ Detect outliers based on QC metrics
 detect outlier using Mahalanobis distances TODO
 }
 \examples{
-TODO
+#TODO
 
 }
-

@@ -28,7 +28,6 @@ Get genes related to certain GO terms from biomart database
 Get genes related to certain GO terms from biomart database
 }
 \examples{
-TODO
+#TODO
 
 }
-

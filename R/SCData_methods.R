@@ -1,7 +1,7 @@
 
 #' merge matrix for multiple SCData object
-#' 
-#' 
+#'
+#'
 .merge_mat = function(scd_list,func){
   if(all(unlist(lapply(scd_list,function(x){!is.null(func(x))})))){
     all_exprs = lapply(scd_list, function(x){func(x)})
@@ -11,8 +11,8 @@
       all_gene_id = union(all_gene_id,rownames(all_exprs[[i]]))
       all_cell_id = c(all_cell_id,colnames(all_exprs[[i]]))
     }
-    merged_exprs = matrix(0, 
-                          nrow = length(all_gene_id), 
+    merged_exprs = matrix(0,
+                          nrow = length(all_gene_id),
                           ncol = length(all_cell_id),
                           dimnames = list(all_gene_id,all_cell_id))
     for(i in 1:length(all_exprs)){
@@ -46,7 +46,8 @@
 #' @importFrom Biobase assayDataElement
 #' @import methods
 #' @export
-#' @examples TODO
+#' @examples
+#' #TODO
 #'
 newSCData <- function(exprsData = NULL,
                       countData = NULL,
@@ -162,13 +163,14 @@ newSCData <- function(exprsData = NULL,
                  logExprsOffset = logExprsOffset,
                  logged = logged,
                  gene_id_type = gene_id_type,
-                 organism = organism,
                  reducedExprDimension = reducedExprDimension,
                  reducedFACSDimension = reducedFACSDimension,
                  onesense = onesense,
                  QualityControlInfo = QualityControlInfo,
                  useForExprs = useForExprs)
 
+  # set organism
+  organism(scd) = organism
   # Add non-null slots to assayData for SCData object, omitting null slots
   if ( !is.null(tpmData) )
     tpm(scd) = tpmData
@@ -298,8 +300,8 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 #' @param all only contains interset for features or union.
 #' @export
 #'
-mergeSCData <- function(..., 
-                        all = TRUE, 
+mergeSCData <- function(...,
+                        all = TRUE,
                         batch=NULL) {
   scd_list <- list(...)
   if (!is.null(batch)){
@@ -333,8 +335,8 @@ mergeSCData <- function(...,
     stop("data do not have the same value for the 'logExprsOffset' slot.")
   }
 
-  the_organism = scd_list[[1]]@organism
-  if(!all(unlist(lapply(scd_list,function(x){x@organism == the_organism})))){
+  the_organism = organism(scd_list[[1]])
+  if(!all(unlist(lapply(scd_list,function(x){organism(x) == the_organism})))){
     stop("data do not have the same value for the 'organism' slot.")
   }
 
@@ -351,7 +353,7 @@ mergeSCData <- function(...,
   merged_ph = NULL
   if(length(ph_col)>0){
     if(all(unlist(lapply(scd_list, function(x){varLabels(x) == ph_col})))){
-      merged_ph = 
+      merged_ph =
         AnnotatedDataFrame(data=Reduce(rbind,lapply(scd_list,function(x){pData(x)})))
     }
     else{
@@ -365,14 +367,14 @@ mergeSCData <- function(...,
     batch_num =unname(unlist(lapply(scd_list, function(x){nrow(pData(x))})))
     merged_ph$batch = rep(batch,times=as.vector(batch_num))
   }
-  
+
 
   print("merge quality control metrics")
   qc_col = varLabels(QC_metrics(scd_list[[1]]))
   merged_qc = NULL
   if (length(qc_col)>0){
     if(all(unlist(lapply(scd_list, function(x){varLabels(QC_metrics(x)) == qc_col})))){
-      merged_qc = 
+      merged_qc =
         AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(QC_metrics(x))}))))
     }
     else{
@@ -380,14 +382,14 @@ mergeSCData <- function(...,
     }
   }
 
-  
-  
+
+
   print("merge FACS data")
   fac_col = varLabels(FACSData(scd_list[[1]]))
   merged_fac = NULL
   if(length(fac_col)>0){
     if(all(unlist(lapply(scd_list, function(x){varLabels(FACSData(x)) == fac_col})))){
-      merged_fac = 
+      merged_fac =
         AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(FACSData(x))}))))
     }
     else{
@@ -409,7 +411,7 @@ mergeSCData <- function(...,
               #onesense = NULL,
               QualityControlInfo = merged_qc,
               useForExprs = "exprs")
-  
+
 
 
 
@@ -443,7 +445,7 @@ mergeSCData <- function(...,
 #'
 #' @export
 #' @examples
-#' TODO
+#' #TODO
 #'
 #'
 QC_metrics.SCData <- function(object) {
@@ -481,7 +483,7 @@ setReplaceMethod("QC_metrics",
 #'
 #' @export
 #' @examples
-#' TODO
+#' #TODO
 #'
 #'
 FACSData.SCData <- function(object) {
@@ -521,7 +523,7 @@ setReplaceMethod("FACSData",
 #'
 #' @export
 #' @examples
-#' TODO
+#' #TODO
 #'
 DimRd_expr.SCData <- function(object) {
   return(object@reducedExprDimension)
@@ -550,42 +552,6 @@ setReplaceMethod("DimRd_expr",
 
 
 
-#' Get or set \code{organism} from an SCData object
-#' @name organism
-#' @rdname organism
-#' @param object An \code{\link{SCData}} object.
-#'
-#' @return organism string
-#' @author Luyi Tian
-#'
-#' @export
-#' @examples
-#' TODO
-#'
-organism.SCData <- function(object) {
-  return(object@organism)
-}
-
-
-#' @rdname organism
-#' @name organism
-#' @aliases organism
-#' @export
-setMethod("organism", signature(object = "SCData"),
-          organism.SCData)
-
-
-#' @name organism<-
-#' @aliases organism
-#' @rdname organism
-#' @exportMethod "organism<-"
-setReplaceMethod("organism",
-                 signature="SCData",
-                 function(object, value) {
-                   object@organism = value
-                   validObject(object) # could add other checks
-                   return(object)
-                 })
 
 
 
@@ -599,7 +565,7 @@ setReplaceMethod("organism",
 #'
 #' @export
 #' @examples
-#' TODO
+#' #TODO
 #'
 gene_id_type.SCData <- function(object) {
   return(object@gene_id_type)
