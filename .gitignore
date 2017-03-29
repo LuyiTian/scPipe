@@ -4,3 +4,7 @@
 .Rproj
 scPipe.Rproj
 inst/doc
+src/*.o
+src/*.so
+
+Rplots.pdf

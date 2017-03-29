@@ -2,7 +2,7 @@
 % Please edit documentation in R/warpper_scPipeCPP.R
 \name{sc_gene_counting}
 \alias{sc_gene_counting}
-\title{Title sc_gene_counting
+\title{sc_gene_counting
 merge UMI and generate gene counting matrix}
 \usage{
 sc_gene_counting(outdir, bc_anno, UMI_cor = 1, gene_fl = FALSE)
@@ -17,7 +17,7 @@ sc_gene_counting(outdir, bc_anno, UMI_cor = 1, gene_fl = FALSE)
 \item{gene_fl}{whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene}
 }
 \description{
-Title sc_gene_counting
+sc_gene_counting
 merge UMI and generate gene counting matrix
 }
 \examples{

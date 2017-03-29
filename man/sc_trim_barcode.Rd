@@ -2,7 +2,7 @@
 % Please edit documentation in R/warpper_scPipeCPP.R
 \name{sc_trim_barcode}
 \alias{sc_trim_barcode}
-\title{Title sc_trim_barcode}
+\title{sc_trim_barcode}
 \usage{
 sc_trim_barcode(outfq, r1, r2 = NULL, read_structure = list(bs1 = -1, bl1 =
   2, bs2 = 6, bl2 = 8, us = 0, ul = 6), filter_settings = list(rmlow = TRUE,

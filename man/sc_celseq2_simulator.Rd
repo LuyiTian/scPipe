@@ -2,7 +2,7 @@
 % Please edit documentation in R/warpper_scPipeCPP.R
 \name{sc_celseq2_simulator}
 \alias{sc_celseq2_simulator}
-\title{Title sc_celseq2_simulator}
+\title{sc_celseq2_simulator}
 \usage{
 sc_celseq2_simulator(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len = 6,
   r_len = 75, frag_mean = 300, dup_mean = 5, ran_dist = "gamma",
@@ -34,7 +34,7 @@ sc_celseq2_simulator(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len = 6,
 \item{seed}{random seed, used for reproducing data}
 }
 \description{
-Title sc_celseq2_simulator
+sc_celseq2_simulator
 }
 \examples{
 #TODO
