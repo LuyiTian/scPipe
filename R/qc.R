@@ -14,7 +14,7 @@
   P = ppoints(n)
   z = qchisq(P, df = df)
   ord.x <- x[order(x)]
-  coef <- coef(rlm(ord.x ~ z,maxit = 200))
+  coef <- coef(rlm(ord.x ~ z, maxit = 200))
   a <- coef[1]
   b <- coef[2]
   zz <- qnorm(1 - (1 - conf)/2)
@@ -51,15 +51,15 @@
 detect_outlier = function(scd,
                           comp=1,
                           sel_col=NULL,
-                          type = c("both","low","high"),
-                          conf = c(0.9,0.99)){
+                          type = c("both", "low", "high"),
+                          conf = c(0.9, 0.99)){
   # check format:
   if (is(scd, "SCData")){
     if (is.null(sel_col)){
       sel_col = c("number_of_genes", "total_count_per_cell", "non_mt_percent",
                   "non_ERCC_percent", "non_ribo_percent")
     }
-    x = pData(QC_metrics(scd))[,sel_col]
+    x = pData(QC_metrics(scd))[, sel_col]
     x = x[,!("outliers" == colnames(x))]
   }
   else{
@@ -71,14 +71,14 @@ detect_outlier = function(scd,
   mod = Mclust(x[keep,],
                G=comp,
                modelNames="EEE")
-  #print(plot(mod,what="classification"))
+  #print(plot(mod, what="classification"))
   if(comp == 1){
     covr <- covMcd(x, alpha=0.7)
     dist = mahalanobis(x,
                        center=covr$center,
                        cov=covr$cov)
     mean_diff = sign(t(x)-covr$center)
-    QC_sign = c(-1,1)[as.factor(apply(mean_diff,2,function(t){sum(t)>0}))]
+    QC_sign = c(-1, 1)[as.factor(apply(mean_diff, 2, function(t){sum(t)>0}))]
     neg_dist = dist[QC_sign == -1]
     pos_dist = dist[QC_sign == 1]
     if(type == "both"){
@@ -94,10 +94,10 @@ detect_outlier = function(scd,
     }
   }
   else{
-    ord_fst = c(1:comp)[order(mod$parameters$mean[1,],decreasing = TRUE)]
+    ord_fst = c(1:comp)[order(mod$parameters$mean[1,], decreasing = TRUE)]
     poor_comp = ord_fst[2:comp]
     good_comp = ord_fst[1]
-    keep1 = rep(TRUE,nrow(x))
+    keep1 = rep(TRUE, nrow(x))
     keep1[keep][mod$classification %in% poor_comp] = FALSE
     keep1[!keep] = FALSE
     sub_x = x[keep1,]
@@ -107,16 +107,16 @@ detect_outlier = function(scd,
                            cov=covr$cov)
 
     mean_diff = sign(t(sub_x)-covr$center)
-    QC_sign = c(-1,1)[as.factor(apply(mean_diff,2,function(t){sum(t)>0}))]
+    QC_sign = c(-1, 1)[as.factor(apply(mean_diff, 2, function(t){sum(t)>0}))]
     neg_dist = sub_dist[QC_sign == -1]
     pos_dist = sub_dist[QC_sign == 1]
     outlier_cells = .qq_outliers_robust(neg_dist, ncol(sub_x), conf[1])
     outlier_cells = c(outlier_cells,
                       .qq_outliers_robust(pos_dist, ncol(sub_x), conf[2]))
-    outlier_cells = c(outlier_cells,rownames(x[!keep1,]))
+    outlier_cells = c(outlier_cells, rownames(x[!keep1,]))
     if(!(type == "both")){
-      mean_diff = sign(t(x)-mod$parameters$mean[,good_comp])
-      QC_sign = c(-1,1)[as.factor(apply(mean_diff,2,function(t){sum(t)>0}))]
+      mean_diff = sign(t(x)-mod$parameters$mean[, good_comp])
+      QC_sign = c(-1, 1)[as.factor(apply(mean_diff, 2, function(t){sum(t)>0}))]
       if (type == "low"){
         outlier_cells = rownames(x)[(rownames(x) %in% outlier_cells) & (QC_sign == -1)]
       }
@@ -212,9 +212,9 @@ plotQC = function(scd, sel_col=NULL){
   if (is(scd, "SCData")){
     if (is.null(sel_col)){
       sel_col = c("number_of_genes", "total_count_per_cell", "non_mt_percent",
-                  "non_ERCC_percent", "non_ribo_percent","outliers")
+                  "non_ERCC_percent", "non_ribo_percent", "outliers")
     }
-    x = pData(QC_metrics(scd))[,sel_col]
+    x = pData(QC_metrics(scd))[, sel_col]
   }
   else{
     stop("scd must be an SCESet object.")
@@ -244,8 +244,8 @@ plotMapping = function(scd,
                        dataname=""){
   if (is(scd, "SCData")){
     if (is.null(sel_col)){
-      sel_col = c("unaligned","aligned_unmapped","ambigious_mapping",
-                  "mapped_to_ERCC","mapped_to_intron","mapped_to_exon")
+      sel_col = c("unaligned", "aligned_unmapped", "ambigious_mapping",
+                  "mapped_to_ERCC", "mapped_to_intron", "mapped_to_exon")
     }
     x =  pData(QC_metrics(scd))[, sel_col]
   }
@@ -256,27 +256,27 @@ plotMapping = function(scd,
 
   mapping_stat = x
   mapping_stat$sample_name <- reorder(rownames(mapping_stat), mapping_stat$mapped_to_exon)
-  mapping_stat_prop = as.data.frame(prop.table(as.matrix(mapping_stat[,sapply(mapping_stat, is.numeric)]), 1))
+  mapping_stat_prop = as.data.frame(prop.table(as.matrix(mapping_stat[, sapply(mapping_stat, is.numeric)]), 1))
   mapping_stat_prop$sample_name = mapping_stat$sample_name
-  dat.m <- melt(mapping_stat,id.vars = "sample_name")
-  dat.m1 <- melt(mapping_stat_prop,id.vars = "sample_name")
+  dat.m <- melt(mapping_stat, id.vars = "sample_name")
+  dat.m1 <- melt(mapping_stat_prop, id.vars = "sample_name")
 
   if (!percentage){
-    p = ggplot(dat.m, aes(x = sample_name, y = value,fill=variable)) + scale_fill_brewer(palette = "Set1")+
+    p = ggplot(dat.m, aes(x = sample_name, y = value, fill=variable)) + scale_fill_brewer(palette = "Set1")+
       geom_bar(stat="identity", width=1)+
       ylab("number of reads")+
-      xlab("cell sorted by number of reads mapped to exon ")+
-      theme(axis.title.x=element_blank(),axis.text.x=element_blank())+
-      ggtitle(paste0("overall mapping statistics of ",dataname," (number of reads)"))
+      xlab("cell sorted by number of reads mapped to exon")+
+      theme(axis.title.x=element_blank(), axis.text.x=element_blank())+
+      ggtitle(paste0("overall mapping statistics of ", dataname, " (number of reads)"))
   }
   else{
-    p = ggplot(dat.m1, aes(x = sample_name, y = value,fill=variable)) + scale_fill_brewer(palette = "Set1")+
+    p = ggplot(dat.m1, aes(x = sample_name, y = value, fill=variable)) + scale_fill_brewer(palette = "Set1")+
       geom_bar(stat="identity", width=1)+
       ylab("percentage of reads")+
-      xlab("cell sorted by number of reads mapped_to_exon ")+
+      xlab("cell sorted by number of reads mapped_to_exon")+
       scale_y_continuous(labels = percent_format())+
-      theme(axis.title.x=element_blank(),axis.text.x=element_blank())+
-      ggtitle(paste0("overall mapping statistics of ",dataname," (percentage)"))
+      theme(axis.title.x=element_blank(), axis.text.x=element_blank())+
+      ggtitle(paste0("overall mapping statistics of ", dataname, " (percentage)"))
   }
 
   return(p)
@@ -295,7 +295,7 @@ remove_outliers = function(scd){
     stop("no outlier information. please run `detect_outlier()` first.")
   }
   out_cell = pData(QC_metrics(scd))$outliers == FALSE
-  return(scd[,out_cell])
+  return(scd[, out_cell])
 }
 
 
