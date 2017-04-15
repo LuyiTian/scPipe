@@ -263,7 +263,7 @@ plotMapping = function(scd,
 
   if (!percentage){
     p = ggplot(dat.m, aes(x = sample_name, y = value,fill=variable)) + scale_fill_brewer(palette = "Set1")+
-      geom_bar(stat='identity') +
+      geom_bar(stat="identity", width=1)+
       ylab("number of reads")+
       xlab("cell sorted by number of reads mapped to exon ")+
       theme(axis.title.x=element_blank(),axis.text.x=element_blank())+
@@ -271,7 +271,7 @@ plotMapping = function(scd,
   }
   else{
     p = ggplot(dat.m1, aes(x = sample_name, y = value,fill=variable)) + scale_fill_brewer(palette = "Set1")+
-      geom_bar(stat='identity') +
+      geom_bar(stat="identity", width=1)+
       ylab("percentage of reads")+
       xlab("cell sorted by number of reads mapped_to_exon ")+
       scale_y_continuous(labels = percent_format())+
