@@ -3,8 +3,9 @@
 
 using std::string;
 
-std::unordered_map<string, std::vector<string>> read_count(std::ifstream& infile, char sep)
+std::unordered_map<string, std::vector<string>> read_count(string fn, char sep)
 {
+    std::ifstream infile(fn);
     std::unordered_map<string, std::vector<string>> gene_read;
     string line;
     std::getline(infile, line); // skip header
@@ -19,6 +20,7 @@ std::unordered_map<string, std::vector<string>> read_count(std::ifstream& infile
         gene_read[gene_id].push_back(UMI);
 
     }
+    infile.close();
     return gene_read;
 }
 
@@ -148,7 +150,7 @@ void write_stat(string cnt_fn, string stat_fn, std::vector<int> UMI_dup_count, s
 void get_counting_matrix(Barcode bar, string in_dir, int UMI_correct, bool read_filter)
 {
     char sep = ',';
-    std::unordered_map<string, std::ifstream> cnt_files = bar.get_count_file_r(join_path(in_dir, "count"));
+    std::unordered_map<string, string> cnt_files = bar.get_count_file_path(join_path(in_dir, "count"));
     std::unordered_map<string, std::vector<int>> gene_cnt_matrix; // store gene counting matrix
     std::vector<string> all_gene_list; // store all gene ids
     std::vector<int> UMI_dup_count(MAX_UMI_DUP+1, 0); // store UMI duplication statistics

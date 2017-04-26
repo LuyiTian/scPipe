@@ -250,8 +250,8 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
 
 void fq_write(std::ofstream& o_stream, kseq_t *seq, int trim_n)
 {
-    o_stream << "@" << seq->name.s << std::endl << (seq->seq.s+trim_n) << std::endl;
-    o_stream << "+" << std::endl << (seq->qual.s+trim_n) << std::endl;
+    o_stream << "@" << seq->name.s << "\n" << (seq->seq.s+trim_n) << "\n";
+    o_stream << "+" << "\n" << (seq->qual.s+trim_n) << "\n";
 }
 
 
@@ -373,26 +373,25 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         {
             memcpy(seq1->name.s, seq1->seq.s+id1_st, id1_len*sizeof(char)); // copy index one
             memcpy(seq1->name.s+id1_len, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id1_len+id2_len] = '_'; // add separater
+            seq1->name.s[id1_len+id2_len] = '_'; // add separator
             memcpy(seq1->name.s+id1_len+id2_len+1, seq2->seq.s+umi_st, umi_len*sizeof(char)); // copy umi
-
         }
         else if (state == TWO_INDEX_NO_UMI)
         {
             memcpy(seq1->name.s, seq1->seq.s+id1_st, id1_len*sizeof(char)); // copy index one
             memcpy(seq1->name.s+id1_len, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id1_len+id2_len] = '_'; // add separater
+            seq1->name.s[id1_len+id2_len] = '_'; // add separator
         }
         else if (state == ONE_INDEX_WITH_UMI)
         {
             memcpy(seq1->name.s, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id2_len] = '_'; // add separater
+            seq1->name.s[id2_len] = '_'; // add separator
             memcpy(seq1->name.s+id2_len+1, seq2->seq.s+umi_st, umi_len*sizeof(char)); // copy umi
         }
         else if (state == ONE_INDEX_NO_UMI)
         {
             memcpy(seq1->name.s, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id2_len] = '_'; // add separater
+            seq1->name.s[id2_len] = '_'; // add separator
         }
         seq1->name.s[name_offset-1] = '#';
         seq1->name.l = name_offset + seq1->name.l;

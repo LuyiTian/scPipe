@@ -22,9 +22,7 @@ public:
     // if annotation is given
     void read_anno(std::string fn);
 
-    std::unordered_map<std::string, std::ofstream> get_count_file_w(std::string out_dir);
-
-    std::unordered_map<std::string, std::ifstream> get_count_file_r(std::string in_dir);
+    std::unordered_map<std::string, std::string> get_count_file_path(std::string out_dir);
 
     std::string get_closest_match(std::string bc_seq, int max_mismatch);
 

@@ -24,7 +24,7 @@ struct UMI_dedup_stat
     double C_prop;
 };
 
-std::unordered_map<std::string, std::vector<std::string>> read_count(std::ifstream& infile, char sep);
+std::unordered_map<std::string, std::vector<std::string>> read_count(std::string fn, char sep);
 
 int UMI_correct1(std::unordered_map<std::string, int>& UMI_count);
 

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <cstring>
+#include <string>
 #include <unordered_map>
 #include "config_hts.h"
 #include "utils.h"

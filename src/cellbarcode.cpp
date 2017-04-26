@@ -49,28 +49,17 @@ void Barcode::read_anno(string fn)
     }
 }
 
-unordered_map<string, std::ofstream> Barcode::get_count_file_w(string out_dir)
+unordered_map<string, string> Barcode::get_count_file_path(string out_dir)
 {
     string csv_fmt = ".csv";
-    unordered_map<string, std::ofstream> out_fn_dict;
+    unordered_map<string, string> out_fn_dict;
     for(const auto& n : cellid_list) 
     {
-        out_fn_dict[n].open(join_path(out_dir, n+csv_fmt));
-        out_fn_dict[n] << "gene_id,UMI,position" << std::endl;
+        out_fn_dict[n] = join_path(out_dir, n+csv_fmt);
     }
     return out_fn_dict;
 }
 
-unordered_map<string, std::ifstream> Barcode::get_count_file_r(string in_dir)
-{
-    string csv_fmt = ".csv";
-    unordered_map<string, std::ifstream> infn_dict;
-    for(const auto& n : cellid_list) 
-    {
-        infn_dict[n].open(join_path(in_dir, n+csv_fmt));
-    }
-    return infn_dict;
-}
 
 string Barcode::get_closest_match(string bc_seq, int max_mismatch)
 {

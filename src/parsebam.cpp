@@ -90,8 +90,8 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch)
     }
 
     string output_dir = join_path(out_dir, "count");
-    unordered_map<string, ofstream> out_fn_dict = bar.get_count_file_w(output_dir);
-
+    unordered_map<string, string> out_fn_path = bar.get_count_file_path(output_dir);
+    unordered_map<string, std::vector<string>> out_reads;
     const char * c_ptr = c_tag.c_str();
     const char * m_ptr = m_tag.c_str();
     const char * g_ptr = g_tag.c_str();
@@ -99,11 +99,10 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch)
 
     string bc_seq;
     string match_res;
-    int tmp_cnt = 0;
+    int map_status;
 
     while (bam_read1(fp, b) >= 0)
     {
-        tmp_cnt++;
         //match barcode
         bc_seq = (char*)(bam_aux_get(b, c_ptr) + 1); // +1 to skip `Z`
         match_res = bar.get_closest_match(bc_seq, max_mismatch);
@@ -124,6 +123,7 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch)
         }
         else
         {
+            map_status = bam_aux2i(bam_aux_get(b, a_ptr));
             chr_aligned_stat[header->target_name[b->core.tid]]++;
             if (bam_aux_get(b, g_ptr)) // found a gene; read mapped to transcriptome
             {
@@ -149,17 +149,15 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch)
                     }
                     if (a_tag.empty())
                     {
-                        out_fn_dict[bar.barcode_dict[match_res]] <<\
-                         (bam_aux_get(b, g_ptr)+1) << "," <<\
-                          (bam_aux_get(b, m_ptr)+1) << "," <<\
-                           b->core.pos << std::endl;
+                        out_reads[bar.barcode_dict[match_res]].push_back(string(bam_aux2Z(bam_aux_get(b, g_ptr)))+","+
+                            string(bam_aux2Z(bam_aux_get(b, m_ptr)))+","+
+                            std::to_string(b->core.pos));
                     }
                     else
                     {
-                        out_fn_dict[bar.barcode_dict[match_res]] <<\
-                         (bam_aux_get(b, g_ptr)+1) << "," <<\
-                          (bam_aux_get(b, m_ptr)+1) << "," <<\
-                           (-std::atoi((char*)bam_aux_get(b, a_ptr)+1)) << std::endl;
+                        out_reads[bar.barcode_dict[match_res]].push_back(string(bam_aux2Z(bam_aux_get(b, g_ptr)))+","+
+                            string(bam_aux2Z(bam_aux_get(b, m_ptr)))+","+
+                            std::to_string(-map_status));
                     }
 
 
@@ -181,12 +179,11 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch)
                     }
                     else
                     {
-                        tmp_cnt = std::atoi((char*)bam_aux_get(b, a_ptr)+1);
-                        if (tmp_cnt == 1)
+                        if (map_status == 1)
                         {
                             overall_count_stat["barcode_unmatch_ambiguous_mapping"]++;
                         }
-                        else if (tmp_cnt == 2)
+                        else if (map_status == 2)
                         {
                             overall_count_stat["barcode_unmatch_mapped_to_intron"]++;
                         }
@@ -206,12 +203,11 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch)
                     }
                     else
                     {
-                        tmp_cnt = std::atoi((char*)bam_aux_get(b, a_ptr)+1);
-                        if (tmp_cnt == 1)
+                        if (map_status == 1)
                         {
                             cell_mapped_ambiguous[bar.barcode_dict[match_res]]++;
                         }
-                        else if (tmp_cnt == 2)
+                        else if (map_status == 2)
                         {
                             cell_mapped_intron[bar.barcode_dict[match_res]]++;
                         }
@@ -224,6 +220,19 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch)
             }
         }
     }
+
+    for (auto const& fn: out_fn_path)
+    {
+        ofstream ofile(fn.second);
+        ofile << "gene_id,UMI,position\n";
+        for (auto const& rd: out_reads[fn.first])
+        {
+            ofile << rd << "\n";
+        }
+        ofile.close();
+    }
+
+
 
     bgzf_close(fp);
     return 0;
