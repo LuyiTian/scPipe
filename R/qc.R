@@ -244,7 +244,7 @@ plotMapping = function(scd,
                        dataname=""){
   if (is(scd, "SCData")){
     if (is.null(sel_col)){
-      sel_col = c("unaligned", "aligned_unmapped", "ambigious_mapping",
+      sel_col = c("unaligned", "aligned_unmapped", "ambiguous_mapping",
                   "mapped_to_ERCC", "mapped_to_intron", "mapped_to_exon")
     }
     x =  pData(QC_metrics(scd))[, sel_col]
