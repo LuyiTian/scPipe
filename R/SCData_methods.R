@@ -473,6 +473,44 @@ setReplaceMethod("QC_metrics",
                  })
 
 
+#' Get or set \code{organism} from an SCData object
+#' @name organism
+#' @rdname organism
+#' @param object An \code{\link{SCData}} object.
+#'
+#' @return organism string
+#' @author Luyi Tian
+#' @importMethodsFrom BiocGenerics organism
+#' @export
+#' @examples
+#' TODO
+#'
+organism.SCData <- function(object) {
+  return(object@organism)
+}
+
+
+#' @rdname organism
+#' @name organism
+#' @aliases organism
+#' @export
+setMethod("organism", signature(object = "SCData"),
+         organism.SCData)
+
+
+#' @name organism<-
+#' @aliases organism
+#' @rdname organism
+#' @exportMethod "organism<-"
+setReplaceMethod("organism",
+           signature="SCData",
+           function(object, value) {
+               object@organism = value
+               validObject(object) # could add other checks
+               return(object)
+             })
+
+
 #' Get or set FACs data for an SCData object
 #' @name FACSData
 #' @rdname FACSData
