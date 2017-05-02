@@ -27,7 +27,7 @@ get_genes_by_GO = function(returns="ensembl_gene_id",
     stop("must provide GO term. (i.e go=c('GO:0005739'))")
   }
   mart <- useDataset(dataset, useMart("ensembl"))
-  G_list <- getBM(filters= "go_id",
+  G_list <- getBM(filters= "go",
                   attributes= c(returns),
                   values=go,
                   mart=mart)
