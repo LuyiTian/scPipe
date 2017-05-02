@@ -59,13 +59,19 @@ detect_outlier = function(scd,
       sel_col = c("number_of_genes", "total_count_per_cell", "non_mt_percent",
                   "non_ERCC_percent", "non_ribo_percent")
     }
-    x = pData(QC_metrics(scd))[, sel_col]
-    x = x[,!("outliers" == colnames(x))]
+    if (!all(sel_col %in% colnames(QC_metrics(scd)))){
+      tmp = sel_col[!(sel_col %in% colnames(QC_metrics(scd)))]
+      print("the following QC metrics not find in data:")
+      print(tmp)
+    }
+    x = pData(QC_metrics(scd))[, colnames(QC_metrics(scd)) %in% sel_col]
   }
   else{
     stop("scd must be an SCESet object.")
   }
-
+  if (!all(complete.cases(x))){
+    stop("we find NAs in the `QC_metrics(scd)`, check the quality control matrix")
+  }
   dist = mahalanobis(x, center=colMeans(x), cov=cov(x))
   keep = !(dist>qchisq(0.99, ncol(x)))
   mod = Mclust(x[keep,],
@@ -214,7 +220,7 @@ plotQC = function(scd, sel_col=NULL){
       sel_col = c("number_of_genes", "total_count_per_cell", "non_mt_percent",
                   "non_ERCC_percent", "non_ribo_percent", "outliers")
     }
-    x = pData(QC_metrics(scd))[, sel_col]
+    x = pData(QC_metrics(scd))[, colnames(QC_metrics(scd)) %in% sel_col]
   }
   else{
     stop("scd must be an SCESet object.")

@@ -181,6 +181,8 @@ newSCData <- function(exprsData = NULL,
   if ( !is.null(cpmData) )
     cpm(scd) = cpmData
 
+  # remove cells that have zero counts
+  scd = scd[, colSums(exprs_mat)>0]
 
   # Check validity of object
   validObject(scd)
