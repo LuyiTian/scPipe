@@ -78,6 +78,22 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// rcpp_sc_detect_bc
+void rcpp_sc_detect_bc(Rcpp::CharacterVector infq, Rcpp::CharacterVector outcsv, Rcpp::CharacterVector surfix, Rcpp::NumericVector bc_len, Rcpp::NumericVector max_reads, Rcpp::NumericVector min_count, Rcpp::NumericVector max_mismatch);
+RcppExport SEXP scPipe_rcpp_sc_detect_bc(SEXP infqSEXP, SEXP outcsvSEXP, SEXP surfixSEXP, SEXP bc_lenSEXP, SEXP max_readsSEXP, SEXP min_countSEXP, SEXP max_mismatchSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type infq(infqSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outcsv(outcsvSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type surfix(surfixSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type bc_len(bc_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type max_reads(max_readsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type min_count(min_countSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type max_mismatch(max_mismatchSEXP);
+    rcpp_sc_detect_bc(infq, outcsv, surfix, bc_len, max_reads, min_count, max_mismatch);
+    return R_NilValue;
+END_RCPP
+}
 // rcpp_generate_celseq2_data
 void rcpp_generate_celseq2_data(Rcpp::CharacterVector r1fn, Rcpp::CharacterVector r2fn, Rcpp::CharacterVector annofn, Rcpp::CharacterVector bc_anno, Rcpp::CharacterVector fafn, Rcpp::NumericVector UMI_len, Rcpp::NumericVector r_len, Rcpp::NumericVector frag_mean, Rcpp::NumericVector dup_mean, Rcpp::CharacterVector ran_dist, Rcpp::NumericVector param, Rcpp::NumericVector seed);
 RcppExport SEXP scPipe_rcpp_generate_celseq2_data(SEXP r1fnSEXP, SEXP r2fnSEXP, SEXP annofnSEXP, SEXP bc_annoSEXP, SEXP fafnSEXP, SEXP UMI_lenSEXP, SEXP r_lenSEXP, SEXP frag_meanSEXP, SEXP dup_meanSEXP, SEXP ran_distSEXP, SEXP paramSEXP, SEXP seedSEXP) {

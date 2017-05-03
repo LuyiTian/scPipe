@@ -5,7 +5,7 @@
 #include "parsebam.h"
 #include "cellbarcode.h"
 #include "transcriptmapping.h"
-
+#include "detect_barcode.h"
 
 read_s get_read_structure(Rcpp::NumericVector bs1,
                           Rcpp::NumericVector bl1,
@@ -151,4 +151,26 @@ void rcpp_sc_gene_counting(Rcpp::CharacterVector outdir,
   get_counting_matrix(bar, c_outdir, c_UMI_cor, c_gene_fl);
 }
 
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::export]]
+
+void rcpp_sc_detect_bc(Rcpp::CharacterVector infq,
+                           Rcpp::CharacterVector outcsv,
+                           Rcpp::CharacterVector surfix,
+                           Rcpp::NumericVector bc_len,
+                           Rcpp::NumericVector max_reads,
+                           Rcpp::NumericVector min_count,
+                           Rcpp::NumericVector max_mismatch){
+  std::string c_infq = Rcpp::as<std::string>(infq);
+  std::string c_outcsv = Rcpp::as<std::string>(outcsv);
+  std::string c_surfix = Rcpp::as<std::string>(surfix);
+  int c_bc_len = Rcpp::as<int>(bc_len);
+  int c_max_reads = Rcpp::as<int>(max_reads);
+  int c_min_count = Rcpp::as<int>(min_count);
+  int c_max_mismatch = Rcpp::as<int>(max_mismatch);
+  
+  
+  std::unordered_map<std::string, int> counter = summarize_barcode(c_infq, c_bc_len, c_max_reads, c_max_mismatch, c_min_count);
+  write_barcode_summary(c_outcsv, c_surfix, counter);
+}
 

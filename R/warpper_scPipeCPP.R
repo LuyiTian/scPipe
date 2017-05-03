@@ -223,3 +223,26 @@ sc_celseq2_simulator = function(r1fn, r2fn, annofn, bc_anno, fafn,
 
 
 
+#' sc_detect_bc
+#' detect cell barcode and generate the barcode annotation
+#'
+#' @param infq input fastq file, shoule be the output file of \code{sc_trim_barcode}
+#' @param outcsv output barcode annotation
+#' @param surfix the surfix of cell name, default to be `CELL_`, the cell name will be CELL_001, CELL_002 accordingly
+#' @param bc_len the length of cell barcode, should be consistent with bl1+bl2 in \code{sc_trim_barcode}
+#' @param max_reads the maximum of reads processed, default is 1000,000, set to "all" to process all reads (may spend more time)
+#' @param mim_count minimum counts to keep,  barcode will be discarded if it has lower count. default is 10. this should be set according to \code{max_reads}
+#' @param max_mismatch the maximum mismatch allowed, barcodes within this number will be considered as sequence error and merged, default is 1.
+#' @export
+#'
+#' @examples
+#' #TODO
+sc_detect_bc = function(infq, outcsv, surfix="CELL_", bc_len, max_reads=1000000, min_count=10, max_mismatch=1){
+
+  if(!file.exists(infq)){stop("input fastq file does not exists.")}
+  if(max_reads=="all"){m_r = -1}
+  else{m_r=max_reads}
+  rcpp_sc_detect_bc(infq, outcsv, surfix, bc_len, m_r, min_count, max_mismatch)
+  
+}
+
