@@ -157,7 +157,7 @@ newSCData <- function(exprsData = NULL,
       warning("experimentData supplied is not an 'MIAME' object. Thus, experimentData is being set to an empty MIAME object.\n Please supply a valid 'MIAME' class object containing experiment data to experimentData(object).")
     }
   } else {
-    expData <- expData_null
+    expData = expData_null
   }
 
   # Generate new SCData object
@@ -178,7 +178,7 @@ newSCData <- function(exprsData = NULL,
 
   # check organism names or gene_id_type is set correctly
   tmp_res = .guess_attr(exprs_mat)
-  if(missing(organism)){
+  if(is.null(organism)){
     if (is.na(tmp_res$organism)){
       stop("organism cannot be NULL. \n List of possible names can be \nretrieved using the function `listDatasets`from `biomaRt` package. \n(i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)")
     }
@@ -191,7 +191,7 @@ newSCData <- function(exprsData = NULL,
     # set organism
     organism(scd) = organism
   }
-  if(missing(gene_id_type)){
+  if(is.null(gene_id_type)){
     if (is.na(tmp_res$gene_id_type)){
       stop("gene_id_type cannot be NULL. \n A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. \nthe commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.")
     }
