@@ -26,6 +26,23 @@
 }
 
 
+#' guess the organism and species from input data
+#' 
+.guess_attr = function(expr_mat){
+  hsp_ensembl = length(grep("^ENSG", rownames(expr_mat)))
+  mm_ensembl = length(grep("^ENSMUSG", rownames(expr_mat)))
+  if((hsp_ensembl>0) & (hsp_ensembl>mm_ensembl)){
+    return(list(organism="hsapiens_gene_ensembl", gene_id_type="ensembl_gene_id"))
+  }
+  else if((mm_ensembl>0) & (mm_ensembl>hsp_ensembl)){
+    return(list(organism="mmusculus_gene_ensembl", gene_id_type="ensembl_gene_id"))
+  }
+  else{
+    return(list(organism=NA, gene_id_type=NA))
+  }
+}
+
+
 #' Create a new SCData object.
 #'
 #' SCData extends Bioconductor's ExpressionSet class, and the same basic interface is
@@ -106,15 +123,6 @@ newSCData <- function(exprsData = NULL,
     print("cannot detect ERCC Spikeins from data.")
   }
 
-  # check organism names or gene_id_type is set correctly
-  if(missing(organism)){
-    stop("organism cannot be NULL. \n List of possible names can be \nretrieved using the function `listDatasets`from `biomaRt` package. \n(i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)")
-  }
-  if(missing(gene_id_type)){
-    stop("gene_id_type cannot be NULL. \n A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. \nthe commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.")
-  }
-
-
   # Generate valid reducedExprDimension, onesense and reducedFACSDimension if not provided
   if (is.null(reducedExprDimension)){
     reducedExprDimension = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
@@ -162,15 +170,41 @@ newSCData <- function(exprsData = NULL,
                  experimentData = expData,
                  logExprsOffset = logExprsOffset,
                  logged = logged,
-                 gene_id_type = gene_id_type,
                  reducedExprDimension = reducedExprDimension,
                  reducedFACSDimension = reducedFACSDimension,
                  onesense = onesense,
                  QualityControlInfo = QualityControlInfo,
                  useForExprs = useForExprs)
 
-  # set organism
-  organism(scd) = organism
+  # check organism names or gene_id_type is set correctly
+  tmp_res = .guess_attr(exprs_mat)
+  if(missing(organism)){
+    if (is.na(tmp_res$organism)){
+      stop("organism cannot be NULL. \n List of possible names can be \nretrieved using the function `listDatasets`from `biomaRt` package. \n(i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)")
+    }
+    else{
+      print(paste("organism not provided. make a guess:", tmp_res$organism))
+      organism(scd) = tmp_res$organism
+    }
+  }
+  else{
+    # set organism
+    organism(scd) = organism
+  }
+  if(missing(gene_id_type)){
+    if (is.na(tmp_res$gene_id_type)){
+      stop("gene_id_type cannot be NULL. \n A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. \nthe commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.")
+    }
+    else{
+      print(paste("gene_id_type not provided. make a guess:", tmp_res$gene_id_type))
+      gene_id_type(scd) = tmp_res$gene_id_type
+    }
+  }
+  else{
+    gene_id_type(scd) = gene_id_type
+  }
+
+
   # Add non-null slots to assayData for SCData object, omitting null slots
   if ( !is.null(tpmData) )
     tpm(scd) = tpmData
