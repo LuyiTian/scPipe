@@ -214,7 +214,7 @@ calculate_QC_metrics = function(scd){
 #' @import ggplot2
 #' @export
 #'
-plotQC = function(scd, sel_col=NULL){
+plotQC_pair = function(scd, sel_col=NULL){
   if (is(scd, "SCData")){
     if (is.null(sel_col)){
       sel_col = c("number_of_genes", "total_count_per_cell", "non_mt_percent",
