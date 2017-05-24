@@ -70,7 +70,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' @name sc_exon_mapping
 #' @param inbam input bam file. this is the output of alignment program
 #' @param outbam output bam file with gene and barcode tag
-#' @param annofn genome annotation, gff file
+#' @param annofn genome annotation, gff file. can have multiple files
 #' @param am mapping status tag (default: YE)
 #' @param ge gene id tag (default: GE)
 #' @param bc cell barcode tag (default: YC)
