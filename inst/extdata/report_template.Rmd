@@ -1,0 +1,287 @@
+---
+title: "scPipe report for sample `r SAMPLE_NAME`"
+output:
+  html_notebook:
+    code_folding: hide
+    toc: true
+    toc_float: true
+    collapsed: false
+---
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+library(scales)
+library(readr)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(scater)
+library(scran)
+library(scPipe)
+library(Rtsne)
+```
+# 1. parameters for each preprocessing step
+
+## 1.1 parameters for `sc_trim_barcode`
+
+### file path
+
+* input fastq1: `r FQ1`
+* input fastq2: `r FQ2`
+* output fastq: `r FQOUT`
+
+### read structure
+
+assume read1 contains the transcript
+
+* barcode in read1: `r BC1_INFO`
+* barcode in read2: `r BC2_INFO`
+* UMI in read2: `r UMI_INFO`
+
+### read filter
+
+* remove reads that have `N` in its barcode or UMI: `r RM_N`
+* remove reads with low quality: `r RM_LOW`
+`r if (RM_LOW == "YES"){paste("\t* minimum read quality:", MIN_Q,"\n","\t* maximum number of base below minimum read quality:",NUM_BQ,"\n")}`
+  
+## 1.2 parameters for alignment
+
+* input fastq: `r FQOUT`
+* output bam file: `r BAM_ALIGN`
+* genome index: `r G_INDEX`
+
+## 1.3 parameters for `sc_exon_mapping`
+
+* input bam file: `r BAM_ALIGN`
+* output bam file: `r BAM_MAP`
+`r for (gff in ANNO_GFF){paste("* transctiptome annotations:", gff,"\n")}`
+* do strand specific mapping: STND
+* fix chromosome names: FIX_CHR
+
+
+## 1.4 parameters for `sc_demultiplex`
+
+* input bam file: `r BAM_MAP`
+* output folder: `r OUTDIR`
+* barcode annotation file: `r BC_ANNO`
+* maximum mismatch allowed in barcode: `r MAX_MIS`
+
+## 1.5 parameters for `sc_gene_counting`
+
+* output folder: `r OUTDIR`
+* barcode annotation file: `r BC_ANNO`
+* UMI correction: `r UMI_COR`
+* gene filtering: `r GENE_FL`
+
+# 2. data summary
+
+The organism is `r SPECIES`, and gene id type is `r GENE_ID_TYPE`.
+
+## overall cell barcode matching
+
+```{r, warning=FALSE, message=FALSE}
+overall_stat = read_csv(file.path(OUTDIR, "stat", "overall_stat.csv"))
+datatable(overall_stat,width=800)
+```
+
+plot barcode matching in pie chart:
+```{r}
+colors <- c('rgb(211,94,96)', 'rgb(128,133,133)', 'rgb(144,103,167)', 'rgb(171,104,87)', 'rgb(114,147,203)', 'rgb(114,114,203)')
+pp = plot_ly(overall_stat, labels = ~status, values = ~count, type = 'pie',marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1))) %>%
+  layout(title = 'barcode matching results',showlegend = TRUE,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+pp
+```
+
+## reads alignment statistics per cell
+
+```{r}
+scd = create_scd_by_dir(OUTDIR, species=SPECIES, gene_id=GENE_ID_TYPE)
+ggplotly(plotMapping(scd,dataname=SAMPLE_NAME,percentage = FALSE))
+
+```
+
+```{r}
+ggplotly(plotMapping(scd,dataname=SAMPLE_NAME,percentage = TRUE))
+```
+
+## summary and distributions of some basic statistics
+
+datatable of all QC metrics:
+```{r}
+scd = calculate_QC_metrics(scd)
+QC_metrics(scd) = pData(QC_metrics(scd))[,colSums(pData(QC_metrics(scd)))>0]
+datatable(pData(QC_metrics(scd)),width=800,options=list(scrollX= TRUE))
+```
+
+summary of all QC metrics:
+```{r}
+datatable(do.call(cbind, lapply(pData(QC_metrics(scd)), summary)),width=800,options=list(scrollX= TRUE))
+```
+
+Number of reads mapped to exon before UMI deduplication VS number of genes detected:
+```{r}
+ggplotly(ggplot(pData(QC_metrics(scd)), aes(x=mapped_to_exon,y=number_of_genes))+geom_point(alpha=0.8))
+```
+
+
+
+
+# quality control
+
+## detect outlier cells
+
+A robustified Mahalanobis Distance is calculated for each cell then outliers is detected based on the distance. However, due to the complex nature of single cell transcriptome and protocol used, such method can only be used to assist the quality control process. Visual inspection of the quality control metrics is still required.
+
+the number of outliers:
+```{r}
+scd_qc = detect_outlier(scd,type="both",comp = 1)
+table(pData(QC_metrics(scd_qc))$outliers)
+```
+
+pairwise plot for QC metrics, colored by outliers:
+```{r, warning=FALSE, message=FALSE}
+plotQC_pair(scd_qc)
+```
+
+## plot highest expressed genes
+
+remove low quality cells and plot highest expressed genes.
+
+```{r}
+scd_qc = remove_outliers(scd_qc)
+scd_qc = convert_geneid(scd_qc, returns="external_gene_name")
+sce <- newSCESet(countData=counts(scd_qc))
+sce <- calculateQCMetrics(sce)
+plotQC(sce, type = "highest-expression", n=20)
+```
+
+## remove low abundant genes
+
+plot the average count for each genes:
+```{r}
+ave.counts <- rowMeans(counts(sce))
+hist(log10(ave.counts), breaks=100, main="", col="grey80",
+     xlab=expression(Log[10]~"average count"))
+```
+
+As a loose filter we keep genes that expressed in at least two cells and for cells that express that gene, the average count larger than two. However this is not the gold standard and the filter may variy depending on the data.
+
+```{r}
+keep1 = (apply(counts(sce),1,function(x) mean(x[x>0])) > 1)  # average count larger than one
+keep2 = (rowSums(counts(sce)>0) > 1)  # expressed in at least two cells
+
+sce = sce[(keep1 & keep2), ]
+scd_qc = scd_qc[(keep1 & keep2), ]
+dim(scd_qc)
+```
+
+we got `r nrow(scd_qc)` genes left after removing low abundant genes.
+
+# data normalization
+
+## normalization by `Scran` and `Scater`
+
+compute the normalization size factor
+
+```{r}
+ncells = ncol(sce)
+if (ncells >200){
+  sce <- computeSumFactors(sce)
+}else{
+  sce <- computeSumFactors(sce, sizes=as.integer(c(ncells/7,ncells/6,ncells/5,ncells/4,ncells/3)))
+}
+summary(sizeFactors(sce))
+```
+
+`r if (min(sizeFactors(sce)) <=0){paste("we have negative size factors in the data. They indicate low quality cells and we have removed them. To avoid negative size factors, the best solution is to increase the stringency of the filtering.")}`
+
+```{r}
+if (min(sizeFactors(sce)) <=0){
+  sce = sce[, sizeFactors(sce)>0]
+  scd_qc = scd_qc[, sizeFactors(sce)>0]
+}
+```
+
+
+pca plot using gene expressions as input, colored by the number of genes.
+
+```{r}
+plotPCA(sce, exprs_values="exprs", colour_by="total_features")
+```
+
+### normalize the data using size factor and get high variable genes
+
+```{r}
+sce <- normalize(sce)
+
+var.fit <- trendVar(sce, trend="loess", use.spikes=FALSE, span=0.2)
+var.out <- decomposeVar(sce, var.fit)
+
+if (length(which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)) < 100){
+  hvg.out <- var.out[order(var.out$bio, decreasing=TRUE)[1:100],]
+}else if(length(which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)) > 500){
+  hvg.out <- var.out[order(var.out$bio, decreasing=TRUE)[1:500],]
+}else{
+  hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >= 0.5),]
+  hvg.out <- hvg.out[order(hvg.out$bio, decreasing=TRUE),]
+}
+
+plot(var.out$mean, var.out$total, pch=16, cex=0.6, xlab="Mean log-expression",
+     ylab="Variance of log-expression")
+o <- order(var.out$mean)
+lines(var.out$mean[o], var.out$tech[o], col="dodgerblue", lwd=2)
+points(var.out$mean[rownames(var.out) %in% rownames(hvg.out)], var.out$total[rownames(var.out) %in% rownames(hvg.out)], col="red", pch=16)
+```
+
+## heatmap of high variable genes
+
+```{r}
+
+gene_exp = exprs(sce)
+
+gene_exp = gene_exp[rownames(hvg.out),]
+
+hc.rows <- hclust(dist(gene_exp))
+hc.cols <- hclust(dist(t(gene_exp)))
+
+gene_exp = gene_exp[hc.rows$order, hc.cols$order]
+
+m = list(
+  l = 100,
+  r = 40,
+  b = 10,
+  t = 10,
+  pad = 0
+) 
+
+plot_ly(
+    x = colnames(gene_exp), y = rownames(gene_exp),
+    z = gene_exp, type = "heatmap")%>% 
+layout(autosize = F, margin = m)
+```
+
+# dimensionality reduction using high variable genes
+
+## dimensionality reduction by PCA
+
+```{r}
+plotPCA(sce, exprs_values="exprs", colour_by="total_features", feature_set=rownames(hvg.out))
+```
+
+## dimensionality reduction by t-SNE
+
+```{r,fig.width=10,fig.height=3.5}
+set.seed(100)
+out5 <- plotTSNE(sce, exprs_values="exprs", perplexity=5, colour_by="total_features",
+     feature_set=rownames(hvg.out)) + ggtitle("Perplexity = 5")
+out10 <- plotTSNE(sce, exprs_values="exprs", perplexity=10, colour_by="total_features",
+     feature_set=rownames(hvg.out))  + ggtitle("Perplexity = 10")
+out20 <- plotTSNE(sce, exprs_values="exprs", perplexity=20, colour_by="total_features",
+     feature_set=rownames(hvg.out))  + ggtitle("Perplexity = 20")
+multiplot(out5, out10, out20, cols=3)
+```
+
+
+
+
+

@@ -35,7 +35,7 @@ create_scd_by_dir = function(datadir, species=NULL, gene_id=NULL, pheno_data=NUL
                   QualityControlInfo = QualityControlInfo,
                   phenoData = pheno_data,
                   useForExprs = "counts",
-                  organism = org,
+                  organism = species,
                   gene_id_type = gene_id)
   
   return(scd)
@@ -120,14 +120,14 @@ create_report = function(sample_name,
   
   ANNO_GFF=exon_anno
   
-  STND=stnd
+  STND=as.character(stnd)
   FIX_CHR=as.character(fix_chr)
   BC_ANNO=barcode_anno
   MAX_MIS=max_mis
   
-  if(UMI_COR == 1){
+  if(UMI_cor == 1){
     UMI_COR="simple correction and merge UMI with distance 1"
-  }else if(UMI_COR == 0){
+  }else if(UMI_cor == 0){
     UMI_COR="no correction"
   }else{
     UMI_COR="unknown"
@@ -140,5 +140,5 @@ create_report = function(sample_name,
   SPECIES=species
   GENE_ID_TYPE=gene_id_type
   
-  rmarkdown::render("report_test.Rmd", output_file = "report1.html")
+  rmarkdown::render(system.file("extdata", "report_template.Rmd", package = "scPipe"), output_file = file.path(outdir,"report.html"))
 }

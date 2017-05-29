@@ -15,7 +15,7 @@ sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "YC",
 
 \item{outbam}{output bam file with gene and barcode tag}
 
-\item{annofn}{genome annotation, gff file}
+\item{annofn}{genome annotation, gff file. can have multiple files}
 
 \item{am}{mapping status tag (default: YE)}
 
