@@ -2,6 +2,8 @@ Package: scPipe
 Title: pipeline for single cell RNA-seq data analysis
 Version: 0.0.0.9000
 Authors@R: person("Luyi", "Tian", email = "tian.l@wehi.edu.au", role = c("aut", "cre"))
+biocViews: Software, Sequencing, RNASeq, GeneExpression, SingleCell, Visualization,
+        SequenceMatching, Preprocessing, QualityControl, GenomeAnnotation
 Description: What the package does (one paragraph).
 Depends: R (>= 3.3.1), Biobase, ggplot2, methods
 LinkingTo: Rcpp
