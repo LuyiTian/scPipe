@@ -53,6 +53,8 @@ detect_outlier = function(scd,
                           sel_col=NULL,
                           type = c("both", "low", "high"),
                           conf = c(0.9, 0.99)){
+  type <- match.arg(type)
+
   # check format:
   if (is(scd, "SCData")){
     if (is.null(sel_col)){
