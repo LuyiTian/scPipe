@@ -91,54 +91,57 @@ create_report = function(sample_name,
                          gene_fl,
                          species,
                          gene_id_type){
-  SAMPLE_NAME=sample_name
+  fn = system.file("extdata", "report_template.Rmd", package = "scPipe")
+  tx = readLines(fn)
   
-  FQ1=r1
-  FQ2=r2
-  FQOUT=outfq
+  tx = gsub(pattern = "SAMPLE_NAME__", replace = sample_name, x = tx)
+  tx = gsub(pattern = "FQ1__", replace = r1, x = tx)
+  tx = gsub(pattern = "FQ2__", replace = r2, x = tx)
+  tx = gsub(pattern = "FQOUT__", replace = outfq, x = tx)
   if(read_structure$bs1<0){
+    tx = gsub(pattern = "BC1_INFO__", replace = "NA", x = tx)
     BC1_INFO="NA"
   }else{
-    BC1_INFO = paste0("start at position ",read_structure$bs1,", length ",read_structure$bl1)
+    tx = gsub(pattern = "BC1_INFO__", replace = 
+                paste0("start at position ",read_structure$bs1,", length ",read_structure$bl1), x = tx)
   }
   
+  tx = gsub(pattern = "BC1_INFO__", replace = 
+              paste0("start at position ",read_structure$bs2,", length ",read_structure$bl2), x = tx)
+  tx = gsub(pattern = "UMI_INFO__", replace = 
+              paste0("start at position ",read_structure$us,", length ",read_structure$ul), x = tx)
   
-  BC2_INFO=paste0("start at position ",read_structure$bs2,", length ",read_structure$bl2)
-  UMI_INFO=paste0("start at position ",read_structure$us,", length ",read_structure$ul)
+  tx = gsub(pattern = "RM_N__", replace = as.character(filter_settings$rmN), x = tx)
+  tx = gsub(pattern = "RM_LOW__", replace = as.character(filter_settings$rmlow), x = tx)
+  tx = gsub(pattern = "MIN_Q__", replace = filter_settings$minq, x = tx)
+  tx = gsub(pattern = "NUM_BQ__", replace = filter_settings$numbq, x = tx)
   
-  RM_N=as.character(filter_settings$rmN)
-  RM_LOW=as.character(filter_settings$rmlow)
-  MIN_Q=filter_settings$minq
-  NUM_BQ=filter_settings$numbq
+  tx = gsub(pattern = "BAM_ALIGN__", replace = align_bam, x = tx)
+  tx = gsub(pattern = "G_INDEX__", replace = genome_index, x = tx)
+  tx = gsub(pattern = "BAM_MAP__", replace = map_bam, x = tx)
   
-  BAM_ALIGN=align_bam
-  G_INDEX=genome_index
+  tx = gsub(pattern = "OUTDIR__", replace = outdir, x = tx)
+  tx = gsub(pattern = "ANNO_GFF__", replace = paste(exon_anno, collapse=","), x = tx)
   
-  BAM_MAP=map_bam
-  
-  OUTDIR=outdir
-  
-  ANNO_GFF=exon_anno
-  
-  STND=as.character(stnd)
-  FIX_CHR=as.character(fix_chr)
-  BC_ANNO=barcode_anno
-  MAX_MIS=max_mis
+  tx = gsub(pattern = "STND__", replace = as.character(stnd), x = tx)
+  tx = gsub(pattern = "FIX_CHR__", replace = as.character(fix_chr), x = tx)
+  tx = gsub(pattern = "BC_ANNO__", replace = barcode_anno, x = tx)
+  tx = gsub(pattern = "MAX_MIS__", replace = max_mis, x = tx)
   
   if(UMI_cor == 1){
-    UMI_COR="simple correction and merge UMI with distance 1"
+    tx = gsub(pattern = "UMI_COR__", replace = "simple correction and merge UMI with distance 1", x = tx)
   }else if(UMI_cor == 0){
-    UMI_COR="no correction"
+    tx = gsub(pattern = "UMI_COR__", replace = "no correction", x = tx)
   }else{
-    UMI_COR="unknown"
+    tx = gsub(pattern = "UMI_COR__", replace = "unknown", x = tx)
   }
   
+  tx = gsub(pattern = "GENE_FL__", replace = as.character(gene_fl), x = tx)
   
+  tx = gsub(pattern = "SPECIES__", replace = species, x = tx)
+  tx = gsub(pattern = "GENE_ID_TYPE__", replace = gene_id_type, x = tx)
   
-  GENE_FL=as.character(gene_fl)
-  
-  SPECIES=species
-  GENE_ID_TYPE=gene_id_type
-  
-  rmarkdown::render(system.file("extdata", "report_template.Rmd", package = "scPipe"), output_file = file.path(outdir,"report.html"))
+  writeLines(tx, con=file.path(outdir,"report.Rmd"))
+  knitr::wrap_rmd(file.path(outdir,"report.Rmd"), width = 120,backup = NULL)
+  rmarkdown::render(file.path(outdir,"report.Rmd"), output_file = file.path(outdir,"report.html"))
 }
