@@ -68,10 +68,8 @@ create_scd_by_dir = function(datadir, species=NULL, gene_id=NULL, pheno_data=NUL
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
 #'
-#' @return
 #' @export
 #'
-#' @examples
 create_report = function(sample_name,
                          outdir,
                          r1,
@@ -94,52 +92,52 @@ create_report = function(sample_name,
   fn = system.file("extdata", "report_template.Rmd", package = "scPipe")
   tx = readLines(fn)
   
-  tx = gsub(pattern = "SAMPLE_NAME__", replace = sample_name, x = tx)
-  tx = gsub(pattern = "FQ1__", replace = r1, x = tx)
-  tx = gsub(pattern = "FQ2__", replace = r2, x = tx)
-  tx = gsub(pattern = "FQOUT__", replace = outfq, x = tx)
+  tx = gsub(pattern = "SAMPLE_NAME__", replacement = sample_name, x = tx)
+  tx = gsub(pattern = "FQ1__", replacement = r1, x = tx)
+  tx = gsub(pattern = "FQ2__", replacement = r2, x = tx)
+  tx = gsub(pattern = "FQOUT__", replacement = outfq, x = tx)
   if(read_structure$bs1<0){
-    tx = gsub(pattern = "BC1_INFO__", replace = "NA", x = tx)
+    tx = gsub(pattern = "BC1_INFO__", replacement = "NA", x = tx)
     BC1_INFO="NA"
   }else{
-    tx = gsub(pattern = "BC1_INFO__", replace = 
+    tx = gsub(pattern = "BC1_INFO__", replacement = 
                 paste0("start at position ",read_structure$bs1,", length ",read_structure$bl1), x = tx)
   }
   
-  tx = gsub(pattern = "BC1_INFO__", replace = 
+  tx = gsub(pattern = "BC1_INFO__", replacement = 
               paste0("start at position ",read_structure$bs2,", length ",read_structure$bl2), x = tx)
-  tx = gsub(pattern = "UMI_INFO__", replace = 
+  tx = gsub(pattern = "UMI_INFO__", replacement = 
               paste0("start at position ",read_structure$us,", length ",read_structure$ul), x = tx)
   
-  tx = gsub(pattern = "RM_N__", replace = as.character(filter_settings$rmN), x = tx)
-  tx = gsub(pattern = "RM_LOW__", replace = as.character(filter_settings$rmlow), x = tx)
-  tx = gsub(pattern = "MIN_Q__", replace = filter_settings$minq, x = tx)
-  tx = gsub(pattern = "NUM_BQ__", replace = filter_settings$numbq, x = tx)
+  tx = gsub(pattern = "RM_N__", replacement = as.character(filter_settings$rmN), x = tx)
+  tx = gsub(pattern = "RM_LOW__", replacement = as.character(filter_settings$rmlow), x = tx)
+  tx = gsub(pattern = "MIN_Q__", replacement = filter_settings$minq, x = tx)
+  tx = gsub(pattern = "NUM_BQ__", replacement = filter_settings$numbq, x = tx)
   
-  tx = gsub(pattern = "BAM_ALIGN__", replace = align_bam, x = tx)
-  tx = gsub(pattern = "G_INDEX__", replace = genome_index, x = tx)
-  tx = gsub(pattern = "BAM_MAP__", replace = map_bam, x = tx)
+  tx = gsub(pattern = "BAM_ALIGN__", replacement = align_bam, x = tx)
+  tx = gsub(pattern = "G_INDEX__", replacement = genome_index, x = tx)
+  tx = gsub(pattern = "BAM_MAP__", replacement = map_bam, x = tx)
   
-  tx = gsub(pattern = "OUTDIR__", replace = outdir, x = tx)
-  tx = gsub(pattern = "ANNO_GFF__", replace = paste(exon_anno, collapse=","), x = tx)
+  tx = gsub(pattern = "OUTDIR__", replacement = outdir, x = tx)
+  tx = gsub(pattern = "ANNO_GFF__", replacement = paste(exon_anno, collapse=","), x = tx)
   
-  tx = gsub(pattern = "STND__", replace = as.character(stnd), x = tx)
-  tx = gsub(pattern = "FIX_CHR__", replace = as.character(fix_chr), x = tx)
-  tx = gsub(pattern = "BC_ANNO__", replace = barcode_anno, x = tx)
-  tx = gsub(pattern = "MAX_MIS__", replace = max_mis, x = tx)
+  tx = gsub(pattern = "STND__", replacement = as.character(stnd), x = tx)
+  tx = gsub(pattern = "FIX_CHR__", replacement = as.character(fix_chr), x = tx)
+  tx = gsub(pattern = "BC_ANNO__", replacement = barcode_anno, x = tx)
+  tx = gsub(pattern = "MAX_MIS__", replacement = max_mis, x = tx)
   
   if(UMI_cor == 1){
-    tx = gsub(pattern = "UMI_COR__", replace = "simple correction and merge UMI with distance 1", x = tx)
+    tx = gsub(pattern = "UMI_COR__", replacement = "simple correction and merge UMI with distance 1", x = tx)
   }else if(UMI_cor == 0){
-    tx = gsub(pattern = "UMI_COR__", replace = "no correction", x = tx)
+    tx = gsub(pattern = "UMI_COR__", replacement = "no correction", x = tx)
   }else{
-    tx = gsub(pattern = "UMI_COR__", replace = "unknown", x = tx)
+    tx = gsub(pattern = "UMI_COR__", replacement = "unknown", x = tx)
   }
   
-  tx = gsub(pattern = "GENE_FL__", replace = as.character(gene_fl), x = tx)
+  tx = gsub(pattern = "GENE_FL__", replacement = as.character(gene_fl), x = tx)
   
-  tx = gsub(pattern = "SPECIES__", replace = species, x = tx)
-  tx = gsub(pattern = "GENE_ID_TYPE__", replace = gene_id_type, x = tx)
+  tx = gsub(pattern = "SPECIES__", replacement = species, x = tx)
+  tx = gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
   
   writeLines(tx, con=file.path(outdir,"report.Rmd"))
   knitr::wrap_rmd(file.path(outdir,"report.Rmd"), width = 120,backup = NULL)

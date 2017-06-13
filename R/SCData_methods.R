@@ -538,6 +538,7 @@ setMethod("organism", signature(object = "SCData"),
 #' @aliases organism
 #' @rdname organism
 #' @exportMethod "organism<-"
+#' @export
 setReplaceMethod("organism",
            signature="SCData",
            function(object, value) {
