@@ -49,10 +49,12 @@
 #' #TODO
 #'
 detect_outlier = function(scd,
-                          comp=1,
-                          sel_col=NULL,
+                          comp = 1,
+                          sel_col = NULL,
                           type = c("both", "low", "high"),
                           conf = c(0.9, 0.99)){
+  type <- match.arg(type)
+
   # check format:
   if (is(scd, "SCData")){
     if (is.null(sel_col)){
@@ -107,7 +109,7 @@ detect_outlier = function(scd,
     keep1[keep][mod$classification %in% poor_comp] = FALSE
     keep1[!keep] = FALSE
     sub_x = x[keep1,]
-    covr <- covMcd(sub_x, alpha=0.7)
+    covr = covMcd(sub_x, alpha=0.7)
     sub_dist = mahalanobis(sub_x,
                            center=covr$center,
                            cov=covr$cov)
@@ -139,7 +141,6 @@ detect_outlier = function(scd,
 }
 
 
-
 #' get QC metrics using gene counting matrix
 #'
 #' @param scd an SCData object containing count
@@ -153,7 +154,6 @@ detect_outlier = function(scd,
 #' `non_ribo_percent`: 1- percent of ribosomal gene counts
 #' ribosomal genes are retrived by GO term GO:0005840
 #' @return no return
-#'
 #'
 #' @export
 #' @examples
