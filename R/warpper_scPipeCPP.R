@@ -5,7 +5,7 @@
 #' reformat the fastq file and move the barcode and UMI to read names.
 #'
 #' @name sc_trim_barcode
-#' @param fq_out the output fastq file, which reformat the barcode and UMI into the read name
+#' @param outfq the output fastq file, which reformat the barcode and UMI into the read name
 #' @param  r1 read one for pair-end reads. This read should contains the transcript
 #' @param  r2 read two for pair-end reads. default to be `NULL` for single reads
 #' @param read_structure a list contains read structure configuration:\itemize{

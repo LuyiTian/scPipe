@@ -22,7 +22,9 @@ Methods that operate on SCData objects constitute the basic scPipe workflow.
    or not the expression data in the `exprs` slot have been log2-transformed
    or not.}
    \item{\code{gene_id_type}}{the type of gene id. could be `ensembl_gene_id` or
-   `external_gene_name` or other type which can be assessed by \code{listAttributes} from \code{biomaRt} package}
+   `external_gene_name` or other type which can be assessed by \code{listAttributes} from \code{biomaRt} package. can be gussed from the annotation if not provided.}
+   \item{\code{organism}}{the name of species given in the \code{biomaRt} package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
+   if it is not provided the function will guess the organism name from the gene id.}
    \item{\code{logExprsOffset}:}{Scalar of class \code{"numeric"}, providing an offset
    applied to expression data in the `exprs` slot when undergoing log2-transformation
    to avoid trying to take logs of zero.}
