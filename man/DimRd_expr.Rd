@@ -31,10 +31,6 @@ expression of single cell.
 \description{
 Get or set \code{reducedExprDimension} from an SCData object
 }
-\examples{
-#TODO
-
-}
 \author{
 Luyi Tian
 }

@@ -64,6 +64,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 
 
 #' sc_exon_mapping
+#' 
 #' take the alinged read and map them to exons. the result will be written into optional fields
 #' in bam file with different tags. for more information regarding to bam file format:
 #' http://samtools.github.io/hts-specs/SAMv1.pdf
@@ -113,6 +114,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 
 
 #' sc_demultiplex
+#' 
 #' separate bam file by cell, output to outdir/count/[cell_id].csv.
 #' the output contains information for all reads that can be mapped to exons.
 #' including the gene id, UMI of that read and the distance to transcript end position.
@@ -147,6 +149,7 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 
 
 #' sc_gene_counting
+#' 
 #' merge UMI and generate gene counting matrix
 #'
 #' @param outdir output folder that contains \code{sc_demultiplex} output
@@ -224,6 +227,7 @@ sc_celseq2_simulator = function(r1fn, r2fn, annofn, bc_anno, fafn,
 
 
 #' sc_detect_bc
+#' 
 #' detect cell barcode and generate the barcode annotation
 #'
 #' @param infq input fastq file, shoule be the output file of \code{sc_trim_barcode}

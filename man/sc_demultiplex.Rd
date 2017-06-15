@@ -2,10 +2,7 @@
 % Please edit documentation in R/warpper_scPipeCPP.R
 \name{sc_demultiplex}
 \alias{sc_demultiplex}
-\title{sc_demultiplex
-separate bam file by cell, output to outdir/count/[cell_id].csv.
-the output contains information for all reads that can be mapped to exons.
-including the gene id, UMI of that read and the distance to transcript end position.}
+\title{sc_demultiplex}
 \usage{
 sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
   bc = "YC", mb = "YM", mito = "MT")
@@ -30,7 +27,6 @@ sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
 \item{mito}{mitochondrial chromosome name, should be consistant with the chromosome name in bam file}
 }
 \description{
-sc_demultiplex
 separate bam file by cell, output to outdir/count/[cell_id].csv.
 the output contains information for all reads that can be mapped to exons.
 including the gene id, UMI of that read and the distance to transcript end position.

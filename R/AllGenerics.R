@@ -33,6 +33,14 @@ setGeneric("QC_metrics<-", function(object, value) {
   standardGeneric("QC_metrics<-")
 })
 
+#' @name organism<-
+#' @export
+#' @docType methods
+#' @rdname organism
+setGeneric("organism<-", function(object, value) {
+  standardGeneric("organism<-")
+})
+
 #' @name FACSData
 #' @export
 #' @docType methods

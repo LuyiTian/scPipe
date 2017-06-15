@@ -30,10 +30,6 @@ gene id type string
 \description{
 Get or set \code{gene_id_type} from an SCData object
 }
-\examples{
-#TODO
-
-}
 \author{
 Luyi Tian
 }

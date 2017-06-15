@@ -480,8 +480,6 @@ mergeSCData <- function(...,
 #' @author Luyi Tian
 #'
 #' @export
-#' @examples
-#' #TODO
 #'
 #'
 QC_metrics.SCData <- function(object) {
@@ -516,10 +514,7 @@ setReplaceMethod("QC_metrics",
 #'
 #' @return organism string
 #' @author Luyi Tian
-#' @importMethodsFrom BiocGenerics organism
 #' @export
-#' @examples
-#' TODO
 #'
 organism.SCData <- function(object) {
   return(object@organism)
@@ -557,8 +552,6 @@ setReplaceMethod("organism",
 #' @author Luyi Tian
 #'
 #' @export
-#' @examples
-#' #TODO
 #'
 #'
 FACSData.SCData <- function(object) {
@@ -597,8 +590,6 @@ setReplaceMethod("FACSData",
 #' @author Luyi Tian
 #'
 #' @export
-#' @examples
-#' #TODO
 #'
 DimRd_expr.SCData <- function(object) {
   return(object@reducedExprDimension)
@@ -639,8 +630,6 @@ setReplaceMethod("DimRd_expr",
 #' @author Luyi Tian
 #'
 #' @export
-#' @examples
-#' #TODO
 #'
 gene_id_type.SCData <- function(object) {
   return(object@gene_id_type)
@@ -694,7 +683,6 @@ setReplaceMethod("gene_id_type",
 #' @param value an integer matrix
 #' @author Luyi Tian
 #' @export
-#' @examples
 #'
 counts.SCData <- function(object) {
   object@assayData$counts
@@ -741,7 +729,6 @@ setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
 #' @export
 #' @aliases tpm tpm,SCData-method tpm<-,SCData,matrix-method
 #'
-#' @examples
 #'
 tpm.SCData <- function(object) {
   object@assayData$tpm
@@ -790,7 +777,6 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
 #' @export
 #' @aliases cpm cpm,SCData-method cpm<-,SCData,matrix-method
 #'
-#' @examples
 #'
 cpmSCData <- function(object) {
   object@assayData$cpm
@@ -839,7 +825,6 @@ setReplaceMethod("cpm", signature(object = "SCData", value = "matrix"),
 #' @author Luyi Tian
 #' @export
 #'
-#' @examples
 #'
 fpkm.SCData <- function(object) {
   object@assayData$fpkm
