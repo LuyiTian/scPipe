@@ -20,7 +20,7 @@
   SE <- (b/stats::dchisq(z, df))*sqrt(P*(1 - P)/n)
   fit.value <- a + b*z
   upper <- fit.value + zz*SE
-  thr=max(ord.x[ord.x < upper])
+  thr <- max(ord.x[ord.x < upper])
   return(names(x[x > thr]))
 }
 
