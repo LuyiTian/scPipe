@@ -31,7 +31,7 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
                   attributes= c(returns),
                   values=go,
                   mart=mart)
-  return(G_list[,returns])
+  return(G_list[, returns])
 
 }
 
@@ -69,43 +69,43 @@ convert_geneid <- function(scd,
   mart <- useDataset(species, useMart("ensembl"))
   G_list <- getBM(filters= gene_id_type(scd), attributes= c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
 
-  G_list <- G_list[match(rownames(scd), G_list[,gene_id_type(scd)]),]
-  na_num <- sum(is.na(G_list[,returns]))
-  dup_ids <- duplicated(G_list[,returns]) | duplicated(G_list[,returns], fromLast=TRUE)
+  G_list <- G_list[match(rownames(scd), G_list[, gene_id_type(scd)]), ]
+  na_num <- sum(is.na(G_list[, returns]))
+  dup_ids <- duplicated(G_list[, returns]) | duplicated(G_list[, returns], fromLast=TRUE)
   dup_num <- (sum(dup_ids)-na_num)/2
-  print(paste0("number of NA in new gene id: ",na_num,". duplicated id: ",dup_num))
+  print(paste0("number of NA in new gene id: ", na_num, ". duplicated id: ", dup_num))
   if (dup_num>0) {
     print("first 5 duplicated:")
-    print(head(G_list[dup_ids & !(is.na(G_list[,returns])),]))
+    print(head(G_list[dup_ids & !(is.na(G_list[, returns])), ]))
   }
-  G_list[,returns][dup_ids] <- NA
+  G_list[, returns][dup_ids] <- NA
   if (all | (na_num+dup_num==0)) {
     # replace NA with old id
-    G_list[,returns][is.na(G_list[,returns])] <- rownames(scd)[is.na(G_list[,returns])]
+    G_list[, returns][is.na(G_list[, returns])] <- rownames(scd)[is.na(G_list[, returns])]
     if (!(gene_id_type(scd) %in% colnames(fData(scd)))) {
-      fData(scd)[,gene_id_type(scd)] <- rownames(scd)
+      fData(scd)[, gene_id_type(scd)] <- rownames(scd)
     }
     if (!(returns %in% colnames(fData(scd)))) {
-      fData(scd)[,returns] <- G_list[,returns]
+      fData(scd)[, returns] <- G_list[, returns]
     }
     if (!("description" %in% colnames(fData(scd)))) {
-      fData(scd)[,"description"] <- G_list[,"description"]
+      fData(scd)[, "description"] <- G_list[, "description"]
     }
-    rownames(scd) <- G_list[,returns]
+    rownames(scd) <- G_list[, returns]
   }
-  else {
-    G_list <- G_list[!is.na(G_list[,returns]), ]
-    scd <- scd[!is.na(G_list[,returns]), ]
+  else{
+    G_list <- G_list[!is.na(G_list[, returns]), ]
+    scd <- scd[!is.na(G_list[, returns]), ]
     if (!(gene_id_type(scd) %in% colnames(fData(scd)))) {
-      fData(scd)[,gene_id_type(scd)] <- rownames(scd)
+      fData(scd)[, gene_id_type(scd)] <- rownames(scd)
     }
     if (!(returns %in% colnames(fData(scd)))) {
-      fData(scd)[,returns] <- G_list[,returns]
+      fData(scd)[, returns] <- G_list[, returns]
     }
     if (!("description" %in% colnames(fData(scd)))) {
-      fData(scd)[,"description"] <- G_list[,"description"]
+      fData(scd)[, "description"] <- G_list[, "description"]
     }
-    rownames(scd) <- G_list[,returns]
+    rownames(scd) <- G_list[, returns]
   }
   gene_id_type(scd) <- returns
   return(scd)
