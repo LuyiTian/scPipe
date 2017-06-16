@@ -67,7 +67,7 @@ convert_geneid <- function(scd,
 
   species <- organism(scd)
   mart <- useDataset(species, useMart("ensembl"))
-  G_list <- getBM(filters= gene_id_type(scd), attributes= c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
+  G_list <- getBM(filters=gene_id_type(scd), attributes=c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
 
   G_list <- G_list[match(rownames(scd), G_list[, gene_id_type(scd)]), ]
   na_num <- sum(is.na(G_list[, returns]))
