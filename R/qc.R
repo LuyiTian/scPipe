@@ -78,7 +78,7 @@ detect_outlier <- function(scd,
   mod <- Mclust(x[keep,],
                G=comp,
                modelNames="EEE")
-  #print(plot(mod, what="classification"))
+
   if (comp == 1) {
     covr <- covMcd(x, alpha=0.7)
     dist <- mahalanobis(x,
