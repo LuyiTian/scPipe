@@ -31,7 +31,7 @@ sc_dim_reduction = function(scd,
     exprs_mat = scd
   }
   else{
-    stop("scd must be an SCESet object or a matrix.")
+    stop("scd must be an SCData object or a matrix.")
   }
 
   pca_out = prcomp(t(exprs_mat))
