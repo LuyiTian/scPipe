@@ -115,3 +115,18 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &scPipe_rcpp_sc_trim_barcode_paired, 13},
+    {"scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &scPipe_rcpp_sc_exon_mapping, 11},
+    {"scPipe_rcpp_sc_demultiplex", (DL_FUNC) &scPipe_rcpp_sc_demultiplex, 9},
+    {"scPipe_rcpp_sc_gene_counting", (DL_FUNC) &scPipe_rcpp_sc_gene_counting, 4},
+    {"scPipe_rcpp_sc_detect_bc", (DL_FUNC) &scPipe_rcpp_sc_detect_bc, 7},
+    {"scPipe_rcpp_generate_celseq2_data", (DL_FUNC) &scPipe_rcpp_generate_celseq2_data, 12},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_scPipe(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}

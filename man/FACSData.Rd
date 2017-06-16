@@ -30,11 +30,6 @@ A \code{AnnotatedDataFrame} of FACS data.
 \description{
 Get or set FACs data for an SCData object
 }
-\examples{
-#TODO
-
-
-}
 \author{
 Luyi Tian
 }

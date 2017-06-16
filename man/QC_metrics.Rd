@@ -30,11 +30,6 @@ A \code{AnnotatedDataFrame} of quality control metrics.
 \description{
 Get or set quality control metrics from an SCData object
 }
-\examples{
-#TODO
-
-
-}
 \author{
 Luyi Tian
 }

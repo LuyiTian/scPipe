@@ -1,11 +1,37 @@
 ---
-title: "scPipe report for sample `r SAMPLE_NAME`"
+title: "scPipe report for sample `r params$samplename`"
 output:
   html_notebook:
     code_folding: hide
     toc: true
     toc_float: true
     collapsed: false
+params:
+  samplename: "SAMPLE_NAME__"
+  fq1: "FQ1__"
+  fq2: "FQ2__"
+  fqout: "FQOUT__"
+  bc1_info: "BC1_INFO__"
+  bc2_info: "BC2_INFO__"
+  umi_info: "UMI_INFO__"
+  rm_n: RM_N__
+  rm_low: RM_LOW__
+  min_q: MIN_Q__
+  num_bq: NUM_BQ__
+  bam_align: "BAM_ALIGN__"
+  g_index: "G_INDEX__"
+  bam_map: "BAM_MAP__"
+  outdir: "OUTDIR__"
+  anno_gff: "ANNO_GFF__"
+  stnd: STND__
+  fix_chr: FIX_CHR__
+  bc_anno: "BC_ANNO__"
+  max_mis: MAX_MIS__
+  UMI_cor: "UMI_COR__"
+  gene_fl: GENE_FL__
+  species: "SPECIES__"
+  gene_id_type: "GENE_ID_TYPE__"
+
 ---
 ```{r, warning=FALSE, echo=FALSE, message=FALSE}
 library(scales)
@@ -24,61 +50,61 @@ library(Rtsne)
 
 ### file path
 
-* input fastq1: `r FQ1`
-* input fastq2: `r FQ2`
-* output fastq: `r FQOUT`
+* input fastq1: `r params$fq1`
+* input fastq2: `r params$fq2`
+* output fastq: `r params$fqout`
 
 ### read structure
 
 assume read1 contains the transcript
 
-* barcode in read1: `r BC1_INFO`
-* barcode in read2: `r BC2_INFO`
-* UMI in read2: `r UMI_INFO`
+* barcode in read1: `r params$bc1_info`
+* barcode in read2: `r params$bc2_info`
+* UMI in read2: `r params$umi_info`
 
 ### read filter
 
-* remove reads that have `N` in its barcode or UMI: `r RM_N`
-* remove reads with low quality: `r RM_LOW`
-`r if (RM_LOW == "YES"){paste("\t* minimum read quality:", MIN_Q,"\n","\t* maximum number of base below minimum read quality:",NUM_BQ,"\n")}`
+* remove reads that have `N` in its barcode or UMI: `r params$rm_n`
+* remove reads with low quality: `r params$rm_low`
+`r if (params$rm_low == "YES"){paste("\t* minimum read quality:", params$min_q,"\n","\t* maximum number of base below minimum read quality:",params$num_bq,"\n")}`
   
 ## 1.2 parameters for alignment
 
-* input fastq: `r FQOUT`
-* output bam file: `r BAM_ALIGN`
-* genome index: `r G_INDEX`
+* input fastq: `r params$fqout`
+* output bam file: `r params$bam_align`
+* genome index: `r params$g_index`
 
 ## 1.3 parameters for `sc_exon_mapping`
 
-* input bam file: `r BAM_ALIGN`
-* output bam file: `r BAM_MAP`
-`r for (gff in ANNO_GFF){paste("* transctiptome annotations:", gff,"\n")}`
-* do strand specific mapping: STND
+* input bam file: `r params$bam_align`
+* output bam file: `r params$bam_map`
+* transctiptome annotations: `r params$anno_gff`
+* do strand specific mapping: params$stnd
 * fix chromosome names: FIX_CHR
 
 
 ## 1.4 parameters for `sc_demultiplex`
 
-* input bam file: `r BAM_MAP`
-* output folder: `r OUTDIR`
-* barcode annotation file: `r BC_ANNO`
-* maximum mismatch allowed in barcode: `r MAX_MIS`
+* input bam file: `r params$bam_map`
+* output folder: `r params$outdir`
+* barcode annotation file: `r params$bc_anno`
+* maximum mismatch allowed in barcode: `r params$max_mis`
 
 ## 1.5 parameters for `sc_gene_counting`
 
-* output folder: `r OUTDIR`
-* barcode annotation file: `r BC_ANNO`
-* UMI correction: `r UMI_COR`
-* gene filtering: `r GENE_FL`
+* output folder: `r params$outdir`
+* barcode annotation file: `r params$bc_anno`
+* UMI correction: `r params$UMI_cor`
+* gene filtering: `r params$gene_fl`
 
 # 2. data summary
 
-The organism is `r SPECIES`, and gene id type is `r GENE_ID_TYPE`.
+The organism is `r params$species`, and gene id type is `r params$gene_id_type`.
 
 ## overall cell barcode matching
 
 ```{r, warning=FALSE, message=FALSE}
-overall_stat = read_csv(file.path(OUTDIR, "stat", "overall_stat.csv"))
+overall_stat = read_csv(file.path(params$outdir, "stat", "overall_stat.csv"))
 datatable(overall_stat,width=800)
 ```
 
@@ -95,21 +121,34 @@ pp
 ## reads alignment statistics per cell
 
 ```{r}
-scd = create_scd_by_dir(OUTDIR, species=SPECIES, gene_id=GENE_ID_TYPE)
-ggplotly(plotMapping(scd,dataname=SAMPLE_NAME,percentage = FALSE))
+scd = create_scd_by_dir(params$outdir, species=params$species, gene_id=params$gene_id_type)
+ggplotly(plotMapping(scd,dataname=params$samplename,percentage = FALSE))
 
 ```
 
 ```{r}
-ggplotly(plotMapping(scd,dataname=SAMPLE_NAME,percentage = TRUE))
+ggplotly(plotMapping(scd,dataname=params$samplename,percentage = TRUE))
 ```
 
 ## summary and distributions of some basic statistics
 
+```{r}
+if (any(colSums(counts(scd)) == 0)){
+  zero_cells = sum(colSums(counts(scd)) == 0)
+  scd = scd[,colSums(counts(scd)) > 0]
+}else{
+  zero_cells = 0
+}
+```
+
+`r if (zero_cells > 0){paste(zero_cells, "cells have zero read counts, remove them.")}`
+
 datatable of all QC metrics:
 ```{r}
 scd = calculate_QC_metrics(scd)
-QC_metrics(scd) = pData(QC_metrics(scd))[,colSums(pData(QC_metrics(scd)))>0]
+if(!all(colSums(pData(QC_metrics(scd)))>0)){
+  QC_metrics(scd) = pData(QC_metrics(scd))[,colSums(pData(QC_metrics(scd)))>0]
+}
 datatable(pData(QC_metrics(scd)),width=800,options=list(scrollX= TRUE))
 ```
 
@@ -134,7 +173,7 @@ A robustified Mahalanobis Distance is calculated for each cell then outliers is 
 
 the number of outliers:
 ```{r}
-scd_qc = detect_outlier(scd,type="both",comp = 1)
+scd_qc = detect_outlier(scd,type="low",comp = 1)
 table(pData(QC_metrics(scd_qc))$outliers)
 ```
 
@@ -272,6 +311,9 @@ plotPCA(sce, exprs_values="exprs", colour_by="total_features", feature_set=rowna
 
 ```{r,fig.width=10,fig.height=3.5}
 set.seed(100)
+if(any(duplicated(t(exprs(sce)[rownames(hvg.out),])))){
+  sce = sce[,!duplicated(t(exprs(sce)[rownames(hvg.out),]))]
+}
 out5 <- plotTSNE(sce, exprs_values="exprs", perplexity=5, colour_by="total_features",
      feature_set=rownames(hvg.out)) + ggtitle("Perplexity = 5")
 out10 <- plotTSNE(sce, exprs_values="exprs", perplexity=10, colour_by="total_features",

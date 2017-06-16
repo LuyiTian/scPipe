@@ -56,10 +56,10 @@ create_scd_by_dir = function(datadir, species=NULL, gene_id=NULL, pheno_data=NUL
 #' @param align_bam the aligned bam file
 #' @param genome_index genome index used for alignment
 #' @param map_bam the mapped bam file
-#' @param exon_anno the gff exon annotation used
+#' @param exon_anno the gff exon annotation used. can have multiple files
 #' @param stnd whether to perform strand specific mapping
 #' @param fix_chr add `chr` to chromosome names, fix inconsistant names.
-#' @param barcode_anno genome annotation, gff file. can have multiple files
+#' @param barcode_anno cell barcode annotation file path.
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
 #' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.
 #' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
@@ -68,10 +68,8 @@ create_scd_by_dir = function(datadir, species=NULL, gene_id=NULL, pheno_data=NUL
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
 #'
-#' @return
 #' @export
 #'
-#' @examples
 create_report = function(sample_name,
                          outdir,
                          r1,
@@ -91,54 +89,175 @@ create_report = function(sample_name,
                          gene_fl,
                          species,
                          gene_id_type){
-  SAMPLE_NAME=sample_name
+  fn = system.file("extdata", "report_template.Rmd", package = "scPipe")
+  tx = readLines(fn)
   
-  FQ1=r1
-  FQ2=r2
-  FQOUT=outfq
-  if(read_structure$bs1<0){
-    BC1_INFO="NA"
+  tx = gsub(pattern = "SAMPLE_NAME__", replacement = sample_name, x = tx)
+  tx = gsub(pattern = "FQ1__", replacement = r1, x = tx)
+  if(!is.null(r2)){
+    tx = gsub(pattern = "FQ2__", replacement = r2, x = tx)
   }else{
-    BC1_INFO = paste0("start at position ",read_structure$bs1,", length ",read_structure$bl1)
+    tx = gsub(pattern = "FQ2__", replacement = "NA", x = tx)
   }
   
+  tx = gsub(pattern = "FQOUT__", replacement = outfq, x = tx)
+  if(read_structure$bs1<0){
+    tx = gsub(pattern = "BC1_INFO__", replacement = "NA", x = tx)
+  }else{
+    tx = gsub(pattern = "BC1_INFO__", replacement = 
+                paste0("start at position ",read_structure$bs1,", length ",read_structure$bl1), x = tx)
+  }
   
-  BC2_INFO=paste0("start at position ",read_structure$bs2,", length ",read_structure$bl2)
-  UMI_INFO=paste0("start at position ",read_structure$us,", length ",read_structure$ul)
+  tx = gsub(pattern = "BC1_INFO__", replacement = 
+              paste0("start at position ",read_structure$bs2,", length ",read_structure$bl2), x = tx)
+  tx = gsub(pattern = "UMI_INFO__", replacement = 
+              paste0("start at position ",read_structure$us,", length ",read_structure$ul), x = tx)
   
-  RM_N=as.character(filter_settings$rmN)
-  RM_LOW=as.character(filter_settings$rmlow)
-  MIN_Q=filter_settings$minq
-  NUM_BQ=filter_settings$numbq
+  tx = gsub(pattern = "RM_N__", replacement = as.character(filter_settings$rmN), x = tx)
+  tx = gsub(pattern = "RM_LOW__", replacement = as.character(filter_settings$rmlow), x = tx)
+  tx = gsub(pattern = "MIN_Q__", replacement = filter_settings$minq, x = tx)
+  tx = gsub(pattern = "NUM_BQ__", replacement = filter_settings$numbq, x = tx)
   
-  BAM_ALIGN=align_bam
-  G_INDEX=genome_index
+  tx = gsub(pattern = "BAM_ALIGN__", replacement = align_bam, x = tx)
+  tx = gsub(pattern = "G_INDEX__", replacement = genome_index, x = tx)
+  tx = gsub(pattern = "BAM_MAP__", replacement = map_bam, x = tx)
   
-  BAM_MAP=map_bam
+  tx = gsub(pattern = "OUTDIR__", replacement = outdir, x = tx)
+  tx = gsub(pattern = "ANNO_GFF__", replacement = paste(exon_anno, collapse=","), x = tx)
   
-  OUTDIR=outdir
-  
-  ANNO_GFF=exon_anno
-  
-  STND=as.character(stnd)
-  FIX_CHR=as.character(fix_chr)
-  BC_ANNO=barcode_anno
-  MAX_MIS=max_mis
+  tx = gsub(pattern = "STND__", replacement = as.character(stnd), x = tx)
+  tx = gsub(pattern = "FIX_CHR__", replacement = as.character(fix_chr), x = tx)
+  tx = gsub(pattern = "BC_ANNO__", replacement = barcode_anno, x = tx)
+  tx = gsub(pattern = "MAX_MIS__", replacement = max_mis, x = tx)
   
   if(UMI_cor == 1){
-    UMI_COR="simple correction and merge UMI with distance 1"
+    tx = gsub(pattern = "UMI_COR__", replacement = "simple correction and merge UMI with distance 1", x = tx)
   }else if(UMI_cor == 0){
-    UMI_COR="no correction"
+    tx = gsub(pattern = "UMI_COR__", replacement = "no correction", x = tx)
   }else{
-    UMI_COR="unknown"
+    tx = gsub(pattern = "UMI_COR__", replacement = "unknown", x = tx)
   }
   
+  tx = gsub(pattern = "GENE_FL__", replacement = as.character(gene_fl), x = tx)
   
+  tx = gsub(pattern = "SPECIES__", replacement = species, x = tx)
+  tx = gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
   
-  GENE_FL=as.character(gene_fl)
-  
-  SPECIES=species
-  GENE_ID_TYPE=gene_id_type
-  
-  rmarkdown::render(system.file("extdata", "report_template.Rmd", package = "scPipe"), output_file = file.path(outdir,"report.html"))
+  writeLines(tx, con=file.path(outdir,"report.Rmd"))
+  knitr::wrap_rmd(file.path(outdir,"report.Rmd"), width = 120,backup = NULL)
+  rmarkdown::render(file.path(outdir,"report.Rmd"), output_file = file.path(outdir,"report.html"))
 }
+
+
+
+#' runscPipe
+#'
+#' @param sample_name sample names, the name should not have any space.
+#' @param outdir the output folder
+#' @param r1 file path of read1
+#' @param r2 file path of read2
+#' @param read_structure a list contains read structure configuration. for more help see `?sc_trim_barcode`
+#' @param filter_settings a list contains read filter settings for more help see `?sc_trim_barcode`
+#' @param genome_index genome index used for \code{Rsubread::align}
+#' @param exon_anno a vector of gff exon annotation file paths,
+#' @param stnd whether to perform strand specific mapping
+#' @param fix_chr whether add `chr` to chromosome names, fix inconsistant names between different annotations.
+#' @param barcode_anno file path for cell barcode annotation.
+#' @param max_mis maximum mismatch allowed in barcode. default to be 1
+#' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.
+#' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
+#' @param species the organism of the data. List of possible names can be retrieved using the function 
+#' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
+#' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
+#' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
+#' @param nthreads number of threads used
+#'
+#' @return an SCData object
+#' @export
+#'
+#' @examples
+runscPipe = function(sample_name,
+                     outdir,
+                     r1,
+                     r2=NULL,
+                     read_structure,
+                     filter_settings,
+                     genome_index,
+                     exon_anno,
+                     fix_chr=FALSE,
+                     barcode_anno=NULL,
+                     max_mis=1,
+                     UMI_cor=1,
+                     gene_fl=FALSE,
+                     species,
+                     gene_id_type,
+                     nthreads){
+  out_fq = file.path(outdir, paste0(sample_name, ".fq"))
+  bam_align = file.path(outdir, paste0(sample_name, ".align.bam"))
+  bam_map = file.path(outdir, paste0(sample_name, ".mapped.bam"))
+  if (read_structure$bs1<0){
+    bc_len = read_structure$bl1+read_structure$bl2
+  }else{
+    bc_len = read_structure$bl2
+  }
+  sc_trim_barcode(outfq=out_fq,
+                  r1=r1,
+                  r2=r2,
+                  read_structure=read_structure,
+                  filter_settings=filter_settings)
+  align(index=genome_index,
+        readfile1=out_fq,
+        output_file=bam_align,
+        nthread=nthreads)
+  sc_exon_mapping(inbam=bam_align,
+                  outbam=bam_map,
+                  annofn=exon_anno,
+                  stnd=TRUE,
+                  bc_len=bc_len,
+                  UMI_len=read_structure$ul,
+                  fix_chr=FALSE)
+  if (is.null(barcode_anno)){ # for Drop-seq
+    bc_annotation = file.path(outdir,"cellindex_annotation.csv")
+    sc_detect_bc(infq=out_fq,
+                 outcsv=bc_annotation,
+                 bc_len=bc_len)
+  }else{ # for CEL-seq
+    bc_annotation = barcode_anno
+  }
+  
+  sc_demultiplex(inbam=bam_map,
+                 outdir=outdir,
+                 bc_anno=bc_annotation,
+                 max_mis=max_mis)
+  sc_gene_counting(outdir=outdir,
+                   bc_anno=bc_annotation,
+                   UMI_cor=UMI_cor,
+                   gene_fl=gene_fl)
+
+  scd = create_scd_by_dir(datadir=outdir, org=species, gene_id=gene_id_type)
+  
+  create_report(sample_name=sample_name,
+                outdir=outdir,
+                r1=r1,
+                r2=r2,
+                outfq=out_fq,
+                read_structure=read_structure,
+                filter_settings=filter_settings,
+                align_bam=bam_align,
+                genome_index=genome_index,
+                map_bam=bam_map,
+                exon_anno=exon_anno,
+                stnd=TRUE,
+                fix_chr=fix_chr,
+                barcode_anno=bc_annotation,
+                max_mis=max_mis,
+                UMI_cor=UMI_cor,
+                gene_fl=gene_fl,
+                species=species,
+                gene_id_type=gene_id_type)
+  return(scd)
+}
+  
+  
+  
+  

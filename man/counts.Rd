@@ -29,9 +29,6 @@ count values, one row for each feature (gene, exon, region, etc), and one
 column for each cell. It is an element of the assayData slot of the SCData
 object.
 }
-\examples{
-
-}
 \author{
 Luyi Tian
 }

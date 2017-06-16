@@ -40,9 +40,6 @@ a matrix containing counts-per-million values. It has the same dimensions
 as the 'exprs' and 'counts' elements, which hold the transformed expression
 data and count data, respectively.
 }
-\examples{
-
-}
 \author{
 Luyi Tian
 }

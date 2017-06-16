@@ -41,9 +41,6 @@ a matrix containing fragments per kilobase of exon per million reads mapped
 elements, which hold the transformed expression data and count data,
 respectively.
 }
-\examples{
-
-}
 \author{
 Luyi Tian
 }

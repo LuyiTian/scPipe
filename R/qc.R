@@ -192,15 +192,26 @@ calculate_QC_metrics = function(scd){
   mt_genes = get_genes_by_GO(returns=gene_id_type(scd),
                              dataset=organism(scd),
                              go=c("GO:0005739"))
-  mt_count = colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes,])
-  QC_met$non_mt_percent = (exon_count-mt_count)/exon_count
+  if(length(mt_genes)>0){
+    if (any(rownames(exprs_mat) %in% mt_genes)){
+      mt_count = colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes,])
+      QC_met$non_mt_percent = (exon_count-mt_count)/(exon_count+0.01) # add 0.01 to make sure they are not NA
+    }
+  }
+  
+
 
   # get ribosomal percentage
   ribo_genes = get_genes_by_GO(returns=gene_id_type(scd),
                              dataset=organism(scd),
                              go=c("GO:0005840"))
-  ribo_count = colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes,])
-  QC_met$non_ribo_percent = (exon_count-ribo_count)/exon_count
+  if (length(ribo_genes)>0){
+    if (any(rownames(exprs_mat) %in% ribo_genes)){
+      ribo_count = colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes,])
+      QC_met$non_ribo_percent = (exon_count-ribo_count)/(exon_count+0.01)
+    }
+  }
+
   QC_metrics(scd) = QC_met
   return(scd)
 }

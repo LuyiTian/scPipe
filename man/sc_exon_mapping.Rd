@@ -2,10 +2,7 @@
 % Please edit documentation in R/warpper_scPipeCPP.R
 \name{sc_exon_mapping}
 \alias{sc_exon_mapping}
-\title{sc_exon_mapping
-take the alinged read and map them to exons. the result will be written into optional fields
-in bam file with different tags. for more information regarding to bam file format:
-http://samtools.github.io/hts-specs/SAMv1.pdf}
+\title{sc_exon_mapping}
 \usage{
 sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "YC",
   mb = "YM", bc_len = 8, UMI_len = 6, stnd = TRUE, fix_chr = FALSE)
@@ -34,7 +31,6 @@ sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "YC",
 \item{fix_chr}{add `chr` to chromosome names, fix inconsistant names.}
 }
 \description{
-sc_exon_mapping
 take the alinged read and map them to exons. the result will be written into optional fields
 in bam file with different tags. for more information regarding to bam file format:
 http://samtools.github.io/hts-specs/SAMv1.pdf

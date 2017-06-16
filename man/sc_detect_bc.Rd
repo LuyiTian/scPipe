@@ -2,8 +2,7 @@
 % Please edit documentation in R/warpper_scPipeCPP.R
 \name{sc_detect_bc}
 \alias{sc_detect_bc}
-\title{sc_detect_bc
-detect cell barcode and generate the barcode annotation}
+\title{sc_detect_bc}
 \usage{
 sc_detect_bc(infq, outcsv, surfix = "CELL_", bc_len, max_reads = 1e+06,
   min_count = 10, max_mismatch = 1)
@@ -24,7 +23,6 @@ sc_detect_bc(infq, outcsv, surfix = "CELL_", bc_len, max_reads = 1e+06,
 \item{mim_count}{minimum counts to keep,  barcode will be discarded if it has lower count. default is 10. this should be set according to \code{max_reads}}
 }
 \description{
-sc_detect_bc
 detect cell barcode and generate the barcode annotation
 }
 \examples{
