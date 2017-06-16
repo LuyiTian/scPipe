@@ -8,6 +8,7 @@
 #' @importFrom MASS rlm stats
 #'
 #' @return cell names of outliers
+#'
 .qq_outliers_robust=function(x, df, conf) {
   n <- length(x)
   P <- ppoints(n)
@@ -41,7 +42,7 @@
 #'
 #' @return an updated SCData object with an outlier column in \code{QualityControlInfo}
 #'
-#' @import mclust robustbase bioBase
+#' @import mclust robustbase Biobase
 #'
 #' @export
 #' @examples
@@ -154,6 +155,8 @@ detect_outlier <- function(scd,
 #' ribosomal genes are retrived by GO term GO:0005840
 #' @return no return
 #'
+#' @import Biobase scater
+#'
 #' @export
 #' @examples
 #' #TODO
@@ -161,7 +164,7 @@ detect_outlier <- function(scd,
 calculate_QC_metrics <- function(scd) {
   if (is(scd, "SCData")) {
     exprs_mat <- switch(scd@useForExprs,
-                        exprs=exprs(scd),
+                        exprs=Biobase::exprs(scd),
                         tpm=tpm(scd),
                         cpm=cpm(scd),
                         fpkm=fpkm(scd),
@@ -170,9 +173,9 @@ calculate_QC_metrics <- function(scd) {
   else{
     stop("require a SCData object.")
   }
-  QC_met <- pData(QC_metrics(scd))
+  QC_met <- Biobase::pData(QC_metrics(scd))
   # get ERCC ratio
-  spikein <- fData(scd)$isSpike
+  spikein <- Biobase::fData(scd)$isSpike
   exon_count <- colSums(exprs_mat[!spikein,])
   gene_number <- colSums(exprs_mat>0)
   if (all(gene_number == 0)) {
