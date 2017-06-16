@@ -20,10 +20,10 @@
 #' @examples
 #' #TODO
 #'
-get_genes_by_GO = function(returns="ensembl_gene_id",
-                           dataset="mmusculus_gene_ensembl",
-                           go=NULL){
-  if(is.null(go)){
+get_genes_by_GO <- function(returns="ensembl_gene_id",
+                            dataset="mmusculus_gene_ensembl",
+                            go=NULL) {
+  if (is.null(go)) {
     stop("must provide GO term. (i.e go=c('GO:0005739'))")
   }
   mart <- useDataset(dataset, useMart("ensembl"))
@@ -55,57 +55,58 @@ get_genes_by_GO = function(returns="ensembl_gene_id",
 #' @examples
 #' #TODO
 #'
-convert_geneid = function(scd, returns="external_gene_name",
-                          all=TRUE){
-  if (!is(scd, "SCData")){
+convert_geneid <- function(scd,
+                           returns="external_gene_name",
+                           all=TRUE) {
+  if (!is(scd, "SCData")) {
     stop("scd must be an SCData object.")
   }
-  if (returns == gene_id_type(scd)){
+  if (returns == gene_id_type(scd)) {
     stop("SCData already in this id type. (scd@gene_id_type == returns)")
   }
 
-  species = organism(scd)
+  species <- organism(scd)
   mart <- useDataset(species, useMart("ensembl"))
   G_list <- getBM(filters= gene_id_type(scd), attributes= c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
 
-  G_list = G_list[match(rownames(scd), G_list[,gene_id_type(scd)]),]
-  na_num = sum(is.na(G_list[,returns]))
-  dup_ids = duplicated(G_list[,returns]) | duplicated(G_list[,returns], fromLast=TRUE)
-  dup_num = (sum(dup_ids)-na_num)/2
+  G_list <- G_list[match(rownames(scd), G_list[,gene_id_type(scd)]),]
+  na_num <- sum(is.na(G_list[,returns]))
+  dup_ids <- duplicated(G_list[,returns]) | duplicated(G_list[,returns], fromLast=TRUE)
+  dup_num <- (sum(dup_ids)-na_num)/2
   print(paste0("number of NA in new gene id: ",na_num,". duplicated id: ",dup_num))
-  if(dup_num>0){
+  if (dup_num>0) {
     print("first 5 duplicated:")
     print(head(G_list[dup_ids & !(is.na(G_list[,returns])),]))
   }
-  G_list[,returns][dup_ids] = NA
-  if (all | (na_num+dup_num==0)){
+  G_list[,returns][dup_ids] <- NA
+  if (all | (na_num+dup_num==0)) {
     # replace NA with old id
-    G_list[,returns][is.na(G_list[,returns])] = rownames(scd)[is.na(G_list[,returns])]
-    if (!(gene_id_type(scd) %in% colnames(fData(scd)))){
-      fData(scd)[,gene_id_type(scd)] = rownames(scd)
+    G_list[,returns][is.na(G_list[,returns])] <- rownames(scd)[is.na(G_list[,returns])]
+    if (!(gene_id_type(scd) %in% colnames(fData(scd)))) {
+      fData(scd)[,gene_id_type(scd)] <- rownames(scd)
     }
-    if (!(returns %in% colnames(fData(scd)))){
-      fData(scd)[,returns] = G_list[,returns]
+    if (!(returns %in% colnames(fData(scd)))) {
+      fData(scd)[,returns] <- G_list[,returns]
     }
-    if (!("description" %in% colnames(fData(scd)))){
-      fData(scd)[,"description"] = G_list[,"description"]
+    if (!("description" %in% colnames(fData(scd)))) {
+      fData(scd)[,"description"] <- G_list[,"description"]
     }
-    rownames(scd) = G_list[,returns]
+    rownames(scd) <- G_list[,returns]
   }
   else {
-    G_list = G_list[!is.na(G_list[,returns]), ]
-    scd = scd[!is.na(G_list[,returns]), ]
-    if (!(gene_id_type(scd) %in% colnames(fData(scd)))){
-      fData(scd)[,gene_id_type(scd)] = rownames(scd)
+    G_list <- G_list[!is.na(G_list[,returns]), ]
+    scd <- scd[!is.na(G_list[,returns]), ]
+    if (!(gene_id_type(scd) %in% colnames(fData(scd)))) {
+      fData(scd)[,gene_id_type(scd)] <- rownames(scd)
     }
-    if (!(returns %in% colnames(fData(scd)))){
-      fData(scd)[,returns] = G_list[,returns]
+    if (!(returns %in% colnames(fData(scd)))) {
+      fData(scd)[,returns] <- G_list[,returns]
     }
-    if (!("description" %in% colnames(fData(scd)))){
-      fData(scd)[,"description"] = G_list[,"description"]
+    if (!("description" %in% colnames(fData(scd)))) {
+      fData(scd)[,"description"] <- G_list[,"description"]
     }
-    rownames(scd) = G_list[,returns]
+    rownames(scd) <- G_list[,returns]
   }
-  gene_id_type(scd) = returns
+  gene_id_type(scd) <- returns
   return(scd)
 }
