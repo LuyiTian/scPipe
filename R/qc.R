@@ -69,7 +69,7 @@ detect_outlier <- function(scd,
     x <- Biobase::pData(QC_metrics(scd))[, colnames(QC_metrics(scd)) %in% sel_col]
   }
   else{
-    stop("scd must be an SCESet object.")
+    stop("scd must be an SCData object.")
   }
   if (!all(complete.cases(x))) {
     stop("we find NAs in the `QC_metrics(scd)`, check the quality control matrix")
@@ -236,7 +236,7 @@ plotQC_pair <- function(scd, sel_col=NULL) {
     x <- pData(QC_metrics(scd))[, colnames(QC_metrics(scd)) %in% sel_col]
   }
   else{
-    stop("scd must be an SCESet object.")
+    stop("scd must be an SCData object.")
   }
 
   if ("outliers" %in% colnames(x)) {
@@ -269,7 +269,7 @@ plotMapping <- function(scd,
     x <- pData(QC_metrics(scd))[, sel_col]
   }
   else{
-    stop("scd must be an SCESet object.")
+    stop("scd must be an SCData object.")
   }
 
 
@@ -308,7 +308,7 @@ plotMapping <- function(scd,
 #'
 remove_outliers <- function(scd) {
   if (!is(scd, "SCData")) {
-    stop("scd must be an SCESet object.")
+    stop("scd must be an SCData object.")
   }
   if (!("outliers" %in% colnames(pData(QC_metrics(scd))))) {
     stop("no outlier information. please run `detect_outlier()` first.")
