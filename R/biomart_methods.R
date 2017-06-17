@@ -65,7 +65,7 @@ convert_geneid <- function(scd,
     stop("SCData already in this id type. (scd@gene_id_type == returns)")
   }
 
-  species <- organism(scd)
+  species <- Biobase::organism(scd)
   mart <- useDataset(species, useMart("ensembl"))
   G_list <- getBM(filters=gene_id_type(scd), attributes=c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
 
@@ -82,28 +82,28 @@ convert_geneid <- function(scd,
   if (all | (na_num+dup_num==0)) {
     # replace NA with old id
     G_list[, returns][is.na(G_list[, returns])] <- rownames(scd)[is.na(G_list[, returns])]
-    if (!(gene_id_type(scd) %in% colnames(fData(scd)))) {
-      fData(scd)[, gene_id_type(scd)] <- rownames(scd)
+    if (!(gene_id_type(scd) %in% colnames(Biobase::fData(scd)))) {
+      Biobase::fData(scd)[, gene_id_type(scd)] <- rownames(scd)
     }
-    if (!(returns %in% colnames(fData(scd)))) {
-      fData(scd)[, returns] <- G_list[, returns]
+    if (!(returns %in% colnames(Biobase::fData(scd)))) {
+      Biobase::fData(scd)[, returns] <- G_list[, returns]
     }
-    if (!("description" %in% colnames(fData(scd)))) {
-      fData(scd)[, "description"] <- G_list[, "description"]
+    if (!("description" %in% colnames(Biobase::fData(scd)))) {
+      Biobase::fData(scd)[, "description"] <- G_list[, "description"]
     }
     rownames(scd) <- G_list[, returns]
   }
   else{
     G_list <- G_list[!is.na(G_list[, returns]), ]
     scd <- scd[!is.na(G_list[, returns]), ]
-    if (!(gene_id_type(scd) %in% colnames(fData(scd)))) {
-      fData(scd)[, gene_id_type(scd)] <- rownames(scd)
+    if (!(gene_id_type(scd) %in% colnames(Biobase::fData(scd)))) {
+      Biobase::fData(scd)[, gene_id_type(scd)] <- rownames(scd)
     }
-    if (!(returns %in% colnames(fData(scd)))) {
-      fData(scd)[, returns] <- G_list[, returns]
+    if (!(returns %in% colnames(Biobase::fData(scd)))) {
+      Biobase::fData(scd)[, returns] <- G_list[, returns]
     }
-    if (!("description" %in% colnames(fData(scd)))) {
-      fData(scd)[, "description"] <- G_list[, "description"]
+    if (!("description" %in% colnames(Biobase::fData(scd)))) {
+      Biobase::fData(scd)[, "description"] <- G_list[, "description"]
     }
     rownames(scd) <- G_list[, returns]
   }
