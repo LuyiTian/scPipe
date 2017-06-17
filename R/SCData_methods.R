@@ -184,12 +184,12 @@ newSCData <- function(exprsData = NULL,
     }
     else{
       print(paste("organism not provided. make a guess:", tmp_res$organism))
-      organism(scd) = tmp_res$organism
+      organism.SCData(scd) = tmp_res$organism
     }
   }
   else{
     # set organism
-    organism(scd) = organism
+    organism.SCData(scd) = organism
   }
   if(is.null(gene_id_type)){
     if (is.na(tmp_res$gene_id_type)){
@@ -371,8 +371,8 @@ mergeSCData <- function(...,
     stop("data do not have the same value for the 'logExprsOffset' slot.")
   }
 
-  the_organism = organism(scd_list[[1]])
-  if(!all(unlist(lapply(scd_list,function(x){organism(x) == the_organism})))){
+  the_organism = organism.SCData(scd_list[[1]])
+  if(!all(unlist(lapply(scd_list,function(x){organism.SCData(x) == the_organism})))){
     stop("data do not have the same value for the 'organism' slot.")
   }
 

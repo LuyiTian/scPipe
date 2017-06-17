@@ -6,10 +6,11 @@
 #' @param conf confidence for linear regression
 #'
 #' @importFrom MASS rlm
+#' @importFrom stats ppoints
 #'
 #' @return cell names of outliers
 #'
-.qq_outliers_robust=function(x, df, conf) {
+.qq_outliers_robust <- function(x, df, conf) {
   n <- length(x)
   P <- ppoints(n)
   z <- stats::qchisq(P, df=df)
@@ -192,7 +193,7 @@ calculate_QC_metrics <- function(scd) {
   }
   # get mt percentage
   mt_genes <- get_genes_by_GO(returns=gene_id_type(scd),
-                              dataset=organism(scd),
+                              dataset=organism.SCData(scd),
                               go=c("GO:0005739"))
   if (length(mt_genes)>0) {
     if (any(rownames(exprs_mat) %in% mt_genes)) {
@@ -205,7 +206,7 @@ calculate_QC_metrics <- function(scd) {
 
   # get ribosomal percentage
   ribo_genes <- get_genes_by_GO(returns=gene_id_type(scd),
-                             dataset=organism(scd),
+                             dataset=organism.SCData(scd),
                              go=c("GO:0005840"))
   if (length(ribo_genes)>0) {
     if (any(rownames(exprs_mat) %in% ribo_genes)) {

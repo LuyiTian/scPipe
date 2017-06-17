@@ -50,6 +50,7 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 #' @return scd with converted id
 #'
 #' @importFrom biomaRt useDataset getBM
+#' @importFrom utils head
 #'
 #' @export
 #' @examples
@@ -65,7 +66,7 @@ convert_geneid <- function(scd,
     stop("SCData already in this id type. (scd@gene_id_type == returns)")
   }
 
-  species <- organism(scd)
+  species <- organism.SCData(scd)
   mart <- useDataset(species, useMart("ensembl"))
   G_list <- getBM(filters=gene_id_type(scd), attributes=c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
 
