@@ -242,8 +242,7 @@ plotQC_pair <- function(scd, sel_col=NULL) {
   }
 
   if ("outliers" %in% colnames(x)) {
-    return(ggpairs(x,
-            mapping=ggplot2::aes(colour=outliers)))
+    return(ggpairs(x, mapping=ggplot2::aes_string(colour="outliers")))
   }
   else{
     return(ggpairs(x))
