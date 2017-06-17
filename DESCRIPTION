@@ -5,7 +5,7 @@ Authors@R: person("Luyi", "Tian", email = "tian.l@wehi.edu.au", role = c("aut", 
 biocViews: Software, Sequencing, RNASeq, GeneExpression, SingleCell, Visualization,
         SequenceMatching, Preprocessing, QualityControl, GenomeAnnotation
 Description: What the package does (one paragraph).
-Depends: R (>= 3.3.1), Biobase, ggplot2, methods
+Depends: R (>= 3.3.1), Biobase, ggplot2, methods, Rsubread
 LinkingTo: Rcpp
 Imports: biomaRt, GGally, MASS, destiny, mclust, reshape, robustbase, scales, BiocGenerics, edgeR, Rtsne, limma, Rcpp (>= 0.11.3)
 License: GPL (>= 2)
