@@ -5,7 +5,7 @@
 #' @param df degree of freedom for chi-square distribution
 #' @param conf confidence for linear regression
 #'
-#' @importFrom MASS rlm stats
+#' @importFrom MASS rlm
 #'
 #' @return cell names of outliers
 #'
@@ -14,7 +14,7 @@
   P <- ppoints(n)
   z <- stats::qchisq(P, df=df)
   ord.x <- x[order(x)]
-  coef <- coef(rlm(ord.x ~ z, maxit=200))
+  coef <- coef(MASS::rlm(ord.x ~ z, maxit=200))
   a <- coef[1]
   b <- coef[2]
   zz <- stats::qnorm(1 - (1 - conf)/2)
@@ -42,7 +42,7 @@
 #'
 #' @return an updated SCData object with an outlier column in \code{QualityControlInfo}
 #'
-#' @import mclust robustbase Biobase
+#' @import mclust robustbase
 #'
 #' @export
 #' @examples
@@ -155,7 +155,7 @@ detect_outlier <- function(scd,
 #' ribosomal genes are retrived by GO term GO:0005840
 #' @return no return
 #'
-#' @import Biobase scater
+#' @import Biobase
 #'
 #' @export
 #' @examples
@@ -192,8 +192,8 @@ calculate_QC_metrics <- function(scd) {
   }
   # get mt percentage
   mt_genes <- get_genes_by_GO(returns=gene_id_type(scd),
-                             dataset=organism(scd),
-                             go=c("GO:0005739"))
+                              dataset=organism(scd),
+                              go=c("GO:0005739"))
   if (length(mt_genes)>0) {
     if (any(rownames(exprs_mat) %in% mt_genes)) {
       mt_count <- colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes,])
