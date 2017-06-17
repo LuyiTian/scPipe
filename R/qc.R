@@ -256,7 +256,10 @@ plotQC_pair <- function(scd, sel_col=NULL) {
 #' by default it will be the mapping result.
 #' @param percentage logic. whether to convert the number of reads to percentage
 #' @param dataname the name of this dataset which appears in the plot title
+#'
 #' @import scales reshape ggplot2
+#' @importFrom stats prcomp reorder
+#'
 #' @export
 #'
 plotMapping <- function(scd,
@@ -276,14 +279,14 @@ plotMapping <- function(scd,
 
 
   mapping_stat <- x
-  mapping_stat$sample_name <- reorder(rownames(mapping_stat), mapping_stat$mapped_to_exon)
+  mapping_stat$sample_name <- stats::reorder(rownames(mapping_stat), mapping_stat$mapped_to_exon)
   mapping_stat_prop <- as.data.frame(prop.table(as.matrix(mapping_stat[, sapply(mapping_stat, is.numeric)]), 1))
   mapping_stat_prop$sample_name <- mapping_stat$sample_name
   dat.m <- melt(mapping_stat, id.vars="sample_name")
   dat.m1 <- melt(mapping_stat_prop, id.vars="sample_name")
 
   if (!percentage) {
-    p <- ggplot(dat.m, aes(x=sample_name, y=value, fill=variable)) + scale_fill_brewer(palette="Set1")+
+    p <- ggplot(dat.m, aes_string(x="sample_name", y="value", fill="variable")) + scale_fill_brewer(palette="Set1")+
       geom_bar(stat="identity", width=1)+
       ylab("number of reads")+
       xlab("cell sorted by number of reads mapped to exon")+
@@ -291,7 +294,7 @@ plotMapping <- function(scd,
       ggtitle(paste0("overall mapping statistics of ", dataname, " (number of reads)"))
   }
   else{
-    p <- ggplot(dat.m1, aes(x=sample_name, y=value, fill=variable)) + scale_fill_brewer(palette="Set1")+
+    p <- ggplot(dat.m1, aes(x="sample_name", y="value", fill="variable")) + scale_fill_brewer(palette="Set1")+
       geom_bar(stat="identity", width=1)+
       ylab("percentage of reads")+
       xlab("cell sorted by number of reads mapped_to_exon")+

@@ -174,25 +174,28 @@ create_report = function(sample_name,
 #' @param nthreads number of threads used
 #'
 #' @return an SCData object
+#'
+#' @importFrom Rsubread align
+#'
 #' @export
 #'
 #' @examples
-runscPipe = function(sample_name,
-                     outdir,
-                     r1,
-                     r2=NULL,
-                     read_structure,
-                     filter_settings,
-                     genome_index,
-                     exon_anno,
-                     fix_chr=FALSE,
-                     barcode_anno=NULL,
-                     max_mis=1,
-                     UMI_cor=1,
-                     gene_fl=FALSE,
-                     species,
-                     gene_id_type,
-                     nthreads){
+runscPipe <- function(sample_name,
+                      outdir,
+                      r1,
+                      r2=NULL,
+                      read_structure,
+                      filter_settings,
+                      genome_index,
+                      exon_anno,
+                      fix_chr=FALSE,
+                      barcode_anno=NULL,
+                      max_mis=1,
+                      UMI_cor=1,
+                      gene_fl=FALSE,
+                      species,
+                      gene_id_type,
+                      nthreads) {
   out_fq = file.path(outdir, paste0(sample_name, ".fq"))
   bam_align = file.path(outdir, paste0(sample_name, ".align.bam"))
   bam_map = file.path(outdir, paste0(sample_name, ".mapped.bam"))
@@ -206,10 +209,10 @@ runscPipe = function(sample_name,
                   r2=r2,
                   read_structure=read_structure,
                   filter_settings=filter_settings)
-  align(index=genome_index,
-        readfile1=out_fq,
-        output_file=bam_align,
-        nthread=nthreads)
+  Rsubread::align(index=genome_index,
+                  readfile1=out_fq,
+                  output_file=bam_align,
+                  nthread=nthreads)
   sc_exon_mapping(inbam=bam_align,
                   outbam=bam_map,
                   annofn=exon_anno,
