@@ -162,19 +162,19 @@ newSCData <- function(exprsData = NULL,
 
   # Generate new SCData object
   assaydata = assayDataNew("lockedEnvironment", exprs = exprs_mat)
-  scd = new( "SCData",
-                 assayData = assaydata,
-                 phenoData = phenoData,
-                 featureData = featureData,
-                 FACSData = FACSData,
-                 experimentData = expData,
-                 logExprsOffset = logExprsOffset,
-                 logged = logged,
-                 reducedExprDimension = reducedExprDimension,
-                 reducedFACSDimension = reducedFACSDimension,
-                 onesense = onesense,
-                 QualityControlInfo = QualityControlInfo,
-                 useForExprs = useForExprs)
+  scd = new("SCData",
+            assayData = assaydata,
+            phenoData = phenoData,
+            featureData = featureData,
+            FACSData = FACSData,
+            experimentData = expData,
+            logExprsOffset = logExprsOffset,
+            logged = logged,
+            reducedExprDimension = reducedExprDimension,
+            reducedFACSDimension = reducedFACSDimension,
+            onesense = onesense,
+            QualityControlInfo = QualityControlInfo,
+            useForExprs = useForExprs)
 
   # check organism names or gene_id_type is set correctly
   tmp_res = .guess_attr(exprs_mat)
@@ -184,12 +184,12 @@ newSCData <- function(exprsData = NULL,
     }
     else{
       print(paste("organism not provided. make a guess:", tmp_res$organism))
-      organism.SCData(scd) = tmp_res$organism
+      organism(scd) = tmp_res$organism
     }
   }
   else{
     # set organism
-    organism.SCData(scd) = organism
+    organism(scd) = organism
   }
   if(is.null(gene_id_type)){
     if (is.na(tmp_res$gene_id_type)){
@@ -521,12 +521,12 @@ organism.SCData <- function(object) {
 }
 
 
-#' @rdname organism
 #' @name organism
 #' @aliases organism
+#' @rdname organism
 #' @export
-setMethod("organism", signature(object = "SCData"),
-         organism.SCData)
+setMethod("organism", signature(object="SCData"),
+          organism.SCData)
 
 
 #' @name organism<-
