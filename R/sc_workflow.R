@@ -18,6 +18,7 @@
 #' 
 #' @return an SCData object
 #'
+#' @importFrom utils read.csv
 #'
 #' @export
 #' 

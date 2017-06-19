@@ -44,7 +44,7 @@
 #' @return an updated SCData object with an outlier column in \code{QualityControlInfo}
 #'
 #' @import mclust robustbase
-#' @importFrom stats cov pchisq mahalanobis
+#' @importFrom stats cov pchisq mahalanobis complete.cases
 #'
 #' @export
 #' @examples
