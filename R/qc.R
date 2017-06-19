@@ -6,7 +6,7 @@
 #' @param conf confidence for linear regression
 #'
 #' @importFrom MASS rlm
-#' @importFrom stats pchisq qnorm qchisq ppoints
+#' @importFrom stats pchisq qnorm qchisq dchisq ppoints
 #'
 #' @return cell names of outliers
 #' or both (`both`)
