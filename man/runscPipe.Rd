@@ -24,7 +24,7 @@ runscPipe(sample_name, outdir, r1, r2 = NULL, read_structure, filter_settings,
 
 \item{genome_index}{genome index used for \code{Rsubread::align}}
 
-\item{exon_anno}{a vector of gff exon annotation file paths,}
+\item{exon_anno}{a vector of gff exon annotation file paths.}
 
 \item{fix_chr}{whether add `chr` to chromosome names, fix inconsistant names between different annotations.}
 
@@ -43,8 +43,6 @@ runscPipe(sample_name, outdir, r1, r2 = NULL, read_structure, filter_settings,
 the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`}
 
 \item{nthreads}{number of threads used}
-
-\item{stnd}{whether to perform strand specific mapping}
 }
 \value{
 an SCData object

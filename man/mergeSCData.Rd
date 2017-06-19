@@ -10,6 +10,8 @@ mergeSCData(..., all = TRUE, batch = NULL)
 \item{...}{multiple SCDatas. they shold have the same value for class attribute.}
 
 \item{all}{only contains interset for features or union.}
+
+\item{(optional)}{batch information}
 }
 \description{
 merge multiple SCData object
