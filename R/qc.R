@@ -44,6 +44,7 @@
 #' @return an updated SCData object with an outlier column in \code{QualityControlInfo}
 #'
 #' @import mclust robustbase
+#' @importFrom stats cov pchisq mahalanobis
 #'
 #' @export
 #' @examples
@@ -256,6 +257,7 @@ plotQC_pair = function(scd, sel_col=NULL){
 #' @param percentage logic. whether to convert the number of reads to percentage
 #' @param dataname the name of this dataset which appears in the plot title
 #' @import scales reshape ggplot2
+#' @importFrom stats reorder
 #' @export
 #'
 plotMapping = function(scd,
@@ -282,7 +284,7 @@ plotMapping = function(scd,
   dat.m1 <- melt(mapping_stat_prop, id.vars = "sample_name")
 
   if (!percentage){
-    p = ggplot(dat.m, aes(x = sample_name, y = value, fill=variable)) + scale_fill_brewer(palette = "Set1")+
+    p = ggplot(dat.m, aes_string(x = "sample_name", y = "value", fill = "variable")) + scale_fill_brewer(palette = "Set1")+
       geom_bar(stat="identity", width=1)+
       ylab("number of reads")+
       xlab("cell sorted by number of reads mapped to exon")+
