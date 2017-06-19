@@ -6,7 +6,7 @@
 #' @param conf confidence for linear regression
 #'
 #' @importFrom MASS rlm
-#' @importFrom stats pchiq qnorm dchisq
+#' @importFrom stats pchisq qnorm dchisq
 #'
 #' @return cell names of outliers
 #' or both (`both`)
@@ -155,6 +155,8 @@ detect_outlier = function(scd,
 #' `non_ribo_percent`: 1- percent of ribosomal gene counts
 #' ribosomal genes are retrived by GO term GO:0005840
 #' @return no return
+#'
+#' @importFrom Biobase exprs pData fData
 #'
 #' @export
 #' @examples
