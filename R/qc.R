@@ -135,7 +135,7 @@ detect_outlier = function(scd,
       }
     }
   }
-  outliers = as.factor(rownames(x)  %in% outlier_cells)
+  outliers = as.factor(rownames(x) %in% outlier_cells)
   QC_met = pData(QC_metrics(scd))
   QC_met$outliers = outliers
   QC_metrics(scd) = QC_met
@@ -268,7 +268,7 @@ plotMapping = function(scd,
       sel_col = c("unaligned", "aligned_unmapped", "ambiguous_mapping",
                   "mapped_to_ERCC", "mapped_to_intron", "mapped_to_exon")
     }
-    x =  pData(QC_metrics(scd))[, sel_col]
+    x pData(QC_metrics(scd))[, sel_col]
   }
   else{
     stop("scd must be an SCESet object.")
