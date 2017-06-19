@@ -160,8 +160,7 @@ create_report = function(sample_name,
 #' @param read_structure a list contains read structure configuration. for more help see `?sc_trim_barcode`
 #' @param filter_settings a list contains read filter settings for more help see `?sc_trim_barcode`
 #' @param genome_index genome index used for \code{Rsubread::align}
-#' @param exon_anno a vector of gff exon annotation file paths,
-#' @param stnd whether to perform strand specific mapping
+#' @param exon_anno a vector of gff exon annotation file paths.
 #' @param fix_chr whether add `chr` to chromosome names, fix inconsistant names between different annotations.
 #' @param barcode_anno file path for cell barcode annotation.
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
