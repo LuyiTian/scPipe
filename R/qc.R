@@ -242,8 +242,7 @@ plotQC_pair = function(scd, sel_col=NULL){
   }
 
   if ("outliers" %in% colnames(x)){
-    return(ggpairs(x,
-            mapping=ggplot2::aes(colour = outliers)))
+    return(ggpairs(x, mapping = ggplot2::aes_string(colour = "outliers")))
   }
   else{
     return(ggpairs(x))
@@ -292,7 +291,7 @@ plotMapping = function(scd,
       ggtitle(paste0("overall mapping statistics of ", dataname, " (number of reads)"))
   }
   else{
-    p = ggplot(dat.m1, aes(x = sample_name, y = value, fill=variable)) + scale_fill_brewer(palette = "Set1")+
+    p = ggplot(dat.m1, aes_string(x = "sample_name", y = "value", fill = "variable")) + scale_fill_brewer(palette = "Set1")+
       geom_bar(stat="identity", width=1)+
       ylab("percentage of reads")+
       xlab("cell sorted by number of reads mapped_to_exon")+
