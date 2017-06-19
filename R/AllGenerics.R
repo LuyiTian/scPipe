@@ -16,7 +16,6 @@ setGeneric("DimRd_expr<-", function(object, value) {
   standardGeneric("DimRd_expr<-")
 })
 
-
 #' @name QC_metrics
 #' @export
 #' @docType methods
@@ -31,6 +30,14 @@ setGeneric("QC_metrics", function(object) {
 #' @rdname QC_metrics
 setGeneric("QC_metrics<-", function(object, value) {
   standardGeneric("QC_metrics<-")
+})
+
+#' @name organism
+#' @export
+#' @docType methods
+#' @rdname organism
+setGeneric("organism", function(object) {
+  standardGeneric("organism")
 })
 
 #' @name organism<-
