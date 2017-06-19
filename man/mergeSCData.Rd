@@ -11,7 +11,7 @@ mergeSCData(..., all = TRUE, batch = NULL)
 
 \item{all}{only contains interset for features or union.}
 
-\item{(optional)}{batch information}
+\item{batch}{(optional) batch information}
 }
 \description{
 merge multiple SCData object

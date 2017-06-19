@@ -334,7 +334,7 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 #' @name mergeSCData
 #' @param ... multiple SCDatas. they shold have the same value for class attribute.
 #' @param all only contains interset for features or union.
-#' @param (optional) batch information
+#' @param batch (optional) batch information
 #'
 #' @importFrom Biobase varLabels 
 #'

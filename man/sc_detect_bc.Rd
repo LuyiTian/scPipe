@@ -18,9 +18,9 @@ sc_detect_bc(infq, outcsv, surfix = "CELL_", bc_len, max_reads = 1e+06,
 
 \item{max_reads}{the maximum of reads processed, default is 1000,000, set to "all" to process all reads (may spend more time)}
 
-\item{max_mismatch}{the maximum mismatch allowed, barcodes within this number will be considered as sequence error and merged, default is 1.}
+\item{min_count}{minimum counts to keep, barcode will be discarded if it has lower count. default is 10. this should be set according to \code{max_reads}}
 
-\item{mim_count}{minimum counts to keep,  barcode will be discarded if it has lower count. default is 10. this should be set according to \code{max_reads}}
+\item{max_mismatch}{the maximum mismatch allowed, barcodes within this number will be considered as sequence error and merged, default is 1.}
 }
 \description{
 detect cell barcode and generate the barcode annotation
