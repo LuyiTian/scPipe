@@ -7,7 +7,7 @@ biocViews: Software, Sequencing, RNASeq, GeneExpression, SingleCell, Visualizati
 Description: What the package does (one paragraph).
 Depends: R (>= 3.3.1), Biobase, ggplot2, methods
 LinkingTo: Rcpp
-Imports: biomaRt, GGally, MASS, destiny, mclust, reshape, robustbase, scales, BiocGenerics, edgeR, Rtsne, limma, Rcpp (>= 0.11.3)
+Imports: BiocGenerics, biomaRt, destiny, edgeR, GGally, limma, MASS, mclust, Rcpp (>= 0.11.3), reshape, robustbase, Rsubread, Rtsne, scales
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true

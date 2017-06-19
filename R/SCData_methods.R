@@ -334,11 +334,15 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 #' @name mergeSCData
 #' @param ... multiple SCDatas. they shold have the same value for class attribute.
 #' @param all only contains interset for features or union.
+#' @param batch (optional) batch information
+#'
+#' @importFrom Biobase varLabels 
+#'
 #' @export
 #'
 mergeSCData <- function(...,
                         all = TRUE,
-                        batch=NULL) {
+                        batch = NULL) {
   scd_list <- list(...)
   if (!is.null(batch)){
     if (!(length(batch) == length(scd_list))){
