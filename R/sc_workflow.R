@@ -173,6 +173,9 @@ create_report = function(sample_name,
 #' @param nthreads number of threads used
 #'
 #' @return an SCData object
+#'
+#' @importFrom Rsubread align
+#'
 #' @export
 #'
 #' @examples
