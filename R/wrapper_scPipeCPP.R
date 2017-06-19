@@ -6,8 +6,8 @@
 #'
 #' @name sc_trim_barcode
 #' @param outfq the output fastq file, which reformat the barcode and UMI into the read name
-#' @param  r1 read one for pair-end reads. This read should contains the transcript
-#' @param  r2 read two for pair-end reads. default to be `NULL` for single reads
+#' @param r1 read one for pair-end reads. This read should contains the transcript
+#' @param r2 read two for pair-end reads. default to be `NULL` for single reads
 #' @param read_structure a list contains read structure configuration:\itemize{
 #'  \item{bs1} is the starting position of barcode in read one, if there is no reads in read one set it to -1.
 #'  \item{bl1} is the length of barcode in read one, if there is no barcode in read one this number is used for trimming the beginning of read one.
@@ -235,7 +235,7 @@ sc_celseq2_simulator = function(r1fn, r2fn, annofn, bc_anno, fafn,
 #' @param surfix the surfix of cell name, default to be `CELL_`, the cell name will be CELL_001, CELL_002 accordingly
 #' @param bc_len the length of cell barcode, should be consistent with bl1+bl2 in \code{sc_trim_barcode}
 #' @param max_reads the maximum of reads processed, default is 1000,000, set to "all" to process all reads (may spend more time)
-#' @param mim_count minimum counts to keep,  barcode will be discarded if it has lower count. default is 10. this should be set according to \code{max_reads}
+#' @param min_count minimum counts to keep, barcode will be discarded if it has lower count. default is 10. this should be set according to \code{max_reads}
 #' @param max_mismatch the maximum mismatch allowed, barcodes within this number will be considered as sequence error and merged, default is 1.
 #' @export
 #'

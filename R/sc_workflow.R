@@ -18,6 +18,7 @@
 #' 
 #' @return an SCData object
 #'
+#' @importFrom utils read.csv
 #'
 #' @export
 #' 
@@ -159,8 +160,7 @@ create_report = function(sample_name,
 #' @param read_structure a list contains read structure configuration. for more help see `?sc_trim_barcode`
 #' @param filter_settings a list contains read filter settings for more help see `?sc_trim_barcode`
 #' @param genome_index genome index used for \code{Rsubread::align}
-#' @param exon_anno a vector of gff exon annotation file paths,
-#' @param stnd whether to perform strand specific mapping
+#' @param exon_anno a vector of gff exon annotation file paths.
 #' @param fix_chr whether add `chr` to chromosome names, fix inconsistant names between different annotations.
 #' @param barcode_anno file path for cell barcode annotation.
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
@@ -173,6 +173,9 @@ create_report = function(sample_name,
 #' @param nthreads number of threads used
 #'
 #' @return an SCData object
+#'
+#' @importFrom Rsubread align
+#'
 #' @export
 #'
 #' @examples
@@ -208,7 +211,7 @@ runscPipe = function(sample_name,
   align(index=genome_index,
         readfile1=out_fq,
         output_file=bam_align,
-        nthread=nthreads)
+        nthreads=nthreads)
   sc_exon_mapping(inbam=bam_align,
                   outbam=bam_map,
                   annofn=exon_anno,
@@ -234,7 +237,7 @@ runscPipe = function(sample_name,
                    UMI_cor=UMI_cor,
                    gene_fl=gene_fl)
 
-  scd = create_scd_by_dir(datadir=outdir, org=species, gene_id=gene_id_type)
+  scd = create_scd_by_dir(datadir=outdir, species=species, gene_id=gene_id_type)
   
   create_report(sample_name=sample_name,
                 outdir=outdir,

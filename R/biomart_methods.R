@@ -50,6 +50,8 @@ get_genes_by_GO = function(returns="ensembl_gene_id",
 #' @return scd with converted id
 #'
 #' @importFrom biomaRt useDataset getBM
+#' @importFrom utils head
+#' @importFrom Biobase ExpressionSet fData<-
 #'
 #' @export
 #' @examples
