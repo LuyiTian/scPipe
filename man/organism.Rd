@@ -23,6 +23,8 @@ organism.SCData(object)
 }
 \arguments{
 \item{object}{An \code{\link{SCData}} object.}
+
+\item{value}{Value to be assigned to corresponding object.}
 }
 \value{
 organism string

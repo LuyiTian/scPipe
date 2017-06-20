@@ -1,5 +1,3 @@
-
-
 #' @name DimRd_expr
 #' @export
 #' @docType methods

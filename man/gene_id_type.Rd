@@ -23,6 +23,8 @@ gene_id_type.SCData(object)
 }
 \arguments{
 \item{object}{An \code{\link{SCData}} object.}
+
+\item{value}{Value to be assigned to corresponding object.}
 }
 \value{
 gene id type string
