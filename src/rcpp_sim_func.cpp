@@ -37,7 +37,8 @@ void rcpp_generate_celseq2_data(Rcpp::CharacterVector r1fn,
     celseq2_sim.gen_gene_expression(c_ran_dist, c_param);
     celseq2_sim.makefq(c_r1fn, c_r2fn, c_fafn, c_UMI_len, c_r_len, c_frag_mean, c_dup_mean);
   }
-  else{
+  else
+  {
     Celseq2Simulator celseq2_sim(c_annofn, c_bc_anno, c_seed);
     celseq2_sim.gen_gene_expression(c_ran_dist, c_param);
     celseq2_sim.makefq(c_r1fn, c_r2fn, c_fafn, c_UMI_len, c_r_len, c_frag_mean, c_dup_mean);

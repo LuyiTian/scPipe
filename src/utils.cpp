@@ -26,7 +26,9 @@ void check_file_exists(std::string fn)
     std::ifstream f(fn.c_str());
     if (f.good()) {
         f.close();
-    } else {
+    }
+    else
+    {
         f.close();
         throw std::invalid_argument("cannot open file: "+ fn + "\n");
     }   
