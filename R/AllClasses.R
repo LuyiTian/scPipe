@@ -59,12 +59,12 @@ setClass("SCData",
                    FACSData = "AnnotatedDataFrame",
                    reducedExprDimension = "matrix",
                    reducedFACSDimension = "matrix",
-                   organism="character",
+                   organism = "character",
                    onesense = "matrix",
                    QualityControlInfo = "AnnotatedDataFrame",
                    useForExprs = "character"),
          prototype = prototype(new("VersionedBiobase",
                                    versions = c(classVersion("ExpressionSet"),
-                                                 SCData = "0.99"))))
-
-
+                                   SCData = "0.99"))
+        )
+)
