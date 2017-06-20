@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Rproj
+.vscode
 scPipe.Rproj
 inst/doc
 src/*.o

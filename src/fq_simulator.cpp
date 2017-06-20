@@ -1,7 +1,7 @@
 // fq simulator
 #include "fq_simulator.h"
 
-
+using namespace Rcpp;
 
 FaReader::FaReader(std::string fafn)
 {
@@ -10,7 +10,8 @@ FaReader::FaReader(std::string fafn)
 
 bool FaReader::readone()
 {
-    if (!line.empty()){
+    if (!line.empty())
+    {
         fa.name = line.substr(1);
     }
     if (!fa.seq.empty())
@@ -19,12 +20,12 @@ bool FaReader::readone()
     }
     while (std::getline(fafile, line))
     {
-        if(line.empty())
+        if (line.empty())
             continue;
 
         if (line[0] == '>') 
         {
-            if(!fa.name.empty())
+            if (!fa.name.empty())
             {
                 return true;
             }
@@ -49,20 +50,17 @@ bool FaReader::readone()
 
 }
 
-
 FqWriter::FqWriter(std::string fqfn)
 {
     fqfile.open(fqfn);
 }
-
 
 void FqWriter::writeone()
 {
     fqfile << "@" << fq.name << std::endl << fq.seq << std::endl << "+" << std::endl << fq.qual << std::endl;
 }
 
-
-void CountSimulator::init_mat(std::vector<std::string> gene_v, std::vector<std::string> cell_v){
+void CountSimulator::init_mat(std::vector<std::string> gene_v, std::vector<std::string> cell_v) {
     cnt_mat.resize(gene_v.size(), cell_v.size());  // assume the matrix is not too big
     cnt_mat.fill(0);
 
@@ -81,8 +79,7 @@ void CountSimulator::init_mat(std::vector<std::string> gene_v, std::vector<std::
 
 CountSimulator::CountSimulator(): CountSimulator::CountSimulator(std::chrono::high_resolution_clock::now().time_since_epoch().count()) {}
 
-CountSimulator::CountSimulator(unsigned seed): sim_seed(seed){}
-
+CountSimulator::CountSimulator(unsigned seed): sim_seed(seed) {}
 
 void CountSimulator::gamma_count_matrix(double alpha, double beta)
 {
@@ -98,16 +95,14 @@ void CountSimulator::gamma_count_matrix(double alpha, double beta)
     }
 }
 
-
 int CountSimulator::get_cnt(std::string gene_id, std::string cell_id)
 {
     return cnt_mat(gene_ix[gene_id], cell_ix[cell_id]);
 }
 
-
 FastqSimulator::FastqSimulator(std::string annofn, unsigned seed): eng(seed)
 {
-    if(annofn.substr(annofn.find_last_of(".") + 1) == "gff3") 
+    if (annofn.substr(annofn.find_last_of(".") + 1) == "gff3") 
     {
         Anno.parse_gff3_annotation(annofn, false);
     } 
@@ -117,7 +112,6 @@ FastqSimulator::FastqSimulator(std::string annofn, unsigned seed): eng(seed)
     }
     Cnt_sim.sim_seed = seed;
 }
-
 
 FastqSimulator::FastqSimulator(std::string annofn): FastqSimulator(annofn, std::chrono::high_resolution_clock::now().time_since_epoch().count()) {}
 
@@ -133,15 +127,15 @@ std::string FastqSimulator::get_transcript_seq(Gene ge, Fa_rec fa)
             tmp_cache.en = i->en;
             if (i->en > fa.seq.size())
             {
-                std::cerr << "ERROR: the right coordinate of exon ("<< i->en <<") is larger than sequence length ("<< fa.seq.size() <<"). check your annotation.";
-                exit(1);
+                std::stringstream err_msg;
+                err_msg << "ERROR: the right coordinate of exon ("<< i->en <<") is larger than sequence length ("<< fa.seq.size() <<"). check your annotation.";
+                Rcpp::stop(err_msg.str());
             }
             transcript += fa.seq.substr((i->st)-1, (i->en)-(i->st)+1);  // TODO the gff/bed file use one based inclusive coordinate.
         }
     }
     return transcript;
 }
-
 
 std::string FastqSimulator::gen_random_seq(int len)
 {
@@ -165,7 +159,6 @@ void FastqSimulator::gen_gene_expression(std::string method, std::vector<double>
     }
 }
 
-
 Celseq2Simulator::Celseq2Simulator(std::string annofn, std::string barfn): Celseq2Simulator(annofn, barfn, std::chrono::high_resolution_clock::now().time_since_epoch().count()) {}
 
 Celseq2Simulator::Celseq2Simulator(std::string annofn, std::string barfn, unsigned seed): FastqSimulator(annofn, seed)
@@ -174,7 +167,6 @@ Celseq2Simulator::Celseq2Simulator(std::string annofn, std::string barfn, unsign
     cell_cnt = Bar.cellid_list.size();
     Cnt_sim.init_mat(Anno.get_genelist(), Bar.cellid_list);
 }
-
 
 void Celseq2Simulator::makefq(std::string R1fn, std::string R2fn, std::string reffa, int UMI_len, int r_len, int frag_mean, int dup_mean)
 {
@@ -197,23 +189,24 @@ void Celseq2Simulator::makefq(std::string R1fn, std::string R2fn, std::string re
     FaReader fareader = FaReader(reffa);
     while (fareader.readone())
     {
-        if(__DEBUG)
+        if (__DEBUG)
         {
             std::cout << "read fasta sequence " << fareader.fa.name << " with lenth " << fareader.fa.seq.length() << std::endl;
         }
         if (Anno.gene_dict.end() == Anno.gene_dict.find(fareader.fa.name))
         {
-            std::cerr << "cannot find chromosome (" << fareader.fa.name << ") in exon annotation." << std::endl;
-            exit(1);
+            std::stringstream err_msg;
+            err_msg << "cannot find chromosome (" << fareader.fa.name << ") in exon annotation." << "\n";
+            Rcpp::stop(err_msg.str());
         }
         for (int gene_ix=0; gene_ix<Anno.gene_dict[fareader.fa.name].size(); ++gene_ix)  // for each genes in that chromosome
         {
-            if(__DEBUG){std::cout<< "simulate gene " << gene_ix << std::endl;}
+            if (__DEBUG) {std::cout<< "simulate gene " << gene_ix << std::endl;}
             transcript_seq = get_transcript_seq(Anno.gene_dict[fareader.fa.name][gene_ix], fareader.fa);  // gene transcript
 
             for (int cell_ix=0; cell_ix<cell_cnt; ++cell_ix)  // for each cells
             {
-                if(__DEBUG){std::cout<< "\tsimulate cell " << cell_ix << std::endl;}
+                if (__DEBUG) {std::cout<< "\tsimulate cell " << cell_ix << std::endl;}
                 molecular_count = Cnt_sim.get_cnt(Anno.gene_dict[fareader.fa.name][gene_ix].gene_id, Bar.cellid_list[cell_ix]);
 
                 for (int m = 0; m < molecular_count; ++m)  // for each mRNA molecule
@@ -245,21 +238,17 @@ void Celseq2Simulator::makefq(std::string R1fn, std::string R2fn, std::string re
                         global_count++;
                     }
                 }
-                if(__DEBUG){std::cout<< "\t\tsimulate molecule. count: " << molecular_count << std::endl;}
+                if (__DEBUG) {std::cout<< "\t\tsimulate molecule. count: " << molecular_count << std::endl;}
             }
         }
     }
-    std::cerr << "simulate finished" << std::endl;
-    std::cerr << "\tcell number: " << cell_cnt << std::endl;
-    std::cerr << "\tgene number: " << Anno.get_genelist().size() << std::endl;
-    std::cerr << "\ttotal number of reads: " << global_count << std::endl;
+    Rcpp::Rcerr << "simulate finished" << std::endl;
+    Rcpp::Rcerr << "\tcell number: " << cell_cnt << std::endl;
+    Rcpp::Rcerr << "\tgene number: " << Anno.get_genelist().size() << std::endl;
+    Rcpp::Rcerr << "\ttotal number of reads: " << global_count << std::endl;
 }
 
 void Celseq2Simulator::makefq(std::string R1fn, std::string R2fn, std::string reffa)
 {
     makefq(R1fn, R2fn, reffa, 6, 75, 300, 10);
 }
-
-
-
-

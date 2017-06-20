@@ -1,7 +1,7 @@
 ### all classes defined for the scPipe package
 
 
-#' The "Single Cell Data" (SCData)  class
+#' The "Single Cell Data" (SCData) class
 #'
 #' S4 class and the main class used by scPipe to hold single cell expression
 #' data, other phenotype data and qualiy control information.
@@ -42,7 +42,7 @@
 #' @rdname SCData
 #' @inheritParams Biobase ExpressionSet
 #' @aliases SCData-class
-#' @references  the SCData class is adapted from SCESet from scater
+#' @references the SCData class is adapted from SCESet from scater
 #' (github.com/davismcc/scater/). Thank Davis for creating such a wonderful package
 #' @exportClass SCData
 #' @examples
@@ -59,12 +59,12 @@ setClass("SCData",
                    FACSData = "AnnotatedDataFrame",
                    reducedExprDimension = "matrix",
                    reducedFACSDimension = "matrix",
-                   organism="character",
+                   organism = "character",
                    onesense = "matrix",
                    QualityControlInfo = "AnnotatedDataFrame",
                    useForExprs = "character"),
          prototype = prototype(new("VersionedBiobase",
                                    versions = c(classVersion("ExpressionSet"),
-                                                 SCData = "0.99"))))
-
-
+                                   SCData = "0.99"))
+        )
+)

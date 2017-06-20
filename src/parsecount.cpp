@@ -2,6 +2,7 @@
 #include "parsecount.h"
 
 using std::string;
+using namespace Rcpp;
 
 std::unordered_map<string, std::vector<string>> read_count(string fn, char sep)
 {
@@ -40,7 +41,7 @@ int UMI_correct1(std::unordered_map<string, int>& UMI_count)
                     found = true;
                     // merge two UMIs
                     UMI_count[UMI2.first] += UMI_count[UMI1->first];
-                    if (__DEBUG){std::cout << "merge: " <<  UMI1->first << "::" << UMI2.first << "\t" << UMI1->second << "::" << UMI2.second << std::endl;}
+                    if (__DEBUG) {std::cout << "merge: " <<  UMI1->first << "::" << UMI2.first << "\t" << UMI1->second << "::" << UMI2.second << std::endl;}
                     break;
                 }
             }
@@ -78,8 +79,8 @@ std::unordered_map<string, int> UMI_dedup(std::unordered_map<string, std::vector
         }
         else
         {
-            std::cout << "not implemented" << std::endl;
-            exit(1);
+            // std::cout << "not implemented" << std::endl;
+            Rcpp::stop("Not implemented");
         }
 
         for (auto const& UMI: UMI_count)

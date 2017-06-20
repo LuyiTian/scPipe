@@ -157,8 +157,7 @@ create_report = function(sample_name,
 #' @param read_structure a list contains read structure configuration. for more help see `?sc_trim_barcode`
 #' @param filter_settings a list contains read filter settings for more help see `?sc_trim_barcode`
 #' @param genome_index genome index used for \code{Rsubread::align}
-#' @param exon_anno a vector of gff exon annotation file paths,
-#' @param stnd whether to perform strand specific mapping
+#' @param exon_anno a vector of gff exon annotation file paths.
 #' @param fix_chr whether add `chr` to chromosome names, fix inconsistant names between different annotations.
 #' @param barcode_anno file path for cell barcode annotation.
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
@@ -206,10 +205,17 @@ runscPipe <- function(sample_name,
                   r2=r2,
                   read_structure=read_structure,
                   filter_settings=filter_settings)
+<<<<<<< HEAD
   Rsubread::align(index=genome_index,
                   readfile1=out_fq,
                   output_file=bam_align,
                   nthread=nthreads)
+=======
+  align(index=genome_index,
+        readfile1=out_fq,
+        output_file=bam_align,
+        nthreads=nthreads)
+>>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
   sc_exon_mapping(inbam=bam_align,
                   outbam=bam_map,
                   annofn=exon_anno,

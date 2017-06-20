@@ -11,6 +11,8 @@
 #' a matrix contains t-SNE output
 #'
 #' @import destiny Rtsne
+#' @importFrom stats prcomp
+#' 
 #' @export
 #' @examples
 #' #TODO

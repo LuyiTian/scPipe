@@ -4,7 +4,7 @@
 \name{SCData}
 \alias{SCData}
 \alias{SCData-class}
-\title{The "Single Cell Data" (SCData)  class}
+\title{The "Single Cell Data" (SCData) class}
 \description{
 S4 class and the main class used by scPipe to hold single cell expression
 data, other phenotype data and qualiy control information.

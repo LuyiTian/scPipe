@@ -4,6 +4,7 @@
 #include <cstring>
 #include <string>
 #include <unordered_map>
+#include <Rcpp.h>
 #include "config_hts.h"
 #include "utils.h"
 #include "cellbarcode.h"
