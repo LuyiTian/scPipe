@@ -251,10 +251,10 @@ void Celseq2Simulator::makefq(std::string R1fn, std::string R2fn, std::string re
             }
         }
     }
-    std::cerr << "simulate finished" << std::endl;
-    std::cerr << "\tcell number: " << cell_cnt << std::endl;
-    std::cerr << "\tgene number: " << Anno.get_genelist().size() << std::endl;
-    std::cerr << "\ttotal number of reads: " << global_count << std::endl;
+    Rcpp::Rcerr << "simulate finished" << std::endl;
+    Rcpp::Rcerr << "\tcell number: " << cell_cnt << std::endl;
+    Rcpp::Rcerr << "\tgene number: " << Anno.get_genelist().size() << std::endl;
+    Rcpp::Rcerr << "\ttotal number of reads: " << global_count << std::endl;
 }
 
 void Celseq2Simulator::makefq(std::string R1fn, std::string R2fn, std::string reffa)
