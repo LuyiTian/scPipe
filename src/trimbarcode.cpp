@@ -1,7 +1,7 @@
 //trim_barcode
 #include "trimbarcode.h"
 
-
+using namespace Rcpp;
 
 bool check_qual(char *qual_s, int trim_n, int thr, int below_thr)
 {
@@ -69,9 +69,17 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
 {
     // open files
     gzFile fq1 = gzopen(fq1_fn, "r"); // input fastq
-    if (!fq1){fprintf(stderr, "cant open file: %s\n", fq1_fn); exit(EXIT_FAILURE);}
+    if (!fq1) {
+        std::stringstream err_msg;
+        err_msg << "Can't open file: %s\n" << fq1_fn;
+        Rcpp::stop(err_msg.str());
+    }
     gzFile fq2 = gzopen(fq2_fn, "r");
-    if (!fq2){fprintf(stderr, "cant open file: %s\n", fq2_fn); exit(EXIT_FAILURE);}
+    if (!fq2) {
+        std::stringstream err_msg;
+        err_msg << "Can't open file: %s\n" << fq2_fn;
+        Rcpp::stop(err_msg.str());
+    }
 
     samFile *fp = sam_open(bam_out,"wb"); // output file
 
@@ -229,9 +237,10 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
         int ret = sam_write1(fp, hdr, b);
         if (ret < 0)
         {
-            std::cout << "fail to write the bam file: " << seq1->name.s << std::endl;
-            std::cout << "return code: " << ret << std::endl;
-            exit(EXIT_FAILURE);
+            std::stringstream err_msg;
+            err_msg << "fail to write the bam file: " << seq1->name.s << "\n";
+            err_msg << "return code: " << ret << std::endl;
+            Rcpp::stop(err_msg.str());
         }
         bam_destroy1(b);
     }
@@ -265,9 +274,17 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
     int l1 = 0;
     int l2 = 0;
     gzFile fq1 = gzopen(fq1_fn, "r"); // input fastq
-    if (!fq1){fprintf(stderr, "cant open file: %s\n", fq1_fn); exit(EXIT_FAILURE);}
+    if (!fq1) {
+        std::stringstream err_msg;
+        err_msg << "Can't open file: %s\n" << fq1_fn;
+        Rcpp::stop(err_msg.str());
+    }
     gzFile fq2 = gzopen(fq2_fn, "r");
-    if (!fq2){fprintf(stderr, "cant open file: %s\n", fq2_fn); exit(EXIT_FAILURE);}
+    if (!fq2) {
+        std::stringstream err_msg;
+        err_msg << "Can't open file: %s\n" << fq2_fn;
+        Rcpp::stop(err_msg.str());
+    }
 
     std::ofstream o_stream(fq_out); // output file
 

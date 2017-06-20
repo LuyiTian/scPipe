@@ -1,7 +1,7 @@
 // fq simulator
 #include "fq_simulator.h"
 
-
+using namespace Rcpp;
 
 FaReader::FaReader(std::string fafn)
 {
@@ -133,8 +133,9 @@ std::string FastqSimulator::get_transcript_seq(Gene ge, Fa_rec fa)
             tmp_cache.en = i->en;
             if (i->en > fa.seq.size())
             {
-                std::cerr << "ERROR: the right coordinate of exon ("<< i->en <<") is larger than sequence length ("<< fa.seq.size() <<"). check your annotation.";
-                exit(1);
+                std::stringstream err_msg;
+                err_msg << "ERROR: the right coordinate of exon ("<< i->en <<") is larger than sequence length ("<< fa.seq.size() <<"). check your annotation.";
+                Rcpp::stop(err_msg.str());
             }
             transcript += fa.seq.substr((i->st)-1, (i->en)-(i->st)+1);  // TODO the gff/bed file use one based inclusive coordinate.
         }
@@ -203,8 +204,9 @@ void Celseq2Simulator::makefq(std::string R1fn, std::string R2fn, std::string re
         }
         if (Anno.gene_dict.end() == Anno.gene_dict.find(fareader.fa.name))
         {
-            std::cerr << "cannot find chromosome (" << fareader.fa.name << ") in exon annotation." << std::endl;
-            exit(1);
+            std::stringstream err_msg;
+            err_msg << "cannot find chromosome (" << fareader.fa.name << ") in exon annotation." << "\n";
+            Rcpp::stop(err_msg.str());
         }
         for (int gene_ix=0; gene_ix<Anno.gene_dict[fareader.fa.name].size(); ++gene_ix)  // for each genes in that chromosome
         {

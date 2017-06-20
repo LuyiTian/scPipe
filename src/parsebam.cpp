@@ -5,6 +5,7 @@
 using std::string;
 using std::unordered_map;
 using std::ofstream;
+using namespace Rcpp;
 
 Bamdemultiplex::Bamdemultiplex(string odir, Barcode b, string cellular_tag, string molecular_tag, string gene_tag, string map_tag, string MT_tag)
 {

@@ -2,6 +2,7 @@
 #include "parsecount.h"
 
 using std::string;
+using namespace Rcpp;
 
 std::unordered_map<string, std::vector<string>> read_count(string fn, char sep)
 {
@@ -78,8 +79,8 @@ std::unordered_map<string, int> UMI_dedup(std::unordered_map<string, std::vector
         }
         else
         {
-            std::cout << "not implemented" << std::endl;
-            exit(1);
+            // std::cout << "not implemented" << std::endl;
+            Rcpp::stop("Not implemented");
         }
 
         for (auto const& UMI: UMI_count)

@@ -2,6 +2,7 @@
 #include "transcriptmapping.h"
 
 using std::string;
+using namespace Rcpp;
 
 Gene::Gene(string id, int st, int en, int snd): Interval(st, en, snd), gene_id(id) {}
 Gene::Gene(string id, int snd): Interval(-1, -1, snd), gene_id(id) {}
@@ -211,9 +212,10 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             }
             else
             {
-                std::cout << "cannot find grandparent for exon:" << std::endl;
-                std::cout << line << std::endl;
-                exit(EXIT_FAILURE);
+                std::stringstream err_msg;
+                err_msg << "cannot find grandparent for exon:" << "\n";
+                err_msg << line << "\n";
+                Rcpp::stop(err_msg.str());
             }
 
         }
@@ -478,8 +480,9 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     }
     if (!found_any)
     {
-        std::cout << "ERROR: The annotation and .bam file contains different chromosome." << std::endl;
-        exit(1);
+        std::stringstream err_msg;
+        err_msg << "ERROR: The annotation and .bam file contains different chromosome." << "\n";
+        Rcpp::stop(err_msg.str());
     }
     // for moving barcode and UMI from sequence name to bam tags
     const char * g_ptr = gene_tag.c_str();
@@ -543,9 +546,10 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
         int re = sam_write1(of, header, b);
         if (re < 0)
         {
-            std::cout << "fail to write the bam file: " << bam_get_qname(b) << std::endl;
-            std::cout << "return code: " << re << std::endl;
-            exit(EXIT_FAILURE);
+            std::stringstream err_msg;
+            err_msg << "fail to write the bam file: " << bam_get_qname(b) << "\n";
+            err_msg << "return code: " << re << "\n";
+            Rcpp::stop(err_msg.str());
         }
     }
 

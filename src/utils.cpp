@@ -1,5 +1,6 @@
 #include "utils.h"
 
+using namespace Rcpp;
 
 std::string join_path(const std::string p1, const std::string p2)
 {

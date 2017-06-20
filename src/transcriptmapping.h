@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 #include <cstring>
+#include <Rcpp.h>
 #include "config_hts.h"
 #include "utils.h"
 

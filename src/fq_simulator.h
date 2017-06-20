@@ -5,6 +5,7 @@
 //#include <math>  // floor
 #include <chrono>  // high_resolution_clock::now()
 #include <unordered_map>
+#include <Rcpp.h>
 #include "Eigen/Dense"
 #include "config_hts.h"
 #include "transcriptmapping.h"

@@ -2,6 +2,8 @@
 
 #include "detect_barcode.h"
 
+using namespace Rcpp;
+
 void merge_barcode(std::unordered_map<std::string, int> &counter, int max_mismatch, int min_count)
 {
     for (auto bc1 = counter.begin(); bc1 != counter.end();) // use normal iterator in order to use `erase`
@@ -60,13 +62,13 @@ std::unordered_map<std::string, int> summarize_barcode(std::string fn, int bc_le
     }
     else if ((max_reads > 0) && (max_reads < 1000))
     {
-        std::cerr << "max_reads should be larger than 1000." << std::endl;
-        exit(1);
+        // std::cerr << "max_reads should be larger than 1000." << std::endl;
+        Rcpp::stop("max_reads should be larger than 1000.");
     }
     if (bc_len < 4)
     {
-        std::cerr << "bc_len should be larger than 3." << std::endl;
-        exit(1);
+        // std::cerr << "bc_len should be larger than 3." << std::endl;
+        Rcpp::stop("bc_len should be larger than 3.");
     }
 
     kseq_t *seq;

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <algorithm>
+#include <Rcpp.h>
 #include "utils.h"
 #include "cellbarcode.h"
 
