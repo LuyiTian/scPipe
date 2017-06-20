@@ -8,14 +8,16 @@ bool check_qual(char *qual_s, int trim_n, int thr, int below_thr)
     int not_pass = 0;
     for (int i = 0; i < trim_n; i++)
     {
-        if ((int)qual_s[i] <= thr){
+        if ((int)qual_s[i] <= thr)
+        {
             not_pass++;
         }
     }
     return (not_pass > below_thr) ? false : true;
 }
 
-bool N_check(char *seq, int trim_n){
+bool N_check(char *seq, int trim_n)
+{
     bool pass = true;
     char *ptr = strchr(seq, 'N');
     if (ptr)
@@ -28,7 +30,6 @@ bool N_check(char *seq, int trim_n){
     }
     return pass;
 }
-
 
 void kseq_t_to_bam_t(kseq_t *seq, bam1_t *b, int trim_n)
 {
@@ -175,7 +176,7 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
         // qual check before we do anything
         if (filter_settings.if_check_qual)
         { // Only check barcode/UMI quality
-            if(!(check_qual(seq1->seq.s, bc1_end, filter_settings.min_qual, filter_settings.num_below_min) &&
+            if (!(check_qual(seq1->seq.s, bc1_end, filter_settings.min_qual, filter_settings.num_below_min) &&
                  check_qual(seq2->seq.s, bc2_end, filter_settings.min_qual, filter_settings.num_below_min)))
             {
                 removed_low_qual++;
@@ -184,7 +185,7 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
         }
         if (filter_settings.if_remove_N)
         {
-            if(!(N_check(seq1->seq.s, bc1_end) && N_check(seq2->seq.s, bc2_end)))
+            if (!(N_check(seq1->seq.s, bc1_end) && N_check(seq2->seq.s, bc2_end)))
             {
                 removed_have_N++;
                 continue;
@@ -256,13 +257,11 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
     std::cout << "removed_low_qual: " << removed_low_qual << std::endl;
 }
 
-
 void fq_write(std::ofstream& o_stream, kseq_t *seq, int trim_n)
 {
     o_stream << "@" << seq->name.s << "\n" << (seq->seq.s+trim_n) << "\n";
     o_stream << "+" << "\n" << (seq->qual.s+trim_n) << "\n";
 }
-
 
 void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_s read_structure, const filter_s filter_settings)
 {
@@ -288,7 +287,6 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
 
     std::ofstream o_stream(fq_out); // output file
 
-
     // get settings
     int id1_st = read_structure.id1_st;
     int id1_len = read_structure.id1_len;
@@ -296,7 +294,6 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
     int id2_len = read_structure.id2_len;
     int umi_st = read_structure.umi_st;
     int umi_len = read_structure.umi_len;
-
 
     int bc1_end, bc2_end; // get total length of index + UMI for read1 and read2
     int state; // 0 for two index with umi, 1 for two index without umi, 2 for one index with umi, 3 for one index without umi
@@ -366,7 +363,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         // qual check before we do anything
         if (filter_settings.if_check_qual)
         {
-            if(!(check_qual(seq1->qual.s, bc1_end, filter_settings.min_qual, filter_settings.num_below_min) \
+            if (!(check_qual(seq1->qual.s, bc1_end, filter_settings.min_qual, filter_settings.num_below_min) \
                 && check_qual(seq2->qual.s, bc2_end, filter_settings.min_qual, filter_settings.num_below_min)))
             {
                 removed_low_qual ++;
@@ -375,7 +372,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         }
         if (filter_settings.if_remove_N)
         {
-            if(!(N_check(seq1->seq.s, bc1_end) && N_check(seq2->seq.s, bc2_end)))
+            if (!(N_check(seq1->seq.s, bc1_end) && N_check(seq2->seq.s, bc2_end)))
             {
                 removed_have_N ++;
                 continue;
@@ -424,6 +421,4 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
     Rcpp::Rcerr << "pass QC: " << passed_reads << std::endl;
     Rcpp::Rcerr << "removed_have_N: " << removed_have_N << std::endl;
     Rcpp::Rcerr << "removed_low_qual: " << removed_low_qual << std::endl;
-
-
 }

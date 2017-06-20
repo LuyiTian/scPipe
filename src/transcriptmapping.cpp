@@ -6,7 +6,7 @@ using namespace Rcpp;
 
 Gene::Gene(string id, int st, int en, int snd): Interval(st, en, snd), gene_id(id) {}
 Gene::Gene(string id, int snd): Interval(-1, -1, snd), gene_id(id) {}
-Gene::Gene(): Interval(-1, -1, 0), gene_id(""){}
+Gene::Gene(): Interval(-1, -1, 0), gene_id("") {}
 
 void Gene::set_ID(string id)
 {

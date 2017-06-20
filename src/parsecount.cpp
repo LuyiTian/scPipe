@@ -41,7 +41,7 @@ int UMI_correct1(std::unordered_map<string, int>& UMI_count)
                     found = true;
                     // merge two UMIs
                     UMI_count[UMI2.first] += UMI_count[UMI1->first];
-                    if (__DEBUG){std::cout << "merge: " <<  UMI1->first << "::" << UMI2.first << "\t" << UMI1->second << "::" << UMI2.second << std::endl;}
+                    if (__DEBUG) {std::cout << "merge: " <<  UMI1->first << "::" << UMI2.first << "\t" << UMI1->second << "::" << UMI2.second << std::endl;}
                     break;
                 }
             }
