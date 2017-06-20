@@ -53,14 +53,14 @@ void kseq_t_to_bam_t(kseq_t *seq, bam1_t *b, int trim_n)
     b->data[seq->name.l] = '\0';
     uint8_t *s = bam_get_seq(b);
     int i = 0;
-    for (i = 0; i < b->core.l_qseq;++i) // set sequence
+    for (i = 0; i < b->core.l_qseq; ++i) // set sequence
     {
         bam1_seq_seti(s, i, seq_nt16_table[(int)seq->seq.s[i + trim_n]]);
     }
 
     s = bam_get_qual(b);
 
-    for (i = 0; i < b->core.l_qseq;++i) // set quality
+    for (i = 0; i < b->core.l_qseq; ++i) // set quality
     {
         s[i] = seq->qual.s[i + trim_n]-33;
     }
