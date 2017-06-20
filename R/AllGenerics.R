@@ -64,9 +64,6 @@ setGeneric("FACSData<-", function(object, value) {
   standardGeneric("FACSData<-")
 })
 
-
-
-
 #' @name gene_id_type
 #' @export
 #' @docType methods
@@ -82,8 +79,6 @@ setGeneric("gene_id_type", function(object) {
 setGeneric("gene_id_type<-", function(object, value) {
   standardGeneric("gene_id_type<-")
 })
-
-
 
 #' @name tpm
 #' @export
