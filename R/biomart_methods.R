@@ -51,10 +51,7 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 #'
 #' @importFrom biomaRt useDataset getBM
 #' @importFrom utils head
-<<<<<<< HEAD
-=======
 #' @importFrom Biobase ExpressionSet fData<-
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
 #'
 #' @export
 #' @examples
