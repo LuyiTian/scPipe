@@ -6,11 +6,7 @@
 #' @param conf confidence for linear regression
 #'
 #' @importFrom MASS rlm
-<<<<<<< HEAD
-#' @importFrom stats ppoints
-=======
 #' @importFrom stats pchisq qnorm qchisq dchisq ppoints
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
 #'
 #' @return cell names of outliers
 #'
@@ -48,11 +44,7 @@
 #' @return an updated SCData object with an outlier column in \code{QualityControlInfo}
 #'
 #' @import mclust robustbase
-<<<<<<< HEAD
-#' @importFrom stats complete.cases mahalanobis cov qchisq
-=======
 #' @importFrom stats cov pchisq mahalanobis complete.cases
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
 #'
 #' @export
 #' @examples
@@ -143,17 +135,10 @@ detect_outlier <- function(scd,
       }
     }
   }
-<<<<<<< HEAD
   outliers <- as.factor(rownames(x)  %in% outlier_cells)
   QC_met <- pData(QC_metrics(scd))
   QC_met$outliers <- outliers
   QC_metrics(scd) <- QC_met
-=======
-  outliers = as.factor(rownames(x) %in% outlier_cells)
-  QC_met = pData(QC_metrics(scd))
-  QC_met$outliers = outliers
-  QC_metrics(scd) = QC_met
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
   return(scd)
 }
 
@@ -172,11 +157,7 @@ detect_outlier <- function(scd,
 #' ribosomal genes are retrived by GO term GO:0005840
 #' @return no return
 #'
-<<<<<<< HEAD
-#' @import Biobase
-=======
 #' @importFrom Biobase exprs pData fData
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
 #'
 #' @export
 #' @examples
@@ -260,13 +241,8 @@ plotQC_pair <- function(scd, sel_col=NULL) {
     stop("scd must be an SCData object.")
   }
 
-<<<<<<< HEAD
-  if ("outliers" %in% colnames(x)) {
-    return(ggpairs(x, mapping=ggplot2::aes_string(colour="outliers")))
-=======
   if ("outliers" %in% colnames(x)){
     return(ggpairs(x, mapping = ggplot2::aes_string(colour = "outliers")))
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
   }
   else{
     return(ggpairs(x))
@@ -281,12 +257,8 @@ plotQC_pair <- function(scd, sel_col=NULL) {
 #' @param dataname the name of this dataset which appears in the plot title
 #'
 #' @import scales reshape ggplot2
-<<<<<<< HEAD
 #' @importFrom stats prcomp reorder
 #'
-=======
-#' @importFrom stats reorder
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
 #' @export
 #'
 plotMapping <- function(scd,
@@ -298,11 +270,7 @@ plotMapping <- function(scd,
       sel_col <- c("unaligned", "aligned_unmapped", "ambiguous_mapping",
                    "mapped_to_ERCC", "mapped_to_intron", "mapped_to_exon")
     }
-<<<<<<< HEAD
     x <- pData(QC_metrics(scd))[, sel_col]
-=======
-    x = pData(QC_metrics(scd))[, sel_col]
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
   }
   else{
     stop("scd must be an SCData object.")
@@ -316,13 +284,8 @@ plotMapping <- function(scd,
   dat.m <- melt(mapping_stat, id.vars="sample_name")
   dat.m1 <- melt(mapping_stat_prop, id.vars="sample_name")
 
-<<<<<<< HEAD
   if (!percentage) {
     p <- ggplot(dat.m, aes_string(x="sample_name", y="value", fill="variable")) + scale_fill_brewer(palette="Set1")+
-=======
-  if (!percentage){
-    p = ggplot(dat.m, aes_string(x = "sample_name", y = "value", fill = "variable")) + scale_fill_brewer(palette = "Set1")+
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
       geom_bar(stat="identity", width=1)+
       ylab("number of reads")+
       xlab("cell sorted by number of reads mapped to exon")+
@@ -330,11 +293,7 @@ plotMapping <- function(scd,
       ggtitle(paste0("overall mapping statistics of ", dataname, " (number of reads)"))
   }
   else{
-<<<<<<< HEAD
-    p <- ggplot(dat.m1, aes(x="sample_name", y="value", fill="variable")) + scale_fill_brewer(palette="Set1")+
-=======
-    p = ggplot(dat.m1, aes_string(x = "sample_name", y = "value", fill = "variable")) + scale_fill_brewer(palette = "Set1")+
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
+    p <- ggplot(dat.m1, aes_string(x="sample_name", y="value", fill="variable")) + scale_fill_brewer(palette="Set1")+
       geom_bar(stat="identity", width=1)+
       ylab("percentage of reads")+
       xlab("cell sorted by number of reads mapped_to_exon")+

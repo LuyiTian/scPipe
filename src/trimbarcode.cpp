@@ -252,9 +252,9 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
     sam_close(fp); // close bam file
 
     // print stats
-    std::cout << "pass QC: " << passed_reads << std::endl;
-    std::cout << "removed_have_N: " << removed_have_N << std::endl;
-    std::cout << "removed_low_qual: " << removed_low_qual << std::endl;
+    Rcpp::Rcout << "pass QC: " << passed_reads << std::endl;
+    Rcpp::Rcout << "removed_have_N: " << removed_have_N << std::endl;
+    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
 }
 
 void fq_write(std::ofstream& o_stream, kseq_t *seq, int trim_n)
@@ -413,7 +413,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         fq_write(o_stream, seq1, bc1_end); // write to fastq file
     }
 
-    //std::cout << passed_reads << "\t" << removed_low_qual << "\t" << removed_have_N << std::endl;
+    //Rcpp::Rcout << passed_reads << "\t" << removed_low_qual << "\t" << removed_have_N << std::endl;
 
     kseq_destroy(seq1); kseq_destroy(seq2); // free seq
     gzclose(fq1); gzclose(fq2); // close fastq file

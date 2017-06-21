@@ -191,7 +191,7 @@ void Celseq2Simulator::makefq(std::string R1fn, std::string R2fn, std::string re
     {
         if (__DEBUG)
         {
-            std::cout << "read fasta sequence " << fareader.fa.name << " with lenth " << fareader.fa.seq.length() << std::endl;
+            Rcpp::Rcout << "read fasta sequence " << fareader.fa.name << " with lenth " << fareader.fa.seq.length() << std::endl;
         }
         if (Anno.gene_dict.end() == Anno.gene_dict.find(fareader.fa.name))
         {
@@ -201,12 +201,12 @@ void Celseq2Simulator::makefq(std::string R1fn, std::string R2fn, std::string re
         }
         for (int gene_ix=0; gene_ix<Anno.gene_dict[fareader.fa.name].size(); ++gene_ix)  // for each genes in that chromosome
         {
-            if (__DEBUG) {std::cout<< "simulate gene " << gene_ix << std::endl;}
+            if (__DEBUG) {Rcpp::Rcout << "simulate gene " << gene_ix << std::endl;}
             transcript_seq = get_transcript_seq(Anno.gene_dict[fareader.fa.name][gene_ix], fareader.fa);  // gene transcript
 
             for (int cell_ix=0; cell_ix<cell_cnt; ++cell_ix)  // for each cells
             {
-                if (__DEBUG) {std::cout<< "\tsimulate cell " << cell_ix << std::endl;}
+                if (__DEBUG) {Rcpp::Rcout << "\tsimulate cell " << cell_ix << std::endl;}
                 molecular_count = Cnt_sim.get_cnt(Anno.gene_dict[fareader.fa.name][gene_ix].gene_id, Bar.cellid_list[cell_ix]);
 
                 for (int m = 0; m < molecular_count; ++m)  // for each mRNA molecule
@@ -238,7 +238,7 @@ void Celseq2Simulator::makefq(std::string R1fn, std::string R2fn, std::string re
                         global_count++;
                     }
                 }
-                if (__DEBUG) {std::cout<< "\t\tsimulate molecule. count: " << molecular_count << std::endl;}
+                if (__DEBUG) {Rcpp::Rcout << "\t\tsimulate molecule. count: " << molecular_count << std::endl;}
             }
         }
     }
