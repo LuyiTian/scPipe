@@ -1,7 +1,6 @@
 #include <Rcpp.h>
 #include "fq_simulator.h"
 
-
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
 
@@ -16,7 +15,8 @@ void rcpp_generate_celseq2_data(Rcpp::CharacterVector r1fn,
                                 Rcpp::NumericVector dup_mean,
                                 Rcpp::CharacterVector ran_dist,
                                 Rcpp::NumericVector param,
-                                Rcpp::NumericVector seed){
+                                Rcpp::NumericVector seed)
+{
   std::string c_r1fn = Rcpp::as<std::string>(r1fn);
   std::string c_r2fn = Rcpp::as<std::string>(r2fn);
   std::string c_annofn = Rcpp::as<std::string>(annofn);
@@ -31,12 +31,14 @@ void rcpp_generate_celseq2_data(Rcpp::CharacterVector r1fn,
   int c_dup_mean = Rcpp::as<int>(dup_mean);
 
   unsigned c_seed = Rcpp::as<unsigned>(seed);
-  if (c_seed==0){
+  if (c_seed==0)
+  {
     Celseq2Simulator celseq2_sim(c_annofn, c_bc_anno);
     celseq2_sim.gen_gene_expression(c_ran_dist, c_param);
     celseq2_sim.makefq(c_r1fn, c_r2fn, c_fafn, c_UMI_len, c_r_len, c_frag_mean, c_dup_mean);
   }
-  else{
+  else
+  {
     Celseq2Simulator celseq2_sim(c_annofn, c_bc_anno, c_seed);
     celseq2_sim.gen_gene_expression(c_ran_dist, c_param);
     celseq2_sim.makefq(c_r1fn, c_r2fn, c_fafn, c_UMI_len, c_r_len, c_frag_mean, c_dup_mean);

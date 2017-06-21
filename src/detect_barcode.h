@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <limits>
+#include <Rcpp.h>
 #include "config_hts.h"
 #include "utils.h"
 

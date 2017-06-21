@@ -7,7 +7,7 @@
 mergeSCData(..., all = TRUE, batch = NULL)
 }
 \arguments{
-\item{...}{multiple SCDatas. they shold have the same value for class attribute.}
+\item{...}{multiple SCDatas. They shold have the same value for class attribute.}
 
 \item{all}{only contains interset for features or union.}
 

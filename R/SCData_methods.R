@@ -1,6 +1,4 @@
-
 #' merge matrix for multiple SCData object
-#'
 #'
 .merge_mat = function(scd_list,func){
   if(all(unlist(lapply(scd_list,function(x){!is.null(func(x))})))){
@@ -162,19 +160,19 @@ newSCData <- function(exprsData = NULL,
 
   # Generate new SCData object
   assaydata = assayDataNew("lockedEnvironment", exprs = exprs_mat)
-  scd = new( "SCData",
-                 assayData = assaydata,
-                 phenoData = phenoData,
-                 featureData = featureData,
-                 FACSData = FACSData,
-                 experimentData = expData,
-                 logExprsOffset = logExprsOffset,
-                 logged = logged,
-                 reducedExprDimension = reducedExprDimension,
-                 reducedFACSDimension = reducedFACSDimension,
-                 onesense = onesense,
-                 QualityControlInfo = QualityControlInfo,
-                 useForExprs = useForExprs)
+  scd = new("SCData",
+            assayData = assaydata,
+            phenoData = phenoData,
+            featureData = featureData,
+            FACSData = FACSData,
+            experimentData = expData,
+            logExprsOffset = logExprsOffset,
+            logged = logged,
+            reducedExprDimension = reducedExprDimension,
+            reducedFACSDimension = reducedFACSDimension,
+            onesense = onesense,
+            QualityControlInfo = QualityControlInfo,
+            useForExprs = useForExprs)
 
   # check organism names or gene_id_type is set correctly
   tmp_res = .guess_attr(exprs_mat)
@@ -332,7 +330,7 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 #' merge multiple SCData object
 #' @rdname mergeSCData
 #' @name mergeSCData
-#' @param ... multiple SCDatas. they shold have the same value for class attribute.
+#' @param ... multiple SCDatas. They shold have the same value for class attribute.
 #' @param all only contains interset for features or union.
 #' @param batch (optional) batch information
 #'
@@ -375,8 +373,8 @@ mergeSCData <- function(...,
     stop("data do not have the same value for the 'logExprsOffset' slot.")
   }
 
-  the_organism = organism(scd_list[[1]])
-  if(!all(unlist(lapply(scd_list,function(x){organism(x) == the_organism})))){
+  the_organism = organism.SCData(scd_list[[1]])
+  if(!all(unlist(lapply(scd_list,function(x){organism.SCData(x) == the_organism})))){
     stop("data do not have the same value for the 'organism' slot.")
   }
 
@@ -422,8 +420,6 @@ mergeSCData <- function(...,
     }
   }
 
-
-
   print("merge FACS data")
   fac_col = varLabels(FACSData(scd_list[[1]]))
   merged_fac = NULL
@@ -452,9 +448,6 @@ mergeSCData <- function(...,
               QualityControlInfo = merged_qc,
               useForExprs = "exprs")
 
-
-
-
   if(!is.null(fpkm(scd_list[[1]]))){
     fpkm(new_scd) = .merge_mat(scd_list,fpkm)
   }
@@ -473,12 +466,11 @@ mergeSCData <- function(...,
   return(new_scd)
 }
 
-
-
 #' Get or set quality control metrics from an SCData object
 #' @name QC_metrics
 #' @rdname QC_metrics
 #' @param object An \code{\link{SCData}} object.
+#' @param value Value to be assigned to corresponding object.
 #'
 #' @return A \code{AnnotatedDataFrame} of quality control metrics.
 #' @author Luyi Tian
@@ -515,6 +507,7 @@ setReplaceMethod("QC_metrics",
 #' @name organism
 #' @rdname organism
 #' @param object An \code{\link{SCData}} object.
+#' @param value Value to be assigned to corresponding object.
 #'
 #' @return organism string
 #' @author Luyi Tian
@@ -525,12 +518,12 @@ organism.SCData <- function(object) {
 }
 
 
-#' @rdname organism
 #' @name organism
 #' @aliases organism
+#' @rdname organism
 #' @export
-setMethod("organism", signature(object = "SCData"),
-         organism.SCData)
+setMethod("organism", signature(object="SCData"),
+          organism.SCData)
 
 
 #' @name organism<-
@@ -551,6 +544,7 @@ setReplaceMethod("organism",
 #' @name FACSData
 #' @rdname FACSData
 #' @param object An \code{\link{SCData}} object.
+#' @param value Value to be assigned to corresponding object.
 #'
 #' @return A \code{AnnotatedDataFrame} of FACS data.
 #' @author Luyi Tian
@@ -580,14 +574,14 @@ setReplaceMethod("FACSData",
                    object@FACSData = new("AnnotatedDataFrame", data = as.data.frame(value))
                    validObject(object) # could add other checks
                    return(object)
-                 })
-
-
+                 }
+)
 
 #' Get or set \code{reducedExprDimension} from an SCData object
 #' @name DimRd_expr
 #' @rdname DimRd_expr
 #' @param object An \code{\link{SCData}} object.
+#' @param value Value to be assigned to corresponding object.
 #'
 #' @return A matrix of reduced-dimension coordinates for gene
 #' expression of single cell.
@@ -620,15 +614,11 @@ setReplaceMethod("DimRd_expr",
                    return(object)
                  })
 
-
-
-
-
-
 #' Get or set \code{gene_id_type} from an SCData object
 #' @name gene_id_type
 #' @rdname gene_id_type
 #' @param object An \code{\link{SCData}} object.
+#' @param value Value to be assigned to corresponding object.
 #'
 #' @return gene id type string
 #' @author Luyi Tian
@@ -660,10 +650,6 @@ setReplaceMethod("gene_id_type",
                    validObject(object) # could add other checks
                    return(object)
                  })
-
-
-
-
 
 #' Accessors for the 'counts' element of an SCData object.
 #'
@@ -706,8 +692,6 @@ setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
                    validObject(object)
                    object
                  })
-
-
 
 #' Accessors for the 'tpm' (transcripts per million) element of an SCData object.
 #'
@@ -755,8 +739,6 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
                    object
                  })
 
-
-
 #' Accessors for the 'cpm' (counts per million) element of an SCData object.
 #'
 #' The \code{cpm} element of the arrayData slot in an SCData object holds
@@ -802,8 +784,6 @@ setReplaceMethod("cpm", signature(object = "SCData", value = "matrix"),
                    validObject(object)
                    object
                  })
-
-
 
 #' Accessors for the 'fpkm' (fragments per kilobase of exon per million reads mapped) element of an SCData object.
 #'

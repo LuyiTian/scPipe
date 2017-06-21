@@ -3,6 +3,7 @@
 
 using std::string;
 using std::unordered_map;
+using namespace Rcpp;
 
 // read annotation from files, the file should have two columns
 // first column is cell id and second column is barcode.
@@ -25,8 +26,8 @@ void Barcode::read_anno(string fn)
     }
     else
     {
-        std::cout << "the annotation file should be comma or tab separated" << std::endl;
-        exit(-1);
+        // std::cout << "the annotation file should be comma or tab separated" << std::endl;
+        Rcpp::stop("the annotation file should be comma or tab separated");
     }
 
     while(std::getline(infile, line))

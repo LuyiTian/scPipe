@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <iomanip>
+#include <Rcpp.h>
 #include "global_config.h"
 
 #ifndef UTILS_H

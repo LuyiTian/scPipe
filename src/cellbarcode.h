@@ -5,6 +5,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <algorithm>
+#include <Rcpp.h>
 #include "utils.h"
 
 #ifndef CELLBARCODE_H

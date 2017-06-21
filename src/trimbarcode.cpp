@@ -1,21 +1,23 @@
 //trim_barcode
 #include "trimbarcode.h"
 
-
+using namespace Rcpp;
 
 bool check_qual(char *qual_s, int trim_n, int thr, int below_thr)
 {
     int not_pass = 0;
     for (int i = 0; i < trim_n; i++)
     {
-        if ((int)qual_s[i] <= thr){
+        if ((int)qual_s[i] <= thr)
+        {
             not_pass++;
         }
     }
     return (not_pass > below_thr) ? false : true;
 }
 
-bool N_check(char *seq, int trim_n){
+bool N_check(char *seq, int trim_n)
+{
     bool pass = true;
     char *ptr = strchr(seq, 'N');
     if (ptr)
@@ -28,7 +30,6 @@ bool N_check(char *seq, int trim_n){
     }
     return pass;
 }
-
 
 void kseq_t_to_bam_t(kseq_t *seq, bam1_t *b, int trim_n)
 {
@@ -52,14 +53,14 @@ void kseq_t_to_bam_t(kseq_t *seq, bam1_t *b, int trim_n)
     b->data[seq->name.l] = '\0';
     uint8_t *s = bam_get_seq(b);
     int i = 0;
-    for (i = 0; i < b->core.l_qseq;++i) // set sequence
+    for (i = 0; i < b->core.l_qseq; ++i) // set sequence
     {
         bam1_seq_seti(s, i, seq_nt16_table[(int)seq->seq.s[i + trim_n]]);
     }
 
     s = bam_get_qual(b);
 
-    for (i = 0; i < b->core.l_qseq;++i) // set quality
+    for (i = 0; i < b->core.l_qseq; ++i) // set quality
     {
         s[i] = seq->qual.s[i + trim_n]-33;
     }
@@ -69,9 +70,17 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
 {
     // open files
     gzFile fq1 = gzopen(fq1_fn, "r"); // input fastq
-    if (!fq1){fprintf(stderr, "cant open file: %s\n", fq1_fn); exit(EXIT_FAILURE);}
+    if (!fq1) {
+        std::stringstream err_msg;
+        err_msg << "Can't open file: %s\n" << fq1_fn;
+        Rcpp::stop(err_msg.str());
+    }
     gzFile fq2 = gzopen(fq2_fn, "r");
-    if (!fq2){fprintf(stderr, "cant open file: %s\n", fq2_fn); exit(EXIT_FAILURE);}
+    if (!fq2) {
+        std::stringstream err_msg;
+        err_msg << "Can't open file: %s\n" << fq2_fn;
+        Rcpp::stop(err_msg.str());
+    }
 
     samFile *fp = sam_open(bam_out,"wb"); // output file
 
@@ -167,7 +176,7 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
         // qual check before we do anything
         if (filter_settings.if_check_qual)
         { // Only check barcode/UMI quality
-            if(!(check_qual(seq1->seq.s, bc1_end, filter_settings.min_qual, filter_settings.num_below_min) &&
+            if (!(check_qual(seq1->seq.s, bc1_end, filter_settings.min_qual, filter_settings.num_below_min) &&
                  check_qual(seq2->seq.s, bc2_end, filter_settings.min_qual, filter_settings.num_below_min)))
             {
                 removed_low_qual++;
@@ -176,7 +185,7 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
         }
         if (filter_settings.if_remove_N)
         {
-            if(!(N_check(seq1->seq.s, bc1_end) && N_check(seq2->seq.s, bc2_end)))
+            if (!(N_check(seq1->seq.s, bc1_end) && N_check(seq2->seq.s, bc2_end)))
             {
                 removed_have_N++;
                 continue;
@@ -229,9 +238,10 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
         int ret = sam_write1(fp, hdr, b);
         if (ret < 0)
         {
-            std::cout << "fail to write the bam file: " << seq1->name.s << std::endl;
-            std::cout << "return code: " << ret << std::endl;
-            exit(EXIT_FAILURE);
+            std::stringstream err_msg;
+            err_msg << "fail to write the bam file: " << seq1->name.s << "\n";
+            err_msg << "return code: " << ret << std::endl;
+            Rcpp::stop(err_msg.str());
         }
         bam_destroy1(b);
     }
@@ -247,13 +257,11 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
     std::cout << "removed_low_qual: " << removed_low_qual << std::endl;
 }
 
-
 void fq_write(std::ofstream& o_stream, kseq_t *seq, int trim_n)
 {
     o_stream << "@" << seq->name.s << "\n" << (seq->seq.s+trim_n) << "\n";
     o_stream << "+" << "\n" << (seq->qual.s+trim_n) << "\n";
 }
-
 
 void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_s read_structure, const filter_s filter_settings)
 {
@@ -265,12 +273,19 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
     int l1 = 0;
     int l2 = 0;
     gzFile fq1 = gzopen(fq1_fn, "r"); // input fastq
-    if (!fq1){fprintf(stderr, "cant open file: %s\n", fq1_fn); exit(EXIT_FAILURE);}
+    if (!fq1) {
+        std::stringstream err_msg;
+        err_msg << "Can't open file: %s\n" << fq1_fn;
+        Rcpp::stop(err_msg.str());
+    }
     gzFile fq2 = gzopen(fq2_fn, "r");
-    if (!fq2){fprintf(stderr, "cant open file: %s\n", fq2_fn); exit(EXIT_FAILURE);}
+    if (!fq2) {
+        std::stringstream err_msg;
+        err_msg << "Can't open file: %s\n" << fq2_fn;
+        Rcpp::stop(err_msg.str());
+    }
 
     std::ofstream o_stream(fq_out); // output file
-
 
     // get settings
     int id1_st = read_structure.id1_st;
@@ -279,7 +294,6 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
     int id2_len = read_structure.id2_len;
     int umi_st = read_structure.umi_st;
     int umi_len = read_structure.umi_len;
-
 
     int bc1_end, bc2_end; // get total length of index + UMI for read1 and read2
     int state; // 0 for two index with umi, 1 for two index without umi, 2 for one index with umi, 3 for one index without umi
@@ -349,7 +363,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         // qual check before we do anything
         if (filter_settings.if_check_qual)
         {
-            if(!(check_qual(seq1->qual.s, bc1_end, filter_settings.min_qual, filter_settings.num_below_min) \
+            if (!(check_qual(seq1->qual.s, bc1_end, filter_settings.min_qual, filter_settings.num_below_min) \
                 && check_qual(seq2->qual.s, bc2_end, filter_settings.min_qual, filter_settings.num_below_min)))
             {
                 removed_low_qual ++;
@@ -358,7 +372,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         }
         if (filter_settings.if_remove_N)
         {
-            if(!(N_check(seq1->seq.s, bc1_end) && N_check(seq2->seq.s, bc2_end)))
+            if (!(N_check(seq1->seq.s, bc1_end) && N_check(seq2->seq.s, bc2_end)))
             {
                 removed_have_N ++;
                 continue;
@@ -404,9 +418,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
     kseq_destroy(seq1); kseq_destroy(seq2); // free seq
     gzclose(fq1); gzclose(fq2); // close fastq file
     o_stream.close(); // close out fastq file
-    std::cerr << "pass QC: " << passed_reads << std::endl;
-    std::cerr << "removed_have_N: " << removed_have_N << std::endl;
-    std::cerr << "removed_low_qual: " << removed_low_qual << std::endl;
-
-
+    Rcpp::Rcerr << "pass QC: " << passed_reads << std::endl;
+    Rcpp::Rcerr << "removed_have_N: " << removed_have_N << std::endl;
+    Rcpp::Rcerr << "removed_low_qual: " << removed_low_qual << std::endl;
 }

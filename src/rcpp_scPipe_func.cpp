@@ -12,7 +12,8 @@ read_s get_read_structure(Rcpp::NumericVector bs1,
                           Rcpp::NumericVector bs2,
                           Rcpp::NumericVector bl2,
                           Rcpp::NumericVector us,
-                          Rcpp::NumericVector ul){
+                          Rcpp::NumericVector ul)
+{
   read_s s = {};
   s.id1_st = Rcpp::as<int>(bs1);  // id1 start
   s.id1_len = Rcpp::as<int>(bl1);    // id1 length
@@ -26,7 +27,8 @@ read_s get_read_structure(Rcpp::NumericVector bs1,
 filter_s get_filter_structure(Rcpp::NumericVector rmlow,
                               Rcpp::NumericVector rmN,
                               Rcpp::NumericVector minq,
-                              Rcpp::NumericVector numbq){
+                              Rcpp::NumericVector numbq)
+{
   int c_rmlow = Rcpp::as<int>(rmlow);
   int c_rmN = Rcpp::as<int>(rmN);
   filter_s f = {};
@@ -77,7 +79,8 @@ void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam,
                           Rcpp::NumericVector bc_len,
                           Rcpp::NumericVector UMI_len,
                           Rcpp::NumericVector stnd,
-                          Rcpp::NumericVector fix_chr){
+                          Rcpp::NumericVector fix_chr)
+{
   std::string c_inbam = Rcpp::as<std::string>(inbam);
   std::string c_outbam = Rcpp::as<std::string>(outbam);
 
@@ -111,7 +114,8 @@ void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam,
                     Rcpp::CharacterVector ge,
                     Rcpp::CharacterVector bc,
                     Rcpp::CharacterVector mb,
-                    Rcpp::CharacterVector mito){
+                    Rcpp::CharacterVector mito)
+{
   std::string c_inbam = Rcpp::as<std::string>(inbam);
   std::string c_outdir = Rcpp::as<std::string>(outdir);
   std::string c_bc_anno = Rcpp::as<std::string>(bc_anno);
@@ -139,7 +143,8 @@ void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam,
 void rcpp_sc_gene_counting(Rcpp::CharacterVector outdir,
                       Rcpp::CharacterVector bc_anno,
                       Rcpp::NumericVector UMI_cor,
-                      Rcpp::NumericVector gene_fl){
+                      Rcpp::NumericVector gene_fl)
+{
   std::string c_outdir = Rcpp::as<std::string>(outdir);
   std::string c_bc_anno = Rcpp::as<std::string>(bc_anno);
   int c_UMI_cor = Rcpp::as<int>(UMI_cor);
@@ -160,7 +165,8 @@ void rcpp_sc_detect_bc(Rcpp::CharacterVector infq,
                            Rcpp::NumericVector bc_len,
                            Rcpp::NumericVector max_reads,
                            Rcpp::NumericVector min_count,
-                           Rcpp::NumericVector max_mismatch){
+                           Rcpp::NumericVector max_mismatch)
+{
   std::string c_infq = Rcpp::as<std::string>(infq);
   std::string c_outcsv = Rcpp::as<std::string>(outcsv);
   std::string c_surfix = Rcpp::as<std::string>(surfix);
