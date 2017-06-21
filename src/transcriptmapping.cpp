@@ -184,7 +184,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     int strand = 0;
     std::vector<string> token;
 
-    //std::cout << "build annotation from gff3 file..." << std::endl;
+    //Rcpp::Rcout << "build annotation from gff3 file..." << std::endl;
     while(std::getline(infile, line))
     {
         if (line[0] == '#')
@@ -339,13 +339,13 @@ void Mapping::add_annotation(string gff3_fn, bool fix_chrname)
 {
     if (gff3_fn.substr(gff3_fn.find_last_of(".") + 1) == "gff3")
     {
-        std::cout << "add gff3 annotation: " << gff3_fn << std::endl;
+        Rcpp::Rcout << "add gff3 annotation: " << gff3_fn << std::endl;
         Anno.parse_gff3_annotation(gff3_fn, fix_chrname);
     }
     else
     {
         Anno.parse_bed_annotation(gff3_fn, fix_chrname);
-        std::cout << "add bed annotation: " << gff3_fn << std::endl;
+        Rcpp::Rcout << "add bed annotation: " << gff3_fn << std::endl;
     }
 
 }
@@ -470,7 +470,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     {
         if (Anno.gene_dict.end() == Anno.gene_dict.find(header->target_name[i]))
         {
-            std::cout << header->target_name[i] << " not found in exon annotation." << std::endl;
+            Rcpp::Rcout << header->target_name[i] << " not found in exon annotation." << std::endl;
         }
         else
         {
@@ -497,8 +497,8 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
         {
             if (cnt % 1000000 == 0)
             {
-                std::cout << "number of read processed:" << cnt << std::endl;
-                std::cout << tmp_c[0] <<"\t"<< tmp_c[1] <<"\t"<<tmp_c[2] <<"\t"<<tmp_c[3] <<"\t" << std::endl;
+                Rcpp::Rcout << "number of read processed:" << cnt << std::endl;
+                Rcpp::Rcout << tmp_c[0] <<"\t"<< tmp_c[1] <<"\t"<<tmp_c[2] <<"\t"<<tmp_c[3] <<"\t" << std::endl;
             }
             cnt++;
         }
@@ -553,11 +553,11 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
         }
     }
 
-    std::cout << "\t" << "unique map to exon:" << tmp_c[0] << std::endl;
-    std::cout << "\t" << "ambiguous map to multiple exon:" << tmp_c[1] << std::endl;
-    std::cout << "\t" << "map to intron:" << tmp_c[2] << std::endl;
-    std::cout << "\t" << "not mapped:" << tmp_c[3] << std::endl;
-    std::cout << "\t" << "unaligned:" << unaligned << std::endl;
+    Rcpp::Rcout << "\t" << "unique map to exon:" << tmp_c[0] << std::endl;
+    Rcpp::Rcout << "\t" << "ambiguous map to multiple exon:" << tmp_c[1] << std::endl;
+    Rcpp::Rcout << "\t" << "map to intron:" << tmp_c[2] << std::endl;
+    Rcpp::Rcout << "\t" << "not mapped:" << tmp_c[3] << std::endl;
+    Rcpp::Rcout << "\t" << "unaligned:" << unaligned << std::endl;
     sam_close(of);
     bgzf_close(fp);
 }

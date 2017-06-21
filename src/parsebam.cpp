@@ -87,7 +87,7 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch)
 
     if (mt_idx == -1)
     {
-        std::cout << "Warning: mitochondrial chromosome not found using chromosome name `"<< mt_tag << "`.\n";
+        Rcpp::Rcout << "Warning: mitochondrial chromosome not found using chromosome name `"<< mt_tag << "`.\n";
     }
 
     string output_dir = join_path(out_dir, "count");

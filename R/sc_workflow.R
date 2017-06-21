@@ -205,17 +205,10 @@ runscPipe <- function(sample_name,
                   r2=r2,
                   read_structure=read_structure,
                   filter_settings=filter_settings)
-<<<<<<< HEAD
   Rsubread::align(index=genome_index,
                   readfile1=out_fq,
                   output_file=bam_align,
                   nthread=nthreads)
-=======
-  align(index=genome_index,
-        readfile1=out_fq,
-        output_file=bam_align,
-        nthreads=nthreads)
->>>>>>> f0007cb8945b264712dd022786ad6a3ae24e3baf
   sc_exon_mapping(inbam=bam_align,
                   outbam=bam_map,
                   annofn=exon_anno,

@@ -31,7 +31,7 @@ void merge_barcode(std::unordered_map<std::string, int> &counter, int max_mismat
                     found = true;
                     // merge two barcodes
                     counter[bc2.first] += counter[bc1->first];
-                    if (__DEBUG) {std::cout << "merge: " <<  bc1->first << "::" << bc2.first << "\t" << bc1->second << "::" << bc2.second << std::endl;}
+                    if (__DEBUG) {Rcpp::Rcout << "merge: " <<  bc1->first << "::" << bc2.first << "\t" << bc1->second << "::" << bc2.second << std::endl;}
                     break;
                 }
             }
