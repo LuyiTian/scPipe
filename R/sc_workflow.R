@@ -21,11 +21,11 @@
 #' 
 
 create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL){
-  gene_cnt = read.csv(file.path(datadir, "gene_count.csv"),row.names=1)
-  cell_stat = read.csv(file.path(datadir,"stat","cell_stat.csv"),row.names=1)
+  gene_cnt = read.csv(file.path(datadir, "gene_count.csv"), row.names=1)
+  cell_stat = read.csv(file.path(datadir, "stat", "cell_stat.csv"), row.names=1)
   
-  gene_cnt = gene_cnt[,order(colnames(gene_cnt))]
-  cell_stat = cell_stat[order(rownames(cell_stat)),]
+  gene_cnt = gene_cnt[, order(colnames(gene_cnt))]
+  cell_stat = cell_stat[order(rownames(cell_stat)), ]
   
   
   QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(cell_stat))
@@ -103,13 +103,13 @@ create_report = function(sample_name,
     tx = gsub(pattern = "BC1_INFO__", replacement = "NA", x = tx)
   }else{
     tx = gsub(pattern = "BC1_INFO__", replacement = 
-                paste0("start at position ",read_structure$bs1,", length ",read_structure$bl1), x = tx)
+                paste0("start at position ", read_structure$bs1, ", length ", read_structure$bl1), x = tx)
   }
   
   tx = gsub(pattern = "BC1_INFO__", replacement = 
-              paste0("start at position ",read_structure$bs2,", length ",read_structure$bl2), x = tx)
+              paste0("start at position ", read_structure$bs2, ", length ", read_structure$bl2), x = tx)
   tx = gsub(pattern = "UMI_INFO__", replacement = 
-              paste0("start at position ",read_structure$us,", length ",read_structure$ul), x = tx)
+              paste0("start at position ", read_structure$us, ", length ", read_structure$ul), x = tx)
   
   tx = gsub(pattern = "RM_N__", replacement = as.character(filter_settings$rmN), x = tx)
   tx = gsub(pattern = "RM_LOW__", replacement = as.character(filter_settings$rmlow), x = tx)
@@ -121,7 +121,7 @@ create_report = function(sample_name,
   tx = gsub(pattern = "BAM_MAP__", replacement = map_bam, x = tx)
   
   tx = gsub(pattern = "OUTDIR__", replacement = outdir, x = tx)
-  tx = gsub(pattern = "ANNO_GFF__", replacement = paste(exon_anno, collapse=","), x = tx)
+  tx = gsub(pattern = "ANNO_GFF__", replacement = paste(exon_anno, collapse=", "), x = tx)
   
   tx = gsub(pattern = "STND__", replacement = as.character(stnd), x = tx)
   tx = gsub(pattern = "FIX_CHR__", replacement = as.character(fix_chr), x = tx)
@@ -141,9 +141,9 @@ create_report = function(sample_name,
   tx = gsub(pattern = "SPECIES__", replacement = species, x = tx)
   tx = gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
   
-  writeLines(tx, con=file.path(outdir,"report.Rmd"))
-  knitr::wrap_rmd(file.path(outdir,"report.Rmd"), width = 120,backup = NULL)
-  rmarkdown::render(file.path(outdir,"report.Rmd"), output_file = file.path(outdir,"report.html"))
+  writeLines(tx, con=file.path(outdir, "report.Rmd"))
+  knitr::wrap_rmd(file.path(outdir, "report.Rmd"), width = 120, backup = NULL)
+  rmarkdown::render(file.path(outdir, "report.Rmd"), output_file = file.path(outdir, "report.html"))
 }
 
 
@@ -217,7 +217,7 @@ runscPipe <- function(sample_name,
                   UMI_len=read_structure$ul,
                   fix_chr=FALSE)
   if (is.null(barcode_anno)){ # for Drop-seq
-    bc_annotation = file.path(outdir,"cellindex_annotation.csv")
+    bc_annotation = file.path(outdir, "cellindex_annotation.csv")
     sc_detect_bc(infq=out_fq,
                  outcsv=bc_annotation,
                  bc_len=bc_len)
