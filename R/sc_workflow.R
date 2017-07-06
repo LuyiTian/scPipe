@@ -4,9 +4,9 @@
 #' can be used to generate the SCData obeject from the folder that contains gene counting matrix and QC statistics.
 #'
 #' @param datadir the directory that contains all the data and `stat` subfolder.
-#' @param species the organism of the data. List of possible names can be retrieved using the function 
+#' @param organism the organism of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
-#' @param gene_id gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
+#' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
 #' @param pheno_data the external phenotype data that linked to each single cell. this should be an \code{AnnotatedDataFrame} object
 #' 
@@ -20,7 +20,7 @@
 #' @export
 #' 
 
-create_scd_by_dir = function(datadir, species=NULL, gene_id=NULL, pheno_data=NULL){
+create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL){
   gene_cnt = read.csv(file.path(datadir, "gene_count.csv"),row.names=1)
   cell_stat = read.csv(file.path(datadir,"stat","cell_stat.csv"),row.names=1)
   
@@ -33,8 +33,8 @@ create_scd_by_dir = function(datadir, species=NULL, gene_id=NULL, pheno_data=NUL
                   QualityControlInfo = QualityControlInfo,
                   phenoData = pheno_data,
                   useForExprs = "counts",
-                  organism = species,
-                  gene_id_type = gene_id)
+                  organism = organism,
+                  gene_id_type = gene_id_type)
   
   return(scd)
 }
