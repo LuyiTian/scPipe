@@ -80,7 +80,8 @@ detect_outlier <- function(scd,
   keep <- !(dist>qchisq(0.99, ncol(x)))
   mod <- Mclust(x[keep,],
                G=comp,
-               modelNames="EEE")
+               modelNames="EEE",
+               verbose = FALSE)
 
   if (comp == 1) {
     covr <- covMcd(x, alpha=0.7)
