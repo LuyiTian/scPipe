@@ -176,10 +176,10 @@ newSCData <- function(exprsData = NULL,
 
   # check organism names or gene_id_type is set correctly
   tmp_res = .guess_attr(exprs_mat)
-  if(is.null(organism) | is.na(organism)){
+  if(is.null(organism)){
     if (is.na(tmp_res$organism)){
       warnings("organism should provided \n List of possible names can be \nretrieved using the function `listDatasets`from `biomaRt` package. \n(i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)")
-      organism(scd) = NA
+      organism(scd) = NULL
     }
     else{
       print(paste("organism not provided. make a guess:", tmp_res$organism))
@@ -190,10 +190,10 @@ newSCData <- function(exprsData = NULL,
     # set organism
     organism(scd) = organism
   }
-  if(is.null(gene_id_type) | is.na(organism)){
+  if(is.null(gene_id_type)){
     if (is.na(tmp_res$gene_id_type)){
       warnings("gene_id_type should be provided. \n A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. \nthe commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.")
-      gene_id_type(scd) = NA
+      gene_id_type(scd) = NULL
     }
     else{
       print(paste("gene_id_type not provided. make a guess:", tmp_res$gene_id_type))

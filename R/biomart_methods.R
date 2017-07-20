@@ -68,7 +68,7 @@ convert_geneid <- function(scd,
   }
 
   species <- organism.SCData(scd)
-  if(is.na(species) | is.null(species)){
+  if(species == "NA"){
     print("species not provided.")
     return(scd)
   }

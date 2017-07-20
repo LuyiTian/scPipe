@@ -4,7 +4,7 @@
 #' can be used to generate the SCData obeject from the folder that contains gene counting matrix and QC statistics.
 #'
 #' @param datadir the directory that contains all the data and `stat` subfolder.
-#' @param organism the organism of the data. List of possible names can be retrieved using the function 
+#' @param species the species of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
@@ -20,7 +20,7 @@
 #' @export
 #' 
 
-create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL){
+create_scd_by_dir = function(datadir, species="NA", gene_id_type="NA", pheno_data=NULL){
   gene_cnt = read.csv(file.path(datadir, "gene_count.csv"),row.names=1)
   cell_stat = read.csv(file.path(datadir,"stat","cell_stat.csv"),row.names=1)
   
@@ -33,7 +33,7 @@ create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
                   QualityControlInfo = QualityControlInfo,
                   phenoData = pheno_data,
                   useForExprs = "counts",
-                  organism = organism,
+                  organism = species,
                   gene_id_type = gene_id_type)
   
   return(scd)
@@ -61,7 +61,7 @@ create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
 #' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.
 #' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
-#' @param species the organism of the data. List of possible names can be retrieved using the function 
+#' @param species the species of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
@@ -163,7 +163,7 @@ create_report = function(sample_name,
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
 #' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.
 #' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
-#' @param species the organism of the data. List of possible names can be retrieved using the function 
+#' @param species the species of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
@@ -189,8 +189,8 @@ runscPipe <- function(sample_name,
                       max_mis=1,
                       UMI_cor=1,
                       gene_fl=FALSE,
-                      species,
-                      gene_id_type,
+                      species="NA",
+                      gene_id_type="NA",
                       nthreads=1) {
   out_fq = file.path(outdir, paste0(sample_name, ".fq"))
   bam_align = file.path(outdir, paste0(sample_name, ".align.bam"))

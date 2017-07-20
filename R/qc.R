@@ -76,6 +76,13 @@ detect_outlier <- function(scd,
   if (!all(complete.cases(x))) {
     stop("we find NAs in the `QC_metrics(scd)`, check the quality control matrix")
   }
+  if(is.null(dim(x))){
+    warning("quality control metrics should be at least two dimensions.")
+    QC_met <- pData(QC_metrics(scd))
+    QC_met$outliers <- FALSE
+    QC_metrics(scd) <- QC_met
+    return(scd)
+  }
   dist <- mahalanobis(x, center=colMeans(x), cov=cov(x))
   keep <- !(dist>qchisq(0.99, ncol(x)))
   mod <- Mclust(x[keep,],
@@ -194,7 +201,7 @@ calculate_QC_metrics <- function(scd) {
     print("cannot detect ERCC Spikeins from data. skip `non_ERCC_percent`.")
   }
   # get mt percentage
-  if(!is.na(gene_id_type(scd)) | !is.null(gene_id_type(scd))){
+  if(!(gene_id_type(scd) == "NA")){
     mt_genes <- get_genes_by_GO(returns=gene_id_type(scd),
                                 dataset=organism.SCData(scd),
                                 go=c("GO:0005739"))
@@ -212,7 +219,7 @@ calculate_QC_metrics <- function(scd) {
 
 
   # get ribosomal percentage
-  if(!is.na(gene_id_type(scd)) | !is.null(gene_id_type(scd))){
+  if(!(gene_id_type(scd) == "NA")){
     ribo_genes <- get_genes_by_GO(returns=gene_id_type(scd),
                                dataset=organism.SCData(scd),
                                go=c("GO:0005840"))
@@ -249,7 +256,6 @@ plotQC_pair <- function(scd, sel_col=NULL) {
   else{
     stop("scd must be an SCData object.")
   }
-
   if ("outliers" %in% colnames(x)){
     return(ggpairs(x, mapping = ggplot2::aes_string(colour = "outliers")))
   }
