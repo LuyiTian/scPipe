@@ -181,7 +181,7 @@ runscPipe <- function(sample_name,
                       r1,
                       r2=NULL,
                       read_structure,
-                      filter_settings,
+                      filter_settings=list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
                       genome_index,
                       exon_anno,
                       fix_chr=FALSE,
@@ -191,7 +191,7 @@ runscPipe <- function(sample_name,
                       gene_fl=FALSE,
                       species,
                       gene_id_type,
-                      nthreads) {
+                      nthreads=1) {
   out_fq = file.path(outdir, paste0(sample_name, ".fq"))
   bam_align = file.path(outdir, paste0(sample_name, ".align.bam"))
   bam_map = file.path(outdir, paste0(sample_name, ".mapped.bam"))
