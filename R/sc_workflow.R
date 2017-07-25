@@ -168,6 +168,7 @@ create_report = function(sample_name,
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
 #' @param nthreads number of threads used
+#' @param report whether to generate the html report
 #'
 #' @return an SCData object
 #'
@@ -190,7 +191,8 @@ run_scPipe <- function(sample_name,
                       gene_fl=FALSE,
                       species="NA",
                       gene_id_type="NA",
-                      nthreads=1) {
+                      nthreads=1,
+                      report=TRUE) {
   out_fq = file.path(outdir, paste0(sample_name, ".fq"))
   bam_align = file.path(outdir, paste0(sample_name, ".align.bam"))
   bam_map = file.path(outdir, paste0(sample_name, ".mapped.bam"))
@@ -234,26 +236,28 @@ run_scPipe <- function(sample_name,
                    gene_fl=gene_fl)
 
   scd = create_scd_by_dir(datadir=outdir, species=species, gene_id=gene_id_type)
-  
-  create_report(sample_name=sample_name,
-                outdir=outdir,
-                r1=r1,
-                r2=r2,
-                outfq=out_fq,
-                read_structure=read_structure,
-                filter_settings=filter_settings,
-                align_bam=bam_align,
-                genome_index=genome_index,
-                map_bam=bam_map,
-                exon_anno=exon_anno,
-                stnd=TRUE,
-                fix_chr=fix_chr,
-                barcode_anno=bc_annotation,
-                max_mis=max_mis,
-                UMI_cor=UMI_cor,
-                gene_fl=gene_fl,
-                species=species,
-                gene_id_type=gene_id_type)
+  if(report){
+    create_report(sample_name=sample_name,
+                  outdir=outdir,
+                  r1=r1,
+                  r2=r2,
+                  outfq=out_fq,
+                  read_structure=read_structure,
+                  filter_settings=filter_settings,
+                  align_bam=bam_align,
+                  genome_index=genome_index,
+                  map_bam=bam_map,
+                  exon_anno=exon_anno,
+                  stnd=TRUE,
+                  fix_chr=fix_chr,
+                  barcode_anno=bc_annotation,
+                  max_mis=max_mis,
+                  UMI_cor=UMI_cor,
+                  gene_fl=gene_fl,
+                  species=species,
+                  gene_id_type=gene_id_type)
+  }
+
   return(scd)
 }
   
