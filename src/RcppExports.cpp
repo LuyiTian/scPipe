@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // rcpp_sc_trim_barcode_paired
 void rcpp_sc_trim_barcode_paired(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::CharacterVector r2, Rcpp::NumericVector bs1, Rcpp::NumericVector bl1, Rcpp::NumericVector bs2, Rcpp::NumericVector bl2, Rcpp::NumericVector us, Rcpp::NumericVector ul, Rcpp::NumericVector rmlow, Rcpp::NumericVector rmN, Rcpp::NumericVector minq, Rcpp::NumericVector numbq);
-RcppExport SEXP scPipe_rcpp_sc_trim_barcode_paired(SEXP outfqSEXP, SEXP r1SEXP, SEXP r2SEXP, SEXP bs1SEXP, SEXP bl1SEXP, SEXP bs2SEXP, SEXP bl2SEXP, SEXP usSEXP, SEXP ulSEXP, SEXP rmlowSEXP, SEXP rmNSEXP, SEXP minqSEXP, SEXP numbqSEXP) {
+RcppExport SEXP _scPipe_rcpp_sc_trim_barcode_paired(SEXP outfqSEXP, SEXP r1SEXP, SEXP r2SEXP, SEXP bs1SEXP, SEXP bl1SEXP, SEXP bs2SEXP, SEXP bl2SEXP, SEXP usSEXP, SEXP ulSEXP, SEXP rmlowSEXP, SEXP rmNSEXP, SEXP minqSEXP, SEXP numbqSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outfq(outfqSEXP);
@@ -29,7 +29,7 @@ END_RCPP
 }
 // rcpp_sc_exon_mapping
 void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outbam, Rcpp::CharacterVector annofn, Rcpp::CharacterVector am, Rcpp::CharacterVector ge, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::NumericVector bc_len, Rcpp::NumericVector UMI_len, Rcpp::NumericVector stnd, Rcpp::NumericVector fix_chr);
-RcppExport SEXP scPipe_rcpp_sc_exon_mapping(SEXP inbamSEXP, SEXP outbamSEXP, SEXP annofnSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP bc_lenSEXP, SEXP UMI_lenSEXP, SEXP stndSEXP, SEXP fix_chrSEXP) {
+RcppExport SEXP _scPipe_rcpp_sc_exon_mapping(SEXP inbamSEXP, SEXP outbamSEXP, SEXP annofnSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP bc_lenSEXP, SEXP UMI_lenSEXP, SEXP stndSEXP, SEXP fix_chrSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type inbam(inbamSEXP);
@@ -49,7 +49,7 @@ END_RCPP
 }
 // rcpp_sc_demultiplex
 void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outdir, Rcpp::CharacterVector bc_anno, Rcpp::NumericVector max_mis, Rcpp::CharacterVector am, Rcpp::CharacterVector ge, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::CharacterVector mito);
-RcppExport SEXP scPipe_rcpp_sc_demultiplex(SEXP inbamSEXP, SEXP outdirSEXP, SEXP bc_annoSEXP, SEXP max_misSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP mitoSEXP) {
+RcppExport SEXP _scPipe_rcpp_sc_demultiplex(SEXP inbamSEXP, SEXP outdirSEXP, SEXP bc_annoSEXP, SEXP max_misSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP mitoSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type inbam(inbamSEXP);
@@ -67,7 +67,7 @@ END_RCPP
 }
 // rcpp_sc_gene_counting
 void rcpp_sc_gene_counting(Rcpp::CharacterVector outdir, Rcpp::CharacterVector bc_anno, Rcpp::NumericVector UMI_cor, Rcpp::NumericVector gene_fl);
-RcppExport SEXP scPipe_rcpp_sc_gene_counting(SEXP outdirSEXP, SEXP bc_annoSEXP, SEXP UMI_corSEXP, SEXP gene_flSEXP) {
+RcppExport SEXP _scPipe_rcpp_sc_gene_counting(SEXP outdirSEXP, SEXP bc_annoSEXP, SEXP UMI_corSEXP, SEXP gene_flSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outdir(outdirSEXP);
@@ -80,7 +80,7 @@ END_RCPP
 }
 // rcpp_sc_detect_bc
 void rcpp_sc_detect_bc(Rcpp::CharacterVector infq, Rcpp::CharacterVector outcsv, Rcpp::CharacterVector surfix, Rcpp::NumericVector bc_len, Rcpp::NumericVector max_reads, Rcpp::NumericVector min_count, Rcpp::NumericVector max_mismatch);
-RcppExport SEXP scPipe_rcpp_sc_detect_bc(SEXP infqSEXP, SEXP outcsvSEXP, SEXP surfixSEXP, SEXP bc_lenSEXP, SEXP max_readsSEXP, SEXP min_countSEXP, SEXP max_mismatchSEXP) {
+RcppExport SEXP _scPipe_rcpp_sc_detect_bc(SEXP infqSEXP, SEXP outcsvSEXP, SEXP surfixSEXP, SEXP bc_lenSEXP, SEXP max_readsSEXP, SEXP min_countSEXP, SEXP max_mismatchSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type infq(infqSEXP);
@@ -96,7 +96,7 @@ END_RCPP
 }
 // rcpp_generate_celseq2_data
 void rcpp_generate_celseq2_data(Rcpp::CharacterVector r1fn, Rcpp::CharacterVector r2fn, Rcpp::CharacterVector annofn, Rcpp::CharacterVector bc_anno, Rcpp::CharacterVector fafn, Rcpp::NumericVector UMI_len, Rcpp::NumericVector r_len, Rcpp::NumericVector frag_mean, Rcpp::NumericVector dup_mean, Rcpp::CharacterVector ran_dist, Rcpp::NumericVector param, Rcpp::NumericVector seed);
-RcppExport SEXP scPipe_rcpp_generate_celseq2_data(SEXP r1fnSEXP, SEXP r2fnSEXP, SEXP annofnSEXP, SEXP bc_annoSEXP, SEXP fafnSEXP, SEXP UMI_lenSEXP, SEXP r_lenSEXP, SEXP frag_meanSEXP, SEXP dup_meanSEXP, SEXP ran_distSEXP, SEXP paramSEXP, SEXP seedSEXP) {
+RcppExport SEXP _scPipe_rcpp_generate_celseq2_data(SEXP r1fnSEXP, SEXP r2fnSEXP, SEXP annofnSEXP, SEXP bc_annoSEXP, SEXP fafnSEXP, SEXP UMI_lenSEXP, SEXP r_lenSEXP, SEXP frag_meanSEXP, SEXP dup_meanSEXP, SEXP ran_distSEXP, SEXP paramSEXP, SEXP seedSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r1fn(r1fnSEXP);
@@ -117,12 +117,12 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &scPipe_rcpp_sc_trim_barcode_paired, 13},
-    {"scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &scPipe_rcpp_sc_exon_mapping, 11},
-    {"scPipe_rcpp_sc_demultiplex", (DL_FUNC) &scPipe_rcpp_sc_demultiplex, 9},
-    {"scPipe_rcpp_sc_gene_counting", (DL_FUNC) &scPipe_rcpp_sc_gene_counting, 4},
-    {"scPipe_rcpp_sc_detect_bc", (DL_FUNC) &scPipe_rcpp_sc_detect_bc, 7},
-    {"scPipe_rcpp_generate_celseq2_data", (DL_FUNC) &scPipe_rcpp_generate_celseq2_data, 12},
+    {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 13},
+    {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 11},
+    {"_scPipe_rcpp_sc_demultiplex", (DL_FUNC) &_scPipe_rcpp_sc_demultiplex, 9},
+    {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
+    {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 7},
+    {"_scPipe_rcpp_generate_celseq2_data", (DL_FUNC) &_scPipe_rcpp_generate_celseq2_data, 12},
     {NULL, NULL, 0}
 };
 

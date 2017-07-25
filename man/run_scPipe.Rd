@@ -8,7 +8,7 @@ run_scPipe(sample_name, outdir, r1, r2 = NULL, read_structure,
   filter_settings = list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
   genome_index, exon_anno, fix_chr = FALSE, barcode_anno = NULL,
   max_mis = 1, UMI_cor = 1, gene_fl = FALSE, species = "NA",
-  gene_id_type = "NA", nthreads = 1)
+  gene_id_type = "NA", nthreads = 1, report = TRUE)
 }
 \arguments{
 \item{sample_name}{sample names, the name should not have any space.}
@@ -44,6 +44,8 @@ run_scPipe(sample_name, outdir, r1, r2 = NULL, read_structure,
 the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`}
 
 \item{nthreads}{number of threads used}
+
+\item{report}{whether to generate the html report}
 }
 \value{
 an SCData object
