@@ -276,7 +276,7 @@ plotQC_pair <- function(scd, sel_col=NULL) {
 #'
 #' @export
 #'
-plotMapping <- function(scd,
+plot_mapping <- function(scd,
                         sel_col=NULL,
                         percentage=FALSE,
                         dataname="") {

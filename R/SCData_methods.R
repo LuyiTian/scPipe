@@ -330,8 +330,8 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 })
 
 #' merge multiple SCData object
-#' @rdname mergeSCData
-#' @name mergeSCData
+#' @rdname merge_SCData
+#' @name merge_SCData
 #' @param ... multiple SCDatas. They shold have the same value for class attribute.
 #' @param all only contains interset for features or union.
 #' @param batch (optional) batch information
@@ -340,7 +340,7 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 #'
 #' @export
 #'
-mergeSCData <- function(...,
+merge_SCData <- function(...,
                         all = TRUE,
                         batch = NULL) {
   scd_list <- list(...)

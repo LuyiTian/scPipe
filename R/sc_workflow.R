@@ -148,7 +148,7 @@ create_report = function(sample_name,
 
 
 
-#' runscPipe
+#' run_scPipe
 #'
 #' @param sample_name sample names, the name should not have any space.
 #' @param outdir the output folder
@@ -175,8 +175,7 @@ create_report = function(sample_name,
 #'
 #' @export
 #'
-#' @examples
-runscPipe <- function(sample_name,
+run_scPipe <- function(sample_name,
                       outdir,
                       r1,
                       r2=NULL,
