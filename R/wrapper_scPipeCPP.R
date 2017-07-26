@@ -112,7 +112,6 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 }
 
 
-
 #' sc_demultiplex
 #' 
 #' separate bam file by cell, output to outdir/count/[cell_id].csv.
@@ -149,7 +148,6 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 }
 
 
-
 #' sc_gene_counting
 #' 
 #' merge UMI and generate gene counting matrix
@@ -176,9 +174,7 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE){
   }
   if(!file.exists(bc_anno)){stop("barcode annotation file does not exists.")}
   rcpp_sc_gene_counting(outdir, bc_anno, UMI_cor, i_gene_fl)
-
 }
-
 
 
 #' sc_celseq2_simulator
@@ -208,7 +204,6 @@ sc_celseq2_simulator = function(r1fn, r2fn, annofn, bc_anno, fafn,
                                 ran_dist="gamma",
                                 param=list(shape=0.2, scale=50),
                                 seed=NA){
-
   if (ran_dist=="gamma"){
     r_dist = "gamma_random"
     pam = c(param$shape, param$scale)
@@ -223,9 +218,7 @@ sc_celseq2_simulator = function(r1fn, r2fn, annofn, bc_anno, fafn,
   else{
     rcpp_generate_celseq2_data(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len, r_len, frag_mean, dup_mean, r_dist, pam, seed)
   }
-
 }
-
 
 
 #' sc_detect_bc
@@ -244,11 +237,8 @@ sc_celseq2_simulator = function(r1fn, r2fn, annofn, bc_anno, fafn,
 #' @examples
 #' #TODO
 sc_detect_bc = function(infq, outcsv, surfix="CELL_", bc_len, max_reads=1000000, min_count=10, max_mismatch=1){
-
   if(!file.exists(infq)){stop("input fastq file does not exists.")}
   if(max_reads=="all"){m_r = -1}
   else{m_r=max_reads}
   rcpp_sc_detect_bc(infq, outcsv, surfix, bc_len, m_r, min_count, max_mismatch)
-  
 }
-

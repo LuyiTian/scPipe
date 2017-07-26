@@ -32,7 +32,6 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
                   values=go,
                   mart=mart)
   return(G_list[, returns])
-
 }
 
 

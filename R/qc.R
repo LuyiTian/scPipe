@@ -215,9 +215,6 @@ calculate_QC_metrics <- function(scd) {
     print("no gene_id_type, skip `non_mt_percent`")
   }
 
-
-
-
   # get ribosomal percentage
   if(!(gene_id_type(scd) == "NA")){
     ribo_genes <- get_genes_by_GO(returns=gene_id_type(scd),
@@ -335,6 +332,3 @@ remove_outliers <- function(scd) {
   out_cell <- pData(QC_metrics(scd))$outliers == FALSE
   return(scd[, out_cell])
 }
-
-
-

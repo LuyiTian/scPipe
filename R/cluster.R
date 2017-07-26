@@ -43,6 +43,4 @@ sc_dim_reduction = function(scd,
   reduced_dim = tsne_out$Y
   rownames(reduced_dim) = colnames(exprs_mat)
   colnames(reduced_dim) = paste("Dim",1:n,sep="")
-
-
 }
