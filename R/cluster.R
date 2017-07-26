@@ -17,9 +17,9 @@
 #' @examples
 #' #TODO
 #'
-sc_dim_reduction = function(scd,
-                            k=20,
-                            n=2){
+scDimReduction <- function(scd,
+                           k=20,
+                           n=2){
   # check format:
   if (is(scd, "SCData")){
     exprs_mat <- switch(scd@useForExprs,

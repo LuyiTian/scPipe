@@ -20,7 +20,7 @@
 #' @examples
 #' #TODO
 #'
-get_genes_by_GO <- function(returns="ensembl_gene_id",
+getGenesByGO <- function(returns="ensembl_gene_id",
                             dataset="mmusculus_gene_ensembl",
                             go=NULL) {
   if (is.null(go)) {
@@ -57,7 +57,7 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 #' @examples
 #' #TODO
 #'
-convert_geneid <- function(scd,
+convertGeneID <- function(scd,
                            returns="external_gene_name",
                            all=TRUE) {
   if (!is(scd, "SCData")) {

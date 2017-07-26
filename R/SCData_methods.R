@@ -1,6 +1,6 @@
 #' merge matrix for multiple SCData object
 #'
-.merge_mat = function(scd_list,func){
+.merge_mat <- function(scd_list,func){
   if(all(unlist(lapply(scd_list,function(x){!is.null(func(x))})))){
     all_exprs = lapply(scd_list, function(x){func(x)})
     all_gene_id = rownames(all_exprs[[1]])
@@ -26,7 +26,7 @@
 
 #' guess the organism and species from input data
 #' 
-.guess_attr = function(expr_mat){
+.guess_attr <- function(expr_mat){
   hsp_ensembl = length(grep("^ENSG", rownames(expr_mat)))
   mm_ensembl = length(grep("^ENSMUSG", rownames(expr_mat)))
   if((hsp_ensembl>0) & (hsp_ensembl>mm_ensembl)){
@@ -408,15 +408,15 @@ mergeSCData <- function(...,
 
 
   print("merge quality control metrics")
-  qc_col = varLabels(QC_metrics(scd_list[[1]]))
+  qc_col = varLabels(QCMetrics(scd_list[[1]]))
   merged_qc = NULL
   if (length(qc_col)>0){
-    if(all(unlist(lapply(scd_list, function(x){varLabels(QC_metrics(x)) == qc_col})))){
+    if(all(unlist(lapply(scd_list, function(x){varLabels(QCMetrics(x)) == qc_col})))){
       merged_qc =
-        AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(QC_metrics(x))}))))
+        AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(QCMetrics(x))}))))
     }
     else{
-      stop("the colnames in QC_metrics should be the same for all data.")
+      stop("the colnames in QCMetrics should be the same for all data.")
     }
   }
 
@@ -467,8 +467,8 @@ mergeSCData <- function(...,
 }
 
 #' Get or set quality control metrics from an SCData object
-#' @name QC_metrics
-#' @rdname QC_metrics
+#' @name QCMetrics
+#' @rdname QCMetrics
 #' @param object An \code{\link{SCData}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
@@ -478,23 +478,23 @@ mergeSCData <- function(...,
 #' @export
 #'
 #'
-QC_metrics.SCData <- function(object) {
+QCMetrics.SCData <- function(object) {
   return(object@QualityControlInfo)
 }
 
-#' @name QC_metrics
-#' @rdname QC_metrics
-#' @aliases QC_metrics
+#' @name QCMetrics
+#' @rdname QCMetrics
+#' @aliases QCMetrics
 #' @export
 #'
-setMethod("QC_metrics", signature(object = "SCData"),
-          QC_metrics.SCData)
+setMethod("QCMetrics", signature(object = "SCData"),
+          QCMetrics.SCData)
 
-#' @name QC_metrics<-
-#' @aliases QC_metrics
-#' @rdname QC_metrics
-#' @exportMethod "QC_metrics<-"
-setReplaceMethod("QC_metrics",
+#' @name QCMetrics<-
+#' @aliases QCMetrics
+#' @rdname QCMetrics
+#' @exportMethod "QCMetrics<-"
+setReplaceMethod("QCMetrics",
                  signature="SCData",
                  function(object, value) {
                    object@QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(value))
@@ -578,8 +578,8 @@ setReplaceMethod("FACSData",
 )
 
 #' Get or set \code{reducedExprDimension} from an SCData object
-#' @name DimRd_expr
-#' @rdname DimRd_expr
+#' @name DimReduceExpr
+#' @rdname DimReduceExpr
 #' @param object An \code{\link{SCData}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
@@ -589,24 +589,24 @@ setReplaceMethod("FACSData",
 #'
 #' @export
 #'
-DimRd_expr.SCData <- function(object) {
+DimReduceExpr.SCData <- function(object) {
   return(object@reducedExprDimension)
 }
 
-#' @name DimRd_expr
-#' @rdname DimRd_expr
-#' @aliases DimRd_expr
+#' @name DimReduceExpr
+#' @rdname DimReduceExpr
+#' @aliases DimReduceExpr
 #' @export
 #'
-setMethod("DimRd_expr", signature(object = "SCData"),
-          DimRd_expr.SCData)
+setMethod("DimReduceExpr", signature(object = "SCData"),
+          DimReduceExpr.SCData)
 
 
-#' @name DimRd_expr<-
-#' @aliases DimRd_expr
-#' @rdname DimRd_expr
-#' @exportMethod "DimRd_expr<-"
-setReplaceMethod("DimRd_expr",
+#' @name DimReduceExpr<-
+#' @aliases DimReduceExpr
+#' @rdname DimReduceExpr
+#' @exportMethod "DimReduceExpr<-"
+setReplaceMethod("DimReduceExpr",
                  signature="SCData",
                  function(object, value) {
                    object@reducedExprDimension = value
