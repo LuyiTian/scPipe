@@ -21,8 +21,8 @@
 #' #TODO
 #'
 getGenesByGO <- function(returns="ensembl_gene_id",
-                            dataset="mmusculus_gene_ensembl",
-                            go=NULL) {
+                         dataset="mmusculus_gene_ensembl",
+                         go=NULL) {
   if (is.null(go)) {
     stop("must provide GO term. (i.e go=c('GO:0005739'))")
   }
@@ -58,8 +58,8 @@ getGenesByGO <- function(returns="ensembl_gene_id",
 #' #TODO
 #'
 convertGeneID <- function(scd,
-                           returns="external_gene_name",
-                           all=TRUE) {
+                          returns="external_gene_name",
+                          all=TRUE) {
   if (!is(scd, "SCData")) {
     stop("scd must be an SCData object.")
   }
@@ -95,7 +95,7 @@ convertGeneID <- function(scd,
     }
     rownames(scd) <- G_list[, returns]
   }
-  else{
+  else {
     G_list <- G_list[!is.na(G_list[, returns]), ]
     scd <- scd[!is.na(G_list[, returns]), ]
     if (!(gene_id_type(scd) %in% colnames(Biobase::fData(scd)))) {

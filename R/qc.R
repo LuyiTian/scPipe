@@ -70,7 +70,7 @@ detectOutlier <- function(scd,
     }
     x <- Biobase::pData(QCMetrics(scd))[, colnames(QCMetrics(scd)) %in% sel_col]
   }
-  else{
+  else {
     stop("scd must be an SCData object.")
   }
   if (!all(complete.cases(x))) {
@@ -78,16 +78,16 @@ detectOutlier <- function(scd,
   }
   dist <- mahalanobis(x, center=colMeans(x), cov=cov(x))
   keep <- !(dist>qchisq(0.99, ncol(x)))
-  mod <- Mclust(x[keep,],
-               G=comp,
-               modelNames="EEE",
-               verbose = FALSE)
+  mod <- Mclust(x[keep, ],
+                G=comp,
+                modelNames="EEE",
+                verbose = FALSE)
 
   if (comp == 1) {
     covr <- covMcd(x, alpha=0.7)
     dist <- mahalanobis(x,
-                       center=covr$center,
-                       cov=covr$cov)
+                        center=covr$center,
+                        cov=covr$cov)
     mean_diff <- sign(t(x)-covr$center)
     QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
     neg_dist <- dist[QC_sign == -1]
@@ -95,7 +95,7 @@ detectOutlier <- function(scd,
     if (type == "both") {
       outlier_cells <- .qq_outliers_robust(neg_dist, ncol(x), conf[1])
       outlier_cells <- c(outlier_cells,
-                        .qq_outliers_robust(pos_dist, ncol(x), conf[2]))
+                         .qq_outliers_robust(pos_dist, ncol(x), conf[2]))
     }
     else if (type == "low") {
       outlier_cells <- .qq_outliers_robust(neg_dist, ncol(x), conf[1])
@@ -104,18 +104,18 @@ detectOutlier <- function(scd,
       outlier_cells <- .qq_outliers_robust(pos_dist, ncol(x), conf[2])
     }
   }
-  else{
-    ord_fst <- c(1:comp)[order(mod$parameters$mean[1,], decreasing <- TRUE)]
+  else {
+    ord_fst <- c(1:comp)[order(mod$parameters$mean[1, ], decreasing <- TRUE)]
     poor_comp <- ord_fst[2:comp]
     good_comp <- ord_fst[1]
     keep1 <- rep(TRUE, nrow(x))
     keep1[keep][mod$classification %in% poor_comp] <- FALSE
     keep1[!keep] <- FALSE
-    sub_x <- x[keep1,]
+    sub_x <- x[keep1, ]
     covr <- covMcd(sub_x, alpha=0.7)
     sub_dist <- mahalanobis(sub_x,
-                           center=covr$center,
-                           cov=covr$cov)
+                            center=covr$center,
+                            cov=covr$cov)
 
     mean_diff <- sign(t(sub_x)-covr$center)
     QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
@@ -123,8 +123,8 @@ detectOutlier <- function(scd,
     pos_dist <- sub_dist[QC_sign == 1]
     outlier_cells <- .qq_outliers_robust(neg_dist, ncol(sub_x), conf[1])
     outlier_cells <- c(outlier_cells,
-                      .qq_outliers_robust(pos_dist, ncol(sub_x), conf[2]))
-    outlier_cells <- c(outlier_cells, rownames(x[!keep1,]))
+                       .qq_outliers_robust(pos_dist, ncol(sub_x), conf[2]))
+    outlier_cells <- c(outlier_cells, rownames(x[!keep1, ]))
     if (!(type == "both")) {
       mean_diff <- sign(t(x)-mod$parameters$mean[, good_comp])
       QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
@@ -173,13 +173,13 @@ calculateQCMetrics <- function(scd) {
                         fpkm=fpkm(scd),
                         counts=counts(scd))
   }
-  else{
+  else {
     stop("require a SCData object.")
   }
   QC_met <- Biobase::pData(QCMetrics(scd))
   # get ERCC ratio
   spikein <- Biobase::fData(scd)$isSpike
-  exon_count <- colSums(exprs_mat[!spikein,])
+  exon_count <- colSums(exprs_mat[!spikein, ])
   gene_number <- colSums(exprs_mat>0)
   if (all(gene_number == 0)) {
     stop("all gene have zero expression values. check your expression matrix.")
@@ -187,19 +187,19 @@ calculateQCMetrics <- function(scd) {
   QC_met$total_count_per_cell <- exon_count
   QC_met$number_of_genes <- gene_number
   if (any(spikein)) {
-    ERCC_count <- colSums(exprs_mat[spikein,])
+    ERCC_count <- colSums(exprs_mat[spikein, ])
     QC_met$non_ERCC_percent <- exon_count/(ERCC_count+exon_count)
   }
-  else{
+  else {
     print("cannot detect ERCC Spikeins from data. skip `non_ERCC_percent`.")
   }
   # get mt percentage
   mt_genes <- getGenesByGO(returns=gene_id_type(scd),
-                              dataset=organism.SCData(scd),
-                              go=c("GO:0005739"))
+                           dataset=organism.SCData(scd),
+                           go=c("GO:0005739"))
   if (length(mt_genes)>0) {
     if (any(rownames(exprs_mat) %in% mt_genes)) {
-      mt_count <- colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes,])
+      mt_count <- colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes, ])
       QC_met$non_mt_percent <- (exon_count-mt_count)/(exon_count+0.01) # add 0.01 to make sure they are not NA
     }
   }
@@ -212,7 +212,7 @@ calculateQCMetrics <- function(scd) {
                              go=c("GO:0005840"))
   if (length(ribo_genes)>0) {
     if (any(rownames(exprs_mat) %in% ribo_genes)) {
-      ribo_count <- colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes,])
+      ribo_count <- colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes, ])
       QC_met$non_ribo_percent <- (exon_count-ribo_count)/(exon_count+0.01)
     }
   }
@@ -238,14 +238,14 @@ plotQC_pair <- function(scd, sel_col=NULL) {
     }
     x <- pData(QCMetrics(scd))[, colnames(QCMetrics(scd)) %in% sel_col]
   }
-  else{
+  else {
     stop("scd must be an SCData object.")
   }
 
-  if ("outliers" %in% colnames(x)){
+  if ("outliers" %in% colnames(x)) {
     return(ggpairs(x, mapping = ggplot2::aes_string(colour = "outliers")))
   }
-  else{
+  else {
     return(ggpairs(x))
   }
 }
@@ -273,7 +273,7 @@ plotMapping <- function(scd,
     }
     x <- pData(QCMetrics(scd))[, sel_col]
   }
-  else{
+  else {
     stop("scd must be an SCData object.")
   }
 
@@ -293,7 +293,7 @@ plotMapping <- function(scd,
       theme(axis.title.x=element_blank(), axis.text.x=element_blank())+
       ggtitle(paste0("overall mapping statistics of ", dataname, " (number of reads)"))
   }
-  else{
+  else {
     p <- ggplot(dat.m1, aes_string(x="sample_name", y="value", fill="variable")) + scale_fill_brewer(palette="Set1")+
       geom_bar(stat="identity", width=1)+
       ylab("percentage of reads")+

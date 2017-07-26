@@ -34,7 +34,7 @@
 #'    onesense tSNE coordinates for both phenotype and transcriptome.}
 #'    \item{\code{QualityControlInfo}:}{Data frame of class
 #'    \code{"AnnotatedDataFrame"} that can contain QC metrics used for in QC.}
-#'    \item{\code{useForExprs}:}{Character string (one of 'exprs','tpm','counts' or 'fpkm') indicating
+#'    \item{\code{useForExprs}:}{Character string (one of 'exprs', 'tpm', 'counts' or 'fpkm') indicating
 #'    which expression representation both internal methods and external packages should use.
 #'    Defaults to 'exprs'.}
 #'}
