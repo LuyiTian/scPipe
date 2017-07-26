@@ -68,6 +68,10 @@ convert_geneid <- function(scd,
   }
 
   species <- organism.SCData(scd)
+  if(species == "NA"){
+    print("species not provided.")
+    return(scd)
+  }
   mart <- useDataset(species, useMart("ensembl"))
   G_list <- getBM(filters=gene_id_type(scd), attributes=c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
 

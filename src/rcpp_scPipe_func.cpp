@@ -114,7 +114,8 @@ void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam,
                     Rcpp::CharacterVector ge,
                     Rcpp::CharacterVector bc,
                     Rcpp::CharacterVector mb,
-                    Rcpp::CharacterVector mito)
+                    Rcpp::CharacterVector mito,
+                    Rcpp::LogicalVector has_UMI)
 {
   std::string c_inbam = Rcpp::as<std::string>(inbam);
   std::string c_outdir = Rcpp::as<std::string>(outdir);
@@ -127,13 +128,14 @@ void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam,
   std::string c_mb = Rcpp::as<std::string>(mb);
 
   int c_max_mis = Rcpp::as<int>(max_mis);
+  bool c_has_UMI = Rcpp::as<bool>(has_UMI);
 
   Barcode bar;
   bar.read_anno(c_bc_anno);
 
   Bamdemultiplex bam_de = Bamdemultiplex(c_outdir, bar, c_bc, c_mb, c_ge, c_am, c_mito);
 
-  bam_de.barcode_demultiplex(c_inbam, c_max_mis);
+  bam_de.barcode_demultiplex(c_inbam, c_max_mis, c_has_UMI);
   bam_de.write_statistics("overall_stat", "chr_stat", "cell_stat");
 }
 

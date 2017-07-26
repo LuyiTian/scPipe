@@ -68,7 +68,7 @@ void Bamdemultiplex::write_statistics(string overall_stat_f, string chr_stat_f, 
     }
 }
 
-int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch)
+int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch, bool has_UMI)
 {
     check_file_exists(bam_path); // htslib does not check if file exist so we do it manually
     bam1_t *b = bam_init1();
@@ -150,17 +150,35 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch)
                     }
                     if (a_tag.empty())
                     {
-                        out_reads[bar.barcode_dict[match_res]].push_back(string(bam_aux2Z(bam_aux_get(b, g_ptr)))+","+
+                        if(has_UMI)
+                        {
+                            out_reads[bar.barcode_dict[match_res]].push_back(string(bam_aux2Z(bam_aux_get(b, g_ptr)))+","+
                             string(bam_aux2Z(bam_aux_get(b, m_ptr)))+","+
                             std::to_string(b->core.pos));
+                        }
+                        else
+                        {
+                            out_reads[bar.barcode_dict[match_res]].push_back(string(bam_aux2Z(bam_aux_get(b, g_ptr)))+","+
+                            string(bam_get_qname(b))+","+
+                            std::to_string(b->core.pos));
+                        }
+                        
                     }
                     else
                     {
-                        out_reads[bar.barcode_dict[match_res]].push_back(string(bam_aux2Z(bam_aux_get(b, g_ptr)))+","+
+                        if(has_UMI)
+                        {
+                            out_reads[bar.barcode_dict[match_res]].push_back(string(bam_aux2Z(bam_aux_get(b, g_ptr)))+","+
                             string(bam_aux2Z(bam_aux_get(b, m_ptr)))+","+
                             std::to_string(-map_status));
+                        }
+                        else
+                        {
+                            out_reads[bar.barcode_dict[match_res]].push_back(string(bam_aux2Z(bam_aux_get(b, g_ptr)))+","+
+                            string(bam_get_qname(b))+","+
+                            std::to_string(-map_status));
+                        }
                     }
-
 
                 }
             }

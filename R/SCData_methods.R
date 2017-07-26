@@ -178,7 +178,8 @@ newSCData <- function(exprsData = NULL,
   tmp_res = .guess_attr(exprs_mat)
   if(is.null(organism)){
     if (is.na(tmp_res$organism)){
-      stop("organism cannot be NULL. \n List of possible names can be \nretrieved using the function `listDatasets`from `biomaRt` package. \n(i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)")
+      warnings("organism should provided \n List of possible names can be \nretrieved using the function `listDatasets`from `biomaRt` package. \n(i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)")
+      organism(scd) = NULL
     }
     else{
       print(paste("organism not provided. make a guess:", tmp_res$organism))
@@ -191,7 +192,8 @@ newSCData <- function(exprsData = NULL,
   }
   if(is.null(gene_id_type)){
     if (is.na(tmp_res$gene_id_type)){
-      stop("gene_id_type cannot be NULL. \n A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. \nthe commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.")
+      warnings("gene_id_type should be provided. \n A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. \nthe commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.")
+      gene_id_type(scd) = NULL
     }
     else{
       print(paste("gene_id_type not provided. make a guess:", tmp_res$gene_id_type))
@@ -328,8 +330,8 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 })
 
 #' merge multiple SCData object
-#' @rdname mergeSCData
-#' @name mergeSCData
+#' @rdname merge_SCData
+#' @name merge_SCData
 #' @param ... multiple SCDatas. They shold have the same value for class attribute.
 #' @param all only contains interset for features or union.
 #' @param batch (optional) batch information
@@ -338,7 +340,7 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 #'
 #' @export
 #'
-mergeSCData <- function(...,
+merge_SCData <- function(...,
                         all = TRUE,
                         batch = NULL) {
   scd_list <- list(...)

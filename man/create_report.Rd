@@ -43,7 +43,7 @@ create_report(sample_name, outdir, r1, r2 = NULL, outfq, read_structure,
 
 \item{gene_fl}{whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene}
 
-\item{species}{the organism of the data. List of possible names can be retrieved using the function 
+\item{species}{the species of the data. List of possible names can be retrieved using the function 
 `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)}
 
 \item{gene_id_type}{gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 

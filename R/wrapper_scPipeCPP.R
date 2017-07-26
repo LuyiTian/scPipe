@@ -128,6 +128,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #' @param bc cell barcode tag (default: YC)
 #' @param mb molecular barcode tag (default: YM)
 #' @param mito mitochondrial chromosome name, should be consistant with the chromosome name in bam file
+#' @param has_UMI whether the protocol contains UMI (default: TRUE)
 #'
 #' @export
 #'
@@ -138,12 +139,13 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
                           am="YE", ge="GE",
                           bc="YC",
                           mb="YM",
-                          mito="MT"){
+                          mito="MT",
+                          has_UMI=TRUE){
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
   if(!file.exists(inbam)){stop("input bam file does not exists.")}
   if(!file.exists(bc_anno)){stop("barcode annotation file does not exists.")}
-  rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito)
+  rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito, has_UMI)
 }
 
 
