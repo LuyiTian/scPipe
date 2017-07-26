@@ -19,9 +19,7 @@ fpkm(object)
 
 fpkm(object) <- value
 
-\S4method{fpkm}{SCData}(object)
-
-\S4method{fpkm}{SCData,matrix}(object)<-value
+fpkm.SCData(object)
 
 \S4method{fpkm}{SCData}(object)
 

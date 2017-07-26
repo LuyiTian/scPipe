@@ -19,9 +19,7 @@ cpm(object)
 
 cpm(object) <- value
 
-\S4method{cpm}{SCData}(object)
-
-\S4method{cpm}{SCData,matrix}(object)<-value
+cpmSCData(object)
 
 \S4method{cpm}{SCData}(object)
 

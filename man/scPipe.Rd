@@ -7,18 +7,8 @@
 \alias{scPipe-package}
 \title{scPipe - single cell RNA-seq pipeline}
 \description{
-It demultiplex, it quality control, it plots:
+It demultiplex, it quality control, it plots
 }
-\section{A}{
-
-TODO
-}
-
-\section{B}{
-
-TODO
-}
-
 \author{
 Luyi Tian <tian.l@wehi.edu.au>; Shian Su <su.s@wehi.edu.au>
 }

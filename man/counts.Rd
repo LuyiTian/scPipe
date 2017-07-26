@@ -10,9 +10,7 @@
 \alias{counts}
 \title{Accessors for the 'counts' element of an SCData object.}
 \usage{
-\S4method{counts}{SCData}(object)
-
-\S4method{counts}{SCData,matrix}(object)<-value
+counts.SCData(object)
 
 \S4method{counts}{SCData}(object)
 

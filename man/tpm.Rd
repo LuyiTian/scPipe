@@ -19,9 +19,7 @@ tpm(object)
 
 tpm(object) <- value
 
-\S4method{tpm}{SCData}(object)
-
-\S4method{tpm}{SCData,matrix}(object)<-value
+tpm.SCData(object)
 
 \S4method{tpm}{SCData}(object)
 
