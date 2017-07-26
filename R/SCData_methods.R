@@ -5,7 +5,7 @@
     all_exprs = lapply(scd_list, function(x) {func(x)})
     all_gene_id = rownames(all_exprs[[1]])
     all_cell_id = colnames(all_exprs[[1]])
-    for(i in 2:length(all_exprs)) {
+    for (i in 2:length(all_exprs)) {
       all_gene_id = union(all_gene_id, rownames(all_exprs[[i]]))
       all_cell_id = c(all_cell_id, colnames(all_exprs[[i]]))
     }
@@ -13,7 +13,7 @@
                           nrow = length(all_gene_id),
                           ncol = length(all_cell_id),
                           dimnames = list(all_gene_id, all_cell_id))
-    for(i in 1:length(all_exprs)) {
+    for (i in 1:length(all_exprs)) {
       merged_exprs[rownames(all_exprs[[i]]), colnames(all_exprs[[i]])] = all_exprs[[i]]
     }
   }
