@@ -1,20 +1,20 @@
 #' merge matrix for multiple SCData object
 #'
-.merge_mat = function(scd_list,func) {
-  if (all(unlist(lapply(scd_list,function(x) {!is.null(func(x))})))) {
+.merge_mat = function(scd_list, func) {
+  if (all(unlist(lapply(scd_list, function(x) {!is.null(func(x))})))) {
     all_exprs = lapply(scd_list, function(x) {func(x)})
     all_gene_id = rownames(all_exprs[[1]])
     all_cell_id = colnames(all_exprs[[1]])
     for(i in 2:length(all_exprs)) {
-      all_gene_id = union(all_gene_id,rownames(all_exprs[[i]]))
-      all_cell_id = c(all_cell_id,colnames(all_exprs[[i]]))
+      all_gene_id = union(all_gene_id, rownames(all_exprs[[i]]))
+      all_cell_id = c(all_cell_id, colnames(all_exprs[[i]]))
     }
     merged_exprs = matrix(0,
                           nrow = length(all_gene_id),
                           ncol = length(all_cell_id),
-                          dimnames = list(all_gene_id,all_cell_id))
+                          dimnames = list(all_gene_id, all_cell_id))
     for(i in 1:length(all_exprs)) {
-      merged_exprs[rownames(all_exprs[[i]]),colnames(all_exprs[[i]])] = all_exprs[[i]]
+      merged_exprs[rownames(all_exprs[[i]]), colnames(all_exprs[[i]])] = all_exprs[[i]]
     }
   }
   else {
@@ -81,7 +81,7 @@ newSCData <- function(exprsData = NULL,
                       reducedFACSDimension = NULL,
                       onesense = NULL,
                       QualityControlInfo = NULL,
-                      useForExprs = c("exprs","tpm","cpm","counts","fpkm")) {
+                      useForExprs = c("exprs", "tpm", "cpm", "counts", "fpkm")) {
 
   # Check that at least we have the expression data we wanted
   if (missing(useForExprs)) {
@@ -357,36 +357,36 @@ merge_SCData <- function(...,
   if (length(scd_list) < 2) {
     stop("should at least contain two SCData object.")
   }
-  if (!all(unlist(lapply(scd_list,function(x) {is(x, "SCData")})))) {
+  if (!all(unlist(lapply(scd_list, function(x) {is(x, "SCData")})))) {
     stop("all data should be SCData object")
   }
   logged = scd_list[[1]]@logged
-  if (!all(unlist(lapply(scd_list,function(x) {x@logged == logged})))) {
+  if (!all(unlist(lapply(scd_list, function(x) {x@logged == logged})))) {
     stop("data do not have the same value for the 'logged' slot.")
   }
 
   useForExprs = scd_list[[1]]@useForExprs
-  if (!all(unlist(lapply(scd_list,function(x) {x@useForExprs == useForExprs})))) {
+  if (!all(unlist(lapply(scd_list, function(x) {x@useForExprs == useForExprs})))) {
     stop("data do not have the same value for the 'useForExprs' slot.")
   }
 
   logExprsOffset = scd_list[[1]]@logExprsOffset
-  if (!all(unlist(lapply(scd_list,function(x) {x@logExprsOffset == logExprsOffset})))) {
+  if (!all(unlist(lapply(scd_list, function(x) {x@logExprsOffset == logExprsOffset})))) {
     stop("data do not have the same value for the 'logExprsOffset' slot.")
   }
 
   the_organism = organism.SCData(scd_list[[1]])
-  if (!all(unlist(lapply(scd_list,function(x) {organism.SCData(x) == the_organism})))) {
+  if (!all(unlist(lapply(scd_list, function(x) {organism.SCData(x) == the_organism})))) {
     stop("data do not have the same value for the 'organism' slot.")
   }
 
   gene_id_type = scd_list[[1]]@gene_id_type
-  if (!all(unlist(lapply(scd_list,function(x) {x@gene_id_type == gene_id_type})))) {
+  if (!all(unlist(lapply(scd_list, function(x) {x@gene_id_type == gene_id_type})))) {
     stop("data do not have the same value for the 'gene_id_type' slot.")
   }
 
   print("merge expression matrix")
-  merged_exprs = .merge_mat(scd_list,exprs)
+  merged_exprs = .merge_mat(scd_list, exprs)
 
   print("merge phenotype")
   ph_col = varLabels(scd_list[[1]])
@@ -394,7 +394,7 @@ merge_SCData <- function(...,
   if (length(ph_col)>0) {
     if (all(unlist(lapply(scd_list, function(x) {varLabels(x) == ph_col})))) {
       merged_ph =
-        AnnotatedDataFrame(data=Reduce(rbind,lapply(scd_list,function(x) {pData(x)})))
+        AnnotatedDataFrame(data=Reduce(rbind, lapply(scd_list, function(x) {pData(x)})))
     }
     else {
       stop("the colnames in phenoData should be the same for all data.")
@@ -405,7 +405,7 @@ merge_SCData <- function(...,
   }
   else {
     batch_num =unname(unlist(lapply(scd_list, function(x) {nrow(pData(x))})))
-    merged_ph$batch = rep(batch,times=as.vector(batch_num))
+    merged_ph$batch = rep(batch, times=as.vector(batch_num))
   }
 
 
@@ -415,7 +415,7 @@ merge_SCData <- function(...,
   if (length(qc_col)>0) {
     if (all(unlist(lapply(scd_list, function(x) {varLabels(QC_metrics(x)) == qc_col})))) {
       merged_qc =
-        AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x) {pData(QC_metrics(x))}))))
+        AnnotatedDataFrame(data=Reduce(rbind, (lapply(scd_list, function(x) {pData(QC_metrics(x))}))))
     }
     else {
       stop("the colnames in QC_metrics should be the same for all data.")
@@ -428,7 +428,7 @@ merge_SCData <- function(...,
   if (length(fac_col)>0) {
     if (all(unlist(lapply(scd_list, function(x) {varLabels(FACSData(x)) == fac_col})))) {
       merged_fac =
-        AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x) {pData(FACSData(x))}))))
+        AnnotatedDataFrame(data=Reduce(rbind, (lapply(scd_list, function(x) {pData(FACSData(x))}))))
     }
     else {
       stop("the colnames in phenoData should be the same for all data.")
@@ -451,19 +451,19 @@ merge_SCData <- function(...,
               useForExprs = "exprs")
 
   if (!is.null(fpkm(scd_list[[1]]))) {
-    fpkm(new_scd) = .merge_mat(scd_list,fpkm)
+    fpkm(new_scd) = .merge_mat(scd_list, fpkm)
   }
 
   if (!is.null(cpm(scd_list[[1]]))) {
-    cpm(new_scd) = .merge_mat(scd_list,cpm)
+    cpm(new_scd) = .merge_mat(scd_list, cpm)
   }
 
   if (!is.null(counts(scd_list[[1]]))) {
-    counts(new_scd) = .merge_mat(scd_list,counts)
+    counts(new_scd) = .merge_mat(scd_list, counts)
   }
 
   if (!is.null(tpm(scd_list[[1]]))) {
-    tpm(new_scd) = .merge_mat(scd_list,tpm)
+    tpm(new_scd) = .merge_mat(scd_list, tpm)
   }
   return(new_scd)
 }

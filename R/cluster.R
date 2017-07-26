@@ -37,10 +37,10 @@ sc_dim_reduction = function(scd,
   }
 
   pca_out = prcomp(t(exprs_mat))
-  # k = pca_permutation(pca_out,n=10) TODO
-  dif = DiffusionMap(pca_out$x[,1:k],n.eigs = k)
-  tsne_out = Rtsne(dif@eigenvectors,dim=n)
+  # k = pca_permutation(pca_out, n=10) TODO
+  dif = DiffusionMap(pca_out$x[, 1:k], n.eigs = k)
+  tsne_out = Rtsne(dif@eigenvectors, dim=n)
   reduced_dim = tsne_out$Y
   rownames(reduced_dim) = colnames(exprs_mat)
-  colnames(reduced_dim) = paste("Dim",1:n,sep="")
+  colnames(reduced_dim) = paste("Dim", 1:n, sep="")
 }

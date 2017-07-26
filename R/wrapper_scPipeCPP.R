@@ -22,7 +22,7 @@
 #' @examples
 #' #TODO
 sc_trim_barcode = function(outfq, r1, r2=NULL,
-                           read_structure = list(bs1=-1,bl1=2, bs2=6, bl2=8, us=0, ul=6),
+                           read_structure = list(bs1=-1, bl1=2, bs2=6, bl2=8, us=0, ul=6),
                            filter_settings = list(rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)) {
   if (filter_settings$rmlow) {
     i_rmlow = 1

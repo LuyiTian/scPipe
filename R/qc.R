@@ -85,7 +85,7 @@ detect_outlier <- function(scd,
   }
   dist <- mahalanobis(x, center=colMeans(x), cov=cov(x))
   keep <- !(dist>qchisq(0.99, ncol(x)))
-  mod <- Mclust(x[keep,],
+  mod <- Mclust(x[keep, ],
                G=comp,
                modelNames="EEE",
                verbose = FALSE)
@@ -112,13 +112,13 @@ detect_outlier <- function(scd,
     }
   }
   else {
-    ord_fst <- c(1:comp)[order(mod$parameters$mean[1,], decreasing <- TRUE)]
+    ord_fst <- c(1:comp)[order(mod$parameters$mean[1, ], decreasing <- TRUE)]
     poor_comp <- ord_fst[2:comp]
     good_comp <- ord_fst[1]
     keep1 <- rep(TRUE, nrow(x))
     keep1[keep][mod$classification %in% poor_comp] <- FALSE
     keep1[!keep] <- FALSE
-    sub_x <- x[keep1,]
+    sub_x <- x[keep1, ]
     covr <- covMcd(sub_x, alpha=0.7)
     sub_dist <- mahalanobis(sub_x,
                            center=covr$center,
@@ -131,7 +131,7 @@ detect_outlier <- function(scd,
     outlier_cells <- .qq_outliers_robust(neg_dist, ncol(sub_x), conf[1])
     outlier_cells <- c(outlier_cells,
                       .qq_outliers_robust(pos_dist, ncol(sub_x), conf[2]))
-    outlier_cells <- c(outlier_cells, rownames(x[!keep1,]))
+    outlier_cells <- c(outlier_cells, rownames(x[!keep1, ]))
     if (!(type == "both")) {
       mean_diff <- sign(t(x)-mod$parameters$mean[, good_comp])
       QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
@@ -186,7 +186,7 @@ calculate_QC_metrics <- function(scd) {
   QC_met <- Biobase::pData(QC_metrics(scd))
   # get ERCC ratio
   spikein <- Biobase::fData(scd)$isSpike
-  exon_count <- colSums(exprs_mat[!spikein,])
+  exon_count <- colSums(exprs_mat[!spikein, ])
   gene_number <- colSums(exprs_mat>0)
   if (all(gene_number == 0)) {
     stop("all gene have zero expression values. check your expression matrix.")
@@ -194,7 +194,7 @@ calculate_QC_metrics <- function(scd) {
   QC_met$total_count_per_cell <- exon_count
   QC_met$number_of_genes <- gene_number
   if (any(spikein)) {
-    ERCC_count <- colSums(exprs_mat[spikein,])
+    ERCC_count <- colSums(exprs_mat[spikein, ])
     QC_met$non_ERCC_percent <- exon_count/(ERCC_count+exon_count)
   }
   else {
@@ -207,7 +207,7 @@ calculate_QC_metrics <- function(scd) {
                                 go=c("GO:0005739"))
     if (length(mt_genes)>0) {
       if (any(rownames(exprs_mat) %in% mt_genes)) {
-        mt_count <- colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes,])
+        mt_count <- colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes, ])
         QC_met$non_mt_percent <- (exon_count-mt_count)/(exon_count+0.01) # add 0.01 to make sure they are not NA
       }
     }
@@ -223,7 +223,7 @@ calculate_QC_metrics <- function(scd) {
                                go=c("GO:0005840"))
     if (length(ribo_genes)>0) {
       if (any(rownames(exprs_mat) %in% ribo_genes)) {
-        ribo_count <- colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes,])
+        ribo_count <- colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes, ])
         QC_met$non_ribo_percent <- (exon_count-ribo_count)/(exon_count+0.01)
       }
     }
