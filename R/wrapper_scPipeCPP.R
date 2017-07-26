@@ -21,7 +21,7 @@
 #'
 #' @examples
 #' #TODO
-sc_trim_barcode <- function(outfq, r1, r2=NULL,
+sc_trim_barcode = function(outfq, r1, r2=NULL,
                            read_structure = list(bs1=-1,bl1=2, bs2=6, bl2=8, us=0, ul=6),
                            filter_settings = list(rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)){
   if (filter_settings$rmlow)
@@ -85,7 +85,7 @@ sc_trim_barcode <- function(outfq, r1, r2=NULL,
 #'
 #' @examples
 #' #TODO
-sc_exon_mapping <- function(inbam, outbam, annofn,
+sc_exon_mapping = function(inbam, outbam, annofn,
                             am="YE", ge="GE", bc="YC", mb="YM",
                             bc_len=8, UMI_len=6, stnd=TRUE, fix_chr=FALSE){
   if (stnd)
@@ -133,7 +133,7 @@ sc_exon_mapping <- function(inbam, outbam, annofn,
 #'
 #' @examples
 #' #TODO
-sc_demultiplex <- function(inbam, outdir, bc_anno,
+sc_demultiplex = function(inbam, outdir, bc_anno,
                           max_mis=1,
                           am="YE", ge="GE",
                           bc="YC",
@@ -161,7 +161,7 @@ sc_demultiplex <- function(inbam, outdir, bc_anno,
 #'
 #' @examples
 #' #TODO
-sc_gene_counting <- function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE){
+sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE){
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
   if (gene_fl)
@@ -198,7 +198,7 @@ sc_gene_counting <- function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE){
 #'
 #' @examples
 #' #TODO
-sc_celseq2_simulator <- function(r1fn, r2fn, annofn, bc_anno, fafn,
+sc_celseq2_simulator = function(r1fn, r2fn, annofn, bc_anno, fafn,
                                 UMI_len=6,
                                 r_len=75,
                                 frag_mean=300,
@@ -241,7 +241,7 @@ sc_celseq2_simulator <- function(r1fn, r2fn, annofn, bc_anno, fafn,
 #'
 #' @examples
 #' #TODO
-sc_detect_bc <- function(infq, outcsv, surfix="CELL_", bc_len, max_reads=1000000, min_count=10, max_mismatch=1){
+sc_detect_bc = function(infq, outcsv, surfix="CELL_", bc_len, max_reads=1000000, min_count=10, max_mismatch=1){
 
   if(!file.exists(infq)){stop("input fastq file does not exists.")}
   if(max_reads=="all"){m_r = -1}
