@@ -205,6 +205,7 @@ calculateQCMetrics <- function(scd) {
   }
 
 
+
   # get ribosomal percentage
   ribo_genes <- getGenesByGO(returns=gene_id_type(scd),
                              dataset=organism.SCData(scd),
@@ -320,3 +321,6 @@ remove_outliers <- function(scd) {
   out_cell <- pData(QCMetrics(scd))$outliers == FALSE
   return(scd[, out_cell])
 }
+
+
+

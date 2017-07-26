@@ -24,16 +24,20 @@
 sc_trim_barcode <- function(outfq, r1, r2=NULL,
                             read_structure = list(bs1=-1,bl1=2, bs2=6, bl2=8, us=0, ul=6),
                             filter_settings = list(rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)) {
-  if (filter_settings$rmlow) {
+  if (filter_settings$rmlow)
+  {
     i_rmlow = 1
   }
-  else {
+  else
+  {
     i_rmlow = 0
   }
-  if (filter_settings$rmN) {
+  if (filter_settings$rmN)
+  {
     i_rmN = 1
   }
-  else {
+  else
+  {
     i_rmN = 0
   }
 
@@ -52,7 +56,8 @@ sc_trim_barcode <- function(outfq, r1, r2=NULL,
                                 filter_settings$minq,
                                 filter_settings$numbq)
   }
-  else {
+  else
+  {
     stop("not implemented.")
   }
 }
@@ -83,16 +88,20 @@ sc_trim_barcode <- function(outfq, r1, r2=NULL,
 sc_exon_mapping <- function(inbam, outbam, annofn,
                             am="YE", ge="GE", bc="YC", mb="YM",
                             bc_len=8, UMI_len=6, stnd=TRUE, fix_chr=FALSE) {
-  if (stnd) {
+  if (stnd)
+  {
     i_stnd = 1
   }
-  else {
+  else
+  {
     i_stnd = 0
   }
-  if (fix_chr) {
+  if (fix_chr)
+  {
     i_fix_chr = 1
   }
-  else {
+  else
+  {
     i_fix_chr = 0
   }
 
@@ -101,6 +110,7 @@ sc_exon_mapping <- function(inbam, outbam, annofn,
 
   rcpp_sc_exon_mapping(inbam, outbam, annofn, am, ge, bc, mb, bc_len, UMI_len, stnd, fix_chr)
 }
+
 
 
 #' sc_demultiplex
@@ -137,6 +147,7 @@ sc_demultiplex <- function(inbam, outdir, bc_anno,
 }
 
 
+
 #' sc_gene_counting
 #' 
 #' merge UMI and generate gene counting matrix
@@ -153,15 +164,19 @@ sc_demultiplex <- function(inbam, outdir, bc_anno,
 sc_gene_counting <- function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
-  if (gene_fl) {
+  if (gene_fl)
+  {
     i_gene_fl = 1
   }
-  else {
+  else
+  {
     i_gene_fl = 0
   }
   if (!file.exists(bc_anno)) {stop("barcode annotation file does not exists.")}
   rcpp_sc_gene_counting(outdir, bc_anno, UMI_cor, i_gene_fl)
+
 }
+
 
 
 #' sc_celseq2_simulator
@@ -196,7 +211,8 @@ sc_celseq2_simulator <- function(r1fn, r2fn, annofn, bc_anno, fafn,
     r_dist = "gamma_random"
     pam = c(param$shape, param$scale)
   }
-  else {
+  else
+  {
     stop("not implemented.") #TODO
   }
   if (is.na(seed)) {
@@ -205,7 +221,9 @@ sc_celseq2_simulator <- function(r1fn, r2fn, annofn, bc_anno, fafn,
   else {
     rcpp_generate_celseq2_data(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len, r_len, frag_mean, dup_mean, r_dist, pam, seed)
   }
+
 }
+
 
 
 #' sc_detect_bc
