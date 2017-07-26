@@ -150,7 +150,6 @@ createReport <- function(sample_name,
 }
 
 
-
 #' runscPipe
 #'
 #' @param sample_name sample names, the name should not have any space.

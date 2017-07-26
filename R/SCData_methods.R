@@ -148,8 +148,9 @@ newSCData <- function(exprsData = NULL,
                         coauthors = c("")
                       ))
   if ( !is.null( experimentData ) ) {
-    if ( is(experimentData, "MIAME") )
+    if ( is(experimentData, "MIAME") ) {
       expData = experimentData
+    }
     else {
       expData = expData_null
       warning("experimentData supplied is not an 'MIAME' object. Thus, experimentData is being set to an empty MIAME object.\n Please supply a valid 'MIAME' class object containing experiment data to experimentData(object).")
