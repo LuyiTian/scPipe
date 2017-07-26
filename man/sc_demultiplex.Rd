@@ -5,7 +5,7 @@
 \title{sc_demultiplex}
 \usage{
 sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
-  bc = "YC", mb = "YM", mito = "MT")
+  bc = "YC", mb = "YM", mito = "MT", has_UMI = TRUE)
 }
 \arguments{
 \item{inbam}{input bam file. this should be the output of \code{sc_exon_mapping}}
@@ -25,6 +25,8 @@ sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
 \item{mb}{molecular barcode tag (default: YM)}
 
 \item{mito}{mitochondrial chromosome name, should be consistant with the chromosome name in bam file}
+
+\item{has_UMI}{whether the protocol contains UMI (default: TRUE)}
 }
 \description{
 separate bam file by cell, output to outdir/count/[cell_id].csv.

@@ -38,7 +38,7 @@ ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3", package = "scPipe")
 barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
 ```
 
-We start from simulating the paired-end fastq files. Read1 contains transcript and Read2 contains UMI followed by cell barcode. For simplixity we use default parameters, more parameter see `?sc_celseq2_simulator`.
+We start from simulating the paired-end fastq files. Read1 contains transcript and Read2 contains UMI followed by cell barcode. For simplixity we use default parameters, more parameter see `?sc_celseq2_simulator`. The read structure for CEL-seq2 is a paired-ended reads with first longer read mapped to transcript and second shorter read consist of 6bp UMI followed by 8bp cell barcode.
 ```{r}
 sc_celseq2_simulator(file.path(data_dir, "simu_R1.fastq"),
                      file.path(data_dir, "simu_R2.fastq"),
@@ -47,7 +47,7 @@ sc_celseq2_simulator(file.path(data_dir, "simu_R1.fastq"),
                      ERCCfa_fn)
 ```
 
-### data proprocessing
+## data proprocessing
 
 The pipeline begin with fastq file reformatting. We move the barcode and UMI to the read name and keep the transcript, so the output read name looks like `@[barcode_sequence]*[UMI_sequence]#[readname]` ...
 
@@ -57,8 +57,8 @@ sc_trim_barcode(file.path(data_dir, "combined.fastq"),
                 file.path(data_dir, "simu_R2.fastq"))
 ```
 
-Then we align the reads to genome. The example uses `Rsubread` but it can be any aligner that support spoice junction alignment.
-```{r}
+Then we align the reads to genome. The example uses `Rsubread` but it can be any aligner that support RNA-seq alignment.
+```{r, warning=FALSE, message=FALSE}
 library(Rsubread)
 dir.create("celseq2_demo/index")
 buildindex(basename="celseq2_demo/index/ERCC_index", reference=ERCCfa_fn)
@@ -68,7 +68,7 @@ align(index="celseq2_demo/index/ERCC_index",
       output_file=file.path(data_dir, "out.aln.bam"), phredOffset=64)
 ```
 
-After alignment we will map reads to exons using the exon annotation. Currently `scPipe` only supports annotation in `gff3` and `bed` format.
+After alignment we will map reads to exons using the exon annotations. Currently `scPipe` only supports annotation in `gff3` and `bed` format.
 
 ```{r}
 sc_exon_mapping(file.path(data_dir, "out.aln.bam"),
@@ -88,16 +88,29 @@ Now we complete the preprocessing step. you will find the gene counting matrix a
 
 clean up when we done:
 ```{r}
-unlink(data_dir, recursive = TRUE)
+#unlink(data_dir, recursive = TRUE)
 ```
 
-## case study: simulate and process Drop-seq data
+# do everything in one line of code. 
 
-TODO
+The tutorial above separate each step, however we also provided a function called `run_scPipe` to integrate them into one step. the `run_scPipe` includes an argument `report` which can be set to `TRUE` to generate an Rmarkdown report with both html report and runnable rmd source code.
 
-## case study: simulate and process MAR-seq data
+```{r,eval=TRUE}
+run_scPipe(sample_name="celseq2_demo",
+          outdir="celseq2_demo",
+          r1=file.path("celseq2_demo", "simu_R1.fastq"),
+          r2=file.path("celseq2_demo", "simu_R1.fastq"),
+          read_structure=list(bs1 = -1, bl1 = 2, bs2 = 6, bl2 = 8, us = 0, ul = 6),
+          filter_settings = list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
+          genome_index="celseq2_demo/index/ERCC_index",
+          exon_anno=ERCCanno_fn,
+          barcode_anno=barcode_annotation_fn,
+          max_mis=1,
+          UMI_cor=1,
+          gene_fl=FALSE,
+          report=FALSE)
+```
 
-TODO
 
 ## quality control
 

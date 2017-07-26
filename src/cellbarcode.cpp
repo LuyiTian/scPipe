@@ -33,6 +33,9 @@ void Barcode::read_anno(string fn)
     while(std::getline(infile, line))
     {
         std::stringstream linestream(line);
+        if (line.size() < 3){
+            continue;
+        }
         string cell_id;
         string barcode;
 

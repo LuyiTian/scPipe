@@ -4,7 +4,7 @@
 #' can be used to generate the SCData obeject from the folder that contains gene counting matrix and QC statistics.
 #'
 #' @param datadir the directory that contains all the data and `stat` subfolder.
-#' @param organism the organism of the data. List of possible names can be retrieved using the function 
+#' @param species the species of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
@@ -20,7 +20,7 @@
 #' @export
 #' 
 
-create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL){
+create_scd_by_dir = function(datadir, species="NA", gene_id_type="NA", pheno_data=NULL){
   gene_cnt = read.csv(file.path(datadir, "gene_count.csv"),row.names=1)
   cell_stat = read.csv(file.path(datadir,"stat","cell_stat.csv"),row.names=1)
   
@@ -33,7 +33,7 @@ create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
                   QualityControlInfo = QualityControlInfo,
                   phenoData = pheno_data,
                   useForExprs = "counts",
-                  organism = organism,
+                  organism = species,
                   gene_id_type = gene_id_type)
   
   return(scd)
@@ -61,7 +61,7 @@ create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
 #' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.
 #' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
-#' @param species the organism of the data. List of possible names can be retrieved using the function 
+#' @param species the species of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
@@ -148,7 +148,7 @@ create_report = function(sample_name,
 
 
 
-#' runscPipe
+#' run_scPipe
 #'
 #' @param sample_name sample names, the name should not have any space.
 #' @param outdir the output folder
@@ -161,13 +161,15 @@ create_report = function(sample_name,
 #' @param fix_chr whether add `chr` to chromosome names, fix inconsistant names between different annotations.
 #' @param barcode_anno file path for cell barcode annotation.
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
+#' @param has_UMI whether the protocol has UMI, default to be TRUE
 #' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.
 #' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
-#' @param species the organism of the data. List of possible names can be retrieved using the function 
+#' @param species the species of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
 #' @param nthreads number of threads used
+#' @param report whether to generate the html report
 #'
 #' @return an SCData object
 #'
@@ -175,23 +177,24 @@ create_report = function(sample_name,
 #'
 #' @export
 #'
-#' @examples
-runscPipe <- function(sample_name,
+run_scPipe <- function(sample_name,
                       outdir,
                       r1,
                       r2=NULL,
                       read_structure,
-                      filter_settings,
+                      filter_settings=list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
                       genome_index,
                       exon_anno,
                       fix_chr=FALSE,
                       barcode_anno=NULL,
                       max_mis=1,
+                      has_UMI=TRUE,
                       UMI_cor=1,
                       gene_fl=FALSE,
-                      species,
-                      gene_id_type,
-                      nthreads) {
+                      species="NA",
+                      gene_id_type="NA",
+                      nthreads=1,
+                      report=TRUE) {
   out_fq = file.path(outdir, paste0(sample_name, ".fq"))
   bam_align = file.path(outdir, paste0(sample_name, ".align.bam"))
   bam_map = file.path(outdir, paste0(sample_name, ".mapped.bam"))
@@ -228,33 +231,36 @@ runscPipe <- function(sample_name,
   sc_demultiplex(inbam=bam_map,
                  outdir=outdir,
                  bc_anno=bc_annotation,
-                 max_mis=max_mis)
+                 max_mis=max_mis,
+                 has_UMI=has_UMI)
   sc_gene_counting(outdir=outdir,
                    bc_anno=bc_annotation,
                    UMI_cor=UMI_cor,
                    gene_fl=gene_fl)
 
   scd = create_scd_by_dir(datadir=outdir, species=species, gene_id=gene_id_type)
-  
-  create_report(sample_name=sample_name,
-                outdir=outdir,
-                r1=r1,
-                r2=r2,
-                outfq=out_fq,
-                read_structure=read_structure,
-                filter_settings=filter_settings,
-                align_bam=bam_align,
-                genome_index=genome_index,
-                map_bam=bam_map,
-                exon_anno=exon_anno,
-                stnd=TRUE,
-                fix_chr=fix_chr,
-                barcode_anno=bc_annotation,
-                max_mis=max_mis,
-                UMI_cor=UMI_cor,
-                gene_fl=gene_fl,
-                species=species,
-                gene_id_type=gene_id_type)
+  if(report){
+    create_report(sample_name=sample_name,
+                  outdir=outdir,
+                  r1=r1,
+                  r2=r2,
+                  outfq=out_fq,
+                  read_structure=read_structure,
+                  filter_settings=filter_settings,
+                  align_bam=bam_align,
+                  genome_index=genome_index,
+                  map_bam=bam_map,
+                  exon_anno=exon_anno,
+                  stnd=TRUE,
+                  fix_chr=fix_chr,
+                  barcode_anno=bc_annotation,
+                  max_mis=max_mis,
+                  UMI_cor=UMI_cor,
+                  gene_fl=gene_fl,
+                  species=species,
+                  gene_id_type=gene_id_type)
+  }
+
   return(scd)
 }
   

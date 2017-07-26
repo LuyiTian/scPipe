@@ -122,12 +122,12 @@ pp
 
 ```{r}
 scd = create_scd_by_dir(params$outdir, species=params$species, gene_id=params$gene_id_type)
-ggplotly(plotMapping(scd,dataname=params$samplename,percentage = FALSE))
+ggplotly(plot_mapping(scd,dataname=params$samplename,percentage = FALSE))
 
 ```
 
 ```{r}
-ggplotly(plotMapping(scd,dataname=params$samplename,percentage = TRUE))
+ggplotly(plot_mapping(scd,dataname=params$samplename,percentage = TRUE))
 ```
 
 ## summary and distributions of some basic statistics

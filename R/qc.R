@@ -76,6 +76,13 @@ detect_outlier <- function(scd,
   if (!all(complete.cases(x))) {
     stop("we find NAs in the `QC_metrics(scd)`, check the quality control matrix")
   }
+  if(is.null(dim(x))){
+    warning("quality control metrics should be at least two dimensions.")
+    QC_met <- pData(QC_metrics(scd))
+    QC_met$outliers <- FALSE
+    QC_metrics(scd) <- QC_met
+    return(scd)
+  }
   dist <- mahalanobis(x, center=colMeans(x), cov=cov(x))
   keep <- !(dist>qchisq(0.99, ncol(x)))
   mod <- Mclust(x[keep,],
@@ -194,29 +201,37 @@ calculate_QC_metrics <- function(scd) {
     print("cannot detect ERCC Spikeins from data. skip `non_ERCC_percent`.")
   }
   # get mt percentage
-  mt_genes <- get_genes_by_GO(returns=gene_id_type(scd),
-                              dataset=organism.SCData(scd),
-                              go=c("GO:0005739"))
-  if (length(mt_genes)>0) {
-    if (any(rownames(exprs_mat) %in% mt_genes)) {
-      mt_count <- colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes,])
-      QC_met$non_mt_percent <- (exon_count-mt_count)/(exon_count+0.01) # add 0.01 to make sure they are not NA
+  if(!(gene_id_type(scd) == "NA")){
+    mt_genes <- get_genes_by_GO(returns=gene_id_type(scd),
+                                dataset=organism.SCData(scd),
+                                go=c("GO:0005739"))
+    if (length(mt_genes)>0) {
+      if (any(rownames(exprs_mat) %in% mt_genes)) {
+        mt_count <- colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes,])
+        QC_met$non_mt_percent <- (exon_count-mt_count)/(exon_count+0.01) # add 0.01 to make sure they are not NA
+      }
     }
+  }else{
+    print("no gene_id_type, skip `non_mt_percent`")
   }
+
 
 
 
   # get ribosomal percentage
-  ribo_genes <- get_genes_by_GO(returns=gene_id_type(scd),
-                             dataset=organism.SCData(scd),
-                             go=c("GO:0005840"))
-  if (length(ribo_genes)>0) {
-    if (any(rownames(exprs_mat) %in% ribo_genes)) {
-      ribo_count <- colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes,])
-      QC_met$non_ribo_percent <- (exon_count-ribo_count)/(exon_count+0.01)
+  if(!(gene_id_type(scd) == "NA")){
+    ribo_genes <- get_genes_by_GO(returns=gene_id_type(scd),
+                               dataset=organism.SCData(scd),
+                               go=c("GO:0005840"))
+    if (length(ribo_genes)>0) {
+      if (any(rownames(exprs_mat) %in% ribo_genes)) {
+        ribo_count <- colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes,])
+        QC_met$non_ribo_percent <- (exon_count-ribo_count)/(exon_count+0.01)
+      }
     }
+  }else{
+    print("no gene_id_type, skip `non_ribo_percent`")
   }
-
   QC_metrics(scd) <- QC_met
   return(scd)
 }
@@ -241,7 +256,6 @@ plotQC_pair <- function(scd, sel_col=NULL) {
   else{
     stop("scd must be an SCData object.")
   }
-
   if ("outliers" %in% colnames(x)){
     return(ggpairs(x, mapping = ggplot2::aes_string(colour = "outliers")))
   }
@@ -262,7 +276,7 @@ plotQC_pair <- function(scd, sel_col=NULL) {
 #'
 #' @export
 #'
-plotMapping <- function(scd,
+plot_mapping <- function(scd,
                         sel_col=NULL,
                         percentage=FALSE,
                         dataname="") {
