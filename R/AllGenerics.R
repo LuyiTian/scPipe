@@ -1,33 +1,33 @@
-#' @name DimRd_expr
+#' @name DimReducedExpr
 #' @export
 #' @docType methods
-#' @rdname DimRd_expr
-setGeneric("DimRd_expr", function(object) {
-  standardGeneric("DimRd_expr")
+#' @rdname DimReducedExpr
+setGeneric("DimReducedExpr", function(object) {
+  standardGeneric("DimReducedExpr")
 })
 
-#' @name DimRd_expr<-
+#' @name DimReducedExpr<-
 #' @export
 #' @docType methods
-#' @rdname DimRd_expr
-setGeneric("DimRd_expr<-", function(object, value) {
-  standardGeneric("DimRd_expr<-")
+#' @rdname DimReducedExpr
+setGeneric("DimReducedExpr<-", function(object, value) {
+  standardGeneric("DimReducedExpr<-")
 })
 
-#' @name QC_metrics
+#' @name QCMetrics
 #' @export
 #' @docType methods
-#' @rdname QC_metrics
-setGeneric("QC_metrics", function(object) {
-  standardGeneric("QC_metrics")
+#' @rdname QCMetrics
+setGeneric("QCMetrics", function(object) {
+  standardGeneric("QCMetrics")
 })
 
-#' @name QC_metrics<-
+#' @name QCMetrics<-
 #' @export
 #' @docType methods
-#' @rdname QC_metrics
-setGeneric("QC_metrics<-", function(object, value) {
-  standardGeneric("QC_metrics<-")
+#' @rdname QCMetrics
+setGeneric("QCMetrics<-", function(object, value) {
+  standardGeneric("QCMetrics<-")
 })
 
 #' @name organism

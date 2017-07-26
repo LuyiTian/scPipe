@@ -4,7 +4,7 @@
 #' can be used to generate the SCData obeject from the folder that contains gene counting matrix and QC statistics.
 #'
 #' @param datadir the directory that contains all the data and `stat` subfolder.
-#' @param species the species of the data. List of possible names can be retrieved using the function 
+#' @param organism the organism of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
@@ -33,7 +33,7 @@ create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
                   QualityControlInfo = QualityControlInfo,
                   phenoData = pheno_data,
                   useForExprs = "counts",
-                  organism = species,
+                  organism = organism,
                   gene_id_type = gene_id_type)
   
   return(scd)
@@ -61,7 +61,7 @@ create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
 #' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.
 #' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
-#' @param species the species of the data. List of possible names can be retrieved using the function 
+#' @param organism the organism of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
@@ -85,7 +85,7 @@ create_report = function(sample_name,
                          max_mis,
                          UMI_cor,
                          gene_fl,
-                         species,
+                         organism,
                          gene_id_type) {
   fn = system.file("extdata", "report_template.Rmd", package = "scPipe")
   tx = readLines(fn)
@@ -142,7 +142,7 @@ create_report = function(sample_name,
   
   tx = gsub(pattern = "GENE_FL__", replacement = as.character(gene_fl), x = tx)
   
-  tx = gsub(pattern = "SPECIES__", replacement = species, x = tx)
+  tx = gsub(pattern = "SPECIES__", replacement = organism, x = tx)
   tx = gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
   
   writeLines(tx, con=file.path(outdir, "report.Rmd"))
@@ -167,7 +167,7 @@ create_report = function(sample_name,
 #' @param has_UMI whether the protocol has UMI, default to be TRUE
 #' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.
 #' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
-#' @param species the species of the data. List of possible names can be retrieved using the function 
+#' @param organism the organism of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
@@ -194,7 +194,7 @@ run_scPipe <- function(sample_name,
                       has_UMI=TRUE,
                       UMI_cor=1,
                       gene_fl=FALSE,
-                      species="NA",
+                      organism="NA",
                       gene_id_type="NA",
                       nthreads=1,
                       report=TRUE) {
@@ -243,7 +243,7 @@ run_scPipe <- function(sample_name,
                    UMI_cor=UMI_cor,
                    gene_fl=gene_fl)
 
-  scd = create_scd_by_dir(datadir=outdir, species=species, gene_id=gene_id_type)
+  scd = create_scd_by_dir(datadir=outdir, organism=organism, gene_id=gene_id_type)
   if (report) {
     create_report(sample_name=sample_name,
                   outdir=outdir,
@@ -262,7 +262,7 @@ run_scPipe <- function(sample_name,
                   max_mis=max_mis,
                   UMI_cor=UMI_cor,
                   gene_fl=gene_fl,
-                  species=species,
+                  organism=organism,
                   gene_id_type=gene_id_type)
   }
 
