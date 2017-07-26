@@ -1,23 +1,23 @@
 #' merge matrix for multiple SCData object
 #'
-.merge_mat <- function(scd_list, func) {
-  if (all(unlist(lapply(scd_list, function(x) {!is.null(func(x))})))) {
-    all_exprs = lapply(scd_list, function(x) {func(x)})
+.merge_mat <- function(scd_list,func){
+  if(all(unlist(lapply(scd_list,function(x){!is.null(func(x))})))){
+    all_exprs = lapply(scd_list, function(x){func(x)})
     all_gene_id = rownames(all_exprs[[1]])
     all_cell_id = colnames(all_exprs[[1]])
-    for (i in 2:length(all_exprs)) {
-      all_gene_id = union(all_gene_id, rownames(all_exprs[[i]]))
-      all_cell_id = c(all_cell_id, colnames(all_exprs[[i]]))
+    for(i in 2:length(all_exprs)){
+      all_gene_id = union(all_gene_id,rownames(all_exprs[[i]]))
+      all_cell_id = c(all_cell_id,colnames(all_exprs[[i]]))
     }
     merged_exprs = matrix(0,
                           nrow = length(all_gene_id),
                           ncol = length(all_cell_id),
-                          dimnames = list(all_gene_id, all_cell_id))
-    for (i in 1:length(all_exprs)) {
-      merged_exprs[rownames(all_exprs[[i]]), colnames(all_exprs[[i]])] = all_exprs[[i]]
+                          dimnames = list(all_gene_id,all_cell_id))
+    for(i in 1:length(all_exprs)){
+      merged_exprs[rownames(all_exprs[[i]]),colnames(all_exprs[[i]])] = all_exprs[[i]]
     }
   }
-  else {
+  else{
     stop("all data should contain expression matrix.")
   }
   return(merged_exprs)
@@ -26,16 +26,16 @@
 
 #' guess the organism and species from input data
 #' 
-.guess_attr <- function(expr_mat) {
+.guess_attr <- function(expr_mat){
   hsp_ensembl = length(grep("^ENSG", rownames(expr_mat)))
   mm_ensembl = length(grep("^ENSMUSG", rownames(expr_mat)))
-  if ((hsp_ensembl>0) & (hsp_ensembl>mm_ensembl)) {
+  if((hsp_ensembl>0) & (hsp_ensembl>mm_ensembl)){
     return(list(organism="hsapiens_gene_ensembl", gene_id_type="ensembl_gene_id"))
   }
-  else if ((mm_ensembl>0) & (mm_ensembl>hsp_ensembl)) {
+  else if((mm_ensembl>0) & (mm_ensembl>hsp_ensembl)){
     return(list(organism="mmusculus_gene_ensembl", gene_id_type="ensembl_gene_id"))
   }
-  else {
+  else{
     return(list(organism=NA, gene_id_type=NA))
   }
 }
@@ -81,10 +81,10 @@ newSCData <- function(exprsData = NULL,
                       reducedFACSDimension = NULL,
                       onesense = NULL,
                       QualityControlInfo = NULL,
-                      useForExprs = c("exprs", "tpm", "cpm", "counts", "fpkm")) {
+                      useForExprs = c("exprs","tpm","cpm","counts","fpkm")){
 
   # Check that at least we have the expression data we wanted
-  if (missing(useForExprs)) {
+  if (missing(useForExprs)){
     stop("Need to specify which expresssion matrix to use by `useForExprs`.")
   }
   exprs_mat <- switch(useForExprs,
@@ -93,44 +93,44 @@ newSCData <- function(exprsData = NULL,
                       cpm = cpmData,
                       fpkm = fpkmData,
                       counts = countData)
-  if (is.null(exprs_mat)) {
+  if (is.null(exprs_mat)){
     stop("the data related to `useForExprs` is null. \n(i.e if you choose `count` in `useForExprs` then you should set countData)")
   }
 
   # Generate valid phenoData, FACSData, featureData and QualityControlInfo if not provided
-  if (is.null(phenoData)) {
+  if (is.null(phenoData)){
     phenoData <- annotatedDataFrameFrom(exprs_mat, byrow = FALSE)
   }
-  if (is.null(FACSData)) {
+  if (is.null(FACSData)){
     FACSData <- annotatedDataFrameFrom(exprs_mat, byrow = FALSE)
   }
-  if (is.null(featureData)) {
+  if (is.null(featureData)){
     featureData <- annotatedDataFrameFrom(exprs_mat, byrow = TRUE)
   }
-  if (is.null(QualityControlInfo)) {
+  if (is.null(QualityControlInfo)){
     QualityControlInfo <- annotatedDataFrameFrom(exprs_mat, byrow = FALSE)
   }
 
   # set ERCC spikein information
   spikein = grepl("^ERCC", rownames(exprs_mat))
-  if (any(spikein)) {
+  if(any(spikein)){
     featureData$isSpike = spikein
   }
-  else {
+  else{
     featureData$isSpike = spikein
     print("cannot detect ERCC Spikeins from data.")
   }
 
   # Generate valid reducedExprDimension, onesense and reducedFACSDimension if not provided
-  if (is.null(reducedExprDimension)) {
+  if (is.null(reducedExprDimension)){
     reducedExprDimension = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
     rownames(reducedExprDimension) = colnames(exprs_mat)
   }
-  if (is.null(reducedFACSDimension)) {
+  if (is.null(reducedFACSDimension)){
     reducedFACSDimension = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
     rownames(reducedFACSDimension) = colnames(exprs_mat)
   }
-  if (is.null(onesense)) {
+  if (is.null(onesense)){
     onesense = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
     rownames(onesense) = colnames(exprs_mat)
   }
@@ -176,29 +176,29 @@ newSCData <- function(exprsData = NULL,
 
   # check organism names or gene_id_type is set correctly
   tmp_res = .guess_attr(exprs_mat)
-  if (is.null(organism)) {
-    if (is.na(tmp_res$organism)) {
+  if(is.null(organism)){
+    if (is.na(tmp_res$organism)){
       stop("organism cannot be NULL. \n List of possible names can be \nretrieved using the function `listDatasets`from `biomaRt` package. \n(i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)")
     }
-    else {
+    else{
       print(paste("organism not provided. make a guess:", tmp_res$organism))
       organism(scd) = tmp_res$organism
     }
   }
-  else {
+  else{
     # set organism
     organism(scd) = organism
   }
-  if (is.null(gene_id_type)) {
-    if (is.na(tmp_res$gene_id_type)) {
+  if(is.null(gene_id_type)){
+    if (is.na(tmp_res$gene_id_type)){
       stop("gene_id_type cannot be NULL. \n A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. \nthe commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.")
     }
-    else {
+    else{
       print(paste("gene_id_type not provided. make a guess:", tmp_res$gene_id_type))
       gene_id_type(scd) = tmp_res$gene_id_type
     }
   }
-  else {
+  else{
     gene_id_type(scd) = gene_id_type
   }
 
@@ -283,19 +283,19 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
   else if ( missing(i) && !missing(j) ) {
     # select cells
     x = selectMethod('[', 'ExpressionSet')(x, , j, drop = drop)
-    if ( length(x@reducedExprDimension) != 0 ) {
+    if ( length(x@reducedExprDimension) != 0 ){
       x@reducedExprDimension =
         as.matrix(x@reducedExprDimension[j, , drop = drop])
     }
-    if ( length(x@reducedFACSDimension) != 0 ) {
+    if ( length(x@reducedFACSDimension) != 0 ){
       x@reducedFACSDimension =
         as.matrix(x@reducedFACSDimension[j, , drop = drop])
     }
-    if ( length(x@onesense) != 0 ) {
+    if ( length(x@onesense) != 0 ){
       x@onesense =
         as.matrix(x@onesense[j, , drop = drop])
     }
-    if ( length(x@QualityControlInfo) != 0 ) {
+    if ( length(x@QualityControlInfo) != 0 ){
       x@QualityControlInfo =
         x@QualityControlInfo[j, , drop = drop]
     }
@@ -304,19 +304,19 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
   else if ( !missing(i) && !missing(j) ) {
     # selcet features (i) and cells (j)
     x <- selectMethod('[', 'ExpressionSet')(x, i, j, drop = drop)
-    if ( length(x@reducedExprDimension) != 0 ) {
+    if ( length(x@reducedExprDimension) != 0 ){
       x@reducedExprDimension =
         as.matrix(x@reducedExprDimension[j, , drop = drop])
     }
-    if ( length(x@reducedFACSDimension) != 0 ) {
+    if ( length(x@reducedFACSDimension) != 0 ){
       x@reducedFACSDimension =
         as.matrix(x@reducedFACSDimension[j, , drop = drop])
     }
-    if ( length(x@onesense) != 0 ) {
+    if ( length(x@onesense) != 0 ){
       x@onesense =
         as.matrix(x@onesense[j, , drop = drop])
     }
-    if ( length(x@QualityControlInfo) != 0 ) {
+    if ( length(x@QualityControlInfo) != 0 ){
       x@QualityControlInfo =
         x@QualityControlInfo[j, , drop = drop]
     }
@@ -342,80 +342,80 @@ mergeSCData <- function(...,
                         all = TRUE,
                         batch = NULL) {
   scd_list <- list(...)
-  if (!is.null(batch)) {
-    if (!(length(batch) == length(scd_list))) {
+  if (!is.null(batch)){
+    if (!(length(batch) == length(scd_list))){
       stop("the length of batch should equal to the number of dataset")
     }
   }
-  else {
+  else{
     batch = 1:length(scd_list)
   }
 
 
-  if (length(scd_list) < 2) {
+  if(length(scd_list) < 2){
     stop("should at least contain two SCData object.")
   }
-  if (!all(unlist(lapply(scd_list, function(x) {is(x, "SCData")})))) {
+  if(!all(unlist(lapply(scd_list,function(x){is(x, "SCData")})))){
     stop("all data should be SCData object")
   }
   logged = scd_list[[1]]@logged
-  if (!all(unlist(lapply(scd_list, function(x) {x@logged == logged})))) {
+  if(!all(unlist(lapply(scd_list,function(x){x@logged == logged})))){
     stop("data do not have the same value for the 'logged' slot.")
   }
 
   useForExprs = scd_list[[1]]@useForExprs
-  if (!all(unlist(lapply(scd_list, function(x) {x@useForExprs == useForExprs})))) {
+  if(!all(unlist(lapply(scd_list,function(x){x@useForExprs == useForExprs})))){
     stop("data do not have the same value for the 'useForExprs' slot.")
   }
 
   logExprsOffset = scd_list[[1]]@logExprsOffset
-  if (!all(unlist(lapply(scd_list, function(x) {x@logExprsOffset == logExprsOffset})))) {
+  if(!all(unlist(lapply(scd_list,function(x){x@logExprsOffset == logExprsOffset})))){
     stop("data do not have the same value for the 'logExprsOffset' slot.")
   }
 
   the_organism = organism.SCData(scd_list[[1]])
-  if (!all(unlist(lapply(scd_list, function(x) {organism.SCData(x) == the_organism})))) {
+  if(!all(unlist(lapply(scd_list,function(x){organism.SCData(x) == the_organism})))){
     stop("data do not have the same value for the 'organism' slot.")
   }
 
   gene_id_type = scd_list[[1]]@gene_id_type
-  if (!all(unlist(lapply(scd_list, function(x) {x@gene_id_type == gene_id_type})))) {
+  if(!all(unlist(lapply(scd_list,function(x){x@gene_id_type == gene_id_type})))){
     stop("data do not have the same value for the 'gene_id_type' slot.")
   }
 
   print("merge expression matrix")
-  merged_exprs = .merge_mat(scd_list, exprs)
+  merged_exprs = .merge_mat(scd_list,exprs)
 
   print("merge phenotype")
   ph_col = varLabels(scd_list[[1]])
   merged_ph = NULL
-  if (length(ph_col)>0) {
-    if (all(unlist(lapply(scd_list, function(x) {varLabels(x) == ph_col})))) {
+  if(length(ph_col)>0){
+    if(all(unlist(lapply(scd_list, function(x){varLabels(x) == ph_col})))){
       merged_ph =
-        AnnotatedDataFrame(data=Reduce(rbind, lapply(scd_list, function(x) {pData(x)})))
+        AnnotatedDataFrame(data=Reduce(rbind,lapply(scd_list,function(x){pData(x)})))
     }
-    else {
+    else{
       stop("the colnames in phenoData should be the same for all data.")
     }
   }
-  if ("batch" %in% colnames(merged_ph)) {
+  if ("batch" %in% colnames(merged_ph)){
     print("already contains batch information. ignore batch argument.")
   }
-  else {
-    batch_num =unname(unlist(lapply(scd_list, function(x) {nrow(pData(x))})))
-    merged_ph$batch = rep(batch, times=as.vector(batch_num))
+  else{
+    batch_num =unname(unlist(lapply(scd_list, function(x){nrow(pData(x))})))
+    merged_ph$batch = rep(batch,times=as.vector(batch_num))
   }
 
 
   print("merge quality control metrics")
   qc_col = varLabels(QCMetrics(scd_list[[1]]))
   merged_qc = NULL
-  if (length(qc_col)>0) {
-    if (all(unlist(lapply(scd_list, function(x) {varLabels(QCMetrics(x)) == qc_col})))) {
+  if (length(qc_col)>0){
+    if(all(unlist(lapply(scd_list, function(x){varLabels(QCMetrics(x)) == qc_col})))){
       merged_qc =
-        AnnotatedDataFrame(data=Reduce(rbind, (lapply(scd_list, function(x) {pData(QCMetrics(x))}))))
+        AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(QCMetrics(x))}))))
     }
-    else {
+    else{
       stop("the colnames in QCMetrics should be the same for all data.")
     }
   }
@@ -423,45 +423,45 @@ mergeSCData <- function(...,
   print("merge FACS data")
   fac_col = varLabels(FACSData(scd_list[[1]]))
   merged_fac = NULL
-  if (length(fac_col)>0) {
-    if (all(unlist(lapply(scd_list, function(x) {varLabels(FACSData(x)) == fac_col})))) {
+  if(length(fac_col)>0){
+    if(all(unlist(lapply(scd_list, function(x){varLabels(FACSData(x)) == fac_col})))){
       merged_fac =
-        AnnotatedDataFrame(data=Reduce(rbind, (lapply(scd_list, function(x) {pData(FACSData(x))}))))
+        AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(FACSData(x))}))))
     }
-    else {
+    else{
       stop("the colnames in phenoData should be the same for all data.")
     }
   }
   print("create new SCData object")
   new_scd <- newSCData(exprsData = merged_exprs,
-                       phenoData = merged_ph,
-                       #featureData = NULL, #TODO
-                       FACSData = merged_fac,
-                       #experimentData = NULL, #TODO
-                       logExprsOffset = logExprsOffset,
-                       logged = logged,
-                       gene_id_type = gene_id_type,
-                       organism = the_organism,
-                       #reducedExprDimension = NULL,
-                       #reducedFACSDimension = NULL,
-                       #onesense = NULL,
-                       QualityControlInfo = merged_qc,
-                       useForExprs = "exprs")
+              phenoData = merged_ph,
+              #featureData = NULL, #TODO
+              FACSData = merged_fac,
+              #experimentData = NULL, #TODO
+              logExprsOffset = logExprsOffset,
+              logged = logged,
+              gene_id_type = gene_id_type,
+              organism = the_organism,
+              #reducedExprDimension = NULL,
+              #reducedFACSDimension = NULL,
+              #onesense = NULL,
+              QualityControlInfo = merged_qc,
+              useForExprs = "exprs")
 
-  if (!is.null(fpkm(scd_list[[1]]))) {
-    fpkm(new_scd) = .merge_mat(scd_list, fpkm)
+  if(!is.null(fpkm(scd_list[[1]]))){
+    fpkm(new_scd) = .merge_mat(scd_list,fpkm)
   }
 
-  if (!is.null(cpm(scd_list[[1]]))) {
-    cpm(new_scd) = .merge_mat(scd_list, cpm)
+  if(!is.null(cpm(scd_list[[1]]))){
+    cpm(new_scd) = .merge_mat(scd_list,cpm)
   }
 
-  if (!is.null(counts(scd_list[[1]]))) {
-    counts(new_scd) = .merge_mat(scd_list, counts)
+  if(!is.null(counts(scd_list[[1]]))){
+    counts(new_scd) = .merge_mat(scd_list,counts)
   }
 
-  if (!is.null(tpm(scd_list[[1]]))) {
-    tpm(new_scd) = .merge_mat(scd_list, tpm)
+  if(!is.null(tpm(scd_list[[1]]))){
+    tpm(new_scd) = .merge_mat(scd_list,tpm)
   }
   return(new_scd)
 }

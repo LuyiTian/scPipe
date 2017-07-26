@@ -22,8 +22,8 @@
 #' @examples
 #' #TODO
 sc_trim_barcode <- function(outfq, r1, r2=NULL,
-                            read_structure = list(bs1=-1,bl1=2, bs2=6, bl2=8, us=0, ul=6),
-                            filter_settings = list(rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)) {
+                           read_structure = list(bs1=-1,bl1=2, bs2=6, bl2=8, us=0, ul=6),
+                           filter_settings = list(rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)){
   if (filter_settings$rmlow)
   {
     i_rmlow = 1
@@ -41,9 +41,9 @@ sc_trim_barcode <- function(outfq, r1, r2=NULL,
     i_rmN = 0
   }
 
-  if (!is.null(r2)) {
-    if (!file.exists(r1)) {stop("read1 fastq file does not exists.")}
-    if (!file.exists(r2)) {stop("read2 fastq file does not exists.")}
+  if (!is.null(r2)){
+    if(!file.exists(r1)){stop("read1 fastq file does not exists.")}
+    if(!file.exists(r2)){stop("read2 fastq file does not exists.")}
     rcpp_sc_trim_barcode_paired(outfq, r1, r2,
                                 read_structure$bs1,
                                 read_structure$bl1,
@@ -87,7 +87,7 @@ sc_trim_barcode <- function(outfq, r1, r2=NULL,
 #' #TODO
 sc_exon_mapping <- function(inbam, outbam, annofn,
                             am="YE", ge="GE", bc="YC", mb="YM",
-                            bc_len=8, UMI_len=6, stnd=TRUE, fix_chr=FALSE) {
+                            bc_len=8, UMI_len=6, stnd=TRUE, fix_chr=FALSE){
   if (stnd)
   {
     i_stnd = 1
@@ -105,8 +105,8 @@ sc_exon_mapping <- function(inbam, outbam, annofn,
     i_fix_chr = 0
   }
 
-  if (!file.exists(inbam)) {stop("input bam file does not exists.")}
-  if (!file.exists(annofn)) {stop("genome annotation file does not exists.")}
+  if(!file.exists(inbam)){stop("input bam file does not exists.")}
+  if(!file.exists(annofn)){stop("genome annotation file does not exists.")}
 
   rcpp_sc_exon_mapping(inbam, outbam, annofn, am, ge, bc, mb, bc_len, UMI_len, stnd, fix_chr)
 }
@@ -134,15 +134,15 @@ sc_exon_mapping <- function(inbam, outbam, annofn,
 #' @examples
 #' #TODO
 sc_demultiplex <- function(inbam, outdir, bc_anno,
-                           max_mis=1,
-                           am="YE", ge="GE",
-                           bc="YC",
-                           mb="YM",
-                           mito="MT") {
+                          max_mis=1,
+                          am="YE", ge="GE",
+                          bc="YC",
+                          mb="YM",
+                          mito="MT"){
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
-  if (!file.exists(inbam)) {stop("input bam file does not exists.")}
-  if (!file.exists(bc_anno)) {stop("barcode annotation file does not exists.")}
+  if(!file.exists(inbam)){stop("input bam file does not exists.")}
+  if(!file.exists(bc_anno)){stop("barcode annotation file does not exists.")}
   rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito)
 }
 
@@ -161,7 +161,7 @@ sc_demultiplex <- function(inbam, outdir, bc_anno,
 #'
 #' @examples
 #' #TODO
-sc_gene_counting <- function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
+sc_gene_counting <- function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE){
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
   if (gene_fl)
@@ -172,7 +172,7 @@ sc_gene_counting <- function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
   {
     i_gene_fl = 0
   }
-  if (!file.exists(bc_anno)) {stop("barcode annotation file does not exists.")}
+  if(!file.exists(bc_anno)){stop("barcode annotation file does not exists.")}
   rcpp_sc_gene_counting(outdir, bc_anno, UMI_cor, i_gene_fl)
 
 }
@@ -205,9 +205,9 @@ sc_celseq2_simulator <- function(r1fn, r2fn, annofn, bc_anno, fafn,
                                 dup_mean=5,
                                 ran_dist="gamma",
                                 param=list(shape=0.2, scale=50),
-                                seed=NA) {
+                                seed=NA){
 
-  if (ran_dist=="gamma") {
+  if (ran_dist=="gamma"){
     r_dist = "gamma_random"
     pam = c(param$shape, param$scale)
   }
@@ -215,10 +215,10 @@ sc_celseq2_simulator <- function(r1fn, r2fn, annofn, bc_anno, fafn,
   {
     stop("not implemented.") #TODO
   }
-  if (is.na(seed)) {
+  if (is.na(seed)){
     rcpp_generate_celseq2_data(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len, r_len, frag_mean, dup_mean, r_dist, pam, 0)
   }
-  else {
+  else{
     rcpp_generate_celseq2_data(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len, r_len, frag_mean, dup_mean, r_dist, pam, seed)
   }
 
@@ -241,11 +241,11 @@ sc_celseq2_simulator <- function(r1fn, r2fn, annofn, bc_anno, fafn,
 #'
 #' @examples
 #' #TODO
-sc_detect_bc <- function(infq, outcsv, surfix="CELL_", bc_len, max_reads=1000000, min_count=10, max_mismatch=1) {
+sc_detect_bc <- function(infq, outcsv, surfix="CELL_", bc_len, max_reads=1000000, min_count=10, max_mismatch=1){
 
-  if (!file.exists(infq)) {stop("input fastq file does not exists.")}
-  if (max_reads=="all") {m_r = -1}
-  else {m_r=max_reads}
+  if(!file.exists(infq)){stop("input fastq file does not exists.")}
+  if(max_reads=="all"){m_r = -1}
+  else{m_r=max_reads}
   rcpp_sc_detect_bc(infq, outcsv, surfix, bc_len, m_r, min_count, max_mismatch)
   
 }
