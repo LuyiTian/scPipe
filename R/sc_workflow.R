@@ -20,7 +20,7 @@
 #' @export
 #' 
 
-create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL){
+create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL) {
   gene_cnt = read.csv(file.path(datadir, "gene_count.csv"), row.names=1)
   cell_stat = read.csv(file.path(datadir, "stat", "cell_stat.csv"), row.names=1)
   
@@ -86,22 +86,24 @@ create_report = function(sample_name,
                          UMI_cor,
                          gene_fl,
                          species,
-                         gene_id_type){
+                         gene_id_type) {
   fn = system.file("extdata", "report_template.Rmd", package = "scPipe")
   tx = readLines(fn)
   
   tx = gsub(pattern = "SAMPLE_NAME__", replacement = sample_name, x = tx)
   tx = gsub(pattern = "FQ1__", replacement = r1, x = tx)
-  if(!is.null(r2)){
+  if (!is.null(r2)) {
     tx = gsub(pattern = "FQ2__", replacement = r2, x = tx)
-  }else{
+  }
+  else {
     tx = gsub(pattern = "FQ2__", replacement = "NA", x = tx)
   }
   
   tx = gsub(pattern = "FQOUT__", replacement = outfq, x = tx)
-  if(read_structure$bs1<0){
+  if (read_structure$bs1<0) {
     tx = gsub(pattern = "BC1_INFO__", replacement = "NA", x = tx)
-  }else{
+  }
+  else {
     tx = gsub(pattern = "BC1_INFO__", replacement = 
                 paste0("start at position ", read_structure$bs1, ", length ", read_structure$bl1), x = tx)
   }
@@ -128,11 +130,13 @@ create_report = function(sample_name,
   tx = gsub(pattern = "BC_ANNO__", replacement = barcode_anno, x = tx)
   tx = gsub(pattern = "MAX_MIS__", replacement = max_mis, x = tx)
   
-  if(UMI_cor == 1){
+  if (UMI_cor == 1) {
     tx = gsub(pattern = "UMI_COR__", replacement = "simple correction and merge UMI with distance 1", x = tx)
-  }else if(UMI_cor == 0){
+  }
+  else if (UMI_cor == 0) {
     tx = gsub(pattern = "UMI_COR__", replacement = "no correction", x = tx)
-  }else{
+  }
+  else {
     tx = gsub(pattern = "UMI_COR__", replacement = "unknown", x = tx)
   }
   
@@ -197,9 +201,10 @@ run_scPipe <- function(sample_name,
   out_fq = file.path(outdir, paste0(sample_name, ".fq"))
   bam_align = file.path(outdir, paste0(sample_name, ".align.bam"))
   bam_map = file.path(outdir, paste0(sample_name, ".mapped.bam"))
-  if (read_structure$bs1<0){
+  if (read_structure$bs1<0) {
     bc_len = read_structure$bl1+read_structure$bl2
-  }else{
+  }
+  else {
     bc_len = read_structure$bl2
   }
   sc_trim_barcode(outfq=out_fq,
@@ -218,12 +223,13 @@ run_scPipe <- function(sample_name,
                   bc_len=bc_len,
                   UMI_len=read_structure$ul,
                   fix_chr=FALSE)
-  if (is.null(barcode_anno)){ # for Drop-seq
+  if (is.null(barcode_anno)) { # for Drop-seq
     bc_annotation = file.path(outdir, "cellindex_annotation.csv")
     sc_detect_bc(infq=out_fq,
                  outcsv=bc_annotation,
                  bc_len=bc_len)
-  }else{ # for CEL-seq
+  }
+  else { # for CEL-seq
     bc_annotation = barcode_anno
   }
   
@@ -238,7 +244,7 @@ run_scPipe <- function(sample_name,
                    gene_fl=gene_fl)
 
   scd = create_scd_by_dir(datadir=outdir, species=species, gene_id=gene_id_type)
-  if(report){
+  if (report) {
     create_report(sample_name=sample_name,
                   outdir=outdir,
                   r1=r1,

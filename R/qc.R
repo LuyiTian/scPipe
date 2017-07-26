@@ -70,13 +70,13 @@ detect_outlier <- function(scd,
     }
     x <- Biobase::pData(QC_metrics(scd))[, colnames(QC_metrics(scd)) %in% sel_col]
   }
-  else{
+  else {
     stop("scd must be an SCData object.")
   }
   if (!all(complete.cases(x))) {
     stop("we find NAs in the `QC_metrics(scd)`, check the quality control matrix")
   }
-  if(is.null(dim(x))){
+  if (is.null(dim(x))) {
     warning("quality control metrics should be at least two dimensions.")
     QC_met <- pData(QC_metrics(scd))
     QC_met$outliers <- FALSE
@@ -111,7 +111,7 @@ detect_outlier <- function(scd,
       outlier_cells <- .qq_outliers_robust(pos_dist, ncol(x), conf[2])
     }
   }
-  else{
+  else {
     ord_fst <- c(1:comp)[order(mod$parameters$mean[1,], decreasing <- TRUE)]
     poor_comp <- ord_fst[2:comp]
     good_comp <- ord_fst[1]
@@ -180,7 +180,7 @@ calculate_QC_metrics <- function(scd) {
                         fpkm=fpkm(scd),
                         counts=counts(scd))
   }
-  else{
+  else {
     stop("require a SCData object.")
   }
   QC_met <- Biobase::pData(QC_metrics(scd))
@@ -197,11 +197,11 @@ calculate_QC_metrics <- function(scd) {
     ERCC_count <- colSums(exprs_mat[spikein,])
     QC_met$non_ERCC_percent <- exon_count/(ERCC_count+exon_count)
   }
-  else{
+  else {
     print("cannot detect ERCC Spikeins from data. skip `non_ERCC_percent`.")
   }
   # get mt percentage
-  if(!(gene_id_type(scd) == "NA")){
+  if (!(gene_id_type(scd) == "NA")) {
     mt_genes <- get_genes_by_GO(returns=gene_id_type(scd),
                                 dataset=organism.SCData(scd),
                                 go=c("GO:0005739"))
@@ -211,12 +211,13 @@ calculate_QC_metrics <- function(scd) {
         QC_met$non_mt_percent <- (exon_count-mt_count)/(exon_count+0.01) # add 0.01 to make sure they are not NA
       }
     }
-  }else{
+  }
+  else {
     print("no gene_id_type, skip `non_mt_percent`")
   }
 
   # get ribosomal percentage
-  if(!(gene_id_type(scd) == "NA")){
+  if (!(gene_id_type(scd) == "NA")) {
     ribo_genes <- get_genes_by_GO(returns=gene_id_type(scd),
                                dataset=organism.SCData(scd),
                                go=c("GO:0005840"))
@@ -226,7 +227,8 @@ calculate_QC_metrics <- function(scd) {
         QC_met$non_ribo_percent <- (exon_count-ribo_count)/(exon_count+0.01)
       }
     }
-  }else{
+  }
+  else {
     print("no gene_id_type, skip `non_ribo_percent`")
   }
   QC_metrics(scd) <- QC_met
@@ -250,13 +252,13 @@ plotQC_pair <- function(scd, sel_col=NULL) {
     }
     x <- pData(QC_metrics(scd))[, colnames(QC_metrics(scd)) %in% sel_col]
   }
-  else{
+  else {
     stop("scd must be an SCData object.")
   }
-  if ("outliers" %in% colnames(x)){
+  if ("outliers" %in% colnames(x)) {
     return(ggpairs(x, mapping = ggplot2::aes_string(colour = "outliers")))
   }
-  else{
+  else {
     return(ggpairs(x))
   }
 }
@@ -284,7 +286,7 @@ plot_mapping <- function(scd,
     }
     x <- pData(QC_metrics(scd))[, sel_col]
   }
-  else{
+  else {
     stop("scd must be an SCData object.")
   }
 
@@ -304,7 +306,7 @@ plot_mapping <- function(scd,
       theme(axis.title.x=element_blank(), axis.text.x=element_blank())+
       ggtitle(paste0("overall mapping statistics of ", dataname, " (number of reads)"))
   }
-  else{
+  else {
     p <- ggplot(dat.m1, aes_string(x="sample_name", y="value", fill="variable")) + scale_fill_brewer(palette="Set1")+
       geom_bar(stat="identity", width=1)+
       ylab("percentage of reads")+

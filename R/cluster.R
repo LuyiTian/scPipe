@@ -19,9 +19,9 @@
 #'
 sc_dim_reduction = function(scd,
                             k=20,
-                            n=2){
+                            n=2) {
   # check format:
-  if (is(scd, "SCData")){
+  if (is(scd, "SCData")) {
     exprs_mat <- switch(scd@useForExprs,
                         exprs = exprs(scd),
                         tpm = tpm(scd),
@@ -29,10 +29,10 @@ sc_dim_reduction = function(scd,
                         fpkm = fpkm(scd),
                         counts = counts(scd))
   }
-  else if (is.matrix(scd)){
+  else if (is.matrix(scd)) {
     exprs_mat = scd
   }
-  else{
+  else {
     stop("scd must be an SCData object or a matrix.")
   }
 

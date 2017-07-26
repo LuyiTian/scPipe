@@ -67,7 +67,7 @@ convert_geneid <- function(scd,
   }
 
   species <- organism.SCData(scd)
-  if(species == "NA"){
+  if (species == "NA") {
     print("species not provided.")
     return(scd)
   }
@@ -98,7 +98,7 @@ convert_geneid <- function(scd,
     }
     rownames(scd) <- G_list[, returns]
   }
-  else{
+  else {
     G_list <- G_list[!is.na(G_list[, returns]), ]
     scd <- scd[!is.na(G_list[, returns]), ]
     if (!(gene_id_type(scd) %in% colnames(Biobase::fData(scd)))) {
