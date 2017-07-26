@@ -660,6 +660,11 @@ setReplaceMethod("gene_id_type",
 #' column for each cell. It is an element of the assayData slot of the SCData
 #' object.
 #'
+#' @example
+#' \S4method{counts}{SCData}(object)
+#'
+#' \S4method{counts}{SCData,matrix}(object)<-value
+#'
 #' @docType methods
 #' @name counts
 #' @rdname counts
@@ -696,6 +701,11 @@ setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
 #' a matrix containing transcripts-per-million values. It has the same dimensions
 #' as the 'exprs' and 'counts' elements, which hold the transformed expression
 #' data and count data, respectively.
+#'
+#' @example
+#' \S4method{tpm}{SCData}(object)
+#'
+#' \S4method{tpm}{SCData,matrix}(object)<-value
 #'
 #' @docType methods
 #' @name tpm
@@ -738,6 +748,11 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
 #' as the 'exprs' and 'counts' elements, which hold the transformed expression
 #' data and count data, respectively.
 #'
+#' @example
+#' \S4method{cpm}{SCData}(object)
+#'
+#' \S4method{cpm}{SCData,matrix}(object)<-value
+#'
 #' @docType methods
 #' @name cpm
 #' @rdname cpm
@@ -779,6 +794,11 @@ setReplaceMethod("cpm", signature(object = "SCData", value = "matrix"),
 #' (FPKM) values. It has the same dimensions as the 'exprs' and 'counts'
 #' elements, which hold the transformed expression data and count data,
 #' respectively.
+#'
+#' @example
+#' \S4method{fpkm}{SCData}(object)
+#'
+#' \S4method{fpkm}{SCData,matrix}(object)<-value
 #'
 #' @docType methods
 #' @name fpkm
