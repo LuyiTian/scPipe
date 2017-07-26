@@ -5,6 +5,7 @@
 \alias{tpm}
 \alias{tpm<-}
 \alias{tpm}
+\alias{tpm}
 \alias{tpm.SCData}
 \alias{tpm,SCData-method}
 \alias{tpm<-,SCData,matrix-method}

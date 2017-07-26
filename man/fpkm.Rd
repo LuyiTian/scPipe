@@ -5,6 +5,7 @@
 \alias{fpkm}
 \alias{fpkm<-}
 \alias{fpkm}
+\alias{fpkm}
 \alias{fpkm.SCData}
 \alias{fpkm,SCData-method}
 \alias{fpkm<-,SCData,matrix-method}

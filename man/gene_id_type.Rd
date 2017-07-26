@@ -5,6 +5,7 @@
 \alias{gene_id_type}
 \alias{gene_id_type<-}
 \alias{gene_id_type}
+\alias{gene_id_type}
 \alias{gene_id_type.SCData}
 \alias{gene_id_type}
 \alias{gene_id_type<-}

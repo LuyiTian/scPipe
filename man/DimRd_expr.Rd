@@ -5,6 +5,7 @@
 \alias{DimRd_expr}
 \alias{DimRd_expr<-}
 \alias{DimRd_expr}
+\alias{DimRd_expr}
 \alias{DimRd_expr.SCData}
 \alias{DimRd_expr}
 \alias{DimRd_expr<-}
