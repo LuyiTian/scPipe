@@ -25,7 +25,7 @@
 
 
 #' guess the organism and species from input data
-#'
+#' 
 .guess_attr <- function(expr_mat) {
   hsp_ensembl = length(grep("^ENSG", rownames(expr_mat)))
   mm_ensembl = length(grep("^ENSMUSG", rownames(expr_mat)))
@@ -335,7 +335,7 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 #' @param all only contains interset for features or union.
 #' @param batch (optional) batch information
 #'
-#' @importFrom Biobase varLabels
+#' @importFrom Biobase varLabels 
 #'
 #' @export
 #'

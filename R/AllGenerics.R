@@ -116,3 +116,4 @@ setGeneric("fpkm", function(object) {standardGeneric("fpkm")})
 #' @docType methods
 #' @rdname fpkm
 setGeneric("fpkm<-", function(object, value) {standardGeneric("fpkm<-")})
+

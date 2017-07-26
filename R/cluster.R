@@ -12,7 +12,7 @@
 #'
 #' @import destiny Rtsne
 #' @importFrom stats prcomp
-#'
+#' 
 #' @export
 #' @examples
 #' #TODO
