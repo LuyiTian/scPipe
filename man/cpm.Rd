@@ -5,6 +5,7 @@
 \alias{cpm}
 \alias{cpm<-}
 \alias{cpm}
+\alias{cpm}
 \alias{cpmSCData}
 \alias{cpm,SCData-method}
 \alias{cpm<-,SCData,matrix-method}

@@ -5,6 +5,7 @@
 \alias{QC_metrics}
 \alias{QC_metrics<-}
 \alias{QC_metrics}
+\alias{QC_metrics}
 \alias{QC_metrics.SCData}
 \alias{QC_metrics}
 \alias{QC_metrics<-}

@@ -5,6 +5,7 @@
 \alias{organism}
 \alias{organism<-}
 \alias{organism}
+\alias{organism}
 \alias{organism.SCData}
 \alias{organism}
 \alias{organism<-}

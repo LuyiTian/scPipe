@@ -5,6 +5,7 @@
 \alias{FACSData}
 \alias{FACSData<-}
 \alias{FACSData}
+\alias{FACSData}
 \alias{FACSData.SCData}
 \alias{FACSData}
 \alias{FACSData<-}
