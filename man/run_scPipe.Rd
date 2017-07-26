@@ -7,8 +7,8 @@
 run_scPipe(sample_name, outdir, r1, r2 = NULL, read_structure,
   filter_settings = list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
   genome_index, exon_anno, fix_chr = FALSE, barcode_anno = NULL,
-  max_mis = 1, UMI_cor = 1, gene_fl = FALSE, species = "NA",
-  gene_id_type = "NA", nthreads = 1, report = TRUE)
+  max_mis = 1, has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
+  species = "NA", gene_id_type = "NA", nthreads = 1, report = TRUE)
 }
 \arguments{
 \item{sample_name}{sample names, the name should not have any space.}
@@ -32,6 +32,8 @@ run_scPipe(sample_name, outdir, r1, r2 = NULL, read_structure,
 \item{barcode_anno}{file path for cell barcode annotation.}
 
 \item{max_mis}{maximum mismatch allowed in barcode. default to be 1}
+
+\item{has_UMI}{whether the protocol has UMI, default to be TRUE}
 
 \item{UMI_cor}{correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.}
 

@@ -9,8 +9,8 @@ rcpp_sc_exon_mapping <- function(inbam, outbam, annofn, am, ge, bc, mb, bc_len, 
     invisible(.Call('_scPipe_rcpp_sc_exon_mapping', PACKAGE = 'scPipe', inbam, outbam, annofn, am, ge, bc, mb, bc_len, UMI_len, stnd, fix_chr))
 }
 
-rcpp_sc_demultiplex <- function(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito) {
-    invisible(.Call('_scPipe_rcpp_sc_demultiplex', PACKAGE = 'scPipe', inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito))
+rcpp_sc_demultiplex <- function(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito, has_UMI) {
+    invisible(.Call('_scPipe_rcpp_sc_demultiplex', PACKAGE = 'scPipe', inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito, has_UMI))
 }
 
 rcpp_sc_gene_counting <- function(outdir, bc_anno, UMI_cor, gene_fl) {

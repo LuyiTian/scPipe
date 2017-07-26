@@ -161,6 +161,7 @@ create_report = function(sample_name,
 #' @param fix_chr whether add `chr` to chromosome names, fix inconsistant names between different annotations.
 #' @param barcode_anno file path for cell barcode annotation.
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
+#' @param has_UMI whether the protocol has UMI, default to be TRUE
 #' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.
 #' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
 #' @param species the species of the data. List of possible names can be retrieved using the function 
@@ -187,6 +188,7 @@ run_scPipe <- function(sample_name,
                       fix_chr=FALSE,
                       barcode_anno=NULL,
                       max_mis=1,
+                      has_UMI=TRUE,
                       UMI_cor=1,
                       gene_fl=FALSE,
                       species="NA",
@@ -229,7 +231,8 @@ run_scPipe <- function(sample_name,
   sc_demultiplex(inbam=bam_map,
                  outdir=outdir,
                  bc_anno=bc_annotation,
-                 max_mis=max_mis)
+                 max_mis=max_mis,
+                 has_UMI=has_UMI)
   sc_gene_counting(outdir=outdir,
                    bc_anno=bc_annotation,
                    UMI_cor=UMI_cor,
