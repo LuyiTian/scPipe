@@ -5,10 +5,10 @@
 \alias{gene_id_type}
 \alias{gene_id_type<-}
 \alias{gene_id_type}
-\alias{gene_id_type}
 \alias{gene_id_type.SCData}
+\alias{gene_id_type,SCData-method}
 \alias{gene_id_type}
-\alias{gene_id_type<-}
+\alias{gene_id_type<-,SCData-method}
 \alias{gene_id_type}
 \title{Get or set \code{gene_id_type} from an SCData object}
 \usage{

@@ -27,12 +27,11 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
     stop("must provide GO term. (i.e go=c('GO:0005739'))")
   }
   mart <- useDataset(dataset, useMart("ensembl"))
-  G_list <- getBM(filters= "go",
-                  attributes= c(returns),
+  G_list <- getBM(filters="go",
+                  attributes=c(returns),
                   values=go,
                   mart=mart)
   return(G_list[, returns])
-
 }
 
 
@@ -67,12 +66,12 @@ convert_geneid <- function(scd,
     stop("SCData already in this id type. (scd@gene_id_type == returns)")
   }
 
-  species <- organism.SCData(scd)
-  if(species == "NA"){
-    print("species not provided.")
+  organism <- organism.SCData(scd)
+  if (organism == "NA") {
+    print("organism not provided.")
     return(scd)
   }
-  mart <- useDataset(species, useMart("ensembl"))
+  mart <- useDataset(organism, useMart("ensembl"))
   G_list <- getBM(filters=gene_id_type(scd), attributes=c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
 
   G_list <- G_list[match(rownames(scd), G_list[, gene_id_type(scd)]), ]
@@ -99,7 +98,7 @@ convert_geneid <- function(scd,
     }
     rownames(scd) <- G_list[, returns]
   }
-  else{
+  else {
     G_list <- G_list[!is.na(G_list[, returns]), ]
     scd <- scd[!is.na(G_list[, returns]), ]
     if (!(gene_id_type(scd) %in% colnames(Biobase::fData(scd)))) {

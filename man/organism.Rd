@@ -5,10 +5,10 @@
 \alias{organism}
 \alias{organism<-}
 \alias{organism}
-\alias{organism}
 \alias{organism.SCData}
+\alias{organism,SCData-method}
 \alias{organism}
-\alias{organism<-}
+\alias{organism<-,SCData-method}
 \alias{organism}
 \title{Get or set \code{organism} from an SCData object}
 \usage{

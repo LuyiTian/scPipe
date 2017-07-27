@@ -1,41 +1,39 @@
-#' merge matrix for multiple SCData object
-#'
-.merge_mat = function(scd_list,func){
-  if(all(unlist(lapply(scd_list,function(x){!is.null(func(x))})))){
-    all_exprs = lapply(scd_list, function(x){func(x)})
+# merge matrix for multiple SCData object
+.merge_mat = function(scd_list, func) {
+  if (all(unlist(lapply(scd_list, function(x) {!is.null(func(x))})))) {
+    all_exprs = lapply(scd_list, function(x) {func(x)})
     all_gene_id = rownames(all_exprs[[1]])
     all_cell_id = colnames(all_exprs[[1]])
-    for(i in 2:length(all_exprs)){
-      all_gene_id = union(all_gene_id,rownames(all_exprs[[i]]))
-      all_cell_id = c(all_cell_id,colnames(all_exprs[[i]]))
+    for (i in 2:length(all_exprs)) {
+      all_gene_id = union(all_gene_id, rownames(all_exprs[[i]]))
+      all_cell_id = c(all_cell_id, colnames(all_exprs[[i]]))
     }
     merged_exprs = matrix(0,
                           nrow = length(all_gene_id),
                           ncol = length(all_cell_id),
-                          dimnames = list(all_gene_id,all_cell_id))
-    for(i in 1:length(all_exprs)){
-      merged_exprs[rownames(all_exprs[[i]]),colnames(all_exprs[[i]])] = all_exprs[[i]]
+                          dimnames = list(all_gene_id, all_cell_id))
+    for (i in 1:length(all_exprs)) {
+      merged_exprs[rownames(all_exprs[[i]]), colnames(all_exprs[[i]])] = all_exprs[[i]]
     }
   }
-  else{
+  else {
     stop("all data should contain expression matrix.")
   }
   return(merged_exprs)
 }
 
 
-#' guess the organism and species from input data
-#' 
-.guess_attr = function(expr_mat){
+# guess the organism and species from input data
+.guess_attr = function(expr_mat) {
   hsp_ensembl = length(grep("^ENSG", rownames(expr_mat)))
   mm_ensembl = length(grep("^ENSMUSG", rownames(expr_mat)))
-  if((hsp_ensembl>0) & (hsp_ensembl>mm_ensembl)){
+  if ((hsp_ensembl>0) & (hsp_ensembl>mm_ensembl)) {
     return(list(organism="hsapiens_gene_ensembl", gene_id_type="ensembl_gene_id"))
   }
-  else if((mm_ensembl>0) & (mm_ensembl>hsp_ensembl)){
+  else if ((mm_ensembl>0) & (mm_ensembl>hsp_ensembl)) {
     return(list(organism="mmusculus_gene_ensembl", gene_id_type="ensembl_gene_id"))
   }
-  else{
+  else {
     return(list(organism=NA, gene_id_type=NA))
   }
 }
@@ -81,10 +79,10 @@ newSCData <- function(exprsData = NULL,
                       reducedFACSDimension = NULL,
                       onesense = NULL,
                       QualityControlInfo = NULL,
-                      useForExprs = c("exprs","tpm","cpm","counts","fpkm")){
+                      useForExprs = c("exprs", "tpm", "cpm", "counts", "fpkm")) {
 
   # Check that at least we have the expression data we wanted
-  if (missing(useForExprs)){
+  if (missing(useForExprs)) {
     stop("Need to specify which expresssion matrix to use by `useForExprs`.")
   }
   exprs_mat <- switch(useForExprs,
@@ -93,44 +91,44 @@ newSCData <- function(exprsData = NULL,
                       cpm = cpmData,
                       fpkm = fpkmData,
                       counts = countData)
-  if (is.null(exprs_mat)){
+  if (is.null(exprs_mat)) {
     stop("the data related to `useForExprs` is null. \n(i.e if you choose `count` in `useForExprs` then you should set countData)")
   }
 
   # Generate valid phenoData, FACSData, featureData and QualityControlInfo if not provided
-  if (is.null(phenoData)){
+  if (is.null(phenoData)) {
     phenoData <- annotatedDataFrameFrom(exprs_mat, byrow = FALSE)
   }
-  if (is.null(FACSData)){
+  if (is.null(FACSData)) {
     FACSData <- annotatedDataFrameFrom(exprs_mat, byrow = FALSE)
   }
-  if (is.null(featureData)){
+  if (is.null(featureData)) {
     featureData <- annotatedDataFrameFrom(exprs_mat, byrow = TRUE)
   }
-  if (is.null(QualityControlInfo)){
+  if (is.null(QualityControlInfo)) {
     QualityControlInfo <- annotatedDataFrameFrom(exprs_mat, byrow = FALSE)
   }
 
   # set ERCC spikein information
   spikein = grepl("^ERCC", rownames(exprs_mat))
-  if(any(spikein)){
+  if (any(spikein)) {
     featureData$isSpike = spikein
   }
-  else{
+  else {
     featureData$isSpike = spikein
     print("cannot detect ERCC Spikeins from data.")
   }
 
   # Generate valid reducedExprDimension, onesense and reducedFACSDimension if not provided
-  if (is.null(reducedExprDimension)){
+  if (is.null(reducedExprDimension)) {
     reducedExprDimension = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
     rownames(reducedExprDimension) = colnames(exprs_mat)
   }
-  if (is.null(reducedFACSDimension)){
+  if (is.null(reducedFACSDimension)) {
     reducedFACSDimension = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
     rownames(reducedFACSDimension) = colnames(exprs_mat)
   }
-  if (is.null(onesense)){
+  if (is.null(onesense)) {
     onesense = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
     rownames(onesense) = colnames(exprs_mat)
   }
@@ -176,31 +174,31 @@ newSCData <- function(exprsData = NULL,
 
   # check organism names or gene_id_type is set correctly
   tmp_res = .guess_attr(exprs_mat)
-  if(is.null(organism)){
-    if (is.na(tmp_res$organism)){
+  if (is.null(organism)) {
+    if (is.na(tmp_res$organism)) {
       warnings("organism should provided \n List of possible names can be \nretrieved using the function `listDatasets`from `biomaRt` package. \n(i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)")
       organism(scd) = NULL
     }
-    else{
+    else {
       print(paste("organism not provided. make a guess:", tmp_res$organism))
       organism(scd) = tmp_res$organism
     }
   }
-  else{
+  else {
     # set organism
     organism(scd) = organism
   }
-  if(is.null(gene_id_type)){
-    if (is.na(tmp_res$gene_id_type)){
+  if (is.null(gene_id_type)) {
+    if (is.na(tmp_res$gene_id_type)) {
       warnings("gene_id_type should be provided. \n A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. \nthe commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.")
       gene_id_type(scd) = NULL
     }
-    else{
+    else {
       print(paste("gene_id_type not provided. make a guess:", tmp_res$gene_id_type))
       gene_id_type(scd) = tmp_res$gene_id_type
     }
   }
-  else{
+  else {
     gene_id_type(scd) = gene_id_type
   }
 
@@ -285,19 +283,19 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
   else if ( missing(i) && !missing(j) ) {
     # select cells
     x = selectMethod('[', 'ExpressionSet')(x, , j, drop = drop)
-    if ( length(x@reducedExprDimension) != 0 ){
+    if ( length(x@reducedExprDimension) != 0 ) {
       x@reducedExprDimension =
         as.matrix(x@reducedExprDimension[j, , drop = drop])
     }
-    if ( length(x@reducedFACSDimension) != 0 ){
+    if ( length(x@reducedFACSDimension) != 0 ) {
       x@reducedFACSDimension =
         as.matrix(x@reducedFACSDimension[j, , drop = drop])
     }
-    if ( length(x@onesense) != 0 ){
+    if ( length(x@onesense) != 0 ) {
       x@onesense =
         as.matrix(x@onesense[j, , drop = drop])
     }
-    if ( length(x@QualityControlInfo) != 0 ){
+    if ( length(x@QualityControlInfo) != 0 ) {
       x@QualityControlInfo =
         x@QualityControlInfo[j, , drop = drop]
     }
@@ -306,19 +304,19 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
   else if ( !missing(i) && !missing(j) ) {
     # selcet features (i) and cells (j)
     x <- selectMethod('[', 'ExpressionSet')(x, i, j, drop = drop)
-    if ( length(x@reducedExprDimension) != 0 ){
+    if ( length(x@reducedExprDimension) != 0 ) {
       x@reducedExprDimension =
         as.matrix(x@reducedExprDimension[j, , drop = drop])
     }
-    if ( length(x@reducedFACSDimension) != 0 ){
+    if ( length(x@reducedFACSDimension) != 0 ) {
       x@reducedFACSDimension =
         as.matrix(x@reducedFACSDimension[j, , drop = drop])
     }
-    if ( length(x@onesense) != 0 ){
+    if ( length(x@onesense) != 0 ) {
       x@onesense =
         as.matrix(x@onesense[j, , drop = drop])
     }
-    if ( length(x@QualityControlInfo) != 0 ){
+    if ( length(x@QualityControlInfo) != 0 ) {
       x@QualityControlInfo =
         x@QualityControlInfo[j, , drop = drop]
     }
@@ -344,93 +342,93 @@ merge_SCData <- function(...,
                         all = TRUE,
                         batch = NULL) {
   scd_list <- list(...)
-  if (!is.null(batch)){
-    if (!(length(batch) == length(scd_list))){
+  if (!is.null(batch)) {
+    if (!(length(batch) == length(scd_list))) {
       stop("the length of batch should equal to the number of dataset")
     }
   }
-  else{
+  else {
     batch = 1:length(scd_list)
   }
 
 
-  if(length(scd_list) < 2){
+  if (length(scd_list) < 2) {
     stop("should at least contain two SCData object.")
   }
-  if(!all(unlist(lapply(scd_list,function(x){is(x, "SCData")})))){
+  if (!all(unlist(lapply(scd_list, function(x) {is(x, "SCData")})))) {
     stop("all data should be SCData object")
   }
   logged = scd_list[[1]]@logged
-  if(!all(unlist(lapply(scd_list,function(x){x@logged == logged})))){
+  if (!all(unlist(lapply(scd_list, function(x) {x@logged == logged})))) {
     stop("data do not have the same value for the 'logged' slot.")
   }
 
   useForExprs = scd_list[[1]]@useForExprs
-  if(!all(unlist(lapply(scd_list,function(x){x@useForExprs == useForExprs})))){
+  if (!all(unlist(lapply(scd_list, function(x) {x@useForExprs == useForExprs})))) {
     stop("data do not have the same value for the 'useForExprs' slot.")
   }
 
   logExprsOffset = scd_list[[1]]@logExprsOffset
-  if(!all(unlist(lapply(scd_list,function(x){x@logExprsOffset == logExprsOffset})))){
+  if (!all(unlist(lapply(scd_list, function(x) {x@logExprsOffset == logExprsOffset})))) {
     stop("data do not have the same value for the 'logExprsOffset' slot.")
   }
 
   the_organism = organism.SCData(scd_list[[1]])
-  if(!all(unlist(lapply(scd_list,function(x){organism.SCData(x) == the_organism})))){
+  if (!all(unlist(lapply(scd_list, function(x) {organism.SCData(x) == the_organism})))) {
     stop("data do not have the same value for the 'organism' slot.")
   }
 
   gene_id_type = scd_list[[1]]@gene_id_type
-  if(!all(unlist(lapply(scd_list,function(x){x@gene_id_type == gene_id_type})))){
+  if (!all(unlist(lapply(scd_list, function(x) {x@gene_id_type == gene_id_type})))) {
     stop("data do not have the same value for the 'gene_id_type' slot.")
   }
 
   print("merge expression matrix")
-  merged_exprs = .merge_mat(scd_list,exprs)
+  merged_exprs = .merge_mat(scd_list, exprs)
 
   print("merge phenotype")
   ph_col = varLabels(scd_list[[1]])
   merged_ph = NULL
-  if(length(ph_col)>0){
-    if(all(unlist(lapply(scd_list, function(x){varLabels(x) == ph_col})))){
+  if (length(ph_col)>0) {
+    if (all(unlist(lapply(scd_list, function(x) {varLabels(x) == ph_col})))) {
       merged_ph =
-        AnnotatedDataFrame(data=Reduce(rbind,lapply(scd_list,function(x){pData(x)})))
+        AnnotatedDataFrame(data=Reduce(rbind, lapply(scd_list, function(x) {pData(x)})))
     }
-    else{
+    else {
       stop("the colnames in phenoData should be the same for all data.")
     }
   }
-  if ("batch" %in% colnames(merged_ph)){
+  if ("batch" %in% colnames(merged_ph)) {
     print("already contains batch information. ignore batch argument.")
   }
-  else{
-    batch_num =unname(unlist(lapply(scd_list, function(x){nrow(pData(x))})))
-    merged_ph$batch = rep(batch,times=as.vector(batch_num))
+  else {
+    batch_num =unname(unlist(lapply(scd_list, function(x) {nrow(pData(x))})))
+    merged_ph$batch = rep(batch, times=as.vector(batch_num))
   }
 
 
   print("merge quality control metrics")
-  qc_col = varLabels(QC_metrics(scd_list[[1]]))
+  qc_col = varLabels(QCMetrics(scd_list[[1]]))
   merged_qc = NULL
-  if (length(qc_col)>0){
-    if(all(unlist(lapply(scd_list, function(x){varLabels(QC_metrics(x)) == qc_col})))){
+  if (length(qc_col)>0) {
+    if (all(unlist(lapply(scd_list, function(x) {varLabels(QCMetrics(x)) == qc_col})))) {
       merged_qc =
-        AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(QC_metrics(x))}))))
+        AnnotatedDataFrame(data=Reduce(rbind, (lapply(scd_list, function(x) {pData(QCMetrics(x))}))))
     }
-    else{
-      stop("the colnames in QC_metrics should be the same for all data.")
+    else {
+      stop("the colnames in QCMetrics should be the same for all data.")
     }
   }
 
   print("merge FACS data")
   fac_col = varLabels(FACSData(scd_list[[1]]))
   merged_fac = NULL
-  if(length(fac_col)>0){
-    if(all(unlist(lapply(scd_list, function(x){varLabels(FACSData(x)) == fac_col})))){
+  if (length(fac_col)>0) {
+    if (all(unlist(lapply(scd_list, function(x) {varLabels(FACSData(x)) == fac_col})))) {
       merged_fac =
-        AnnotatedDataFrame(data=Reduce(rbind,(lapply(scd_list,function(x){pData(FACSData(x))}))))
+        AnnotatedDataFrame(data=Reduce(rbind, (lapply(scd_list, function(x) {pData(FACSData(x))}))))
     }
-    else{
+    else {
       stop("the colnames in phenoData should be the same for all data.")
     }
   }
@@ -450,27 +448,26 @@ merge_SCData <- function(...,
               QualityControlInfo = merged_qc,
               useForExprs = "exprs")
 
-  if(!is.null(fpkm(scd_list[[1]]))){
-    fpkm(new_scd) = .merge_mat(scd_list,fpkm)
+  if (!is.null(fpkm(scd_list[[1]]))) {
+    fpkm(new_scd) = .merge_mat(scd_list, fpkm)
   }
 
-  if(!is.null(cpm(scd_list[[1]]))){
-    cpm(new_scd) = .merge_mat(scd_list,cpm)
+  if (!is.null(cpm(scd_list[[1]]))) {
+    cpm(new_scd) = .merge_mat(scd_list, cpm)
   }
 
-  if(!is.null(counts(scd_list[[1]]))){
-    counts(new_scd) = .merge_mat(scd_list,counts)
+  if (!is.null(counts(scd_list[[1]]))) {
+    counts(new_scd) = .merge_mat(scd_list, counts)
   }
 
-  if(!is.null(tpm(scd_list[[1]]))){
-    tpm(new_scd) = .merge_mat(scd_list,tpm)
+  if (!is.null(tpm(scd_list[[1]]))) {
+    tpm(new_scd) = .merge_mat(scd_list, tpm)
   }
   return(new_scd)
 }
 
 #' Get or set quality control metrics from an SCData object
-#' @name QC_metrics
-#' @rdname QC_metrics
+#' @rdname QCMetrics
 #' @param object An \code{\link{SCData}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
@@ -480,23 +477,21 @@ merge_SCData <- function(...,
 #' @export
 #'
 #'
-QC_metrics.SCData <- function(object) {
+QCMetrics.SCData <- function(object) {
   return(object@QualityControlInfo)
 }
 
-#' @name QC_metrics
-#' @rdname QC_metrics
-#' @aliases QC_metrics
+#' @rdname QCMetrics
+#' @aliases QCMetrics
 #' @export
 #'
-setMethod("QC_metrics", signature(object = "SCData"),
-          QC_metrics.SCData)
+setMethod("QCMetrics", signature(object = "SCData"),
+          QCMetrics.SCData)
 
-#' @name QC_metrics<-
-#' @aliases QC_metrics
-#' @rdname QC_metrics
-#' @exportMethod "QC_metrics<-"
-setReplaceMethod("QC_metrics",
+#' @rdname QCMetrics
+#' @aliases QCMetrics
+#' @export
+setReplaceMethod("QCMetrics",
                  signature="SCData",
                  function(object, value) {
                    object@QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(value))
@@ -506,7 +501,6 @@ setReplaceMethod("QC_metrics",
 
 
 #' Get or set \code{organism} from an SCData object
-#' @name organism
 #' @rdname organism
 #' @param object An \code{\link{SCData}} object.
 #' @param value Value to be assigned to corresponding object.
@@ -520,7 +514,6 @@ organism.SCData <- function(object) {
 }
 
 
-#' @name organism
 #' @aliases organism
 #' @rdname organism
 #' @export
@@ -528,10 +521,9 @@ setMethod("organism", signature(object="SCData"),
           organism.SCData)
 
 
-#' @name organism<-
 #' @aliases organism
 #' @rdname organism
-#' @exportMethod "organism<-"
+#' @export
 #' @export
 setReplaceMethod("organism",
            signature="SCData",
@@ -543,7 +535,6 @@ setReplaceMethod("organism",
 
 
 #' Get or set FACs data for an SCData object
-#' @name FACSData
 #' @rdname FACSData
 #' @param object An \code{\link{SCData}} object.
 #' @param value Value to be assigned to corresponding object.
@@ -558,7 +549,6 @@ FACSData.SCData <- function(object) {
   return(object@FACSData)
 }
 
-#' @name FACSData
 #' @rdname FACSData
 #' @aliases FACSData
 #' @export
@@ -566,10 +556,9 @@ FACSData.SCData <- function(object) {
 setMethod("FACSData", signature(object = "SCData"),
           FACSData.SCData)
 
-#' @name FACSData<-
 #' @aliases FACSData
 #' @rdname FACSData
-#' @exportMethod "FACSData<-"
+#' @export
 setReplaceMethod("FACSData",
                  signature="SCData",
                  function(object, value) {
@@ -579,36 +568,29 @@ setReplaceMethod("FACSData",
                  }
 )
 
+
 #' Get or set \code{reducedExprDimension} from an SCData object
-#' @name DimRd_expr
-#' @rdname DimRd_expr
 #' @param object An \code{\link{SCData}} object.
-#' @param value Value to be assigned to corresponding object.
 #'
 #' @return A matrix of reduced-dimension coordinates for gene
 #' expression of single cell.
 #' @author Luyi Tian
-#'
+#' @rdname DimReducedExpr
+#' @aliases DimReducedExpr
 #' @export
 #'
-DimRd_expr.SCData <- function(object) {
-  return(object@reducedExprDimension)
-}
-
-#' @name DimRd_expr
-#' @rdname DimRd_expr
-#' @aliases DimRd_expr
-#' @export
-#'
-setMethod("DimRd_expr", signature(object = "SCData"),
-          DimRd_expr.SCData)
+setMethod("DimReducedExpr", signature(object = "SCData"),
+  DimReducedExpr.SCData <- function(object) {
+    return(object@reducedExprDimension)
+  })
 
 
-#' @name DimRd_expr<-
-#' @aliases DimRd_expr
-#' @rdname DimRd_expr
-#' @exportMethod "DimRd_expr<-"
-setReplaceMethod("DimRd_expr",
+#' @inheritParams DimReducedExpr
+#' @param value Value to be assigned to corresponding object.
+#' @aliases DimReducedExpr
+#' @rdname DimReducedExpr
+#' @exportMethod "DimReducedExpr<-"
+setReplaceMethod("DimReducedExpr",
                  signature="SCData",
                  function(object, value) {
                    object@reducedExprDimension = value
@@ -617,7 +599,6 @@ setReplaceMethod("DimRd_expr",
                  })
 
 #' Get or set \code{gene_id_type} from an SCData object
-#' @name gene_id_type
 #' @rdname gene_id_type
 #' @param object An \code{\link{SCData}} object.
 #' @param value Value to be assigned to corresponding object.
@@ -632,7 +613,6 @@ gene_id_type.SCData <- function(object) {
 }
 
 
-#' @name gene_id_type
 #' @rdname gene_id_type
 #' @aliases gene_id_type
 #' @export
@@ -640,11 +620,9 @@ setMethod("gene_id_type", signature(object = "SCData"),
           gene_id_type.SCData)
 
 
-#' @name gene_id_type<-
-#' @rdname gene_id_type
 #' @aliases gene_id_type
 #' @rdname gene_id_type
-#' @exportMethod "gene_id_type<-"
+#' @export
 setReplaceMethod("gene_id_type",
                  signature="SCData",
                  function(object, value) {
@@ -653,6 +631,7 @@ setReplaceMethod("gene_id_type",
                    return(object)
                  })
 
+
 #' Accessors for the 'counts' element of an SCData object.
 #'
 #' The counts element holds the count data as a matrix of non-negative integer
@@ -660,9 +639,6 @@ setReplaceMethod("gene_id_type",
 #' column for each cell. It is an element of the assayData slot of the SCData
 #' object.
 #'
-#'
-#' @docType methods
-#' @name counts
 #' @rdname counts
 #' @importFrom BiocGenerics counts
 #' @aliases counts counts,SCData-method counts<-,SCData,matrix-method
@@ -680,10 +656,9 @@ counts.SCData <- function(object) {
 #' @export
 setMethod("counts", signature(object = "SCData"), counts.SCData)
 
-#' @name counts
 #' @rdname counts
 #' @importFrom BiocGenerics counts<-
-#' @exportMethod "counts<-"
+#' @export
 setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
                  function(object, value) {
                    Biobase::assayDataElement(object, "counts") <- value
@@ -698,11 +673,7 @@ setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
 #' as the 'exprs' and 'counts' elements, which hold the transformed expression
 #' data and count data, respectively.
 #'
-#'
-#' @docType methods
-#' @name tpm
 #' @rdname tpm
-#' @aliases tpm tpm,SCData-method tpm<-,SCData,matrix-method
 #'
 #' @param object a \code{SCData} object.
 #' @param value a matrix of class \code{"numeric"}
@@ -710,21 +681,18 @@ setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
 #' @author Luyi Tian
 #' @export
 #' @aliases tpm tpm,SCData-method tpm<-,SCData,matrix-method
-#'
-#'
 tpm.SCData <- function(object) {
   object@assayData$tpm
 }
 
-#' @name tpm
+
 #' @rdname tpm
 #' @export
 #' @aliases tpm,SCData-method
 setMethod("tpm", signature(object = "SCData"), tpm.SCData)
 
-#' @name tpm<-
 #' @rdname tpm
-#' @exportMethod "tpm<-"
+#' @export
 #' @aliases tpm<-,SCData,matrix-method
 setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
                  function(object, value) {
@@ -741,10 +709,7 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
 #' data and count data, respectively.
 #'
 #'
-#' @docType methods
-#' @name cpm
 #' @rdname cpm
-#' @aliases cpm cpm,SCData-method cpm<-,SCData,matrix-method
 #'
 #' @param object a \code{SCData} object.
 #' @param value a matrix of class \code{"numeric"}
@@ -752,21 +717,18 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
 #' @author Luyi Tian
 #' @export
 #' @aliases cpm cpm,SCData-method cpm<-,SCData,matrix-method
-#'
-#'
 cpmSCData <- function(object) {
   object@assayData$cpm
 }
 
-#' @name cpm
+
 #' @rdname cpm
 #' @export
 #' @aliases cpm,SCData-method
 setMethod("cpm", signature(object = "SCData"), cpmSCData)
 
-#' @name cpm<-
 #' @rdname cpm
-#' @exportMethod "cpm<-"
+#' @export
 #' @aliases cpm<-,SCData,matrix-method
 setReplaceMethod("cpm", signature(object = "SCData", value = "matrix"),
                  function(object, value) {
@@ -783,8 +745,6 @@ setReplaceMethod("cpm", signature(object = "SCData", value = "matrix"),
 #' elements, which hold the transformed expression data and count data,
 #' respectively.
 #'
-#'
-#' @docType methods
 #' @name fpkm
 #' @rdname fpkm
 #' @aliases fpkm fpkm,SCData-method fpkm<-,SCData,matrix-method
@@ -800,15 +760,13 @@ fpkm.SCData <- function(object) {
   object@assayData$fpkm
 }
 
-#' @name fpkm
 #' @rdname fpkm
 #' @export
 #' @aliases fpkm,SCData-method
 setMethod("fpkm", signature(object = "SCData"), fpkm.SCData)
 
-#' @name fpkm<-
 #' @rdname fpkm
-#' @exportMethod "fpkm<-"
+#' @export
 #' @aliases fpkm<-,SCData,matrix-method
 setReplaceMethod("fpkm", signature(object = "SCData", value = "matrix"),
                  function(object, value) {

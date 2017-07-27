@@ -5,13 +5,11 @@
 \alias{cpm}
 \alias{cpm<-}
 \alias{cpm}
-\alias{cpm}
 \alias{cpmSCData}
+\alias{cpm}
 \alias{cpm,SCData-method}
 \alias{cpm<-,SCData,matrix-method}
-\alias{cpm}
 \alias{cpm,SCData-method}
-\alias{cpm<-}
 \alias{cpm<-,SCData,matrix-method}
 \title{Accessors for the 'cpm' (counts per million) element of an SCData object.}
 \usage{
