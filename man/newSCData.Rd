@@ -12,6 +12,61 @@ newSCData(exprsData = NULL, countData = NULL, tpmData = NULL,
   onesense = NULL, QualityControlInfo = NULL, useForExprs = c("exprs",
   "tpm", "cpm", "counts", "fpkm"))
 }
+\arguments{
+\item{exprsData}{matrix of expression values}
+
+\item{countData}{matrix of count values}
+
+\item{tpmData}{matrix of transcript per million values}
+
+\item{fpkmData}{matrix of fragments per kilobase of transcript per million
+values}
+
+\item{cpmData}{matrix of counts per million values}
+
+\item{phenoData}{data.frame containing attributes of individual cells}
+
+\item{FACSData}{contains the index sorted FACSData, rows are cell and columns
+are each cell surface markers}
+
+\item{featureData}{data.frame containing attributes of features (e.g. genes)}
+
+\item{experimentData}{MIAME class object containing metadata data and details
+about the experiment and dataset}
+
+\item{logged}{Scalar of class \code{"logical"}, indicating whether or not the
+expression data in the `exprs` slot have been log2-transformed}
+
+\item{gene_id_type}{the type of gene id. could be `ensembl_gene_id` or
+`external_gene_name` or other type which can be assessed by
+\code{listAttributes} from \code{biomaRt} package. can be gussed from the
+annotation if not provided}
+
+\item{organism}{the name of organism given in the \code{biomaRt} package. (i.e
+`mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`) if it is not provided
+the function will guess the organism name from the gene id.}
+
+\item{logExprsOffset}{Scalar of class \code{"numeric"}, providing an offset
+applied to expression data in the `exprs` slot when undergoing
+log2-transformation to avoid trying to take logs of zero}
+
+\item{reducedExprDimension}{Matrix of class \code{"numeric"}, containing
+reduced-dimension coordinates for gene expression of single cell, where each
+row represent a cell and each column represent a dimension}
+
+\item{reducedFACSDimension}{Matrix of class \code{"numeric"}, containing
+reduced-dimension coordinates for surface marker phenotypes of single cell}
+
+\item{onesense}{Matrix of class \code{"numeric"}, containing onesense tSNE
+coordinates for both phenotype and transcriptome}
+
+\item{QualityControlInfo}{Data frame of class \code{"AnnotatedDataFrame"} that
+can contain QC metrics used for in QC}
+
+\item{useForExprs}{Character string (one of 'exprs','tpm','counts' or 'fpkm')
+indicating which expression representation both internal methods and
+external packages should use. Defaults to 'exprs'}
+}
 \value{
 a new SCData object
 }

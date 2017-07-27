@@ -14,8 +14,7 @@
 #'@section Slots:
 #'  \describe{
 #'    \item{\code{logged}:}{Scalar of class \code{"logical"}, indicating whether
-#'    or not the expression data in the `exprs` slot have been log2-transformed
-#'    or not.}
+#'    or not the expression data in the `exprs` slot have been log2-transformed.}
 #'    \item{\code{gene_id_type}}{the type of gene id. could be `ensembl_gene_id` or
 #'    `external_gene_name` or other type which can be assessed by \code{listAttributes} from \code{biomaRt} package. can be gussed from the annotation if not provided.}
 #'    \item{\code{organism}}{the name of organism given in the \code{biomaRt} package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)

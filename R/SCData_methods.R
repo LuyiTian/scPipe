@@ -49,6 +49,43 @@
 #' strongly encouraged. The SCData also includes a slot 'counts' to store an
 #' object containing raw count data.
 #'
+#'@param exprsData matrix of expression values
+#'@param countData matrix of count values
+#'@param tpmData matrix of transcript per million values
+#'@param fpkmData matrix of fragments per kilobase of transcript per million
+#'  values
+#'@param cpmData matrix of counts per million values
+#'@param phenoData data.frame containing attributes of individual cells
+#'@param FACSData contains the index sorted FACSData, rows are cell and columns
+#'  are each cell surface markers
+#'@param featureData data.frame containing attributes of features (e.g. genes)
+#'@param experimentData MIAME class object containing metadata data and details
+#'  about the experiment and dataset
+#'@param logged Scalar of class \code{"logical"}, indicating whether or not the
+#'  expression data in the `exprs` slot have been log2-transformed
+#'@param gene_id_type the type of gene id. could be `ensembl_gene_id` or
+#'  `external_gene_name` or other type which can be assessed by
+#'  \code{listAttributes} from \code{biomaRt} package. can be gussed from the
+#'  annotation if not provided
+#'@param organism the name of organism given in the \code{biomaRt} package. (i.e
+#'  `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`) if it is not provided
+#'  the function will guess the organism name from the gene id.
+#'@param logExprsOffset Scalar of class \code{"numeric"}, providing an offset
+#'  applied to expression data in the `exprs` slot when undergoing
+#'  log2-transformation to avoid trying to take logs of zero
+#'@param reducedExprDimension Matrix of class \code{"numeric"}, containing
+#'  reduced-dimension coordinates for gene expression of single cell, where each
+#'  row represent a cell and each column represent a dimension
+#'@param reducedFACSDimension Matrix of class \code{"numeric"}, containing
+#'  reduced-dimension coordinates for surface marker phenotypes of single cell
+#'@param onesense Matrix of class \code{"numeric"}, containing onesense tSNE
+#'  coordinates for both phenotype and transcriptome
+#'@param QualityControlInfo Data frame of class \code{"AnnotatedDataFrame"} that
+#'  can contain QC metrics used for in QC
+#'@param useForExprs Character string (one of 'exprs','tpm','counts' or 'fpkm')
+#'  indicating which expression representation both internal methods and
+#'  external packages should use. Defaults to 'exprs'
+#'
 #' @return a new SCData object
 #' @author Luyi Tian
 #'
@@ -334,7 +371,7 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 #' @param all only contains interset for features or union.
 #' @param batch (optional) batch information
 #'
-#' @importFrom Biobase varLabels 
+#' @importFrom Biobase varLabels
 #'
 #' @export
 #'
