@@ -117,13 +117,6 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP _scPipe_rcpp_generate_celseq2_data(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP _scPipe_rcpp_sc_demultiplex(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP _scPipe_rcpp_sc_detect_bc(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP _scPipe_rcpp_sc_exon_mapping(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP _scPipe_rcpp_sc_gene_counting(SEXP, SEXP, SEXP, SEXP);
-RcppExport SEXP _scPipe_rcpp_sc_trim_barcode_paired(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-
 static const R_CallMethodDef CallEntries[] = {
     {"scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &scPipe_rcpp_sc_trim_barcode_paired, 13},
     {"scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &scPipe_rcpp_sc_exon_mapping, 11},
@@ -131,12 +124,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"scPipe_rcpp_sc_gene_counting", (DL_FUNC) &scPipe_rcpp_sc_gene_counting, 4},
     {"scPipe_rcpp_sc_detect_bc", (DL_FUNC) &scPipe_rcpp_sc_detect_bc, 7},
     {"scPipe_rcpp_generate_celseq2_data", (DL_FUNC) &scPipe_rcpp_generate_celseq2_data, 12},
-    {"_scPipe_rcpp_generate_celseq2_data",  (DL_FUNC) &_scPipe_rcpp_generate_celseq2_data,  12},
-    {"_scPipe_rcpp_sc_demultiplex",         (DL_FUNC) &_scPipe_rcpp_sc_demultiplex,         10},
-    {"_scPipe_rcpp_sc_detect_bc",           (DL_FUNC) &_scPipe_rcpp_sc_detect_bc,            7},
-    {"_scPipe_rcpp_sc_exon_mapping",        (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping,        11},
-    {"_scPipe_rcpp_sc_gene_counting",       (DL_FUNC) &_scPipe_rcpp_sc_gene_counting,        4},
-    {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 13},
     {NULL, NULL, 0}
 };
 
