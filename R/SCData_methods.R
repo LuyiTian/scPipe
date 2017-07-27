@@ -469,7 +469,6 @@ merge_SCData <- function(...,
 }
 
 #' Get or set quality control metrics from an SCData object
-#' @name QCMetrics
 #' @rdname QCMetrics
 #' @param object An \code{\link{SCData}} object.
 #' @param value Value to be assigned to corresponding object.
@@ -484,7 +483,6 @@ QCMetrics.SCData <- function(object) {
   return(object@QualityControlInfo)
 }
 
-#' @name QCMetrics
 #' @rdname QCMetrics
 #' @aliases QCMetrics
 #' @export
@@ -492,10 +490,9 @@ QCMetrics.SCData <- function(object) {
 setMethod("QCMetrics", signature(object = "SCData"),
           QCMetrics.SCData)
 
-#' @name QCMetrics<-
-#' @aliases QCMetrics
 #' @rdname QCMetrics
-#' @exportMethod "QCMetrics<-"
+#' @aliases QCMetrics
+#' @export
 setReplaceMethod("QCMetrics",
                  signature="SCData",
                  function(object, value) {
@@ -506,7 +503,6 @@ setReplaceMethod("QCMetrics",
 
 
 #' Get or set \code{organism} from an SCData object
-#' @name organism
 #' @rdname organism
 #' @param object An \code{\link{SCData}} object.
 #' @param value Value to be assigned to corresponding object.
@@ -520,7 +516,6 @@ organism.SCData <- function(object) {
 }
 
 
-#' @name organism
 #' @aliases organism
 #' @rdname organism
 #' @export
@@ -528,10 +523,9 @@ setMethod("organism", signature(object="SCData"),
           organism.SCData)
 
 
-#' @name organism<-
 #' @aliases organism
 #' @rdname organism
-#' @exportMethod "organism<-"
+#' @export
 #' @export
 setReplaceMethod("organism",
            signature="SCData",
@@ -543,7 +537,6 @@ setReplaceMethod("organism",
 
 
 #' Get or set FACs data for an SCData object
-#' @name FACSData
 #' @rdname FACSData
 #' @param object An \code{\link{SCData}} object.
 #' @param value Value to be assigned to corresponding object.
@@ -558,7 +551,6 @@ FACSData.SCData <- function(object) {
   return(object@FACSData)
 }
 
-#' @name FACSData
 #' @rdname FACSData
 #' @aliases FACSData
 #' @export
@@ -566,10 +558,9 @@ FACSData.SCData <- function(object) {
 setMethod("FACSData", signature(object = "SCData"),
           FACSData.SCData)
 
-#' @name FACSData<-
 #' @aliases FACSData
 #' @rdname FACSData
-#' @exportMethod "FACSData<-"
+#' @export
 setReplaceMethod("FACSData",
                  signature="SCData",
                  function(object, value) {
@@ -579,32 +570,25 @@ setReplaceMethod("FACSData",
                  }
 )
 
+
 #' Get or set \code{reducedExprDimension} from an SCData object
-#' @name DimReducedExpr
-#' @rdname DimReducedExpr
 #' @param object An \code{\link{SCData}} object.
-#' @param value Value to be assigned to corresponding object.
 #'
 #' @return A matrix of reduced-dimension coordinates for gene
 #' expression of single cell.
 #' @author Luyi Tian
-#'
-#' @export
-#'
-DimReducedExpr.SCData <- function(object) {
-  return(object@reducedExprDimension)
-}
-
-#' @name DimReducedExpr
 #' @rdname DimReducedExpr
 #' @aliases DimReducedExpr
 #' @export
 #'
 setMethod("DimReducedExpr", signature(object = "SCData"),
-          DimReducedExpr.SCData)
+  DimReducedExpr.SCData <- function(object) {
+    return(object@reducedExprDimension)
+  })
 
 
-#' @name DimReducedExpr<-
+#' @inheritParams DimReducedExpr
+#' @param value Value to be assigned to corresponding object.
 #' @aliases DimReducedExpr
 #' @rdname DimReducedExpr
 #' @exportMethod "DimReducedExpr<-"
@@ -617,7 +601,6 @@ setReplaceMethod("DimReducedExpr",
                  })
 
 #' Get or set \code{gene_id_type} from an SCData object
-#' @name gene_id_type
 #' @rdname gene_id_type
 #' @param object An \code{\link{SCData}} object.
 #' @param value Value to be assigned to corresponding object.
@@ -632,7 +615,6 @@ gene_id_type.SCData <- function(object) {
 }
 
 
-#' @name gene_id_type
 #' @rdname gene_id_type
 #' @aliases gene_id_type
 #' @export
@@ -640,11 +622,9 @@ setMethod("gene_id_type", signature(object = "SCData"),
           gene_id_type.SCData)
 
 
-#' @name gene_id_type<-
-#' @rdname gene_id_type
 #' @aliases gene_id_type
 #' @rdname gene_id_type
-#' @exportMethod "gene_id_type<-"
+#' @export
 setReplaceMethod("gene_id_type",
                  signature="SCData",
                  function(object, value) {
@@ -653,6 +633,7 @@ setReplaceMethod("gene_id_type",
                    return(object)
                  })
 
+
 #' Accessors for the 'counts' element of an SCData object.
 #'
 #' The counts element holds the count data as a matrix of non-negative integer
@@ -660,9 +641,6 @@ setReplaceMethod("gene_id_type",
 #' column for each cell. It is an element of the assayData slot of the SCData
 #' object.
 #'
-#'
-#' @docType methods
-#' @name counts
 #' @rdname counts
 #' @importFrom BiocGenerics counts
 #' @aliases counts counts,SCData-method counts<-,SCData,matrix-method
@@ -680,10 +658,9 @@ counts.SCData <- function(object) {
 #' @export
 setMethod("counts", signature(object = "SCData"), counts.SCData)
 
-#' @name counts
 #' @rdname counts
 #' @importFrom BiocGenerics counts<-
-#' @exportMethod "counts<-"
+#' @export
 setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
                  function(object, value) {
                    Biobase::assayDataElement(object, "counts") <- value
@@ -698,11 +675,7 @@ setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
 #' as the 'exprs' and 'counts' elements, which hold the transformed expression
 #' data and count data, respectively.
 #'
-#'
-#' @docType methods
-#' @name tpm
 #' @rdname tpm
-#' @aliases tpm tpm,SCData-method tpm<-,SCData,matrix-method
 #'
 #' @param object a \code{SCData} object.
 #' @param value a matrix of class \code{"numeric"}
@@ -710,21 +683,18 @@ setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
 #' @author Luyi Tian
 #' @export
 #' @aliases tpm tpm,SCData-method tpm<-,SCData,matrix-method
-#'
-#'
 tpm.SCData <- function(object) {
   object@assayData$tpm
 }
 
-#' @name tpm
+
 #' @rdname tpm
 #' @export
 #' @aliases tpm,SCData-method
 setMethod("tpm", signature(object = "SCData"), tpm.SCData)
 
-#' @name tpm<-
 #' @rdname tpm
-#' @exportMethod "tpm<-"
+#' @export
 #' @aliases tpm<-,SCData,matrix-method
 setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
                  function(object, value) {
@@ -741,10 +711,7 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
 #' data and count data, respectively.
 #'
 #'
-#' @docType methods
-#' @name cpm
 #' @rdname cpm
-#' @aliases cpm cpm,SCData-method cpm<-,SCData,matrix-method
 #'
 #' @param object a \code{SCData} object.
 #' @param value a matrix of class \code{"numeric"}
@@ -752,21 +719,18 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
 #' @author Luyi Tian
 #' @export
 #' @aliases cpm cpm,SCData-method cpm<-,SCData,matrix-method
-#'
-#'
 cpmSCData <- function(object) {
   object@assayData$cpm
 }
 
-#' @name cpm
+
 #' @rdname cpm
 #' @export
 #' @aliases cpm,SCData-method
 setMethod("cpm", signature(object = "SCData"), cpmSCData)
 
-#' @name cpm<-
 #' @rdname cpm
-#' @exportMethod "cpm<-"
+#' @export
 #' @aliases cpm<-,SCData,matrix-method
 setReplaceMethod("cpm", signature(object = "SCData", value = "matrix"),
                  function(object, value) {
@@ -783,8 +747,6 @@ setReplaceMethod("cpm", signature(object = "SCData", value = "matrix"),
 #' elements, which hold the transformed expression data and count data,
 #' respectively.
 #'
-#'
-#' @docType methods
 #' @name fpkm
 #' @rdname fpkm
 #' @aliases fpkm fpkm,SCData-method fpkm<-,SCData,matrix-method
@@ -800,15 +762,13 @@ fpkm.SCData <- function(object) {
   object@assayData$fpkm
 }
 
-#' @name fpkm
 #' @rdname fpkm
 #' @export
 #' @aliases fpkm,SCData-method
 setMethod("fpkm", signature(object = "SCData"), fpkm.SCData)
 
-#' @name fpkm<-
 #' @rdname fpkm
-#' @exportMethod "fpkm<-"
+#' @export
 #' @aliases fpkm<-,SCData,matrix-method
 setReplaceMethod("fpkm", signature(object = "SCData", value = "matrix"),
                  function(object, value) {
