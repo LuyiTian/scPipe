@@ -121,7 +121,7 @@ pp
 ## reads alignment statistics per cell
 
 ```{r}
-scd = create_scd_by_dir(params$outdir, species=params$species, gene_id=params$gene_id_type)
+scd = create_scd_by_dir(params$outdir, species=params$species, gene_id_type=params$gene_id_type)
 ggplotly(plot_mapping(scd,dataname=params$samplename,percentage = FALSE))
 
 ```
@@ -145,21 +145,21 @@ if (any(colSums(counts(scd)) == 0)){
 
 datatable of all QC metrics:
 ```{r}
-scd = calculate_QC_metrics(scd)
-if(!all(colSums(pData(QC_metrics(scd)))>0)){
-  QC_metrics(scd) = pData(QC_metrics(scd))[,colSums(pData(QC_metrics(scd)))>0]
+scd = calculateQCMetrics(scd)
+if(!all(colSums(pData(QCMetrics(scd)))>0)){
+  QCMetrics(scd) = pData(QCMetrics(scd))[,colSums(pData(QCMetrics(scd)))>0]
 }
-datatable(pData(QC_metrics(scd)),width=800,options=list(scrollX= TRUE))
+datatable(pData(QCMetrics(scd)),width=800,options=list(scrollX= TRUE))
 ```
 
 summary of all QC metrics:
 ```{r}
-datatable(do.call(cbind, lapply(pData(QC_metrics(scd)), summary)),width=800,options=list(scrollX= TRUE))
+datatable(do.call(cbind, lapply(pData(QCMetrics(scd)), summary)),width=800,options=list(scrollX= TRUE))
 ```
 
 Number of reads mapped to exon before UMI deduplication VS number of genes detected:
 ```{r}
-ggplotly(ggplot(pData(QC_metrics(scd)), aes(x=mapped_to_exon,y=number_of_genes))+geom_point(alpha=0.8))
+ggplotly(ggplot(pData(QCMetrics(scd)), aes(x=mapped_to_exon,y=number_of_genes))+geom_point(alpha=0.8))
 ```
 
 
@@ -174,7 +174,7 @@ A robustified Mahalanobis Distance is calculated for each cell then outliers is 
 the number of outliers:
 ```{r}
 scd_qc = detect_outlier(scd,type="low",comp = 1)
-table(pData(QC_metrics(scd_qc))$outliers)
+table(pData(QCMetrics(scd_qc))$outliers)
 ```
 
 pairwise plot for QC metrics, colored by outliers:
