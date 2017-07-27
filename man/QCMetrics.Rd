@@ -4,10 +4,10 @@
 \name{QCMetrics}
 \alias{QCMetrics}
 \alias{QCMetrics<-}
-\alias{QCMetrics}
 \alias{QCMetrics.SCData}
+\alias{QCMetrics,SCData-method}
 \alias{QCMetrics}
-\alias{QCMetrics<-}
+\alias{QCMetrics<-,SCData-method}
 \alias{QCMetrics}
 \title{Get or set quality control metrics from an SCData object}
 \usage{

@@ -5,13 +5,11 @@
 \alias{tpm}
 \alias{tpm<-}
 \alias{tpm}
-\alias{tpm}
 \alias{tpm.SCData}
+\alias{tpm}
 \alias{tpm,SCData-method}
 \alias{tpm<-,SCData,matrix-method}
-\alias{tpm}
 \alias{tpm,SCData-method}
-\alias{tpm<-}
 \alias{tpm<-,SCData,matrix-method}
 \title{Accessors for the 'tpm' (transcripts per million) element of an SCData object.}
 \usage{

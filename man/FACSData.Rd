@@ -5,10 +5,10 @@
 \alias{FACSData}
 \alias{FACSData<-}
 \alias{FACSData}
-\alias{FACSData}
 \alias{FACSData.SCData}
+\alias{FACSData,SCData-method}
 \alias{FACSData}
-\alias{FACSData<-}
+\alias{FACSData<-,SCData-method}
 \alias{FACSData}
 \title{Get or set FACs data for an SCData object}
 \usage{

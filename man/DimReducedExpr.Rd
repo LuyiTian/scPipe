@@ -4,18 +4,15 @@
 \name{DimReducedExpr}
 \alias{DimReducedExpr}
 \alias{DimReducedExpr<-}
+\alias{DimReducedExpr,SCData-method}
 \alias{DimReducedExpr}
-\alias{DimReducedExpr.SCData}
-\alias{DimReducedExpr}
-\alias{DimReducedExpr<-}
+\alias{DimReducedExpr<-,SCData-method}
 \alias{DimReducedExpr}
 \title{Get or set \code{reducedExprDimension} from an SCData object}
 \usage{
 DimReducedExpr(object)
 
 DimReducedExpr(object) <- value
-
-DimReducedExpr.SCData(object)
 
 \S4method{DimReducedExpr}{SCData}(object)
 
