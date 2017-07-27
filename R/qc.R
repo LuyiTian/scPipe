@@ -1,21 +1,15 @@
-
-#' Detect outliers based on robust linear regression of QQ plot
-#'
-#' @param x a vector of mahalanobis distance
-#' @param df degree of freedom for chi-square distribution
-#' @param conf confidence for linear regression
-#'
-#' @importFrom MASS rlm
-#' @importFrom stats pchisq qnorm qchisq dchisq ppoints
-#'
-#' @return cell names of outliers
-#'
+# Detect outliers based on robust linear regression of QQ plot
+# @param x a vector of mahalanobis distance
+# @param df degree of freedom for chi-square distribution
+# @param conf confidence for linear regression
+#
+# @return cell names of outliers
 .qq_outliers_robust <- function(x, df, conf) {
   n <- length(x)
-  P <- ppoints(n)
+  P <- stats::ppoints(n)
   z <- stats::qchisq(P, df=df)
   ord.x <- x[order(x)]
-  coef <- coef(MASS::rlm(ord.x ~ z, maxit=200))
+  coef <- stats::coef(MASS::rlm(ord.x ~ z, maxit=200))
   a <- coef[1]
   b <- coef[2]
   zz <- stats::qnorm(1 - (1 - conf)/2)

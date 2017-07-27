@@ -1,5 +1,4 @@
-#' merge matrix for multiple SCData object
-#'
+# merge matrix for multiple SCData object
 .merge_mat = function(scd_list, func) {
   if (all(unlist(lapply(scd_list, function(x) {!is.null(func(x))})))) {
     all_exprs = lapply(scd_list, function(x) {func(x)})
@@ -24,8 +23,7 @@
 }
 
 
-#' guess the organism and species from input data
-#' 
+# guess the organism and species from input data
 .guess_attr = function(expr_mat) {
   hsp_ensembl = length(grep("^ENSG", rownames(expr_mat)))
   mm_ensembl = length(grep("^ENSMUSG", rownames(expr_mat)))
