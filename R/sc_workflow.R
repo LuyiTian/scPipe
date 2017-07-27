@@ -243,7 +243,7 @@ run_scPipe <- function(sample_name,
                    UMI_cor=UMI_cor,
                    gene_fl=gene_fl)
 
-  scd = create_scd_by_dir(datadir=outdir, organism=organism, gene_id=gene_id_type)
+  scd = create_scd_by_dir(datadir=outdir, organism=organism, gene_id_type=gene_id_type)
   if (report) {
     create_report(sample_name=sample_name,
                   outdir=outdir,
