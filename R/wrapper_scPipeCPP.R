@@ -20,7 +20,15 @@
 #' @export
 #'
 #' @examples
-#' #TODO
+#' data_dir="celseq2_demo"
+#' \dontrun{
+#' # for the complete workflow, refer to the vignettes
+#' ...
+#' sc_trim_barcode(file.path(data_dir, "combined.fastq"),
+#'    file.path(data_dir, "simu_R1.fastq"),
+#'    file.path(data_dir, "simu_R2.fastq"))
+#' ...
+#' }
 sc_trim_barcode = function(outfq, r1, r2=NULL,
                            read_structure = list(bs1=-1, bl1=2, bs2=6, bl2=8, us=0, ul=6),
                            filter_settings = list(rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)) {
@@ -79,7 +87,17 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' @export
 #'
 #' @examples
-#' #TODO
+#' data_dir="celseq2_demo"
+#' ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3", package = "scPipe")
+#' \dontrun{
+#' # for the complete workflow, refer to the vignettes
+#' ...
+#' sc_exon_mapping(file.path(data_dir, "out.aln.bam"),
+#'                 file.path(data_dir, "out.map.bam"),
+#'                 ERCCanno_fn)
+#' ...
+#' }
+#' 
 sc_exon_mapping = function(inbam, outbam, annofn,
                             am="YE", ge="GE", bc="YC", mb="YM",
                             bc_len=8, UMI_len=6, stnd=TRUE, fix_chr=FALSE) {
@@ -123,7 +141,15 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #' @export
 #'
 #' @examples
-#' #TODO
+#' data_dir="celseq2_demo"
+#' barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
+#' \dontrun{
+#' # for the complete workflow, refer to the vignettes
+#' ...
+#' sc_demultiplex(file.path(data_dir, "out.map.bam"), data_dir, barcode_annotation_fn,has_UMI=FALSE)
+#' ...
+#' }
+#' 
 sc_demultiplex = function(inbam, outdir, bc_anno,
                           max_mis=1,
                           am="YE", ge="GE",
@@ -151,7 +177,15 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 #' @export
 #'
 #' @examples
-#' #TODO
+#' data_dir="celseq2_demo"
+#' barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
+#' \dontrun{
+#' # for the complete workflow, refer to the vignettes
+#' ...
+#' sc_gene_counting(data_dir, barcode_annotation_fn)
+#' ...
+#' }
+#' 
 sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
@@ -184,7 +218,21 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
 #' @export
 #'
 #' @examples
-#' #TODO
+#' data_dir="celseq2_demo"
+#' ERCCfa_fn = system.file("extdata", "ERCC92.fa", package = "scPipe")
+#' ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3", package = "scPipe")
+#' barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
+#' \dontrun{
+#' # for the complete workflow, refer to the vignettes
+#' ...
+#' sc_celseq2_simulator(file.path(data_dir, "simu_R1.fastq"),
+#'       file.path(data_dir, "simu_R2.fastq"),
+#'       ERCCanno_fn,
+#'       barcode_annotation_fn,
+#'       ERCCfa_fn)
+#' ...
+#' }
+#' 
 sc_celseq2_simulator = function(r1fn, r2fn, annofn, bc_anno, fafn,
                                 UMI_len=6,
                                 r_len=75,
@@ -223,7 +271,13 @@ sc_celseq2_simulator = function(r1fn, r2fn, annofn, bc_anno, fafn,
 #' @export
 #'
 #' @examples
-#' #TODO
+#' \dontrun{
+#' # `sc_detect_bc`` should run before `sc_demultiplex` for Drop-seq or 10X protocols
+#' sc_detect_bc("input.fastq","output.cell_index.csv",bc_len=8)
+#' sc_demultiplex(...,"output.cell_index.csv")
+#' }
+#' 
+#' 
 sc_detect_bc = function(infq, outcsv, surfix="CELL_", bc_len, max_reads=1000000, min_count=10, max_mismatch=1) {
   if (!file.exists(infq)) {stop("input fastq file does not exists.")}
   if (max_reads=="all") {m_r = -1}

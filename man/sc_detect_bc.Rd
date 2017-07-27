@@ -26,5 +26,11 @@ sc_detect_bc(infq, outcsv, surfix = "CELL_", bc_len, max_reads = 1e+06,
 detect cell barcode and generate the barcode annotation
 }
 \examples{
-#TODO
+\dontrun{
+# `sc_detect_bc`` should run before `sc_demultiplex` for Drop-seq or 10X protocols
+sc_detect_bc("input.fastq","output.cell_index.csv",bc_len=8)
+sc_demultiplex(...,"output.cell_index.csv")
+}
+
+
 }

@@ -19,3 +19,17 @@ by default it will be the mapping result.}
 \description{
 plot mapping statistics for SCData object.
 }
+\examples{
+data("sc_sample_data")
+data("sc_sample_qc")
+QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+scd = newSCData(countData = as.matrix(sc_sample_data),
+               QualityControlInfo = QualityControlInfo,
+               useForExprs = "counts",
+               organism = "mmusculus_gene_ensembl",
+               gene_id_type = "ensembl_gene_id")
+scd = calculateQCMetrics(scd)
+scd = detect_outlier(scd)
+plot_mapping(scd,percentage=TRUE,dataname="sc_sample")
+
+}

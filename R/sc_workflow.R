@@ -2,6 +2,7 @@
 #' 
 #' after we run \code{sc_gene_counting} and finish the preprocessing step. \code{create_scd_by_dir}
 #' can be used to generate the SCData obeject from the folder that contains gene counting matrix and QC statistics.
+#' it can also generate the html report based on the gene count and quality control statistics
 #'
 #' @param datadir the directory that contains all the data and `stat` subfolder.
 #' @param organism the organism of the data. List of possible names can be retrieved using the function 
@@ -9,6 +10,7 @@
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
 #' @param pheno_data the external phenotype data that linked to each single cell. this should be an \code{AnnotatedDataFrame} object
+#' @param whether to generate the html report in the data folder
 #' 
 #' @details after we run \code{sc_gene_counting} and finish the preprocessing step. \code{create_scd_by_dir}
 #' can be used to generate the SCData obeject from the folder that contains gene counting matrix and QC statistics.
@@ -19,8 +21,23 @@
 #'
 #' @export
 #' 
+#' @examples 
+#' \dontrun{
+#' # the scd can be created fron the output folder of scPipe
+#' scd = create_scd_by_dir(datadir="output_dir_of_scPipe",organism="mmusculus_gene_ensembl",gene_id_type="ensembl_gene_id",report=TRUE)
+#' }
+#' # or directly from the gene count and quality control matrix:
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "ensembl_gene_id")
+#' 
 
-create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL) {
+create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL, report=FALSE) {
   gene_cnt = read.csv(file.path(datadir, "gene_count.csv"), row.names=1)
   cell_stat = read.csv(file.path(datadir, "stat", "cell_stat.csv"), row.names=1)
   
@@ -35,6 +52,28 @@ create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
                   useForExprs = "counts",
                   organism = organism,
                   gene_id_type = gene_id_type)
+  if(report){
+    create_report(sample_name=basename(datadir),
+                             outdir=datadir,
+                             r1="NA",
+                             r2="NA",
+                             outfq="NA",
+                             read_structure = list(bs1=1, bl1=1, bs2=1, bl2=1, us=1, ul=1),
+                             filter_settings = list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
+                             align_bam = "NA",
+                             genome_index = "NA",
+                             map_bam = "NA",
+                             exon_anno = "NA",
+                             stnd = TRUE,
+                             fix_chr=FALSE,
+                             barcode_anno="NA",
+                             max_mis=1,
+                             UMI_cor=1,
+                             gene_fl=FALSE,
+                             organism=organism,
+                             gene_id_type=gene_id_type)
+  }
+
   
   return(scd)
 }
@@ -67,6 +106,29 @@ create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
 #'
 #' @export
+#' 
+#' @examples 
+#' \dontrun{
+#' create_report(sample_name="sample_001",
+#'        outdir="output_dir_of_scPipe",
+#'        r1="read1.fq",
+#'        r2="read2.fq",
+#'        outfq="trim.fq",
+#'        read_structure=list(bs1=-1, bl1=2, bs2=6, bl2=8, us=0, ul=6),
+#'        filter_settings=list(rmlow=TRUE, rmN=TRUE, minq=20, numbq=2),
+#'        align_bam="align.bam",
+#'        genome_index="mouse.index",
+#'        map_bam="aligned.mapped.bam",
+#'        exon_anno="exon_anno.gff3",
+#'        stnd=TRUE,
+#'        fix_chr=FALSE,
+#'        barcode_anno="cell_barcode.csv",
+#'        max_mis=1,
+#'        UMI_cor=1,
+#'        gene_fl=FALSE,
+#'        organism="mmusculus_gene_ensembl",
+#'        gene_id_type="ensembl_gene_id")
+#' }
 #'
 create_report = function(sample_name,
                          outdir,
@@ -179,7 +241,39 @@ create_report = function(sample_name,
 #' @importFrom Rsubread align
 #'
 #' @export
-#'
+#' 
+#' @examples 
+#' \dontrun{
+#'  # geneate scd from fastq files
+#'  scd = run_scPipe(sample_name="sample_001",
+#'        outdir="output_dir_of_scPipe",
+#'        r1="read1.fq",
+#'        r2="read2.fq",
+#'        read_structure=list(bs1=-1, bl1=2, bs2=6, bl2=8, us=0, ul=6),
+#'        filter_settings=list(rmlow=TRUE, rmN=TRUE, minq=20, numbq=2),
+#'        genome_index="mouse.index",
+#'        exon_anno="exon_anno.gff3",
+#'        has_UMI=TRUE,
+#'        stnd=TRUE,
+#'        fix_chr=FALSE,
+#'        barcode_anno="cell_barcode.csv",
+#'        max_mis=1,
+#'        UMI_cor=1,
+#'        gene_fl=FALSE,
+#'        nthreads=1,
+#'        report=TRUE,
+#'        organism="mmusculus_gene_ensembl",
+#'        gene_id_type="ensembl_gene_id")
+#' }
+#' # or directly from the gene count and quality control matrix:
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "ensembl_gene_id")
 run_scPipe <- function(sample_name,
                       outdir,
                       r1,

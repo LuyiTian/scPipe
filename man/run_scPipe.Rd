@@ -55,3 +55,36 @@ an SCData object
 \description{
 run_scPipe
 }
+\examples{
+\dontrun{
+ # geneate scd from fastq files
+ scd = run_scPipe(sample_name="sample_001",
+       outdir="output_dir_of_scPipe",
+       r1="read1.fq",
+       r2="read2.fq",
+       read_structure=list(bs1=-1, bl1=2, bs2=6, bl2=8, us=0, ul=6),
+       filter_settings=list(rmlow=TRUE, rmN=TRUE, minq=20, numbq=2),
+       genome_index="mouse.index",
+       exon_anno="exon_anno.gff3",
+       has_UMI=TRUE,
+       stnd=TRUE,
+       fix_chr=FALSE,
+       barcode_anno="cell_barcode.csv",
+       max_mis=1,
+       UMI_cor=1,
+       gene_fl=FALSE,
+       nthreads=1,
+       report=TRUE,
+       organism="mmusculus_gene_ensembl",
+       gene_id_type="ensembl_gene_id")
+}
+# or directly from the gene count and quality control matrix:
+data("sc_sample_data")
+data("sc_sample_qc")
+QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+scd = newSCData(countData = as.matrix(sc_sample_data),
+               QualityControlInfo = QualityControlInfo,
+               useForExprs = "counts",
+               organism = "mmusculus_gene_ensembl",
+               gene_id_type = "ensembl_gene_id")
+}

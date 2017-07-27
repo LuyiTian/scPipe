@@ -15,7 +15,19 @@
 #' 
 #' @export
 #' @examples
-#' #TODO
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "ensembl_gene_id")
+#' scd = calculateQCMetrics(scd)
+#' scd = detect_outlier(scd)
+#' scd_afterqc = remove_outliers(scd)
+#' scd_afterqc = sc_dim_reduction(scd_afterqc,n=2)
+#' plot(DimReducedExpr(scd)$Dim1,DimReducedExpr(scd)$Dim2)
 #'
 sc_dim_reduction = function(scd,
                             k=20,
@@ -43,4 +55,6 @@ sc_dim_reduction = function(scd,
   reduced_dim = tsne_out$Y
   rownames(reduced_dim) = colnames(exprs_mat)
   colnames(reduced_dim) = paste("Dim", 1:n, sep="")
+  DimReducedExpr(scd) = reduced_dim
+  return(scd)
 }

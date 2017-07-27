@@ -30,5 +30,13 @@ sc_trim_barcode(outfq, r1, r2 = NULL, read_structure = list(bs1 = -1, bl1 =
 reformat the fastq file and move the barcode and UMI to read names.
 }
 \examples{
-#TODO
+data_dir="celseq2_demo"
+\dontrun{
+# for the complete workflow, refer to the vignettes
+...
+sc_trim_barcode(file.path(data_dir, "combined.fastq"),
+   file.path(data_dir, "simu_R1.fastq"),
+   file.path(data_dir, "simu_R2.fastq"))
+...
+}
 }

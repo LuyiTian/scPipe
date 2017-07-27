@@ -37,5 +37,19 @@ sc_celseq2_simulator(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len = 6,
 sc_celseq2_simulator
 }
 \examples{
-#TODO
+data_dir="celseq2_demo"
+ERCCfa_fn = system.file("extdata", "ERCC92.fa", package = "scPipe")
+ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3", package = "scPipe")
+barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
+\dontrun{
+# for the complete workflow, refer to the vignettes
+...
+sc_celseq2_simulator(file.path(data_dir, "simu_R1.fastq"),
+      file.path(data_dir, "simu_R2.fastq"),
+      ERCCanno_fn,
+      barcode_annotation_fn,
+      ERCCfa_fn)
+...
+}
+
 }

@@ -34,5 +34,13 @@ the output contains information for all reads that can be mapped to exons.
 including the gene id, UMI of that read and the distance to transcript end position.
 }
 \examples{
-#TODO
+data_dir="celseq2_demo"
+barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
+\dontrun{
+# for the complete workflow, refer to the vignettes
+...
+sc_demultiplex(file.path(data_dir, "out.map.bam"), data_dir, barcode_annotation_fn,has_UMI=FALSE)
+...
+}
+
 }

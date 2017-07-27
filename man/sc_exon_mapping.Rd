@@ -36,5 +36,15 @@ in bam file with different tags. for more information regarding to bam file form
 http://samtools.github.io/hts-specs/SAMv1.pdf
 }
 \examples{
-#TODO
+data_dir="celseq2_demo"
+ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3", package = "scPipe")
+\dontrun{
+# for the complete workflow, refer to the vignettes
+...
+sc_exon_mapping(file.path(data_dir, "out.aln.bam"),
+                file.path(data_dir, "out.map.bam"),
+                ERCCanno_fn)
+...
+}
+
 }

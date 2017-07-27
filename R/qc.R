@@ -42,7 +42,16 @@
 #'
 #' @export
 #' @examples
-#' #TODO
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "ensembl_gene_id")
+#' scd = calculateQCMetrics(scd)
+#' scd = detect_outlier(scd)
 #'
 detect_outlier <- function(scd,
                           comp=1,
@@ -163,7 +172,16 @@ detect_outlier <- function(scd,
 #'
 #' @export
 #' @examples
-#' #TODO
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "ensembl_gene_id")
+#' scd = calculateQCMetrics(scd)
+#' scd = detect_outlier(scd)
 #'
 calculateQCMetrics <- function(scd) {
   if (is(scd, "SCData")) {
@@ -237,7 +255,21 @@ calculateQCMetrics <- function(scd) {
 #' @importFrom GGally ggpairs
 #' @import ggplot2
 #' @export
-#'
+#' 
+#' @examples 
+#' 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "ensembl_gene_id")
+#' scd = calculateQCMetrics(scd)
+#' scd = detect_outlier(scd)
+#' plot_QC_pair(scd)
+#' 
 plotQC_pair <- function(scd, sel_col=NULL) {
   if (is(scd, "SCData")) {
     if (is.null(sel_col)) {
@@ -268,6 +300,19 @@ plotQC_pair <- function(scd, sel_col=NULL) {
 #' @importFrom stats prcomp reorder
 #'
 #' @export
+#' 
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "ensembl_gene_id")
+#' scd = calculateQCMetrics(scd)
+#' scd = detect_outlier(scd)
+#' plot_mapping(scd,percentage=TRUE,dataname="sc_sample")
 #'
 plot_mapping <- function(scd,
                         sel_col=NULL,
@@ -318,6 +363,19 @@ plot_mapping <- function(scd,
 #' @param scd an SCData object
 #' @export
 #'
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "ensembl_gene_id")
+#' scd = calculateQCMetrics(scd)
+#' scd = detect_outlier(scd)
+#' scd_afterqc = remove_outliers(scd)
+#' 
 remove_outliers <- function(scd) {
   if (!is(scd, "SCData")) {
     stop("scd must be an SCData object.")
