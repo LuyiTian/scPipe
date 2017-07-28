@@ -10,7 +10,7 @@
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
 #' @param pheno_data the external phenotype data that linked to each single cell. this should be an \code{AnnotatedDataFrame} object
-#' @param whether to generate the html report in the data folder
+#' @param report whether to generate the html report in the data folder
 #' 
 #' @details after we run \code{sc_gene_counting} and finish the preprocessing step. \code{create_scd_by_dir}
 #' can be used to generate the SCData obeject from the folder that contains gene counting matrix and QC statistics.
@@ -34,7 +34,7 @@
 #'                QualityControlInfo = QualityControlInfo,
 #'                useForExprs = "counts",
 #'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "ensembl_gene_id")
+#'                gene_id_type = "external_gene_name")
 #' 
 
 create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL, report=FALSE) {
@@ -105,6 +105,7 @@ create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
 #'
+#' @return no return
 #' @export
 #' 
 #' @examples 
@@ -281,7 +282,7 @@ create_report = function(sample_name,
 #'                QualityControlInfo = QualityControlInfo,
 #'                useForExprs = "counts",
 #'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "ensembl_gene_id")
+#'                gene_id_type = "external_gene_name")
 run_scPipe <- function(sample_name,
                       outdir,
                       r1,

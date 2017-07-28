@@ -28,6 +28,9 @@ sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
 
 \item{has_UMI}{whether the protocol contains UMI (default: TRUE)}
 }
+\value{
+no return
+}
 \description{
 separate bam file by cell, output to outdir/count/[cell_id].csv.
 the output contains information for all reads that can be mapped to exons.

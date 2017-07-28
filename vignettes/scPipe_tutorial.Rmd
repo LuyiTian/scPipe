@@ -21,7 +21,7 @@ vignette: >
 
 we start from creating a folder to store all results.
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 library(scPipe)
 data_dir = "celseq2_demo"
 dir.create("celseq2_demo", showWarnings = FALSE)
@@ -39,7 +39,7 @@ barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "sc
 ```
 
 We start from simulating the paired-end fastq files. Read1 contains transcript and Read2 contains UMI followed by cell barcode. For simplixity we use default parameters, more parameter see `?sc_celseq2_simulator`. The read structure for CEL-seq2 is a paired-ended reads with first longer read mapped to transcript and second shorter read consist of 6bp UMI followed by 8bp cell barcode.
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 sc_celseq2_simulator(file.path(data_dir, "simu_R1.fastq"),
                      file.path(data_dir, "simu_R2.fastq"),
                      ERCCanno_fn,
@@ -51,14 +51,14 @@ sc_celseq2_simulator(file.path(data_dir, "simu_R1.fastq"),
 
 The pipeline begin with fastq file reformatting. We move the barcode and UMI to the read name and keep the transcript, so the output read name looks like `@[barcode_sequence]*[UMI_sequence]#[readname]` ...
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 sc_trim_barcode(file.path(data_dir, "combined.fastq"),
                 file.path(data_dir, "simu_R1.fastq"),
                 file.path(data_dir, "simu_R2.fastq"))
 ```
 
 Then we align the reads to genome. The example uses `Rsubread` but it can be any aligner that support RNA-seq alignment.
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 library(Rsubread)
 dir.create("celseq2_demo/index")
 buildindex(basename="celseq2_demo/index/ERCC_index", reference=ERCCfa_fn)
@@ -70,7 +70,7 @@ align(index="celseq2_demo/index/ERCC_index",
 
 After alignment we will map reads to exons using the exon annotations. Currently `scPipe` only supports annotation in `gff3` and `bed` format.
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 sc_exon_mapping(file.path(data_dir, "out.aln.bam"),
                 file.path(data_dir, "out.map.bam"),
                 ERCCanno_fn)
@@ -78,7 +78,7 @@ sc_exon_mapping(file.path(data_dir, "out.aln.bam"),
 
 Next we use `sc_demultiplex()` to split the reads to each cell and put them into spearate `.csv` file in `/count` subfolder. Each file contains three column. Each row is a read and first column is the gene is that this read mapped to, second column is the UMI sequence of this read, the third column is the distance to transcript end position. This file will be used for UMI deduplication and to generate gene counting matrix by callling `sc_gene_counting()`.
 
-```{r,eval=FALSE}
+```{r,eval=TRUE}
 sc_demultiplex(file.path(data_dir, "out.map.bam"), data_dir, barcode_annotation_fn,has_UMI=FALSE)
 
 sc_gene_counting(data_dir, barcode_annotation_fn)
@@ -114,4 +114,17 @@ the most difference that come from different protocols is the read structure, wh
 
 ## quality control
 
-TODO
+Using the example dataset, which is sampled from Christine Biben's blood cells with different cell type, we use the `detect_outlier` function to find the poor quality cells. The `detect_outlier` has argument `comp` to define the maximum component of the gaussian mixture model. Usually the default value 1 is sufficient, but in case the data is heterogeneous in terms of quality control metrics, the value can be set to 2 or 3 to get a better results. It can only remove low quality cells by `type="low"` or only cells with big sizes `type="high"` or both `type="both"`. The `conf` argument specifies the lower and upper confident interval for outliers, the `detect_outlier` is insensistive to this interval.
+
+```{r}
+data("sc_sample_data")
+data("sc_sample_qc")
+QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+scd = newSCData(countData = as.matrix(sc_sample_data),
+               QualityControlInfo = QualityControlInfo,
+               useForExprs = "counts",
+               organism = "mmusculus_gene_ensembl",
+               gene_id_type = "external_gene_name")
+scd = calQCMetrics(scd)
+scd = detect_outlier(scd)
+```

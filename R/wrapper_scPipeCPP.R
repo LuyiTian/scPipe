@@ -18,6 +18,7 @@
 #'  }
 #' @param filter_settings a list contains read filter settings:
 #' @export
+#' @return no return
 #'
 #' @examples
 #' data_dir="celseq2_demo"
@@ -85,7 +86,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' @param fix_chr add `chr` to chromosome names, fix inconsistant names.
 #'
 #' @export
-#'
+#' @return no return
 #' @examples
 #' data_dir="celseq2_demo"
 #' ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3", package = "scPipe")
@@ -139,7 +140,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #' @param has_UMI whether the protocol contains UMI (default: TRUE)
 #'
 #' @export
-#'
+#' @return no return
 #' @examples
 #' data_dir="celseq2_demo"
 #' barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
@@ -175,7 +176,7 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 #' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
 #'
 #' @export
-#'
+#' @return no return
 #' @examples
 #' data_dir="celseq2_demo"
 #' barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
@@ -216,7 +217,7 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
 #' @param seed random seed, used for reproducing data
 #'
 #' @export
-#'
+#' @return no return
 #' @examples
 #' data_dir="celseq2_demo"
 #' ERCCfa_fn = system.file("extdata", "ERCC92.fa", package = "scPipe")
@@ -269,7 +270,7 @@ sc_celseq2_simulator = function(r1fn, r2fn, annofn, bc_anno, fafn,
 #' @param min_count minimum counts to keep, barcode will be discarded if it has lower count. default is 10. this should be set according to \code{max_reads}
 #' @param max_mismatch the maximum mismatch allowed, barcodes within this number will be considered as sequence error and merged, default is 1.
 #' @export
-#'
+#' @return no return
 #' @examples
 #' \dontrun{
 #' # `sc_detect_bc`` should run before `sc_demultiplex` for Drop-seq or 10X protocols

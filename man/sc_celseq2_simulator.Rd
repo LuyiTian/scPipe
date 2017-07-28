@@ -33,6 +33,9 @@ sc_celseq2_simulator(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len = 6,
 
 \item{seed}{random seed, used for reproducing data}
 }
+\value{
+no return
+}
 \description{
 sc_celseq2_simulator
 }

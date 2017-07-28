@@ -18,7 +18,10 @@
 #'
 #' @export
 #' @examples
-#' #TODO
+#' # get all genes under GO term GO:0005739 in mouse, return ensembl gene id
+#' get_genes_by_GO(returns="ensembl_gene_id",
+#'     dataset="mmusculus_gene_ensembl",
+#'     go=c('GO:0005739'))
 #'
 get_genes_by_GO <- function(returns="ensembl_gene_id",
                             dataset="mmusculus_gene_ensembl",
@@ -54,7 +57,16 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 #'
 #' @export
 #' @examples
-#' #TODO
+#' # the gene id in example data are `external_gene_name`, the following example will switch it to `entrezgene`.
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' scd = convert_geneid(scd, return="entrezgene")
 #'
 convert_geneid <- function(scd,
                            returns="external_gene_name",

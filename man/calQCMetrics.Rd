@@ -10,7 +10,7 @@ calQCMetrics(scd)
 \item{scd}{an SCData object containing count}
 }
 \value{
-no return
+an SCData with updated QC metrics
 }
 \description{
 get QC metrics using gene counting matrix
@@ -34,7 +34,7 @@ scd = newSCData(countData = as.matrix(sc_sample_data),
                QualityControlInfo = QualityControlInfo,
                useForExprs = "counts",
                organism = "mmusculus_gene_ensembl",
-               gene_id_type = "ensembl_gene_id")
+               gene_id_type = "external_gene_name")
 scd = calQCMetrics(scd)
 scd = detect_outlier(scd)
 

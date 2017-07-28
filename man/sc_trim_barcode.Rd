@@ -26,6 +26,9 @@ sc_trim_barcode(outfq, r1, r2 = NULL, read_structure = list(bs1 = -1, bl1 =
 
 \item{filter_settings}{a list contains read filter settings:}
 }
+\value{
+no return
+}
 \description{
 reformat the fastq file and move the barcode and UMI to read names.
 }

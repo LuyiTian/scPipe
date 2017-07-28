@@ -27,6 +27,15 @@ convert the gene ids of a SCData object
 convert the gene id of all datas in SCData object
 }
 \examples{
-#TODO
+# the gene id in example data are `external_gene_name`, the following example will switch it to `entrezgene`.
+data("sc_sample_data")
+data("sc_sample_qc")
+QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+scd = newSCData(countData = as.matrix(sc_sample_data),
+               QualityControlInfo = QualityControlInfo,
+               useForExprs = "counts",
+               organism = "mmusculus_gene_ensembl",
+               gene_id_type = "external_gene_name")
+scd = convert_geneid(scd, return="entrezgene")
 
 }

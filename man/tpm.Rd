@@ -37,6 +37,18 @@ a matrix containing transcripts-per-million values. It has the same dimensions
 as the 'exprs' and 'counts' elements, which hold the transformed expression
 data and count data, respectively.
 }
+\examples{
+data("sc_sample_data")
+data("sc_sample_qc")
+QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+scd = newSCData(countData = as.matrix(sc_sample_data),
+               QualityControlInfo = QualityControlInfo,
+               useForExprs = "counts",
+               organism = "mmusculus_gene_ensembl",
+               gene_id_type = "external_gene_name")
+tpm(scd)
+
+}
 \author{
 Luyi Tian
 }

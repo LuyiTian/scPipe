@@ -84,6 +84,21 @@ setGeneric("gene_id_type<-", function(object, value) {
   standardGeneric("gene_id_type<-")
 })
 
+#' @name counts
+#' @aliases counts
+#' @export
+#' @docType methods
+#' @return a matrix of count data
+#' @rdname counts
+setGeneric("counts", function(object) {standardGeneric("counts")})
+
+#' @name counts<-
+#' @aliases counts
+#' @export
+#' @docType methods
+#' @rdname counts
+setGeneric("counts<-", function(object, value) {standardGeneric("counts<-")})
+
 #' @name tpm
 #' @aliases tpm
 #' @export

@@ -86,5 +86,5 @@ scd = newSCData(countData = as.matrix(sc_sample_data),
                QualityControlInfo = QualityControlInfo,
                useForExprs = "counts",
                organism = "mmusculus_gene_ensembl",
-               gene_id_type = "ensembl_gene_id")
+               gene_id_type = "external_gene_name")
 }

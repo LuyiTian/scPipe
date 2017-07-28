@@ -30,6 +30,9 @@ sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "YC",
 
 \item{fix_chr}{add `chr` to chromosome names, fix inconsistant names.}
 }
+\value{
+no return
+}
 \description{
 take the alinged read and map them to exons. the result will be written into optional fields
 in bam file with different tags. for more information regarding to bam file format:

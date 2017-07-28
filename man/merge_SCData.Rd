@@ -13,6 +13,9 @@ merge_SCData(..., all = TRUE, batch = NULL)
 
 \item{batch}{(optional) batch information}
 }
+\value{
+a merged SCData object
+}
 \description{
 merge multiple SCData object
 }

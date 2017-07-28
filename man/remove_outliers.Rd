@@ -9,6 +9,9 @@ remove_outliers(scd)
 \arguments{
 \item{scd}{an SCData object}
 }
+\value{
+an SCData object without outliers
+}
 \description{
 remove outliers for SCData
 }
@@ -20,7 +23,7 @@ scd = newSCData(countData = as.matrix(sc_sample_data),
                QualityControlInfo = QualityControlInfo,
                useForExprs = "counts",
                organism = "mmusculus_gene_ensembl",
-               gene_id_type = "ensembl_gene_id")
+               gene_id_type = "external_gene_name")
 scd = calQCMetrics(scd)
 scd = detect_outlier(scd)
 scd_afterqc = remove_outliers(scd)

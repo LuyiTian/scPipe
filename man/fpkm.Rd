@@ -38,6 +38,18 @@ a matrix containing fragments per kilobase of exon per million reads mapped
 elements, which hold the transformed expression data and count data,
 respectively.
 }
+\examples{
+data("sc_sample_data")
+data("sc_sample_qc")
+QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+scd = newSCData(countData = as.matrix(sc_sample_data),
+               QualityControlInfo = QualityControlInfo,
+               useForExprs = "counts",
+               organism = "mmusculus_gene_ensembl",
+               gene_id_type = "external_gene_name")
+fpkm(scd)
+
+}
 \author{
 Luyi Tian
 }

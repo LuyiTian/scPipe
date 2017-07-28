@@ -16,6 +16,9 @@ by default it will be the mapping result.}
 
 \item{dataname}{the name of this dataset which appears in the plot title}
 }
+\value{
+a ggplot2 object
+}
 \description{
 plot mapping statistics for SCData object.
 }
@@ -27,7 +30,7 @@ scd = newSCData(countData = as.matrix(sc_sample_data),
                QualityControlInfo = QualityControlInfo,
                useForExprs = "counts",
                organism = "mmusculus_gene_ensembl",
-               gene_id_type = "ensembl_gene_id")
+               gene_id_type = "external_gene_name")
 scd = calQCMetrics(scd)
 scd = detect_outlier(scd)
 plot_mapping(scd,percentage=TRUE,dataname="sc_sample")

@@ -22,6 +22,9 @@ sc_detect_bc(infq, outcsv, surfix = "CELL_", bc_len, max_reads = 1e+06,
 
 \item{max_mismatch}{the maximum mismatch allowed, barcodes within this number will be considered as sequence error and merged, default is 1.}
 }
+\value{
+no return
+}
 \description{
 detect cell barcode and generate the barcode annotation
 }

@@ -32,6 +32,18 @@ A \code{AnnotatedDataFrame} of quality control metrics.
 \description{
 Get or set quality control metrics from an SCData object
 }
+\examples{
+data("sc_sample_data")
+data("sc_sample_qc")
+QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+scd = newSCData(countData = as.matrix(sc_sample_data),
+               QualityControlInfo = QualityControlInfo,
+               useForExprs = "counts",
+               organism = "mmusculus_gene_ensembl",
+               gene_id_type = "external_gene_name")
+QCMetrics(scd)
+
+}
 \author{
 Luyi Tian
 }

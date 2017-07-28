@@ -28,6 +28,9 @@ Get genes related to certain GO terms from biomart database
 Get genes related to certain GO terms from biomart database
 }
 \examples{
-#TODO
+# get all genes under GO term GO:0005739 in mouse, return ensembl gene id
+get_genes_by_GO(returns="ensembl_gene_id",
+    dataset="mmusculus_gene_ensembl",
+    go=c('GO:0005739'))
 
 }

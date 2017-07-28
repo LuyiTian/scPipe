@@ -370,7 +370,7 @@ setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
 #' @param ... multiple SCDatas. They shold have the same value for class attribute.
 #' @param all only contains interset for features or union.
 #' @param batch (optional) batch information
-#'
+#' @return a merged SCData object
 #' @importFrom Biobase varLabels
 #'
 #' @export
@@ -513,6 +513,16 @@ merge_SCData <- function(...,
 #'
 #' @export
 #'
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' QCMetrics(scd)
 #'
 QCMetrics.SCData <- function(object) {
   return(object@QualityControlInfo)
@@ -545,6 +555,16 @@ setReplaceMethod("QCMetrics",
 #' @return organism string
 #' @author Luyi Tian
 #' @export
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' organism(scd)
 #'
 organism.SCData <- function(object) {
   return(object@organism)
@@ -581,6 +601,16 @@ setReplaceMethod("organism",
 #'
 #' @export
 #'
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' FACSData(scd)
 #'
 FACSData.SCData <- function(object) {
   return(object@FACSData)
@@ -615,6 +645,17 @@ setReplaceMethod("FACSData",
 #' @rdname DimReducedExpr
 #' @aliases DimReducedExpr
 #' @export
+#' 
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' DimReducedExpr(scd)
 #'
 setMethod("DimReducedExpr", signature(object = "SCData"),
   DimReducedExpr.SCData <- function(object) {
@@ -644,6 +685,17 @@ setReplaceMethod("DimReducedExpr",
 #' @author Luyi Tian
 #'
 #' @export
+#' 
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' gene_id_type(scd)
 #'
 gene_id_type.SCData <- function(object) {
   return(object@gene_id_type)
@@ -683,6 +735,18 @@ setReplaceMethod("gene_id_type",
 #' @param value an integer matrix
 #' @author Luyi Tian
 #' @export
+#' @return the raw count
+#' 
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' counts(scd)
 #'
 counts.SCData <- function(object) {
   object@assayData$counts
@@ -716,6 +780,18 @@ setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
 #' @author Luyi Tian
 #' @export
 #' @aliases tpm tpm,SCData-method tpm<-,SCData,matrix-method
+#' 
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' tpm(scd)
+#' 
 tpm.SCData <- function(object) {
   object@assayData$tpm
 }
@@ -752,6 +828,18 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
 #' @author Luyi Tian
 #' @export
 #' @aliases cpm cpm,SCData-method cpm<-,SCData,matrix-method
+#' 
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' cpm(scd)
+#' 
 cpmSCData <- function(object) {
   object@assayData$cpm
 }
@@ -789,7 +877,17 @@ setReplaceMethod("cpm", signature(object = "SCData", value = "matrix"),
 #'
 #' @author Luyi Tian
 #' @export
-#'
+#' 
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' fpkm(scd)
 #'
 fpkm.SCData <- function(object) {
   object@assayData$fpkm

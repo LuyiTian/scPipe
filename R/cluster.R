@@ -23,12 +23,11 @@
 #'                QualityControlInfo = QualityControlInfo,
 #'                useForExprs = "counts",
 #'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "ensembl_gene_id")
+#'                gene_id_type = "external_gene_name")
 #' scd = calQCMetrics(scd)
 #' scd = detect_outlier(scd)
 #' scd_afterqc = remove_outliers(scd)
 #' scd_afterqc = sc_dim_reduction(scd_afterqc,n=2)
-#' plot(DimReducedExpr(scd)$Dim1,DimReducedExpr(scd)$Dim2)
 #'
 sc_dim_reduction = function(scd,
                             k=20,

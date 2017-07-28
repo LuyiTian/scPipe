@@ -18,7 +18,7 @@ the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entre
 
 \item{pheno_data}{the external phenotype data that linked to each single cell. this should be an \code{AnnotatedDataFrame} object}
 
-\item{whether}{to generate the html report in the data folder}
+\item{report}{whether to generate the html report in the data folder}
 }
 \value{
 an SCData object
@@ -45,6 +45,6 @@ scd = newSCData(countData = as.matrix(sc_sample_data),
                QualityControlInfo = QualityControlInfo,
                useForExprs = "counts",
                organism = "mmusculus_gene_ensembl",
-               gene_id_type = "ensembl_gene_id")
+               gene_id_type = "external_gene_name")
 
 }

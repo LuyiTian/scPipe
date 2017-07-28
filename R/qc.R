@@ -39,7 +39,7 @@
 #'
 #' @importFrom stats cov pchisq mahalanobis complete.cases qchisq
 #' @importFrom robustbase covMcd
-#' @importFrom mclust Mclust
+#' @importFrom mclust Mclust mclustBIC
 #'
 #' @export
 #' @examples
@@ -50,7 +50,7 @@
 #'                QualityControlInfo = QualityControlInfo,
 #'                useForExprs = "counts",
 #'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "ensembl_gene_id")
+#'                gene_id_type = "external_gene_name")
 #' scd = calQCMetrics(scd)
 #' scd = detect_outlier(scd)
 #'
@@ -169,7 +169,7 @@ detect_outlier <- function(scd,
 #' `non_ERCC_percent`: ratio of exon counts to ERCC counts
 #' `non_ribo_percent`: 1- percent of ribosomal gene counts
 #' ribosomal genes are retrived by GO term GO:0005840
-#' @return no return
+#' @return an SCData with updated QC metrics
 #'
 #' @importFrom Biobase exprs pData fData
 #'
@@ -182,7 +182,7 @@ detect_outlier <- function(scd,
 #'                QualityControlInfo = QualityControlInfo,
 #'                useForExprs = "counts",
 #'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "ensembl_gene_id")
+#'                gene_id_type = "external_gene_name")
 #' scd = calQCMetrics(scd)
 #' scd = detect_outlier(scd)
 #'
@@ -221,7 +221,7 @@ calQCMetrics <- function(scd) {
                                 dataset=organism.SCData(scd),
                                 go=c("GO:0005739"))
     if (length(mt_genes)>0) {
-      if (any(rownames(exprs_mat) %in% mt_genes)) {
+      if (sum(rownames(exprs_mat) %in% mt_genes)>1) {
         mt_count <- colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes, ])
         QC_met$non_mt_percent <- (exon_count-mt_count)/(exon_count+0.01) # add 0.01 to make sure they are not NA
       }
@@ -237,7 +237,7 @@ calQCMetrics <- function(scd) {
                                dataset=organism.SCData(scd),
                                go=c("GO:0005840"))
     if (length(ribo_genes)>0) {
-      if (any(rownames(exprs_mat) %in% ribo_genes)) {
+      if (sum(rownames(exprs_mat) %in% ribo_genes)>1) {
         ribo_count <- colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes, ])
         QC_met$non_ribo_percent <- (exon_count-ribo_count)/(exon_count+0.01)
       }
@@ -258,9 +258,8 @@ calQCMetrics <- function(scd) {
 #' @importFrom GGally ggpairs
 #' @import ggplot2
 #' @export
-#' 
+#' @return a ggplot2 object
 #' @examples 
-#' 
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
@@ -268,10 +267,10 @@ calQCMetrics <- function(scd) {
 #'                QualityControlInfo = QualityControlInfo,
 #'                useForExprs = "counts",
 #'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "ensembl_gene_id")
+#'                gene_id_type = "external_gene_name")
 #' scd = calQCMetrics(scd)
 #' scd = detect_outlier(scd)
-#' plot_QC_pair(scd)
+#' plotQC_pair(scd)
 #' 
 plotQC_pair <- function(scd, sel_col=NULL) {
   if (is(scd, "SCData")) {
@@ -301,7 +300,7 @@ plotQC_pair <- function(scd, sel_col=NULL) {
 #'
 #' @import scales reshape ggplot2
 #' @importFrom stats prcomp reorder
-#'
+#' @return a ggplot2 object
 #' @export
 #' 
 #' @examples 
@@ -312,7 +311,7 @@ plotQC_pair <- function(scd, sel_col=NULL) {
 #'                QualityControlInfo = QualityControlInfo,
 #'                useForExprs = "counts",
 #'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "ensembl_gene_id")
+#'                gene_id_type = "external_gene_name")
 #' scd = calQCMetrics(scd)
 #' scd = detect_outlier(scd)
 #' plot_mapping(scd,percentage=TRUE,dataname="sc_sample")
@@ -365,7 +364,7 @@ plot_mapping <- function(scd,
 #' remove outliers for SCData
 #' @param scd an SCData object
 #' @export
-#'
+#' @return an SCData object without outliers
 #' @examples 
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
@@ -374,7 +373,7 @@ plot_mapping <- function(scd,
 #'                QualityControlInfo = QualityControlInfo,
 #'                useForExprs = "counts",
 #'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "ensembl_gene_id")
+#'                gene_id_type = "external_gene_name")
 #' scd = calQCMetrics(scd)
 #' scd = detect_outlier(scd)
 #' scd_afterqc = remove_outliers(scd)
