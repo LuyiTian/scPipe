@@ -677,7 +677,6 @@ setReplaceMethod("gene_id_type",
 #' object.
 #'
 #' @rdname counts
-#' @importFrom BiocGenerics counts
 #' @aliases counts counts,SCData-method counts<-,SCData,matrix-method
 #'
 #' @param object a \code{SCData} object.
@@ -694,7 +693,6 @@ counts.SCData <- function(object) {
 setMethod("counts", signature(object = "SCData"), counts.SCData)
 
 #' @rdname counts
-#' @importFrom BiocGenerics counts<-
 #' @export
 setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
                  function(object, value) {

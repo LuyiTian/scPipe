@@ -21,7 +21,7 @@ scd = newSCData(countData = as.matrix(sc_sample_data),
                useForExprs = "counts",
                organism = "mmusculus_gene_ensembl",
                gene_id_type = "ensembl_gene_id")
-scd = calculateQCMetrics(scd)
+scd = calQCMetrics(scd)
 scd = detect_outlier(scd)
 scd_afterqc = remove_outliers(scd)
 

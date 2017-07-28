@@ -121,7 +121,12 @@ pp
 ## reads alignment statistics per cell
 
 ```{r}
-scd = create_scd_by_dir(params$outdir, species=params$species, gene_id_type=params$gene_id_type)
+if(params$species != "SPECIES__" & params$gene_id_type != "GENE_ID_TYPE__"){
+  scd = create_scd_by_dir(params$outdir, organism=params$species, gene_id_type=params$gene_id_type)
+}else{
+  scd = create_scd_by_dir(params$outdir)
+}
+
 ggplotly(plot_mapping(scd,dataname=params$samplename,percentage = FALSE))
 
 ```
@@ -145,7 +150,7 @@ if (any(colSums(counts(scd)) == 0)){
 
 datatable of all QC metrics:
 ```{r}
-scd = calculateQCMetrics(scd)
+scd = calQCMetrics(scd)
 if(!all(colSums(pData(QCMetrics(scd)))>0)){
   QCMetrics(scd) = pData(QCMetrics(scd))[,colSums(pData(QCMetrics(scd)))>0]
 }
@@ -249,6 +254,8 @@ plotPCA(sce, exprs_values="exprs", colour_by="total_features")
 ```
 
 ### normalize the data using size factor and get high variable genes
+
+the high variable genes is chosed based on `trendVar` and `trendVar` on `Scran` with `FDR>0.05` and biological variation larger than `0.5`. If the number of high variable genes is smaller than 100 we will select the top 100 genes with largest biological variation, if the number is larger than 500 we will only keep top 500 genes with largest biological variation.
 
 ```{r}
 sce <- normalize(sce)

@@ -10,8 +10,9 @@
 #' @return an SCData object contains \code{reducedExprDimension} or
 #' a matrix contains t-SNE output
 #'
-#' @import destiny Rtsne
 #' @importFrom stats prcomp
+#' @importFrom destiny DiffusionMap
+#' @importFrom Rtsne Rtsne
 #' 
 #' @export
 #' @examples
@@ -23,7 +24,7 @@
 #'                useForExprs = "counts",
 #'                organism = "mmusculus_gene_ensembl",
 #'                gene_id_type = "ensembl_gene_id")
-#' scd = calculateQCMetrics(scd)
+#' scd = calQCMetrics(scd)
 #' scd = detect_outlier(scd)
 #' scd_afterqc = remove_outliers(scd)
 #' scd_afterqc = sc_dim_reduction(scd_afterqc,n=2)

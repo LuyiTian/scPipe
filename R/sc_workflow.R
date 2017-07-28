@@ -203,9 +203,17 @@ create_report = function(sample_name,
   }
   
   tx = gsub(pattern = "GENE_FL__", replacement = as.character(gene_fl), x = tx)
-  
-  tx = gsub(pattern = "SPECIES__", replacement = organism, x = tx)
-  tx = gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
+  if(!missing(organism)){
+    if(!is.null(organism)){
+      tx = gsub(pattern = "SPECIES__", replacement = organism, x = tx)
+    }
+  }
+  if(!missing(gene_id_type)){
+    if(!is.null(gene_id_type)){
+      tx = gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
+    }
+   
+  }
   
   writeLines(tx, con=file.path(outdir, "report.Rmd"))
   knitr::wrap_rmd(file.path(outdir, "report.Rmd"), width = 120, backup = NULL)
