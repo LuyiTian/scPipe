@@ -57,31 +57,42 @@ sc_trim_barcode(file.path(data_dir, "combined.fastq"),
                 file.path(data_dir, "simu_R2.fastq"))
 ```
 
-Then we align the reads to genome. The example uses `Rsubread` but it can be any aligner that support RNA-seq alignment.
-```{r,eval=TRUE}
-library(Rsubread)
-dir.create("celseq2_demo/index")
-buildindex(basename="celseq2_demo/index/ERCC_index", reference=ERCCfa_fn)
+Then we align the reads to genome. The example uses `Rsubread` but it can be any aligner that support RNA-seq alignment. The `Rsubread` package does not support Windows platform so the following step will not run on Windows.
 
-align(index="celseq2_demo/index/ERCC_index",
+
+```{r,eval=TRUE}
+if(!(.Platform$OS.type == "windows")){
+  library(Rsubread)
+  dir.create("celseq2_demo/index")
+  buildindex(basename="celseq2_demo/index/ERCC_index", reference=ERCCfa_fn)
+
+  align(index="celseq2_demo/index/ERCC_index",
       readfile1=file.path(data_dir, "combined.fastq"),
       output_file=file.path(data_dir, "out.aln.bam"), phredOffset=64)
+}
+
 ```
 
 After alignment we will map reads to exons using the exon annotations. Currently `scPipe` only supports annotation in `gff3` and `bed` format.
 
 ```{r,eval=TRUE}
-sc_exon_mapping(file.path(data_dir, "out.aln.bam"),
+if(!(.Platform$OS.type == "windows")){
+  sc_exon_mapping(file.path(data_dir, "out.aln.bam"),
                 file.path(data_dir, "out.map.bam"),
                 ERCCanno_fn)
+}
+
 ```
 
 Next we use `sc_demultiplex()` to split the reads to each cell and put them into spearate `.csv` file in `/count` subfolder. Each file contains three column. Each row is a read and first column is the gene is that this read mapped to, second column is the UMI sequence of this read, the third column is the distance to transcript end position. This file will be used for UMI deduplication and to generate gene counting matrix by callling `sc_gene_counting()`.
 
 ```{r,eval=TRUE}
-sc_demultiplex(file.path(data_dir, "out.map.bam"), data_dir, barcode_annotation_fn,has_UMI=FALSE)
+if(!(.Platform$OS.type == "windows")){
+  sc_demultiplex(file.path(data_dir, "out.map.bam"), data_dir, barcode_annotation_fn,has_UMI=FALSE)
 
-sc_gene_counting(data_dir, barcode_annotation_fn)
+  sc_gene_counting(data_dir, barcode_annotation_fn)
+}
+
 ```
 
 
@@ -128,3 +139,19 @@ scd = newSCData(countData = as.matrix(sc_sample_data),
 scd = calQCMetrics(scd)
 scd = detect_outlier(scd)
 ```
+
+we can plot the alignment statistics for the sample data
+
+```{r}
+plot_mapping(scd, percentage = TRUE, dataname = "sc_sample_data")
+```
+
+and also the pairwise QC metrics plots:
+
+```{r}
+plotQC_pair(scd)
+```
+
+
+
+

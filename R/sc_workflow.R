@@ -247,7 +247,6 @@ create_report = function(sample_name,
 #'
 #' @return an SCData object
 #'
-#' @importFrom Rsubread align
 #'
 #' @export
 #' 

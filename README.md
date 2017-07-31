@@ -21,6 +21,7 @@ coming soon
 ## TODO
 
 * update UMI correction methods
+* use singlecellExperiments package [https://github.com/drisso/SingleCellExperiment]
 
 ## Getting started
 
