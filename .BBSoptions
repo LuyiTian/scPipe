@@ -1,0 +1,8 @@
+# Default value for 'UnsupportedPlatforms' is the empty string.
+# Examples:
+#   - for a package that is supported on all platforms except on Windows:
+#       UnsupportedPlatforms: win
+#   - for a package that is supported on all platforms execept on Mac OS X and
+#     Solaris:
+#       UnsupportedPlatforms: mac, churchill
+UnsupportedPlatforms: win
