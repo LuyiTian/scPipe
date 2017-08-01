@@ -246,7 +246,7 @@ create_report = function(sample_name,
 #' @param report whether to generate the html report
 #'
 #' @return an SCData object
-#'
+#' @importFrom Rsubread align 
 #'
 #' @export
 #' 
@@ -314,7 +314,7 @@ run_scPipe <- function(sample_name,
                   r2=r2,
                   read_structure=read_structure,
                   filter_settings=filter_settings)
-  Rsubread::align(index=genome_index,
+  align(index=genome_index,
                   readfile1=out_fq,
                   output_file=bam_align,
                   nthread=nthreads)

@@ -2,26 +2,26 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 rcpp_sc_trim_barcode_paired <- function(outfq, r1, r2, bs1, bl1, bs2, bl2, us, ul, rmlow, rmN, minq, numbq) {
-    invisible(.Call('scPipe_rcpp_sc_trim_barcode_paired', PACKAGE = 'scPipe', outfq, r1, r2, bs1, bl1, bs2, bl2, us, ul, rmlow, rmN, minq, numbq))
+    invisible(.Call('_scPipe_rcpp_sc_trim_barcode_paired', PACKAGE = 'scPipe', outfq, r1, r2, bs1, bl1, bs2, bl2, us, ul, rmlow, rmN, minq, numbq))
 }
 
 rcpp_sc_exon_mapping <- function(inbam, outbam, annofn, am, ge, bc, mb, bc_len, UMI_len, stnd, fix_chr) {
-    invisible(.Call('scPipe_rcpp_sc_exon_mapping', PACKAGE = 'scPipe', inbam, outbam, annofn, am, ge, bc, mb, bc_len, UMI_len, stnd, fix_chr))
+    invisible(.Call('_scPipe_rcpp_sc_exon_mapping', PACKAGE = 'scPipe', inbam, outbam, annofn, am, ge, bc, mb, bc_len, UMI_len, stnd, fix_chr))
 }
 
 rcpp_sc_demultiplex <- function(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito, has_UMI) {
-    invisible(.Call('scPipe_rcpp_sc_demultiplex', PACKAGE = 'scPipe', inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito, has_UMI))
+    invisible(.Call('_scPipe_rcpp_sc_demultiplex', PACKAGE = 'scPipe', inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito, has_UMI))
 }
 
 rcpp_sc_gene_counting <- function(outdir, bc_anno, UMI_cor, gene_fl) {
-    invisible(.Call('scPipe_rcpp_sc_gene_counting', PACKAGE = 'scPipe', outdir, bc_anno, UMI_cor, gene_fl))
+    invisible(.Call('_scPipe_rcpp_sc_gene_counting', PACKAGE = 'scPipe', outdir, bc_anno, UMI_cor, gene_fl))
 }
 
 rcpp_sc_detect_bc <- function(infq, outcsv, surfix, bc_len, max_reads, min_count, max_mismatch) {
-    invisible(.Call('scPipe_rcpp_sc_detect_bc', PACKAGE = 'scPipe', infq, outcsv, surfix, bc_len, max_reads, min_count, max_mismatch))
+    invisible(.Call('_scPipe_rcpp_sc_detect_bc', PACKAGE = 'scPipe', infq, outcsv, surfix, bc_len, max_reads, min_count, max_mismatch))
 }
 
 rcpp_generate_celseq2_data <- function(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len, r_len, frag_mean, dup_mean, ran_dist, param, seed) {
-    invisible(.Call('scPipe_rcpp_generate_celseq2_data', PACKAGE = 'scPipe', r1fn, r2fn, annofn, bc_anno, fafn, UMI_len, r_len, frag_mean, dup_mean, ran_dist, param, seed))
+    invisible(.Call('_scPipe_rcpp_generate_celseq2_data', PACKAGE = 'scPipe', r1fn, r2fn, annofn, bc_anno, fafn, UMI_len, r_len, frag_mean, dup_mean, ran_dist, param, seed))
 }
 
