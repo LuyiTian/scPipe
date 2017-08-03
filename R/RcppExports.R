@@ -21,7 +21,3 @@ rcpp_sc_detect_bc <- function(infq, outcsv, surfix, bc_len, max_reads, min_count
     invisible(.Call('_scPipe_rcpp_sc_detect_bc', PACKAGE = 'scPipe', infq, outcsv, surfix, bc_len, max_reads, min_count, max_mismatch))
 }
 
-rcpp_generate_celseq2_data <- function(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len, r_len, frag_mean, dup_mean, ran_dist, param, seed) {
-    invisible(.Call('_scPipe_rcpp_generate_celseq2_data', PACKAGE = 'scPipe', r1fn, r2fn, annofn, bc_anno, fafn, UMI_len, r_len, frag_mean, dup_mean, ran_dist, param, seed))
-}
-

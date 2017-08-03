@@ -38,13 +38,10 @@ ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3", package = "scPipe")
 barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
 ```
 
-We start from simulating the paired-end fastq files. Read1 contains transcript and Read2 contains UMI followed by cell barcode. For simplixity we use default parameters, more parameter see `?sc_celseq2_simulator`. The read structure for CEL-seq2 is a paired-ended reads with first longer read mapped to transcript and second shorter read consist of 6bp UMI followed by 8bp cell barcode.
+We start from simulating the paired-end fastq files. Read1 contains transcript and Read2 contains UMI followed by cell barcode.  The read structure for CEL-seq2 is a paired-ended reads with first longer read mapped to transcript and second shorter read consist of 6bp UMI followed by 8bp cell barcode.
 ```{r,eval=TRUE}
-sc_celseq2_simulator(file.path(data_dir, "simu_R1.fastq"),
-                     file.path(data_dir, "simu_R2.fastq"),
-                     ERCCanno_fn,
-                     barcode_annotation_fn,
-                     ERCCfa_fn)
+fq_R1 = system.file("extdata", "simu_R1.fastq.gz", package = "scPipe")
+fq_R2 = system.file("extdata", "simu_R2.fastq.gz", package = "scPipe")
 ```
 
 ## data proprocessing
@@ -53,8 +50,8 @@ The pipeline begin with fastq file reformatting. We move the barcode and UMI to 
 
 ```{r,eval=TRUE}
 sc_trim_barcode(file.path(data_dir, "combined.fastq"),
-                file.path(data_dir, "simu_R1.fastq"),
-                file.path(data_dir, "simu_R2.fastq"))
+                fq_R1,
+                fq_R2)
 ```
 
 Then we align the reads to genome. The example uses `Rsubread` but it can be any aligner that support RNA-seq alignment. The `Rsubread` package does not support Windows platform so the following step will not run on Windows.

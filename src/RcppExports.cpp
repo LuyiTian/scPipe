@@ -95,27 +95,6 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// rcpp_generate_celseq2_data
-void rcpp_generate_celseq2_data(Rcpp::CharacterVector r1fn, Rcpp::CharacterVector r2fn, Rcpp::CharacterVector annofn, Rcpp::CharacterVector bc_anno, Rcpp::CharacterVector fafn, Rcpp::NumericVector UMI_len, Rcpp::NumericVector r_len, Rcpp::NumericVector frag_mean, Rcpp::NumericVector dup_mean, Rcpp::CharacterVector ran_dist, Rcpp::NumericVector param, Rcpp::NumericVector seed);
-RcppExport SEXP _scPipe_rcpp_generate_celseq2_data(SEXP r1fnSEXP, SEXP r2fnSEXP, SEXP annofnSEXP, SEXP bc_annoSEXP, SEXP fafnSEXP, SEXP UMI_lenSEXP, SEXP r_lenSEXP, SEXP frag_meanSEXP, SEXP dup_meanSEXP, SEXP ran_distSEXP, SEXP paramSEXP, SEXP seedSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r1fn(r1fnSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r2fn(r2fnSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type annofn(annofnSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type bc_anno(bc_annoSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type fafn(fafnSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type UMI_len(UMI_lenSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type r_len(r_lenSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type frag_mean(frag_meanSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type dup_mean(dup_meanSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type ran_dist(ran_distSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type param(paramSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type seed(seedSEXP);
-    rcpp_generate_celseq2_data(r1fn, r2fn, annofn, bc_anno, fafn, UMI_len, r_len, frag_mean, dup_mean, ran_dist, param, seed);
-    return R_NilValue;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 13},
@@ -123,7 +102,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_demultiplex", (DL_FUNC) &_scPipe_rcpp_sc_demultiplex, 10},
     {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
     {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 7},
-    {"_scPipe_rcpp_generate_celseq2_data", (DL_FUNC) &_scPipe_rcpp_generate_celseq2_data, 12},
     {NULL, NULL, 0}
 };
 
