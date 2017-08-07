@@ -121,7 +121,7 @@ pp
 ## reads alignment statistics per cell
 
 ```{r}
-if(params$species != "SPECIES__" & params$gene_id_type != "GENE_ID_TYPE__"){
+if(grepl("SPECIES", params$species) | grepl("GENE_ID_TYPE", params$gene_id_type)){
   scd = create_scd_by_dir(params$outdir, organism=params$species, gene_id_type=params$gene_id_type)
 }else{
   scd = create_scd_by_dir(params$outdir)
@@ -203,7 +203,7 @@ plotQC(sce, type = "highest-expression", n=20)
 
 plot the average count for each genes:
 ```{r}
-ave.counts <- rowMeans(counts(sce))
+ave.counts <- rowMeans(scater::counts(sce))
 hist(log10(ave.counts), breaks=100, main="", col="grey80",
      xlab=expression(Log[10]~"average count"))
 ```
@@ -211,8 +211,8 @@ hist(log10(ave.counts), breaks=100, main="", col="grey80",
 As a loose filter we keep genes that expressed in at least two cells and for cells that express that gene, the average count larger than two. However this is not the gold standard and the filter may variy depending on the data.
 
 ```{r}
-keep1 = (apply(counts(sce),1,function(x) mean(x[x>0])) > 1)  # average count larger than one
-keep2 = (rowSums(counts(sce)>0) > 1)  # expressed in at least two cells
+keep1 = (apply(scater::counts(sce),1,function(x) mean(x[x>0])) > 1)  # average count larger than one
+keep2 = (rowSums(scater::counts(sce)>0) > 1)  # expressed in at least two cells
 
 sce = sce[(keep1 & keep2), ]
 scd_qc = scd_qc[(keep1 & keep2), ]
