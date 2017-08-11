@@ -6,7 +6,7 @@
 #'@author Luyi Tian <tian.l@wehi.edu.au>; Shian Su <su.s@wehi.edu.au>
 #'@docType package
 #'@name scPipe
-#'@importFrom Rcpp evalCpp
+#'@import Rhtslib
 #'@useDynLib scPipe
 #'@aliases scPipe scPipe-package
 NULL
