@@ -7,6 +7,7 @@
 #'@docType package
 #'@name scPipe
 #'@import Rhtslib
+#'@import Rcpp
 #'@useDynLib scPipe
 #'@aliases scPipe scPipe-package
 NULL

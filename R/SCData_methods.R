@@ -513,7 +513,7 @@ merge_SCData <- function(...,
 #'
 #' @export
 #'
-#' @examples 
+#' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
@@ -555,7 +555,7 @@ setReplaceMethod("QCMetrics",
 #' @return organism string
 #' @author Luyi Tian
 #' @export
-#' @examples 
+#' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
@@ -601,7 +601,7 @@ setReplaceMethod("organism",
 #'
 #' @export
 #'
-#' @examples 
+#' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
@@ -645,8 +645,8 @@ setReplaceMethod("FACSData",
 #' @rdname DimReducedExpr
 #' @aliases DimReducedExpr
 #' @export
-#' 
-#' @examples 
+#'
+#' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
@@ -685,8 +685,8 @@ setReplaceMethod("DimReducedExpr",
 #' @author Luyi Tian
 #'
 #' @export
-#' 
-#' @examples 
+#'
+#' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
@@ -736,8 +736,8 @@ setReplaceMethod("gene_id_type",
 #' @author Luyi Tian
 #' @export
 #' @return the raw count
-#' 
-#' @examples 
+#'
+#' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
@@ -753,6 +753,7 @@ counts.SCData <- function(object) {
 }
 
 #' @rdname counts
+#' @aliases counts,SCData-method
 #' @export
 setMethod("counts", signature(object = "SCData"), counts.SCData)
 
@@ -780,8 +781,8 @@ setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
 #' @author Luyi Tian
 #' @export
 #' @aliases tpm tpm,SCData-method tpm<-,SCData,matrix-method
-#' 
-#' @examples 
+#'
+#' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
@@ -791,7 +792,7 @@ setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
 #'                organism = "mmusculus_gene_ensembl",
 #'                gene_id_type = "external_gene_name")
 #' tpm(scd)
-#' 
+#'
 tpm.SCData <- function(object) {
   object@assayData$tpm
 }
@@ -828,8 +829,8 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
 #' @author Luyi Tian
 #' @export
 #' @aliases cpm cpm,SCData-method cpm<-,SCData,matrix-method
-#' 
-#' @examples 
+#'
+#' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
@@ -839,7 +840,7 @@ setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
 #'                organism = "mmusculus_gene_ensembl",
 #'                gene_id_type = "external_gene_name")
 #' cpm(scd)
-#' 
+#'
 cpmSCData <- function(object) {
   object@assayData$cpm
 }
@@ -877,8 +878,8 @@ setReplaceMethod("cpm", signature(object = "SCData", value = "matrix"),
 #'
 #' @author Luyi Tian
 #' @export
-#' 
-#' @examples 
+#'
+#' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
