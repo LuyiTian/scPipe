@@ -29,7 +29,14 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
   if (is.null(go)) {
     stop("must provide GO term. (i.e go=c('GO:0005739'))")
   }
-  mart <- useDataset(dataset, useMart("ensembl"))
+  mart = tryCatch({mart <- useDataset(dataset, useMart("ensembl")) },
+           error = function(e){
+             cat(paste0("cannot connect to the ensembl database. ERROR:\n", e ))
+             return(c())
+           })
+  if(!is(mart,"Mart")){
+    return(c())
+  }
   G_list <- getBM(filters="go",
                   attributes=c(returns),
                   values=go,
@@ -83,7 +90,15 @@ convert_geneid <- function(scd,
     print("organism not provided.")
     return(scd)
   }
-  mart <- useDataset(organism, useMart("ensembl"))
+  mart = tryCatch({mart <- useDataset(organism, useMart("ensembl")) },
+           error = function(e){
+             cat(paste0("cannot connect to the ensembl database. ERROR:\n", e ))
+    return(scd)
+  })
+  if(!is(mart,"Mart")){
+    return(scd)
+  }
+  
   G_list <- getBM(filters=gene_id_type(scd), attributes=c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
 
   G_list <- G_list[match(rownames(scd), G_list[, gene_id_type(scd)]), ]
