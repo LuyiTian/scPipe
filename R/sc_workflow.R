@@ -315,15 +315,14 @@ run_scPipe <- function(sample_name,
                   r2=r2,
                   read_structure=read_structure,
                   filter_settings=filter_settings)
-  if(!(.Platform$OS.type == "windows")){
-    print("Exit: alignment cannot be performed in windows.")
-    return(NULL)
-  }else{
-    require(Rsubread)
+  if (requireNamespace("Rsubread", quietly = TRUE)) {
     Rsubread::align(index=genome_index,
                     readfile1=out_fq,
                     output_file=bam_align,
                     nthread=nthreads)
+  } else {
+    print("Exit: alignment cannot be performed in windows.")
+    return(NULL)
   }
 
   sc_exon_mapping(inbam=bam_align,
