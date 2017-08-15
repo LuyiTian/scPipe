@@ -316,7 +316,7 @@ run_scPipe <- function(sample_name,
                   read_structure=read_structure,
                   filter_settings=filter_settings)
   if (requireNamespace("Rsubread", quietly = TRUE)) {
-    Rsubread::align(index=genome_index,
+    align(index=genome_index,
                     readfile1=out_fq,
                     output_file=bam_align,
                     nthread=nthreads)
