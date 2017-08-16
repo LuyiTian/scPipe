@@ -1,6 +1,6 @@
 Package: scPipe
 Title: pipeline for single cell RNA-seq data analysis
-Version: 0.99.15
+Version: 0.99.16
 Type: Package
 Maintainer: Luyi Tian <tian.l@wehi.edu.au>
 Author: Luyi Tian
@@ -24,5 +24,5 @@ RoxygenNote: 6.0.1
 NeedsCompilation: yes
 URL: https://github.com/LuyiTian/scPipe
 BugReports: https://github.com/LuyiTian/scPipe
-Suggests: knitr, rmarkdown, Rsubread
+Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
