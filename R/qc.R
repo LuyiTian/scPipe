@@ -36,9 +36,14 @@
 #' @param conf confidence interval for linear regression at lower and upper tails.
 #' Usually this is smaller for lower tail because we hope to pick out more
 #' low quality cells than doublets.
-#' @details detect outlier using Mahalanobis distances TODO
+#' @param batch whether to perform quality control separately for each batch 
+#' default is FALSE. if set to TRUE then you should have a column called `batch` 
+#' in the `colData(sce)`
+#' 
+#' @details detect outlier using Mahalanobis distances
 #'
-#' @return an updated \code{SingleCellExperiment} object with an outlier column in \code{QualityControlInfo}
+#' @return an updated \code{SingleCellExperiment} object with an `outlier`` column in 
+#' \code{int_colData}
 #'
 #' @importFrom stats cov pchisq mahalanobis complete.cases qchisq
 #' @importFrom robustbase covMcd
@@ -61,7 +66,8 @@ detect_outlier <- function(sce,
                           comp=1,
                           sel_col=NULL,
                           type=c("both", "low", "high"),
-                          conf=c(0.9, 0.99)) {
+                          conf=c(0.9, 0.99),
+                          batch=FALSE) {
   type <- match.arg(type)
 
   # check format:
@@ -70,93 +76,106 @@ detect_outlier <- function(sce,
       sel_col <- c("number_of_genes", "total_count_per_cell", "non_mt_percent",
                   "non_ERCC_percent")
     }
-    if (!all(sel_col %in% colnames(QCMetrics(scd)))) {
-      tmp <- sel_col[!(sel_col %in% colnames(QCMetrics(scd)))]
-      print("the following QC metrics not find in data:")
+    if (!all(sel_col %in% colnames(sce@int_colData))) {
+      tmp <- sel_col[!(sel_col %in% colnames(sce@int_colData))]
+      print("the following QC metrics not find in int_colData from sce:")
       print(tmp)
       if(any(c("number_of_genes", "total_count_per_cell") %in% tmp)){
-        stop("the quality control metrics should at least contain the numebr of genes and counts per cell!")
+        stop("the quality control metrics should at least contain the numebr of 
+             genes(`number_of_genes`) and counts per cell(`total_count_per_cell`)!")
       }
     }
-    x <- Biobase::pData(QCMetrics(scd))[, colnames(QCMetrics(scd)) %in% sel_col]
-    x$total_count_per_cell = log2(x$total_count_per_cell+1)
+    x_all <- sce@int_colData[, colnames(sce@int_colData) %in% sel_col]
+    x_all$total_count_per_cell = log2(x_all$total_count_per_cell+1)
   }
   else {
-    stop("sce must be an \code{SingleCellExperiment} object.")
+    stop("sce must be an `SingleCellExperiment` object.")
   }
-  if (!all(complete.cases(x))) {
-    stop("we find NAs in the `QCMetrics(scd)`, check the quality control matrix")
+  if (!all(complete.cases(x_all))) {
+    stop("we find NAs in the selected columns, check the quality control matrix")
   }
-  if (is.null(dim(x))) {
-    QC_met <- pData(QCMetrics(scd))
-    QC_met$outliers <- FALSE
-    QCMetrics(scd) <- QC_met
-    return(scd)
+  if (is.null(dim(x_all))) {
+    sce@int_colData$outliers <- FALSE
+    return(sce)
   }
-  dist <- mahalanobis(x, center=colMeans(x), cov=cov(x))
-  keep <- !(dist>qchisq(0.99, ncol(x)))
-  mod <- Mclust(x[keep, ],
-               G=comp,
-               modelNames="EEE",
-               verbose = FALSE)
-  if (comp == 1) {
-    covr <- covMcd(x, alpha=0.7)
-    dist <- mahalanobis(x,
-                       center=covr$center,
-                       cov=covr$cov)
-    mean_diff <- sign(t(x)-covr$center)
-    QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
-    neg_dist <- dist[QC_sign == -1]
-    pos_dist <- dist[QC_sign == 1]
-    if (type == "both") {
-      outlier_cells <- .qq_outliers_robust(neg_dist, ncol(x), conf[1])
-      outlier_cells <- c(outlier_cells,
-                        .qq_outliers_robust(pos_dist, ncol(x), conf[2]))
-    }
-    else if (type == "low") {
-      outlier_cells <- .qq_outliers_robust(neg_dist, ncol(x), conf[1])
-    }
-    else if (type == "high") {
-      outlier_cells <- .qq_outliers_robust(pos_dist, ncol(x), conf[2])
+  if(!batch){
+    batch_info = rep(1,nrow(x_all))
+  }else{
+    if ("batch" %in% colnames(colData(sce))){
+      batch_info = colData(sce)$batch
+    }else{
+      stop("did not find column `batch` in colData(sce).")
     }
   }
-  else {
-    ord_fst <- c(1:comp)[order(mod$parameters$mean[1, ], decreasing = TRUE)]
-    poor_comp <- ord_fst[2:comp]
-    good_comp <- ord_fst[1]
-    keep1 <- rep(TRUE, nrow(x))
-    keep1[keep][mod$classification %in% poor_comp] <- FALSE
-    keep1[!keep] <- FALSE
-    sub_x <- x[keep1, ]
-    covr <- covMcd(sub_x, alpha=0.7)
-    sub_dist <- mahalanobis(sub_x,
-                           center=covr$center,
-                           cov=covr$cov)
-
-    mean_diff <- sign(t(sub_x)-covr$center)
-    QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
-    neg_dist <- sub_dist[QC_sign == -1]
-    pos_dist <- sub_dist[QC_sign == 1]
-    outlier_cells <- .qq_outliers_robust(neg_dist, ncol(sub_x), conf[1])
-    outlier_cells <- c(outlier_cells,
-                      .qq_outliers_robust(pos_dist, ncol(sub_x), conf[2]))
-    outlier_cells <- c(outlier_cells, rownames(x[!keep1, ]))
-    if (!(type == "both")) {
-      mean_diff <- sign(t(x)-mod$parameters$mean[, good_comp])
+  outliers = rep(FALSE,nrow(x_all))
+  
+  for(a_batch in unique(batch_info)){
+    x = x_all[batch_info == a_batch, ]
+    dist <- mahalanobis(x, center=colMeans(x), cov=cov(x))
+    keep <- !(dist>qchisq(0.99, ncol(x)))
+    mod <- Mclust(x[keep, ],
+                  G=comp,
+                  modelNames="EEE",
+                  verbose = FALSE)
+    if (comp == 1) {
+      covr <- covMcd(x, alpha=0.7)
+      dist <- mahalanobis(x,
+                          center=covr$center,
+                          cov=covr$cov)
+      mean_diff <- sign(t(x)-covr$center)
       QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
-      if (type == "low") {
-        outlier_cells <- rownames(x)[(rownames(x) %in% outlier_cells) & (QC_sign == -1)]
+      neg_dist <- dist[QC_sign == -1]
+      pos_dist <- dist[QC_sign == 1]
+      if (type == "both") {
+        outlier_cells <- .qq_outliers_robust(neg_dist, ncol(x), conf[1])
+        outlier_cells <- c(outlier_cells,
+                           .qq_outliers_robust(pos_dist, ncol(x), conf[2]))
+      }
+      else if (type == "low") {
+        outlier_cells <- .qq_outliers_robust(neg_dist, ncol(x), conf[1])
       }
       else if (type == "high") {
-        outlier_cells <- rownames(x)[(rownames(x) %in% outlier_cells) & (QC_sign == 1)]
+        outlier_cells <- .qq_outliers_robust(pos_dist, ncol(x), conf[2])
       }
     }
+    else {
+      ord_fst <- c(1:comp)[order(mod$parameters$mean[1, ], decreasing = TRUE)]
+      poor_comp <- ord_fst[2:comp]
+      good_comp <- ord_fst[1]
+      keep1 <- rep(TRUE, nrow(x))
+      keep1[keep][mod$classification %in% poor_comp] <- FALSE
+      keep1[!keep] <- FALSE
+      sub_x <- x[keep1, ]
+      covr <- covMcd(sub_x, alpha=0.7)
+      sub_dist <- mahalanobis(sub_x,
+                              center=covr$center,
+                              cov=covr$cov)
+      
+      mean_diff <- sign(t(sub_x)-covr$center)
+      QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
+      neg_dist <- sub_dist[QC_sign == -1]
+      pos_dist <- sub_dist[QC_sign == 1]
+      outlier_cells <- .qq_outliers_robust(neg_dist, ncol(sub_x), conf[1])
+      outlier_cells <- c(outlier_cells,
+                         .qq_outliers_robust(pos_dist, ncol(sub_x), conf[2]))
+      outlier_cells <- c(outlier_cells, rownames(x[!keep1, ]))
+      if (!(type == "both")) {
+        mean_diff <- sign(t(x)-mod$parameters$mean[, good_comp])
+        QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
+        if (type == "low") {
+          outlier_cells <- rownames(x)[(rownames(x) %in% outlier_cells) & (QC_sign == -1)]
+        }
+        else if (type == "high") {
+          outlier_cells <- rownames(x)[(rownames(x) %in% outlier_cells) & (QC_sign == 1)]
+        }
+      }
+    }
+    if(any(rownames(x)  %in% outlier_cells)){
+      outliers[batch_info == a_batch][rownames(x)  %in% outlier_cells] = TRUE
+    }
   }
-  outliers <- as.factor(rownames(x)  %in% outlier_cells)
-  QC_met <- pData(QCMetrics(scd))
-  QC_met$outliers <- outliers
-  QCMetrics(scd) <- QC_met
-  return(scd)
+  sce@int_colData$outliers = as.factor(outliers)
+  return(sce)
 }
 
 
@@ -178,46 +197,37 @@ detect_outlier <- function(sce,
 #'
 #' @export
 #' @examples
-#' data("sc_sample_data")
-#' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' sce = new\code{SingleCellExperiment}(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' sce = calQCMetrics(scd)
-#' sce = detect_outlier(scd)
 #'
-calQCMetrics <- function(scd) {
-  if (is(scd, "\code{SingleCellExperiment}")) {
-    exprs_mat <- switch(scd@useForExprs,
-                        exprs=Biobase::exprs(scd),
-                        tpm=tpm(scd),
-                        cpm=cpm(scd),
-                        fpkm=fpkm(scd),
-                        counts=counts(scd))
+calQCMetrics <- function(sce) {
+  if (!is(scd, "SingleCellExperiment")) {
+    stop("require a `SingleCellExperiment` object.")
+  }else if(!("counts" %in% names(assays(sce)))){
+    stop("counts not in names(assays(sce)). cannot find count data.")
   }
-  else {
-    stop("require a \code{SingleCellExperiment} object.")
-  }
-  QC_met <- Biobase::pData(QCMetrics(scd))
-  # get ERCC ratio
-  spikein <- Biobase::fData(scd)$isSpike
-  exon_count <- colSums(exprs_mat[!spikein, ])
-  gene_number <- colSums(exprs_mat>0)
+  # get gene number
+  gene_number <- colSums(assay(sce,"counts")>0)
   if (all(gene_number == 0)) {
-    stop("all gene have zero expression values. check your expression matrix.")
+    stop("all genes have zero count. check your expression matrix.")
+  }else{
+    sce@int_colData$number_of_genes = gene_number
   }
-  QC_met$total_count_per_cell <- exon_count
-  QC_met$number_of_genes <- gene_number
-  if (any(spikein)) {
-    ERCC_count <- colSums(exprs_mat[spikein, ])
-    QC_met$non_ERCC_percent <- exon_count/(ERCC_count+exon_count)
+  
+  # get total count per cell
+  sce@int_colData$total_count_per_cell = colSums(assay(sce,"counts"))
+  
+  # get ERCC ratio
+  if(!is.null(spikeNames(sce))){
+    if(any(isSpike(sce,"ERCC"))){
+      exon_count = colSums(assay(sce,"counts")[!isSpike(sce,"ERCC"),])
+      ERCC_count = assay(sce,"counts")[isSpike(sce,"ERCC"),]
+      sce@int_colData$non_ERCC_percent = exon_count/(ERCC_count+exon_count+1e-5)
+    }else{
+      print("no ERCC spike-in. skip `non_ERCC_percent`")
+    }
+  }else{
+    print("spikeNames(sce)==NULL, no spike-in information.")
   }
-  else {
-    print("cannot detect ERCC Spikeins from data. skip `non_ERCC_percent`.")
-  }
+
   # get mt percentage
   if (!(gene_id_type(scd) == "NA")) {
     mt_genes <- get_genes_by_GO(returns=gene_id_type(scd),
