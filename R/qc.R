@@ -199,7 +199,7 @@ detect_outlier <- function(sce,
 #' @examples
 #'
 calQCMetrics <- function(sce) {
-  if (!is(scd, "SingleCellExperiment")) {
+  if (!is(sce, "SingleCellExperiment")) {
     stop("require a `SingleCellExperiment` object.")
   }else if(!("counts" %in% names(assays(sce)))){
     stop("counts not in names(assays(sce)). cannot find count data.")
@@ -229,7 +229,7 @@ calQCMetrics <- function(sce) {
   }
 
   # get mt percentage
-  if (!(gene_id_type(scd) == "NA")) {
+  if (!(gene_id_type(sce) == "NA")) {
     mt_genes <- get_genes_by_GO(returns=gene_id_type(scd),
                                 dataset=organism.\code{SingleCellExperiment}(scd),
                                 go=c("GO:0005739"))
