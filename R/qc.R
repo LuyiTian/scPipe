@@ -111,6 +111,8 @@ detect_outlier <- function(sce,
   
   for(a_batch in unique(batch_info)){
     x = x_all[batch_info == a_batch, ]
+    print(dim(x))
+    print(head(x))
     dist <- mahalanobis(x, center=colMeans(x), cov=cov(x))
     keep <- !(dist>qchisq(0.99, ncol(x)))
     mod <- Mclust(x[keep, ],
@@ -230,13 +232,15 @@ calQCMetrics <- function(sce) {
 
   # get mt percentage
   if (!(gene_id_type(sce) == "NA")) {
-    mt_genes <- get_genes_by_GO(returns=gene_id_type(scd),
-                                dataset=organism.\code{SingleCellExperiment}(scd),
+    mt_genes <- get_genes_by_GO(returns=gene_id_type(sce),
+                                dataset=organism(sce),
                                 go=c("GO:0005739"))
     if (length(mt_genes)>0) {
-      if (sum(rownames(exprs_mat) %in% mt_genes)>1) {
-        mt_count <- colSums(exprs_mat[rownames(exprs_mat) %in% mt_genes, ])
-        QC_met$non_mt_percent <- (exon_count-mt_count)/(exon_count+0.01) # add 0.01 to make sure they are not NA
+      if (sum(rownames(sce) %in% mt_genes)>1) {
+        mt_count <- colSums(assay(sce,"counts")[rownames(sce) %in% mt_genes, ])
+        sce@int_colData$non_mt_percent <- (colSums(assay(sce,"counts"))-
+                                             mt_count)/(colSums(assay(sce,"counts"))+1e-5)
+        # add 1e-5 to make sure they are not NA
       }
     }
   }
@@ -245,22 +249,22 @@ calQCMetrics <- function(sce) {
   }
 
   # get ribosomal percentage
-  if (!(gene_id_type(scd) == "NA")) {
-    ribo_genes <- get_genes_by_GO(returns=gene_id_type(scd),
-                               dataset=organism.\code{SingleCellExperiment}(scd),
+  if (!(gene_id_type(sce) == "NA")) {
+    ribo_genes <- get_genes_by_GO(returns=gene_id_type(sce),
+                               dataset=organism(sce),
                                go=c("GO:0005840"))
     if (length(ribo_genes)>0) {
-      if (sum(rownames(exprs_mat) %in% ribo_genes)>1) {
-        ribo_count <- colSums(exprs_mat[rownames(exprs_mat) %in% ribo_genes, ])
-        QC_met$non_ribo_percent <- (exon_count-ribo_count)/(exon_count+0.01)
+      if (sum(rownames(sce) %in% ribo_genes)>1) {
+        ribo_count <- colSums(assay(sce,"counts")[rownames(sce) %in% ribo_genes, ])
+        sce@int_colData$non_ribo_percent=(colSums(assay(sce,"counts"))-
+                                            ribo_count)/(colSums(assay(sce,"counts"))+0.01)
       }
     }
   }
   else {
     print("no gene_id_type, skip `non_ribo_percent`")
   }
-  QCMetrics(scd) <- QC_met
-  return(scd)
+  return(sce)
 }
 
 

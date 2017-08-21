@@ -45,13 +45,13 @@ create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
   cell_stat = cell_stat[order(rownames(cell_stat)), ]
   
   
-  QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(cell_stat))
-  scd = newSCData(countData = as.matrix(gene_cnt),
-                  QualityControlInfo = QualityControlInfo,
-                  phenoData = pheno_data,
-                  useForExprs = "counts",
-                  organism = organism,
-                  gene_id_type = gene_id_type)
+  # QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(cell_stat))
+  # scd = newSCData(countData = as.matrix(gene_cnt),
+  #                 QualityControlInfo = QualityControlInfo,
+  #                 phenoData = pheno_data,
+  #                 useForExprs = "counts",
+  #                 organism = organism,
+  #                 gene_id_type = gene_id_type)
   if(report){
     create_report(sample_name=basename(datadir),
                              outdir=datadir,
