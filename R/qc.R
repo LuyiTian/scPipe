@@ -85,7 +85,7 @@ detect_outlier <- function(sce,
              genes(`number_of_genes`) and counts per cell(`total_count_per_cell`)!")
       }
     }
-    x_all <- sce@int_colData[, colnames(sce@int_colData) %in% sel_col]
+    x_all <- as.data.frame(sce@int_colData[, colnames(sce@int_colData) %in% sel_col])
     x_all$total_count_per_cell = log2(x_all$total_count_per_cell+1)
   }
   else {
