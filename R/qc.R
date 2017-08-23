@@ -76,8 +76,8 @@ detect_outlier <- function(sce,
       sel_col <- c("number_of_genes", "total_count_per_cell", "non_mt_percent",
                   "non_ERCC_percent")
     }
-    if (!all(sel_col %in% colnames(sce@int_colData))) {
-      tmp <- sel_col[!(sel_col %in% colnames(sce@int_colData))]
+    if (!all(sel_col %in% colnames(QCMetrics(sce)))) {
+      tmp <- sel_col[!(sel_col %in% colnames(QCMetrics(sce)))]
       print("the following QC metrics not find in int_colData from sce:")
       print(tmp)
       if(any(c("number_of_genes", "total_count_per_cell") %in% tmp)){
@@ -85,7 +85,7 @@ detect_outlier <- function(sce,
              genes(`number_of_genes`) and counts per cell(`total_count_per_cell`)!")
       }
     }
-    x_all <- as.data.frame(sce@int_colData[, colnames(sce@int_colData) %in% sel_col])
+    x_all <- as.data.frame(QCMetrics(sce)[, colnames(QCMetrics(sce)) %in% sel_col])
     x_all$total_count_per_cell = log2(x_all$total_count_per_cell+1)
   }
   else {
@@ -95,7 +95,7 @@ detect_outlier <- function(sce,
     stop("we find NAs in the selected columns, check the quality control matrix")
   }
   if (is.null(dim(x_all))) {
-    sce@int_colData$outliers <- FALSE
+    QCMetrics(sce)$outliers <- FALSE
     return(sce)
   }
   if(!batch){
@@ -176,7 +176,7 @@ detect_outlier <- function(sce,
       outliers[batch_info == a_batch][rownames(x)  %in% outlier_cells] = TRUE
     }
   }
-  sce@int_colData$outliers = as.factor(outliers)
+  QCMetrics(sce)$outliers = as.factor(outliers)
   return(sce)
 }
 
@@ -206,23 +206,36 @@ calQCMetrics <- function(sce) {
   }else if(!("counts" %in% names(assays(sce)))){
     stop("counts not in names(assays(sce)). cannot find count data.")
   }
+
   # get gene number
   gene_number <- colSums(assay(sce,"counts")>0)
   if (all(gene_number == 0)) {
     stop("all genes have zero count. check your expression matrix.")
   }else{
-    sce@int_colData$number_of_genes = gene_number
+    QCMetrics(sce)$number_of_genes = gene_number
+    if (!("scPipe" %in% names(sce@int_metadata))){
+      sce@int_metadata[["scPipe"]] = list(QC_cols=c("number_of_genes"))
+    }else if(!("QC_cols" %in% names(sce@int_metadata$scPipe))){
+      sce@int_metadata[["scPipe"]] = list(QC_cols=c("number_of_genes"))
+    }else{
+      sce@int_metadata$scPipe$QC_cols = c(
+        sce@int_metadata$scPipe$QC_cols, "number_of_genes")
+    }
   }
   
   # get total count per cell
-  sce@int_colData$total_count_per_cell = colSums(assay(sce,"counts"))
+  QCMetrics(sce)$total_count_per_cell = colSums(assay(sce,"counts"))
+  sce@int_metadata$scPipe$QC_cols = c(
+    sce@int_metadata$scPipe$QC_cols, "total_count_per_cell")
   
   # get ERCC ratio
   if(!is.null(spikeNames(sce))){
     if(any(isSpike(sce,"ERCC"))){
       exon_count = colSums(assay(sce,"counts")[!isSpike(sce,"ERCC"),])
       ERCC_count = assay(sce,"counts")[isSpike(sce,"ERCC"),]
-      sce@int_colData$non_ERCC_percent = exon_count/(ERCC_count+exon_count+1e-5)
+      QCMetrics(sce)$non_ERCC_percent = exon_count/(ERCC_count+exon_count+1e-5)
+      sce@int_metadata$scPipe$QC_cols = c(
+        sce@int_metadata$scPipe$QC_cols, "non_ERCC_percent")
     }else{
       print("no ERCC spike-in. skip `non_ERCC_percent`")
     }
@@ -238,8 +251,10 @@ calQCMetrics <- function(sce) {
     if (length(mt_genes)>0) {
       if (sum(rownames(sce) %in% mt_genes)>1) {
         mt_count <- colSums(assay(sce,"counts")[rownames(sce) %in% mt_genes, ])
-        sce@int_colData$non_mt_percent <- (colSums(assay(sce,"counts"))-
+        QCMetrics(sce)$non_mt_percent <- (colSums(assay(sce,"counts"))-
                                              mt_count)/(colSums(assay(sce,"counts"))+1e-5)
+        sce@int_metadata$scPipe$QC_cols = c(
+          sce@int_metadata$scPipe$QC_cols, "non_mt_percent")
         # add 1e-5 to make sure they are not NA
       }
     }
@@ -256,8 +271,10 @@ calQCMetrics <- function(sce) {
     if (length(ribo_genes)>0) {
       if (sum(rownames(sce) %in% ribo_genes)>1) {
         ribo_count <- colSums(assay(sce,"counts")[rownames(sce) %in% ribo_genes, ])
-        sce@int_colData$non_ribo_percent=(colSums(assay(sce,"counts"))-
+        QCMetrics(sce)$non_ribo_percent=(colSums(assay(sce,"counts"))-
                                             ribo_count)/(colSums(assay(sce,"counts"))+0.01)
+        sce@int_metadata$scPipe$QC_cols = c(
+          sce@int_metadata$scPipe$QC_cols, "non_ribo_percent")
       }
     }
   }
@@ -289,8 +306,8 @@ calQCMetrics <- function(sce) {
 #' sce = detect_outlier(scd)
 #' plotQC_pair(scd)
 #' 
-plotQC_pair <- function(scd, sel_col=NULL) {
-  if (is(scd, "\code{SingleCellExperiment}")) {
+plotQC_pair <- function(sce, sel_col=NULL) {
+  if (is(sce, "SingleCellExperiment")) {
     if (is.null(sel_col)) {
       sel_col <- c("number_of_genes", "total_count_per_cell", "non_mt_percent",
                    "non_ERCC_percent", "non_ribo_percent", "outliers")
@@ -298,7 +315,7 @@ plotQC_pair <- function(scd, sel_col=NULL) {
     x <- pData(QCMetrics(scd))[, colnames(QCMetrics(scd)) %in% sel_col]
   }
   else {
-    stop("sce must be an \code{SingleCellExperiment} object.")
+    stop("sce must be an `SingleCellExperiment` object.")
   }
   if ("outliers" %in% colnames(x)) {
     return(ggpairs(x, mapping = ggplot2::aes_string(colour = "outliers")))

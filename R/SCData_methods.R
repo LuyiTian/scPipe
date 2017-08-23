@@ -36,25 +36,35 @@
 #'                gene_id_type = "external_gene_name")
 #' QCMetrics(scd)
 #'
-QCMetrics.SCData <- function(object) {
-  return(object@QualityControlInfo)
+QCMetrics.sce <- function(object) {
+  if(!("scPipe" %in% names(object@int_metadata))){
+    stop("`scPipe` not in `int_metadata`. cannot identify columns")
+  }else if(!("QC_cols" %in% names(object@int_metadata$scPipe))){
+    stop("The int_metadata$scPipe does not have `QC_cols`. cannot identify columns")
+  }
+  return(object@int_colData[, object@int_metadata$scPipe$QC_cols])
 }
 
 #' @rdname QCMetrics
 #' @aliases QCMetrics
 #' @export
 #'
-setMethod("QCMetrics", signature(object = "SCData"),
-          QCMetrics.SCData)
+setMethod("QCMetrics", signature(object = "SingleCellExperiment"),
+          QCMetrics.sce)
 
 #' @rdname QCMetrics
 #' @aliases QCMetrics
 #' @export
 setReplaceMethod("QCMetrics",
-                 signature="SCData",
+                 signature="SingleCellExperiment",
                  function(object, value) {
-                   object@QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(value))
-                   validObject(object) # could add other checks
+                   if(!("scPipe" %in% names(object@int_metadata))){
+                     object@int_metadata[["scPipe"]] = list(QC_cols=colnames(value))
+                   }else{
+                     object@int_metadata$scPipe$QC_cols = colnames(value)
+                   }
+                   object@int_colData = DataFrame(value)
+                   #validObject(object) # could add other checks
                    return(object)
                  })
 
@@ -144,6 +154,7 @@ setReplaceMethod("gene_id_type",
                  signature="SingleCellExperiment",
                  function(object, value) {
                    object@int_metadata$Biomart$gene_id_type = value
+                   validObject(object) # could add other checks
                    return(object)
                  })
 
