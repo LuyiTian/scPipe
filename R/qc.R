@@ -350,19 +350,19 @@ plotQC_pair <- function(sce, sel_col=NULL) {
 #' sce = detect_outlier(scd)
 #' plot_mapping(scd,percentage=TRUE,dataname="sc_sample")
 #'
-plot_mapping <- function(scd,
+plot_mapping <- function(sce,
                         sel_col=NULL,
                         percentage=FALSE,
                         dataname="") {
-  if (is(scd, "\code{SingleCellExperiment}")) {
+  if (is(sce, "SingleCellExperiment")) {
     if (is.null(sel_col)) {
       sel_col <- c("unaligned", "aligned_unmapped", "ambiguous_mapping",
                    "mapped_to_ERCC", "mapped_to_intron", "mapped_to_exon")
     }
-    x <- pData(QCMetrics(scd))[, sel_col]
+    x <- pData(QCMetrics(sce))[, sel_col]
   }
   else {
-    stop("sce must be an \code{SingleCellExperiment} object.")
+    stop("sce must be an SingleCellExperiment object.")
   }
 
 
@@ -412,13 +412,13 @@ plot_mapping <- function(scd,
 #' sce = detect_outlier(scd)
 #' scd_afterqc = remove_outliers(scd)
 #' 
-remove_outliers <- function(scd) {
-  if (!is(scd, "SingleCellExperiment")) {
+remove_outliers <- function(sce) {
+  if (!is(sce, "SingleCellExperiment")) {
     stop("sce must be an \code{SingleCellExperiment} object.")
   }
-  if (!("outliers" %in% colnames(pData(QCMetrics(scd))))) {
-    stop("no outlier information. please run `detect_outlier()` first.")
+  if (!("outliers" %in% colnames(QCMetrics(scd)))) {
+    stop("no outlier information. please run `detect_outlier()` to get the outliers.")
   }
-  out_cell <- pData(QCMetrics(scd))$outliers == FALSE
-  return(scd[, out_cell])
+  out_cell <- QCMetrics(scd)$outliers == FALSE
+  return(sce[, out_cell])
 }
