@@ -260,7 +260,7 @@ the high variable genes is chosed based on `trendVar` and `trendVar` on `Scran` 
 ```{r}
 sce <- normalize(sce)
 
-var.fit <- trendVar(sce, trend="loess", use.spikes=FALSE, span=0.2)
+var.fit <- trendVar(sce, method="loess", use.spikes=FALSE, span=0.2)
 var.out <- decomposeVar(sce, var.fit)
 
 if (length(which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)) < 100){
