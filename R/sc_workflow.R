@@ -37,21 +37,35 @@
 #'                gene_id_type = "external_gene_name")
 #' 
 
-create_scd_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL, report=FALSE) {
+create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL, report=FALSE) {
   gene_cnt = read.csv(file.path(datadir, "gene_count.csv"), row.names=1)
   cell_stat = read.csv(file.path(datadir, "stat", "cell_stat.csv"), row.names=1)
   
   gene_cnt = gene_cnt[, order(colnames(gene_cnt))]
   cell_stat = cell_stat[order(rownames(cell_stat)), ]
+
   
+  sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+  QCMetrics(sce) = cell_stat
+  if(!is.null(pheno_data)){
+    colData(sce) = pheno_data[order(rownames(pheno_data)),]
+  }
   
-  # QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(cell_stat))
-  # scd = newSCData(countData = as.matrix(gene_cnt),
-  #                 QualityControlInfo = QualityControlInfo,
-  #                 phenoData = pheno_data,
-  #                 useForExprs = "counts",
-  #                 organism = organism,
-  #                 gene_id_type = gene_id_type)
+  if(is.null(organism) | is.null(gene_id_type)){
+    tmp_res = .guess_attr(gene_cnt)
+    if((!is.na(tmp_res$organism)) & (!is.na(tmp_res$gene_id_type))){
+      gene_id_type(sce) = tmp_res$gene_id_type
+      organism(sce) = tmp_res$organism
+      print(paste("organism/gene_id_type not provided. make a guess:", 
+                  tmp_res$organism,
+                  "/",
+                  tmp_res$gene_id_type))
+    }
+  }else{
+    gene_id_type(sce) = gene_id_type
+    organism(sce) = organism
+  }
+
   if(report){
     create_report(sample_name=basename(datadir),
                              outdir=datadir,

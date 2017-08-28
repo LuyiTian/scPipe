@@ -38,9 +38,10 @@
 #'
 QCMetrics.sce <- function(object) {
   if(!("scPipe" %in% names(object@int_metadata))){
-    stop("`scPipe` not in `int_metadata`. cannot identify columns")
+    stop("`scPipe` not in `int_metadata`. cannot identify quality control columns")
   }else if(!("QC_cols" %in% names(object@int_metadata$scPipe))){
-    stop("The int_metadata$scPipe does not have `QC_cols`. cannot identify columns")
+    stop("The int_metadata$scPipe does not have `QC_cols`. 
+      cannot identifyquality control  columns")
   }
   return(object@int_colData[, object@int_metadata$scPipe$QC_cols])
 }

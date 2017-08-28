@@ -307,16 +307,19 @@ calQCMetrics <- function(sce) {
 #' plotQC_pair(scd)
 #' 
 plotQC_pair <- function(sce, sel_col=NULL) {
-  if (is(sce, "SingleCellExperiment")) {
-    if (is.null(sel_col)) {
-      sel_col <- c("number_of_genes", "total_count_per_cell", "non_mt_percent",
-                   "non_ERCC_percent", "non_ribo_percent", "outliers")
-    }
-    x <- pData(QCMetrics(scd))[, colnames(QCMetrics(scd)) %in% sel_col]
-  }
-  else {
+  if (!is(sce, "SingleCellExperiment")) {
     stop("sce must be an `SingleCellExperiment` object.")
   }
+  if (is.null(sel_col)) {
+    sel_col <- c("number_of_genes", "total_count_per_cell", "non_mt_percent",
+                  "non_ERCC_percent", "non_ribo_percent", "outliers")
+  }
+  if(!any(sel_col %in% colnames(QCMetrics(sce)))){
+    stop("`sel_col` not in colnames(QCMetrics(sce))).")
+  }
+  x <- as.data.frame(QCMetrics(sce)[, colnames(QCMetrics(sce)) %in% sel_col])
+
+
   if ("outliers" %in% colnames(x)) {
     return(ggpairs(x, mapping = ggplot2::aes_string(colour = "outliers")))
   }
