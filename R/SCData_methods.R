@@ -15,7 +15,7 @@
 
 
 
-#' Get or set quality control metrics from an SingleCellExperiment object
+#' Get or set quality control metrics in a SingleCellExperiment object
 #' @rdname QCMetrics
 #' @param object An \code{SingleCellExperiment} object.
 #' @param value Value to be assigned to corresponding object.
@@ -68,6 +68,115 @@ setReplaceMethod("QCMetrics",
                    #validObject(object) # could add other checks
                    return(object)
                  })
+
+
+#' Get or set cell barcode demultiplx results in a SingleCellExperiment object
+#' @rdname demultiplx_info
+#' @param object An \code{SingleCellExperiment} object.
+#' @param value Value to be assigned to corresponding object.
+#'
+#' @return A DataFrame of cell barcode demultiplx results.
+#' @author Luyi Tian
+#'
+#' @export
+#'
+#' @examples
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' QCMetrics(scd)
+#'
+demultiplx_info.sce <- function(object) {
+  if(!("scPipe" %in% names(object@int_metadata))){
+    stop("`scPipe` not in `int_metadata`. cannot find columns for cell barcode demultiplx results")
+  }else if(!("demultiplx_info" %in% names(object@int_metadata$scPipe))){
+    stop("The int_metadata$scPipe does not have `demultiplx_info`.")
+  }
+  return(object@int_metadata$scPipe$demultiplx_info)
+  }
+
+#' @rdname demultiplx_info
+#' @aliases demultiplx_info
+#' @export
+#'
+setMethod("demultiplx_info", signature(object = "SingleCellExperiment"),
+          demultiplx_info.sce)
+
+#' @rdname demultiplx_info
+#' @aliases demultiplx_info
+#' @export
+setReplaceMethod("demultiplx_info",
+                 signature="SingleCellExperiment",
+                 function(object, value) {
+                   if(!("scPipe" %in% names(object@int_metadata))){
+                     object@int_metadata[["scPipe"]] = list(demultiplx_info=value)
+                   }else{
+                     object@int_metadata$scPipe$demultiplx_info = value
+                   }
+                   #validObject(object) # could add other checks
+                   return(object)
+                 })
+
+
+
+
+#' Get or set UMI duplication results in a SingleCellExperiment object
+#' @rdname UMI_dup_info
+#' @param object An \code{SingleCellExperiment} object.
+#' @param value Value to be assigned to corresponding object.
+#'
+#' @return A DataFrame of UMI duplication results.
+#' @author Luyi Tian
+#'
+#' @export
+#'
+#' @examples
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
+#' scd = newSCData(countData = as.matrix(sc_sample_data),
+#'                QualityControlInfo = QualityControlInfo,
+#'                useForExprs = "counts",
+#'                organism = "mmusculus_gene_ensembl",
+#'                gene_id_type = "external_gene_name")
+#' QCMetrics(scd)
+#'
+UMI_dup_info.sce <- function(object) {
+  if(!("scPipe" %in% names(object@int_metadata))){
+    stop("`scPipe` not in `int_metadata`. cannot find columns for cell barcode demultiplx results")
+  }else if(!("UMI_dup_info" %in% names(object@int_metadata$scPipe))){
+    stop("The int_metadata$scPipe does not have `UMI_dup_info`.")
+  }
+  return(object@int_metadata$scPipe$UMI_dup_info)
+}
+
+#' @rdname UMI_dup_info
+#' @aliases UMI_dup_info
+#' @export
+#'
+setMethod("UMI_dup_info", signature(object = "SingleCellExperiment"),
+          UMI_dup_info.sce)
+
+#' @rdname UMI_dup_info
+#' @aliases UMI_dup_info
+#' @export
+setReplaceMethod("UMI_dup_info",
+                 signature="SingleCellExperiment",
+                 function(object, value) {
+                   if(!("scPipe" %in% names(object@int_metadata))){
+                     object@int_metadata[["scPipe"]] = list(UMI_dup_info=value)
+                   }else{
+                     object@int_metadata$scPipe$UMI_dup_info = value
+                   }
+                   #validObject(object) # could add other checks
+                   return(object)
+                 })
+
 
 
 #' Get or set \code{organism} from an SCData object

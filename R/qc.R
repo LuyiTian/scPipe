@@ -306,18 +306,18 @@ calQCMetrics <- function(sce) {
 #' sce = detect_outlier(scd)
 #' plotQC_pair(scd)
 #' 
-plotQC_pair <- function(sce, sel_col=NULL) {
+plotQC_pair = function(sce, sel_col=NULL) {
   if (!is(sce, "SingleCellExperiment")) {
     stop("sce must be an `SingleCellExperiment` object.")
   }
   if (is.null(sel_col)) {
-    sel_col <- c("number_of_genes", "total_count_per_cell", "non_mt_percent",
+    sel_col = c("number_of_genes", "total_count_per_cell", "non_mt_percent",
                   "non_ERCC_percent", "non_ribo_percent", "outliers")
   }
   if(!any(sel_col %in% colnames(QCMetrics(sce)))){
     stop("`sel_col` not in colnames(QCMetrics(sce))).")
   }
-  x <- as.data.frame(QCMetrics(sce)[, colnames(QCMetrics(sce)) %in% sel_col])
+  x = as.data.frame(QCMetrics(sce)[, colnames(QCMetrics(sce)) %in% sel_col])
 
 
   if ("outliers" %in% colnames(x)) {
@@ -359,10 +359,10 @@ plot_mapping <- function(sce,
                         dataname="") {
   if (is(sce, "SingleCellExperiment")) {
     if (is.null(sel_col)) {
-      sel_col <- c("unaligned", "aligned_unmapped", "ambiguous_mapping",
+      sel_col = c("unaligned", "aligned_unmapped", "ambiguous_mapping",
                    "mapped_to_ERCC", "mapped_to_intron", "mapped_to_exon")
     }
-    x <- pData(QCMetrics(sce))[, sel_col]
+    x = as.data.frame(QCMetrics(sce)[, sel_col])
   }
   else {
     stop("sce must be an SingleCellExperiment object.")
@@ -406,7 +406,7 @@ plot_mapping <- function(sce,
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
 #' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' sce = new\code{SingleCellExperiment}(countData = as.matrix(sc_sample_data),
+#' sce = newSingleCellExperiment(countData = as.matrix(sc_sample_data),
 #'                QualityControlInfo = QualityControlInfo,
 #'                useForExprs = "counts",
 #'                organism = "mmusculus_gene_ensembl",
@@ -422,6 +422,6 @@ remove_outliers <- function(sce) {
   if (!("outliers" %in% colnames(QCMetrics(scd)))) {
     stop("no outlier information. please run `detect_outlier()` to get the outliers.")
   }
-  out_cell <- QCMetrics(scd)$outliers == FALSE
+  out_cell = QCMetrics(scd)$outliers == FALSE
   return(sce[, out_cell])
 }
