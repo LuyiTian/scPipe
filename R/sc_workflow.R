@@ -40,13 +40,15 @@
 create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL, report=FALSE) {
   gene_cnt = read.csv(file.path(datadir, "gene_count.csv"), row.names=1)
   cell_stat = read.csv(file.path(datadir, "stat", "cell_stat.csv"), row.names=1)
+  demultiplex_stat = read.csv(file.path(datadir, "stat", "cell_stat.csv"), row.names=1)
   
   gene_cnt = gene_cnt[, order(colnames(gene_cnt))]
   cell_stat = cell_stat[order(rownames(cell_stat)), ]
 
   
   sce = SingleCellExperiment(assays = list(counts =as.matrix(gene_cnt)))
-  QCMetrics(sce) = cell_stat
+  sce@int_metadata$scPipe$version = packageVersion("scPipe")  # set version information
+  QC_metrics(sce) = cell_stat
   if(!is.null(pheno_data)){
     colData(sce) = pheno_data[order(rownames(pheno_data)),]
   }
@@ -89,7 +91,7 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
   }
 
   
-  return(scd)
+  return(sce)
 }
 
 

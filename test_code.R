@@ -12,11 +12,12 @@ sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
 #                                     gene_id_type = "external_gene_name")
 
 
-sce_qc = calQCMetrics(sce)
+sce_qc = calculate_QC_metrics(sce)
 
 sce_qc_o = detect_outlier(sce_qc)
 
-head(QCMetrics(sce_qc_o))
+head(QC_metrics(sce_qc_o))
 
 
 plotQC_pair(sce_qc_o)
+

@@ -15,8 +15,39 @@
 
 
 
+validObject = function(object){
+  if (!is(object, "SingleCellExperiment")) {
+    stop("object must be an `SingleCellExperiment` object.")
+  }
+  if(!("scPipe" %in% names(object@int_metadata))){
+    object@int_metadata$scPipe$version = packageVersion("scPipe")  # set version information
+  }
+  if(!("QC_cols" %in% names(object@int_metadata$scPipe))){
+    QC_metrics(object) = DataFrame(row.names = colnames(object)) # create a empty QC metrics if not exists
+  }
+  if(!all(rownames(QC_metrics(object)) == colnames(object))){
+    stop("The rownames of QC metrics is not consistant with column names of the object.")
+  }
+  if(is.null(gene_id_type(object))){ # check the gene id type
+    gene_id_type(object) = NA
+  }else if(length(gene_id_type(sce) == "NA")>0){
+    if(gene_id_type(object) == "NA"){
+      gene_id_type(object) = NA
+    }
+  }
+  if(is.null(organism(object))){ # check the organism
+    organism(object) = NA
+  }else if(length(organism(sce) == "NA")>0){
+    if(organism(object) == "NA"){
+      organism(object) = NA
+    }
+  }
+  return(object)
+}
+
+
 #' Get or set quality control metrics in a SingleCellExperiment object
-#' @rdname QCMetrics
+#' @rdname QC_metrics
 #' @param object An \code{SingleCellExperiment} object.
 #' @param value Value to be assigned to corresponding object.
 #'
@@ -36,27 +67,29 @@
 #'                gene_id_type = "external_gene_name")
 #' QCMetrics(scd)
 #'
-QCMetrics.sce <- function(object) {
+QC_metrics.sce <- function(object) {
   if(!("scPipe" %in% names(object@int_metadata))){
-    stop("`scPipe` not in `int_metadata`. cannot identify quality control columns")
+    warning("`scPipe` not in `int_metadata`. cannot identify quality control columns")
+    return(NULL)
   }else if(!("QC_cols" %in% names(object@int_metadata$scPipe))){
-    stop("The int_metadata$scPipe does not have `QC_cols`. 
+    warning("The int_metadata$scPipe does not have `QC_cols`. 
       cannot identifyquality control  columns")
+    return(NULL)
   }
   return(object@int_colData[, object@int_metadata$scPipe$QC_cols])
 }
 
-#' @rdname QCMetrics
-#' @aliases QCMetrics
+#' @rdname QC_metrics
+#' @aliases QC_metrics
 #' @export
 #'
-setMethod("QCMetrics", signature(object = "SingleCellExperiment"),
-          QCMetrics.sce)
+setMethod("QC_metrics", signature(object = "SingleCellExperiment"),
+          QC_metrics.sce)
 
-#' @rdname QCMetrics
-#' @aliases QCMetrics
+#' @rdname QC_metrics
+#' @aliases QC_metrics
 #' @export
-setReplaceMethod("QCMetrics",
+setReplaceMethod("QC_metrics",
                  signature="SingleCellExperiment",
                  function(object, value) {
                    if(!("scPipe" %in% names(object@int_metadata))){
@@ -65,7 +98,7 @@ setReplaceMethod("QCMetrics",
                      object@int_metadata$scPipe$QC_cols = colnames(value)
                    }
                    object@int_colData = DataFrame(value)
-                   #validObject(object) # could add other checks
+                   object = validObject(object) # could add other checks
                    return(object)
                  })
 
@@ -91,34 +124,36 @@ setReplaceMethod("QCMetrics",
 #'                gene_id_type = "external_gene_name")
 #' QCMetrics(scd)
 #'
-demultiplx_info.sce <- function(object) {
+demultiplex_info.sce <- function(object) {
   if(!("scPipe" %in% names(object@int_metadata))){
-    stop("`scPipe` not in `int_metadata`. cannot find columns for cell barcode demultiplx results")
-  }else if(!("demultiplx_info" %in% names(object@int_metadata$scPipe))){
-    stop("The int_metadata$scPipe does not have `demultiplx_info`.")
+    warning("`scPipe` not in `int_metadata`. cannot find columns for cell barcode demultiplx results")
+    return(NULL)
+  }else if(!("demultiplex_info" %in% names(object@int_metadata$scPipe))){
+    warning("The int_metadata$scPipe does not have `demultiplex_info`.")
+    return(NULL)
   }
-  return(object@int_metadata$scPipe$demultiplx_info)
+  return(object@int_metadata$scPipe$demultiplex_info)
   }
 
-#' @rdname demultiplx_info
-#' @aliases demultiplx_info
+#' @rdname demultiplex_info
+#' @aliases demultiplex_info
 #' @export
 #'
-setMethod("demultiplx_info", signature(object = "SingleCellExperiment"),
-          demultiplx_info.sce)
+setMethod("demultiplex_info", signature(object = "SingleCellExperiment"),
+          demultiplex_info)
 
-#' @rdname demultiplx_info
-#' @aliases demultiplx_info
+#' @rdname demultiplex_info
+#' @aliases demultiplex_info
 #' @export
-setReplaceMethod("demultiplx_info",
+setReplaceMethod("demultiplex_info",
                  signature="SingleCellExperiment",
                  function(object, value) {
                    if(!("scPipe" %in% names(object@int_metadata))){
-                     object@int_metadata[["scPipe"]] = list(demultiplx_info=value)
+                     object@int_metadata[["scPipe"]] = list(demultiplex_info=value)
                    }else{
-                     object@int_metadata$scPipe$demultiplx_info = value
+                     object@int_metadata$scPipe$demultiplex_info = value
                    }
-                   #validObject(object) # could add other checks
+                   object = validObject(object) # could add other checks
                    return(object)
                  })
 
@@ -148,9 +183,11 @@ setReplaceMethod("demultiplx_info",
 #'
 UMI_dup_info.sce <- function(object) {
   if(!("scPipe" %in% names(object@int_metadata))){
-    stop("`scPipe` not in `int_metadata`. cannot find columns for cell barcode demultiplx results")
+    warning("`scPipe` not in `int_metadata`. cannot find columns for cell barcode demultiplx results")
+    return(NULL)
   }else if(!("UMI_dup_info" %in% names(object@int_metadata$scPipe))){
-    stop("The int_metadata$scPipe does not have `UMI_dup_info`.")
+    warning("The int_metadata$scPipe does not have `UMI_dup_info`.")
+    return(NULL)
   }
   return(object@int_metadata$scPipe$UMI_dup_info)
 }
@@ -173,7 +210,7 @@ setReplaceMethod("UMI_dup_info",
                    }else{
                      object@int_metadata$scPipe$UMI_dup_info = value
                    }
-                   #validObject(object) # could add other checks
+                   object = validObject(object) # could add other checks
                    return(object)
                  })
 
@@ -218,7 +255,7 @@ setReplaceMethod("organism",
            signature="SingleCellExperiment",
            function(object, value) {
                object@int_metadata$Biomart$organism = value
-               validObject(object) # could add other checks
+               object = validObject(object) # could add other checks
                return(object)
              })
 
@@ -264,7 +301,7 @@ setReplaceMethod("gene_id_type",
                  signature="SingleCellExperiment",
                  function(object, value) {
                    object@int_metadata$Biomart$gene_id_type = value
-                   validObject(object) # could add other checks
+                   object = validObject(object) # could add other checks
                    return(object)
                  })
 
