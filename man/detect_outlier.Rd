@@ -8,6 +8,8 @@ detect_outlier(sce, comp = 1, sel_col = NULL, type = c("low", "both",
   "high"), conf = c(0.9, 0.99), batch = FALSE)
 }
 \arguments{
+\item{sce}{a \code{SingleCellExperiment} object containing QC metrics.}
+
 \item{comp}{the number of component used in GMM. can be one or two.}
 
 \item{sel_col}{a vector of column names, indicate the columns to use for QC.

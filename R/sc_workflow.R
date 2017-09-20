@@ -54,20 +54,7 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
     colData(sce) = pheno_data[order(rownames(pheno_data)),]
   }
   
-  if(is.null(organism) | is.null(gene_id_type)){
-    tmp_res = .guess_attr(gene_cnt)
-    if((!is.na(tmp_res$organism)) & (!is.na(tmp_res$gene_id_type))){
-      gene_id_type(sce) = tmp_res$gene_id_type
-      organism(sce) = tmp_res$organism
-      print(paste("organism/gene_id_type not provided. make a guess:", 
-                  tmp_res$organism,
-                  "/",
-                  tmp_res$gene_id_type))
-    }
-  }else{
-    gene_id_type(sce) = gene_id_type
-    organism(sce) = organism
-  }
+
   
   demultiplex_info(sce) = demultiplex_stat
   UMI_dup_info(sce) = UMI_dup_stat
