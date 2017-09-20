@@ -103,7 +103,9 @@ setReplaceMethod("QC_metrics",
                  })
 
 
-#' Get or set cell barcode demultiplx results in a SingleCellExperiment object
+#' @title demultiplex_info
+#' 
+#' @description Get or set cell barcode demultiplx results in a SingleCellExperiment object
 #' @rdname demultiplx_info
 #' @param object An \code{SingleCellExperiment} object.
 #' @param value Value to be assigned to corresponding object.
@@ -140,7 +142,7 @@ demultiplex_info.sce <- function(object) {
 #' @export
 #'
 setMethod("demultiplex_info", signature(object = "SingleCellExperiment"),
-          demultiplex_info)
+          demultiplex_info.sce)
 
 #' @rdname demultiplex_info
 #' @aliases demultiplex_info

@@ -46,3 +46,18 @@ setGeneric("UMI_dup_info", function(object) standardGeneric("UMI_dup_info"))
 #' @docType methods
 #' @rdname accessors
 setGeneric("UMI_dup_info<-", function(object, value) standardGeneric("UMI_dup_info<-"))
+
+#' @name accessors
+#' @aliases gene_id_type
+#' @export
+#' @docType methods
+#' @return the gene id type used by Biomart
+#' @rdname accessors
+setGeneric("gene_id_type", function(object) standardGeneric("gene_id_type"))
+
+#' @name accessors
+#' @aliases gene_id_type<-
+#' @export
+#' @docType methods
+#' @rdname accessors
+setGeneric("gene_id_type<-", function(object, value) standardGeneric("gene_id_type<-"))

@@ -2,30 +2,30 @@
 % Please edit documentation in R/qc.R
 \name{remove_outliers}
 \alias{remove_outliers}
-\title{remove outliers for SCData}
+\title{remove outliers for \code{SingleCellExperiment}}
 \usage{
-remove_outliers(scd)
+remove_outliers(sce)
 }
 \arguments{
-\item{scd}{an SCData object}
+\item{sce}{an \code{SingleCellExperiment} object}
 }
 \value{
-an SCData object without outliers
+an \code{SingleCellExperiment} object without outliers
 }
 \description{
-remove outliers for SCData
+remove outliers for \code{SingleCellExperiment}
 }
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
 QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-scd = newSCData(countData = as.matrix(sc_sample_data),
+sce = newSingleCellExperiment(countData = as.matrix(sc_sample_data),
                QualityControlInfo = QualityControlInfo,
                useForExprs = "counts",
                organism = "mmusculus_gene_ensembl",
                gene_id_type = "external_gene_name")
-scd = calQCMetrics(scd)
-scd = detect_outlier(scd)
+sce = calQC_metrics(scd)
+sce = detect_outlier(scd)
 scd_afterqc = remove_outliers(scd)
 
 }

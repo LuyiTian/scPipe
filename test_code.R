@@ -21,3 +21,9 @@ head(QC_metrics(sce_qc_o))
 
 plotQC_pair(sce_qc_o)
 
+
+
+sce_new = create_sce_by_dir("/Users/tian.l/data/CB51",organism = "mmusculus_gene_ensembl", gene_id_type="ensembl_gene_id")
+sce_new = calculate_QC_metrics(sce_new)
+
+plot_UMI_dup(sce_new)

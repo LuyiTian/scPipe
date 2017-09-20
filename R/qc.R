@@ -304,9 +304,7 @@ calculate_QC_metrics <- function(sce) {
 #' plotQC_pair(scd)
 #' 
 plotQC_pair = function(sce, sel_col=NULL) {
-  if (!is(sce, "SingleCellExperiment")) {
-    stop("sce must be an `SingleCellExperiment` object.")
-  }
+  sce = validObject(sce) # check the sce object
   if (is.null(sel_col)) {
     sel_col = c("number_of_genes", "total_count_per_cell", "non_mt_percent",
                   "non_ERCC_percent", "non_ribo_percent", "outliers")
@@ -354,16 +352,12 @@ plot_mapping <- function(sce,
                         sel_col=NULL,
                         percentage=FALSE,
                         dataname="") {
-  if (is(sce, "SingleCellExperiment")) {
-    if (is.null(sel_col)) {
-      sel_col = c("unaligned", "aligned_unmapped", "ambiguous_mapping",
-                   "mapped_to_ERCC", "mapped_to_intron", "mapped_to_exon")
-    }
-    x = as.data.frame(QC_metrics(sce)[, sel_col])
+  sce = validObject(sce) # check the sce object
+  if (is.null(sel_col)) {
+    sel_col = c("unaligned", "aligned_unmapped", "ambiguous_mapping",
+                  "mapped_to_ERCC", "mapped_to_intron", "mapped_to_exon")
   }
-  else {
-    stop("sce must be an SingleCellExperiment object.")
-  }
+  x = as.data.frame(QC_metrics(sce)[, sel_col])
 
 
   mapping_stat <- x
@@ -395,6 +389,79 @@ plot_mapping <- function(sce,
 }
 
 
+
+#' plot_demultiplex
+#' 
+#' @description plot cell barcode demultiplex result for the experiment
+#' it will include the percentage of reads that match the cell barcode.
+#' For the reads that does not match any barcode, it will gives the percentage of
+#' reads aligned and mapped to exon. If there is high proportion of reads
+#' that do not match any barcode but mapped to exon, it might indicatea a failure in cell
+#' barcode demultiplexing
+#'
+#' @param sce a \code{SingleCellExperiment} object
+#'
+#' @return a pie chart
+#' @export
+#'
+#' @examples
+#' # TODO
+plot_demultiplex = function(sce){
+  sce = validObject(sce) # check the sce object
+  demultiplex_stat = demultiplex_info(sce)
+  if(is.null(demultiplex_stat)){
+    stop("`demultiplex_stat` does not exists in sce. demultiplex_info(sce) == NULL)")
+  }
+  
+  p = ggplot(demultiplex_stat, aes(x="", y=count, fill=status))+
+    geom_bar(width = 1, stat = "identity")+
+    coord_polar("y", start=0)+
+    scale_fill_brewer(palette="Dark2")+
+    theme_minimal()+
+    labs(title="Cell barcode demultiplex statistics")
+  return(p)
+}
+
+
+#' plot_UMI_dup
+#' 
+#' @description plot UMI duplication number distributions for
+#' each UMI sequence in each genes.
+#'
+#' @param sce a \code{SingleCellExperiment} object 
+#' @param log10_x whether to use log10 scale for x axis
+#'
+#' @return a line chart of the UMI duplication distributions
+#' @export
+#'
+#' @examples
+#' # TODO
+plot_UMI_dup = function(sce, log10_x = TRUE){
+  sce = validObject(sce) # check the sce object
+  tmp = UMI_dup_info(sce)
+  tmp = tmp[-nrow(tmp),] # remove 1000
+  the_sum = cumsum(tmp)
+  for (i in 1:(nrow(tmp)-1)){ # cut the zero counts
+    if (the_sum$count[nrow(tmp)] - the_sum$count[i]<10){
+      tmp = tmp[1:i,]
+      break
+    }
+  }
+  p = ggplot(tmp, aes(duplication.number, count)) + 
+    geom_smooth(method = "loess",se = FALSE)+theme_bw()
+  if(log10_x){
+    p = p+scale_x_log10()+
+      labs(title="distribution of UMI duplication numbers(log10).", 
+           x="log10(UMI duplication numbers)")
+  }else{
+    p = p+labs(title="Distribution of UMI duplication numbers.", 
+               x="UMI duplication numbers")
+  }
+  return(p)
+}
+
+
+
 #' remove outliers for \code{SingleCellExperiment}
 #' @param sce an \code{SingleCellExperiment} object
 #' @export
@@ -413,9 +480,7 @@ plot_mapping <- function(sce,
 #' scd_afterqc = remove_outliers(scd)
 #' 
 remove_outliers <- function(sce) {
-  if (!is(sce, "SingleCellExperiment")) {
-    stop("sce must be an `SingleCellExperiment` object.")
-  }
+  sce = validObject(sce) # check the sce object
   if (!("outliers" %in% colnames(QC_metrics(sce)))) {
     stop("no outlier information. please run `detect_outlier()` to get the outliers.")
   }

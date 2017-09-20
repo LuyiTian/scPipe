@@ -2,12 +2,12 @@
 % Please edit documentation in R/biomart_methods.R
 \name{convert_geneid}
 \alias{convert_geneid}
-\title{convert the gene ids of a SCData object}
+\title{convert the gene ids of a SingleCellExperiment object}
 \usage{
-convert_geneid(scd, returns = "external_gene_name", all = TRUE)
+convert_geneid(sce, returns = "external_gene_name", all = TRUE)
 }
 \arguments{
-\item{scd}{an SCData object}
+\item{sce}{an SingleCellExperiment object}
 
 \item{returns}{the gene id which is set as return. default to be `external_gene_name`
 A possible list of attributes can be retrieved using the
@@ -18,16 +18,16 @@ id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.}
 id or delete them. the default is keep them.}
 }
 \value{
-scd with converted id
+sce with converted id
 }
 \description{
-convert the gene ids of a SCData object
+convert the gene ids of a SingleCellExperiment object
 }
 \details{
 convert the gene id of all datas in SCData object
 }
 \examples{
-# the gene id in example data are `external_gene_name`, the following example will switch it to `entrezgene`.
+# the gene id in example data are `external_gene_name`, the following example will convert it to `entrezgene`.
 data("sc_sample_data")
 data("sc_sample_qc")
 QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))

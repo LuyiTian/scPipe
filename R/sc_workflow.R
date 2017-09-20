@@ -40,7 +40,8 @@
 create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL, report=FALSE) {
   gene_cnt = read.csv(file.path(datadir, "gene_count.csv"), row.names=1)
   cell_stat = read.csv(file.path(datadir, "stat", "cell_stat.csv"), row.names=1)
-  demultiplex_stat = read.csv(file.path(datadir, "stat", "cell_stat.csv"), row.names=1)
+  demultiplex_stat = read.csv(file.path(datadir, "stat", "overall_stat.csv"))
+  UMI_dup_stat = read.csv(file.path(datadir, "stat", "UMI_duplication_count.csv"))
   
   gene_cnt = gene_cnt[, order(colnames(gene_cnt))]
   cell_stat = cell_stat[order(rownames(cell_stat)), ]
@@ -67,6 +68,9 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
     gene_id_type(sce) = gene_id_type
     organism(sce) = organism
   }
+  
+  demultiplex_info(sce) = demultiplex_stat
+  UMI_dup_info(sce) = UMI_dup_stat
 
   if(report){
     create_report(sample_name=basename(datadir),
