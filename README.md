@@ -7,6 +7,8 @@ scPipe is an R package that allows barcode demultiplexing, transcript mapping an
 
 The package is under active development, feel free to ask any question or submit a pull request.
 
+* [21/09/2017] The package now support singlecellExperiments class.
+
 ## Installation
 
 ### from bioconductor
@@ -40,11 +42,6 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
 * The `sc_demultiplex` will looking for the cell barcode in bam file (by default in `YC` tag). And compare it against the known cell barcode annotation file, which is a csv file consist of two columns. The first column is the cell name and second column is the cell barcode. For Drop-seq data we can run `sc_detect_bc` to find the barcode and generate the cell barcode annotation file before running `sc_demultiplex`. Here is an example barcode annotation file: `system.file("extdata", "barcode_anno.csv", package = "scPipe")`. the output of `sc_demultiplex` will be multiple csv files corresponding to each cell. The csv file will have three columns where the first column is gene id, second column is UMI sequence and third column is the relative location to TES. These files are used for `sc_gene_counting`.
 
 for the example codes see vignettes
-
-## TODO
-
-* update UMI correction methods.
-* use (singlecellExperiments)[https://github.com/drisso/SingleCellExperiment] package.
 
 ## Acknowledgements
 This package is inspared by `scater` and `scran` packages. The idea to put cell barcode and UMI into BAM file comes from the (Drop-seq tools)[http://mccarrolllab.com/dropseq/]
