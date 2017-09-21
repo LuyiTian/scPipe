@@ -7,7 +7,7 @@
 convert_geneid(sce, returns = "external_gene_name", all = TRUE)
 }
 \arguments{
-\item{sce}{an SingleCellExperiment object}
+\item{sce}{a SingleCellExperiment object}
 
 \item{returns}{the gene id which is set as return. default to be `external_gene_name`
 A possible list of attributes can be retrieved using the
@@ -24,18 +24,21 @@ sce with converted id
 convert the gene ids of a SingleCellExperiment object
 }
 \details{
-convert the gene id of all datas in SCData object
+convert the gene id of all datas in the SingleCellExperiment object
 }
 \examples{
-# the gene id in example data are `external_gene_name`, the following example will convert it to `entrezgene`.
+# the gene id in example data are `external_gene_name`
+# the following example will convert it to `external_gene_name`.
 data("sc_sample_data")
 data("sc_sample_qc")
-QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-scd = newSCData(countData = as.matrix(sc_sample_data),
-               QualityControlInfo = QualityControlInfo,
-               useForExprs = "counts",
-               organism = "mmusculus_gene_ensembl",
-               gene_id_type = "external_gene_name")
-scd = convert_geneid(scd, return="entrezgene")
+sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+organism(sce) = "mmusculus_gene_ensembl"
+gene_id_type(sce) = "ensembl_gene_id"
+QC_metrics(sce) = sc_sample_qc
+demultiplex_info(sce) = cell_barcode_matching
+UMI_dup_info(sce) = UMI_duplication
+head(rownames(sce))
+sce = convert_geneid(sce, return="external_gene_name")
+head(rownames(sce))
 
 }

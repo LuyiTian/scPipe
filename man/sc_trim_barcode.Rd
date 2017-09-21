@@ -9,11 +9,11 @@ sc_trim_barcode(outfq, r1, r2 = NULL, read_structure = list(bs1 = -1, bl1 =
   rmN = TRUE, minq = 20, numbq = 2))
 }
 \arguments{
-\item{outfq}{the output fastq file, which reformat the barcode and UMI into the read name}
+\item{outfq}{the output fastq file, which reformat the barcode and UMI into the read name.}
 
-\item{r1}{read one for pair-end reads. This read should contains the transcript}
+\item{r1}{read one for pair-end reads. This read should contains the transcript.}
 
-\item{r2}{read two for pair-end reads. default to be `NULL` for single reads}
+\item{r2}{read two for pair-end reads, default to be `NULL` for single reads.}
 
 \item{read_structure}{a list contains read structure configuration:\itemize{
 \item{bs1} is the starting position of barcode in read one, if there is no reads in read one set it to -1.
@@ -24,13 +24,14 @@ sc_trim_barcode(outfq, r1, r2 = NULL, read_structure = list(bs1 = -1, bl1 =
 \item{ul} is the length of UMI
 }}
 
-\item{filter_settings}{a list contains read filter settings:}
+\item{filter_settings}{A list contains read filter settings:}
 }
 \value{
 no return
 }
 \description{
-reformat the fastq file and move the barcode and UMI to read names.
+This function will reformat the fastq file and move the barcode 
+and UMI sequence to read names.
 }
 \examples{
 data_dir="celseq2_demo"

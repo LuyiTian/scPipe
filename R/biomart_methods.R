@@ -47,40 +47,41 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 
 #' convert the gene ids of a SingleCellExperiment object
 #'
-#' @param sce an SingleCellExperiment object
+#' @param sce a SingleCellExperiment object
 #' @param returns the gene id which is set as return. default to be `external_gene_name`
 #' A possible list of attributes can be retrieved using the
 #' function \code{listAttributes} from \code{biomaRt} package. the commonly used
 #' id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.
 #' @param all logic. for genes that cannot covert to new gene id, keep them with the old
 #' id or delete them. the default is keep them.
-#' @details convert the gene id of all datas in SCData object
+#' @details convert the gene id of all datas in the SingleCellExperiment object
 #'
 #' @return sce with converted id
 #'
 #' @importFrom biomaRt useDataset getBM
 #' @importFrom utils head
-#' @importFrom Biobase ExpressionSet fData<-
+#' @importFrom methods is
 #'
 #' @export
 #' @examples
-#' # the gene id in example data are `external_gene_name`, the following example will convert it to `entrezgene`.
+#' # the gene id in example data are `external_gene_name`
+#' # the following example will convert it to `external_gene_name`.
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' scd = convert_geneid(scd, return="entrezgene")
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' head(rownames(sce))
+#' sce = convert_geneid(sce, return="external_gene_name")
+#' head(rownames(sce))
 #'
 convert_geneid <- function(sce,
                            returns="external_gene_name",
                            all=TRUE) {
-  if (!is(sce, "SingleCellExperiment")) {
-    stop("sce must be an SingleCellExperiment object.")
-  }
+  sce = validObject(sce)
   if (returns == gene_id_type(sce)) {
     stop("SingleCellExperiment already has genes in such id type. (gene_id_type(sce) == returns)")
   }
@@ -120,7 +121,7 @@ convert_geneid <- function(sce,
     if (!(returns %in% colnames(sce@int_elementMetadata))) {
       sce@int_elementMetadata[, returns] = G_list[, returns]
     }
-    if (!("description" %in% colnames(Biobase::fData(sce)))) {
+    if (!("description" %in% colnames(sce@int_elementMetadata))) {
       sce@int_elementMetadata[, "description"] <- G_list[, "description"]
     }
     rownames(sce) <- G_list[, returns]

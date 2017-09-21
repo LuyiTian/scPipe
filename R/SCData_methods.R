@@ -14,7 +14,7 @@
 }
 
 
-
+# check the object, fix empty slot with default.
 validObject = function(object){
   if (!is(object, "SingleCellExperiment")) {
     stop("object must be an `SingleCellExperiment` object.")
@@ -22,9 +22,6 @@ validObject = function(object){
   
   if(!("scPipe" %in% names(object@int_metadata))){
     object@int_metadata$scPipe$version = packageVersion("scPipe")  # set version information
-  }
-  if(!("QC_cols" %in% names(object@int_metadata$scPipe))){
-    QC_metrics(object) = DataFrame(row.names = colnames(object)) # create a empty QC metrics if not exists
   }
   
   if(min(dim(object)) == 0){
@@ -35,23 +32,8 @@ validObject = function(object){
     stop("The rownames of QC metrics is not consistant with column names of the object.")
   }
   
-  if(is.null(gene_id_type(object))){ # check the gene id type
-    gene_id_type(object) = NA
-  }else if (!is.na(gene_id_type(object))){
-    if(gene_id_type(object) == "NA"){
-        gene_id_type(object) = NA
-    }
-  }
-  
-  if(is.null(organism(object))){ # check the organism
-    organism(object) = NA
-  }else if (!is.na(organism(object))){
-    if(organism(object) == "NA"){
-      organism(object) = NA
-    }
-  }
-  
-  if(is.na(organism(object)) | is.na(gene_id_type(object))){
+
+  if(any(is.null(organism(object)) || is.na(organism(object)))){
     tmp_res = .guess_attr(rownames(object))
     if((!is.na(tmp_res$organism)) & (!is.na(tmp_res$gene_id_type))){
       gene_id_type(object) = tmp_res$gene_id_type
@@ -68,24 +50,23 @@ validObject = function(object){
 
 #' Get or set quality control metrics in a SingleCellExperiment object
 #' @rdname QC_metrics
-#' @param object An \code{SingleCellExperiment} object.
+#' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
 #' @return A DataFrame of quality control metrics.
 #' @author Luyi Tian
+#' 
+#' @importFrom S4Vectors DataFrame SimpleList
 #'
 #' @export
 #'
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' QCMetrics(scd)
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' QC_metrics(sce) = sc_sample_qc
+#' 
+#' head(QC_metrics(sce))
 #'
 QC_metrics.sce <- function(object) {
   if(!("scPipe" %in% names(object@int_metadata))){
@@ -118,7 +99,6 @@ setReplaceMethod("QC_metrics",
                      object@int_metadata$scPipe$QC_cols = colnames(value)
                    }
                    object@int_colData = DataFrame(value)
-                   object = validObject(object) # could add other checks
                    return(object)
                  })
 
@@ -126,8 +106,8 @@ setReplaceMethod("QC_metrics",
 #' @title demultiplex_info
 #' 
 #' @description Get or set cell barcode demultiplx results in a SingleCellExperiment object
-#' @rdname demultiplx_info
-#' @param object An \code{SingleCellExperiment} object.
+#' @rdname demultiplex_info
+#' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
 #' @return A DataFrame of cell barcode demultiplx results.
@@ -138,13 +118,14 @@ setReplaceMethod("QC_metrics",
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' QCMetrics(scd)
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' 
+#' demultiplex_info(sce)
 #'
 demultiplex_info.sce <- function(object) {
   if(!("scPipe" %in% names(object@int_metadata))){
@@ -184,7 +165,7 @@ setReplaceMethod("demultiplex_info",
 
 #' Get or set UMI duplication results in a SingleCellExperiment object
 #' @rdname UMI_dup_info
-#' @param object An \code{SingleCellExperiment} object.
+#' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
 #' @return A DataFrame of UMI duplication results.
@@ -195,13 +176,14 @@ setReplaceMethod("demultiplex_info",
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' QCMetrics(scd)
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' 
+#' head(UMI_dup_info(sce))
 #'
 UMI_dup_info.sce <- function(object) {
   if(!("scPipe" %in% names(object@int_metadata))){
@@ -238,24 +220,26 @@ setReplaceMethod("UMI_dup_info",
 
 
 
-#' Get or set \code{organism} from an SCData object
+#' Get or set \code{organism} from a SingleCellExperiment object
 #' @rdname organism
-#' @param object A \code{SingleCellExperiment} object.
+#' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
+#' @importFrom BiocGenerics organism organism<-
 #' @return organism string
 #' @author Luyi Tian
 #' @export
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' organism(scd)
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' 
+#' organism(sce)
 #'
 organism.sce <- function(object) {
   return(object@int_metadata$Biomart$organism)
@@ -273,19 +257,23 @@ setMethod("organism", signature(object="SingleCellExperiment"),
 #' @rdname organism
 #' @export
 #' @export
-setReplaceMethod("organism",
-           signature="SingleCellExperiment",
-           function(object, value) {
-               object@int_metadata$Biomart$organism = value
-               object = validObject(object) # could add other checks
-               return(object)
-             })
+setReplaceMethod("organism",signature="SingleCellExperiment",
+                 function(object, value) {
+                   if(is.null(value)){
+                     object@int_metadata$Biomart$organism = NA
+                     }else if(value == "NA"){
+                       object@int_metadata$Biomart$organism = NA
+                       }else{
+                         object@int_metadata$Biomart$organism = value
+                         }
+                   return(object)
+                   })
 
 
 
-#' Get or set \code{gene_id_type} from an SCData object
+#' Get or set \code{gene_id_type} from a SingleCellExperiment object
 #' @rdname gene_id_type
-#' @param object An \code{\link{SCData}} object.
+#' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
 #' @return gene id type string
@@ -296,13 +284,14 @@ setReplaceMethod("organism",
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' gene_id_type(scd)
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' 
+#' gene_id_type(sce)
 #'
 gene_id_type.sce <- function(object) {
   return(object@int_metadata$Biomart$gene_id_type)
@@ -319,11 +308,15 @@ setMethod("gene_id_type", signature(object = "SingleCellExperiment"),
 #' @aliases gene_id_type
 #' @rdname gene_id_type
 #' @export
-setReplaceMethod("gene_id_type",
-                 signature="SingleCellExperiment",
+setReplaceMethod("gene_id_type",signature="SingleCellExperiment",
                  function(object, value) {
-                   object@int_metadata$Biomart$gene_id_type = value
-                   object = validObject(object) # could add other checks
+                   if(is.null(value)){
+                     object@int_metadata$Biomart$gene_id_type = NA
+                   }else if(value == "NA"){
+                     object@int_metadata$Biomart$gene_id_type = NA
+                   }else{
+                     object@int_metadata$Biomart$gene_id_type = value
+                   }
                    return(object)
                  })
 

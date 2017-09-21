@@ -1,7 +1,7 @@
 #' scPipe - single cell RNA-seq pipeline
 #'
-#' It demultiplex, it quality control, it plots:
-#'
+#' @description The scPipe will do cell barcode demultiplexing, UMI deduplication and quality control on
+#' fastq data generated from all protocols
 #'
 #' @author Luyi Tian <tian.l@wehi.edu.au>; Shian Su <su.s@wehi.edu.au>
 #' @docType package

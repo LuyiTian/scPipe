@@ -18,14 +18,15 @@ remove outliers for \code{SingleCellExperiment}
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
-QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-sce = newSingleCellExperiment(countData = as.matrix(sc_sample_data),
-               QualityControlInfo = QualityControlInfo,
-               useForExprs = "counts",
-               organism = "mmusculus_gene_ensembl",
-               gene_id_type = "external_gene_name")
-sce = calQC_metrics(scd)
-sce = detect_outlier(scd)
-scd_afterqc = remove_outliers(scd)
+sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+organism(sce) = "mmusculus_gene_ensembl"
+gene_id_type(sce) = "ensembl_gene_id"
+QC_metrics(sce) = sc_sample_qc
+demultiplex_info(sce) = cell_barcode_matching
+UMI_dup_info(sce) = UMI_duplication
+sce = detect_outlier(sce)
+dim(sce)
+sce = remove_outliers(sce)
+dim(sce)
 
 }

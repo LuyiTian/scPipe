@@ -12,15 +12,17 @@ sc_detect_bc(infq, outcsv, surfix = "CELL_", bc_len, max_reads = 1e+06,
 
 \item{outcsv}{output barcode annotation}
 
-\item{surfix}{the surfix of cell name, default to be `CELL_`, the cell name will be CELL_001, CELL_002 accordingly}
+\item{surfix}{the surfix of cell name, default to be `CELL_`. The cell name will be CELL_001, CELL_002 accordingly.}
 
 \item{bc_len}{the length of cell barcode, should be consistent with bl1+bl2 in \code{sc_trim_barcode}}
 
 \item{max_reads}{the maximum of reads processed, default is 1000,000, set to "all" to process all reads (may spend more time)}
 
-\item{min_count}{minimum counts to keep, barcode will be discarded if it has lower count. default is 10. this should be set according to \code{max_reads}}
+\item{min_count}{minimum counts to keep, barcode will be discarded if it has lower count.
+Default value is 10. This should be set according to \code{max_reads}.}
 
-\item{max_mismatch}{the maximum mismatch allowed, barcodes within this number will be considered as sequence error and merged, default is 1.}
+\item{max_mismatch}{the maximum mismatch allowed. Barcodes within this number will be 
+considered as sequence error and merged, default to be 1.}
 }
 \value{
 no return

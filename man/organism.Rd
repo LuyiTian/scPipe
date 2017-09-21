@@ -7,7 +7,7 @@
 \alias{organism}
 \alias{organism<-,SingleCellExperiment-method}
 \alias{organism}
-\title{Get or set \code{organism} from an SCData object}
+\title{Get or set \code{organism} from a SingleCellExperiment object}
 \usage{
 organism.sce(object)
 
@@ -16,7 +16,7 @@ organism.sce(object)
 \S4method{organism}{SingleCellExperiment}(object) <- value
 }
 \arguments{
-\item{object}{A \code{SingleCellExperiment} object.}
+\item{object}{A \code{\link{SingleCellExperiment}} object.}
 
 \item{value}{Value to be assigned to corresponding object.}
 }
@@ -24,18 +24,19 @@ organism.sce(object)
 organism string
 }
 \description{
-Get or set \code{organism} from an SCData object
+Get or set \code{organism} from a SingleCellExperiment object
 }
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
-QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-scd = newSCData(countData = as.matrix(sc_sample_data),
-               QualityControlInfo = QualityControlInfo,
-               useForExprs = "counts",
-               organism = "mmusculus_gene_ensembl",
-               gene_id_type = "external_gene_name")
-organism(scd)
+sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+organism(sce) = "mmusculus_gene_ensembl"
+gene_id_type(sce) = "ensembl_gene_id"
+QC_metrics(sce) = sc_sample_qc
+demultiplex_info(sce) = cell_barcode_matching
+UMI_dup_info(sce) = UMI_duplication
+
+organism(sce)
 
 }
 \author{

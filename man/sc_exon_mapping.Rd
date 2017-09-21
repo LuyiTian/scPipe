@@ -8,11 +8,11 @@ sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "YC",
   mb = "YM", bc_len = 8, UMI_len = 6, stnd = TRUE, fix_chr = FALSE)
 }
 \arguments{
-\item{inbam}{input bam file. this is the output of alignment program}
+\item{inbam}{input bam file. This is the output of alignment program.}
 
 \item{outbam}{output bam file with gene and barcode tag}
 
-\item{annofn}{genome annotation, gff file. can have multiple files}
+\item{annofn}{genome annotation gff file. It can have multiple files names in a vector.}
 
 \item{am}{mapping status tag (default: YE)}
 
@@ -34,9 +34,10 @@ sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "YC",
 no return
 }
 \description{
-take the alinged read and map them to exons. the result will be written into optional fields
-in bam file with different tags. for more information regarding to bam file format:
-http://samtools.github.io/hts-specs/SAMv1.pdf
+This function will take the alinged read and map them to exons. 
+The result will be written into optional fields in bam file with different tags. 
+following this link for more information regarding to bam file format:
+http://samtools.github.io/hts-specs
 }
 \examples{
 data_dir="celseq2_demo"

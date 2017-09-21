@@ -19,13 +19,13 @@ sc_gene_counting(outdir, bc_anno, UMI_cor = 1, gene_fl = FALSE)
 no return
 }
 \description{
-merge UMI and generate gene counting matrix
+This function will merge UMI and generate gene counting matrix
 }
 \examples{
 data_dir="celseq2_demo"
 barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
 \dontrun{
-# for the complete workflow, refer to the vignettes
+# refer to the vignettes for the complete workflow
 ...
 sc_gene_counting(data_dir, barcode_annotation_fn)
 ...

@@ -2,30 +2,46 @@
 % Please edit documentation in R/qc.R
 \name{calculate_QC_metrics}
 \alias{calculate_QC_metrics}
-\title{get QC metrics using gene counting matrix}
+\title{Get QC metrics using gene counting matrix}
 \usage{
 calculate_QC_metrics(sce)
 }
 \arguments{
-\item{sce}{an \code{SingleCellExperiment} object containing count}
+\item{sce}{a \code{SingleCellExperiment} object containing count}
 }
 \value{
 an \code{SingleCellExperiment} with updated QC metrics
 }
 \description{
-get QC metrics using gene counting matrix
+Get QC metrics using gene counting matrix
 }
 \details{
-get QC metrics using gene counting matrix
-the QC statistics added are
-`number_of_genes`: number of genes detected
-`total_count_per_cell`: sum of read number after UMI dedup
-`non_mt_percent`: 1- percent of mitochondrial gene counts
-mitochondrial genes are retrived by GO term GO:0005739
-`non_ERCC_percent`: ratio of exon counts to ERCC counts
-`non_ribo_percent`: 1- percent of ribosomal gene counts
+get QC metrics using gene counting matrix.
+the QC statistics added are \itemize{
+ \item{number_of_genes} number of genes detected.
+ \item{total_count_per_cell} sum of read number after UMI deduplication.
+ \item{non_mt_percent} 1 - percentage of mitochondrial gene counts. 
+ Mitochondrial genes are retrived by GO term GO:0005739
+ \item{non_ERCC_percent} ratio of exon counts to ERCC counts
+ \item{non_ribo_percent} 1 - percentage of ribosomal gene counts
 ribosomal genes are retrived by GO term GO:0005840
 }
+}
 \examples{
+data("sc_sample_data")
+data("sc_sample_qc")
+sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+organism(sce) = "mmusculus_gene_ensembl"
+gene_id_type(sce) = "ensembl_gene_id"
+QC_metrics(sce) = sc_sample_qc
+demultiplex_info(sce) = cell_barcode_matching
+UMI_dup_info(sce) = UMI_duplication
+
+# The sample qc data already run through function `calculate_QC_metrics`.
+# So we delete these columns and run `calculate_QC_metrics` to get them again:
+colnames(colnames(QC_metrics(sce)))
+QC_metrics(sce) = QC_metrics(sce)[,c("unaligned","aligned_unmapped","mapped_to_exon")]
+sce = calculate_QC_metrics(sce)
+colnames(QC_metrics(sce))
 
 }

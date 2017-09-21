@@ -8,7 +8,7 @@ sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
   bc = "YC", mb = "YM", mito = "MT", has_UMI = TRUE)
 }
 \arguments{
-\item{inbam}{input bam file. this should be the output of \code{sc_exon_mapping}}
+\item{inbam}{input bam file. This should be the output of \code{sc_exon_mapping}}
 
 \item{outdir}{output folder}
 
@@ -24,7 +24,8 @@ sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
 
 \item{mb}{molecular barcode tag (default: YM)}
 
-\item{mito}{mitochondrial chromosome name, should be consistant with the chromosome name in bam file}
+\item{mito}{mitochondrial chromosome name. 
+This should be consistant with the chromosome names in the bam file.}
 
 \item{has_UMI}{whether the protocol contains UMI (default: TRUE)}
 }
@@ -32,7 +33,7 @@ sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
 no return
 }
 \description{
-separate bam file by cell, output to outdir/count/[cell_id].csv.
+This function will process bam file by cell barcode, output to outdir/count/[cell_id].csv.
 the output contains information for all reads that can be mapped to exons.
 including the gene id, UMI of that read and the distance to transcript end position.
 }
@@ -40,7 +41,7 @@ including the gene id, UMI of that read and the distance to transcript end posit
 data_dir="celseq2_demo"
 barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
 \dontrun{
-# for the complete workflow, refer to the vignettes
+# refer to the vignettes for the complete workflow
 ...
 sc_demultiplex(file.path(data_dir, "out.map.bam"), data_dir, barcode_annotation_fn,has_UMI=FALSE)
 ...
