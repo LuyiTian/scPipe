@@ -1,147 +1,63 @@
-#' @name DimReducedExpr
+
+#' @name QC_metrics
+#' @aliases QC_metrics
 #' @export
 #' @docType methods
-#' @rdname DimReducedExpr
-setGeneric("DimReducedExpr", function(object) {
-  standardGeneric("DimReducedExpr")
-})
+#' @return a dataframe of quality control matrics
+#' @rdname QC_metrics
+setGeneric("QC_metrics", function(object) standardGeneric("QC_metrics"))
 
-#' @name DimReducedExpr<-
+#' @name QC_metrics
+#' @aliases QC_metrics<-
 #' @export
 #' @docType methods
-#' @rdname DimReducedExpr
-setGeneric("DimReducedExpr<-", function(object, value) {
-  standardGeneric("DimReducedExpr<-")
-})
+#' @rdname QC_metrics
+setGeneric("QC_metrics<-", function(object, value) standardGeneric("QC_metrics<-"))
 
-#' @name QCMetrics
+
+#' @name demultiplex_info
+#' @aliases demultiplex_info
 #' @export
 #' @docType methods
-#' @rdname QCMetrics
-setGeneric("QCMetrics", function(object) {
-  standardGeneric("QCMetrics")
-})
+#' @return a dataframe of cell barcode demultiplex information
+#' @rdname demultiplex_info
+setGeneric("demultiplex_info", function(object) standardGeneric("demultiplex_info"))
 
-#' @name QCMetrics<-
+#' @name demultiplex_info
+#' @aliases demultiplex_info<-
 #' @export
 #' @docType methods
-#' @rdname QCMetrics
-setGeneric("QCMetrics<-", function(object, value) {
-  standardGeneric("QCMetrics<-")
-})
+#' @rdname demultiplex_info
+setGeneric("demultiplex_info<-", function(object, value) standardGeneric("demultiplex_info<-"))
 
 
-#' @name organism
-#' @aliases organism
+
+#' @name UMI_dup_info
+#' @aliases UMI_dup_info
 #' @export
 #' @docType methods
-#' @rdname organism
-setGeneric("organism", function(object) {
-    standardGeneric("organism")
-  })
+#' @return a dataframe of cell UMI duplication information
+#' @rdname UMI_dup_info
+setGeneric("UMI_dup_info", function(object) standardGeneric("UMI_dup_info"))
 
-#' @name organism<-
-#' @aliases organism
+#' @name UMI_dup_info
+#' @aliases UMI_dup_info<-
 #' @export
 #' @docType methods
-#' @rdname organism
-setGeneric("organism<-", function(object, value) {
-    standardGeneric("organism<-")
-  })
-
-
-#' @name FACSData
-#' @aliases FACSData
-#' @export
-#' @docType methods
-#' @rdname FACSData
-setGeneric("FACSData", function(object) {
-  standardGeneric("FACSData")
-})
-
-#' @name FACSData<-
-#' @aliases FACSData
-#' @export
-#' @docType methods
-#' @rdname FACSData
-setGeneric("FACSData<-", function(object, value) {
-  standardGeneric("FACSData<-")
-})
-
-#' @name counts
-#' @aliases counts
-#' @export
-#' @docType methods
-#' @return a matrix of count data
-#' @rdname counts
-setGeneric("counts", function(object) {standardGeneric("counts")})
-
-#' @name counts<-
-#' @aliases counts
-#' @export
-#' @docType methods
-#' @rdname counts
-setGeneric("counts<-", function(object, value) {standardGeneric("counts<-")})
+#' @rdname UMI_dup_info
+setGeneric("UMI_dup_info<-", function(object, value) standardGeneric("UMI_dup_info<-"))
 
 #' @name gene_id_type
 #' @aliases gene_id_type
 #' @export
 #' @docType methods
+#' @return the gene id type used by Biomart
 #' @rdname gene_id_type
-setGeneric("gene_id_type", function(object) {
-  standardGeneric("gene_id_type")
-})
+setGeneric("gene_id_type", function(object) standardGeneric("gene_id_type"))
 
-#' @name gene_id_type<-
-#' @aliases gene_id_type
+#' @name gene_id_type
+#' @aliases gene_id_type<-
 #' @export
 #' @docType methods
 #' @rdname gene_id_type
-setGeneric("gene_id_type<-", function(object, value) {
-  standardGeneric("gene_id_type<-")
-})
-
-#' @name tpm
-#' @aliases tpm
-#' @export
-#' @docType methods
-#' @return a matrix of transcripts-per-million data
-#' @rdname tpm
-setGeneric("tpm", function(object) {standardGeneric("tpm")})
-
-#' @name tpm<-
-#' @aliases tpm
-#' @export
-#' @docType methods
-#' @rdname tpm
-setGeneric("tpm<-", function(object, value) {standardGeneric("tpm<-")})
-
-#' @name cpm
-#' @aliases cpm
-#' @export
-#' @docType methods
-#' @return a matrix of counts-per-million values
-#' @rdname cpm
-setGeneric("cpm", function(object) {standardGeneric("cpm")})
-
-#' @name cpm<-
-#' @aliases cpm
-#' @export
-#' @docType methods
-#' @rdname cpm
-setGeneric("cpm<-", function(object, value) {standardGeneric("cpm<-")})
-
-#' @name fpkm
-#' @aliases fpkm
-#' @export
-#' @docType methods
-#' @return a matrix of FPKM values
-#' @rdname fpkm
-setGeneric("fpkm", function(object) {standardGeneric("fpkm")})
-
-#' @name fpkm<-
-#' @aliases fpkm
-#' @export
-#' @docType methods
-#' @rdname fpkm
-setGeneric("fpkm<-", function(object, value) {standardGeneric("fpkm<-")})
+setGeneric("gene_id_type<-", function(object, value) standardGeneric("gene_id_type<-"))

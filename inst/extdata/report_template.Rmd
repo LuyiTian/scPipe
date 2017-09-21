@@ -104,43 +104,38 @@ The organism is `r params$species`, and gene id type is `r params$gene_id_type`.
 ## overall cell barcode matching
 
 ```{r, warning=FALSE, message=FALSE}
-overall_stat = read_csv(file.path(params$outdir, "stat", "overall_stat.csv"))
+if(grepl("SPECIES", params$species) | grepl("GENE_ID_TYPE", params$gene_id_type)){
+  sce = create_sce_by_dir(params$outdir, organism=params$species, gene_id_type=params$gene_id_type)
+}else{
+  sce = create_sce_by_dir(params$outdir)
+}
+overall_stat = demultiplex_info(sce)
 datatable(overall_stat,width=800)
 ```
 
 plot barcode matching in pie chart:
 ```{r}
-colors <- c('rgb(211,94,96)', 'rgb(128,133,133)', 'rgb(144,103,167)', 'rgb(171,104,87)', 'rgb(114,147,203)', 'rgb(114,114,203)')
-pp = plot_ly(overall_stat, labels = ~status, values = ~count, type = 'pie',marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1))) %>%
-  layout(title = 'barcode matching results',showlegend = TRUE,
-         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-pp
+plot_demultiplex(sce)
 ```
 
 ## reads alignment statistics per cell
 
 ```{r}
-if(grepl("SPECIES", params$species) | grepl("GENE_ID_TYPE", params$gene_id_type)){
-  scd = create_scd_by_dir(params$outdir, organism=params$species, gene_id_type=params$gene_id_type)
-}else{
-  scd = create_scd_by_dir(params$outdir)
-}
 
-ggplotly(plot_mapping(scd,dataname=params$samplename,percentage = FALSE))
+ggplotly(plot_mapping(sce,dataname=params$samplename,percentage = FALSE))
 
 ```
 
 ```{r}
-ggplotly(plot_mapping(scd,dataname=params$samplename,percentage = TRUE))
+ggplotly(plot_mapping(sce,dataname=params$samplename,percentage = TRUE))
 ```
 
 ## summary and distributions of some basic statistics
 
 ```{r}
-if (any(colSums(counts(scd)) == 0)){
-  zero_cells = sum(colSums(counts(scd)) == 0)
-  scd = scd[,colSums(counts(scd)) > 0]
+if (any(colSums(counts(sce)) == 0)){
+  zero_cells = sum(colSums(counts(sce)) == 0)
+  sce = sce[,colSums(counts(sce)) > 0]
 }else{
   zero_cells = 0
 }
@@ -150,21 +145,21 @@ if (any(colSums(counts(scd)) == 0)){
 
 datatable of all QC metrics:
 ```{r}
-scd = calQCMetrics(scd)
-if(!all(colSums(pData(QCMetrics(scd)))>0)){
-  QCMetrics(scd) = pData(QCMetrics(scd))[,colSums(pData(QCMetrics(scd)))>0]
+sce = calculate_QC_metrics(sce)
+if(!all(colSums(QC_metrics(sce))>0)){
+  QC_metrics(sce) = QC_metrics(sce)[,colSums(QC_metrics(sce))>0]
 }
-datatable(pData(QCMetrics(scd)),width=800,options=list(scrollX= TRUE))
+datatable(QC_metrics(sce),width=800,options=list(scrollX= TRUE))
 ```
 
 summary of all QC metrics:
 ```{r}
-datatable(do.call(cbind, lapply(pData(QCMetrics(scd)), summary)),width=800,options=list(scrollX= TRUE))
+datatable(do.call(cbind, lapply(QC_metrics(sce), summary)),width=800,options=list(scrollX= TRUE))
 ```
 
 Number of reads mapped to exon before UMI deduplication VS number of genes detected:
 ```{r}
-ggplotly(ggplot(pData(QCMetrics(scd)), aes(x=mapped_to_exon,y=number_of_genes))+geom_point(alpha=0.8))
+ggplotly(ggplot(QC_metrics(sce), aes(x=mapped_to_exon,y=number_of_genes))+geom_point(alpha=0.8))
 ```
 
 
@@ -174,17 +169,17 @@ ggplotly(ggplot(pData(QCMetrics(scd)), aes(x=mapped_to_exon,y=number_of_genes))+
 
 ## detect outlier cells
 
-A robustified Mahalanobis Distance is calculated for each cell then outliers is detected based on the distance. However, due to the complex nature of single cell transcriptome and protocol used, such method can only be used to assist the quality control process. Visual inspection of the quality control metrics is still required.
+A robustified Mahalanobis Distance is calculated for each cell then outliers is detected based on the distance. However, due to the complex nature of single cell transcriptome and protocol used, such method can only be used to assist the quality control process. Visual inspection of the quality control metrics is still required. By default we use `comp =2` and the algorithm will try to separate the quality control metrics into two gaussian mixtures.
 
 the number of outliers:
 ```{r}
-scd_qc = detect_outlier(scd,type="low",comp = 1)
-table(pData(QCMetrics(scd_qc))$outliers)
+sce_qc = detect_outlier(sce,type="low",comp = 2)
+table(QC_metrics(sce_qc)$outliers)
 ```
 
 pairwise plot for QC metrics, colored by outliers:
 ```{r, warning=FALSE, message=FALSE}
-plotQC_pair(scd_qc)
+plotQC_pair(sce_qc)
 ```
 
 ## plot highest expressed genes
@@ -192,10 +187,10 @@ plotQC_pair(scd_qc)
 remove low quality cells and plot highest expressed genes.
 
 ```{r}
-scd_qc = remove_outliers(scd_qc)
-scd_qc = convert_geneid(scd_qc, returns="external_gene_name")
+sce_qc = remove_outliers(sce_qc)
+sce_qc = convert_geneid(sce_qc, returns="external_gene_name")
 sce <- newSCESet(countData=counts(scd_qc))
-sce <- calculateQCMetrics(sce)
+sce <- calculateQC_metrics(sce)
 plotQC(sce, type = "highest-expression", n=20)
 ```
 

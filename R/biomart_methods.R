@@ -45,63 +45,64 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 }
 
 
-#' convert the gene ids of a SCData object
+#' convert the gene ids of a SingleCellExperiment object
 #'
-#' @param scd an SCData object
+#' @param sce a SingleCellExperiment object
 #' @param returns the gene id which is set as return. default to be `external_gene_name`
 #' A possible list of attributes can be retrieved using the
 #' function \code{listAttributes} from \code{biomaRt} package. the commonly used
 #' id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.
 #' @param all logic. for genes that cannot covert to new gene id, keep them with the old
 #' id or delete them. the default is keep them.
-#' @details convert the gene id of all datas in SCData object
+#' @details convert the gene id of all datas in the SingleCellExperiment object
 #'
-#' @return scd with converted id
+#' @return sce with converted id
 #'
 #' @importFrom biomaRt useDataset getBM
 #' @importFrom utils head
-#' @importFrom Biobase ExpressionSet fData<-
+#' @importFrom methods is
 #'
 #' @export
 #' @examples
-#' # the gene id in example data are `external_gene_name`, the following example will switch it to `entrezgene`.
+#' # the gene id in example data are `external_gene_name`
+#' # the following example will convert it to `external_gene_name`.
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' scd = convert_geneid(scd, return="entrezgene")
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' head(rownames(sce))
+#' sce = convert_geneid(sce, return="external_gene_name")
+#' head(rownames(sce))
 #'
-convert_geneid <- function(scd,
+convert_geneid <- function(sce,
                            returns="external_gene_name",
                            all=TRUE) {
-  if (!is(scd, "SCData")) {
-    stop("scd must be an SCData object.")
-  }
-  if (returns == gene_id_type(scd)) {
-    stop("SCData already in this id type. (scd@gene_id_type == returns)")
+  sce = validObject(sce)
+  if (returns == gene_id_type(sce)) {
+    stop("SingleCellExperiment already has genes in such id type. (gene_id_type(sce) == returns)")
   }
 
-  organism <- organism.SCData(scd)
+  organism = organism(sce)
   if (organism == "NA") {
     print("organism not provided.")
-    return(scd)
+    return(sce)
   }
   mart = tryCatch({mart <- useDataset(organism, useMart("ensembl")) },
            error = function(e){
              cat(paste0("cannot connect to the ensembl database. ERROR:\n", e ))
-    return(scd)
+    return(sce)
   })
   if(!is(mart,"Mart")){
-    return(scd)
+    return(sce)
   }
   
-  G_list <- getBM(filters=gene_id_type(scd), attributes=c(gene_id_type(scd), returns, "description"), values=rownames(scd), mart=mart)
+  G_list <- getBM(filters=gene_id_type(sce), attributes=c(gene_id_type(sce), returns, "description"), values=rownames(sce), mart=mart)
 
-  G_list <- G_list[match(rownames(scd), G_list[, gene_id_type(scd)]), ]
+  G_list <- G_list[match(rownames(sce), G_list[, gene_id_type(sce)]), ]
   na_num <- sum(is.na(G_list[, returns]))
   dup_ids <- duplicated(G_list[, returns]) | duplicated(G_list[, returns], fromLast=TRUE)
   dup_num <- (sum(dup_ids)-na_num)/2
@@ -113,32 +114,32 @@ convert_geneid <- function(scd,
   G_list[, returns][dup_ids] <- NA
   if (all | (na_num+dup_num==0)) {
     # replace NA with old id
-    G_list[, returns][is.na(G_list[, returns])] <- rownames(scd)[is.na(G_list[, returns])]
-    if (!(gene_id_type(scd) %in% colnames(Biobase::fData(scd)))) {
-      Biobase::fData(scd)[, gene_id_type(scd)] <- rownames(scd)
+    G_list[, returns][is.na(G_list[, returns])] = rownames(sce)[is.na(G_list[, returns])]
+    if (!(gene_id_type(sce) %in% colnames((sce@int_elementMetadata)))) {
+      sce@int_elementMetadata[, gene_id_type(sce)] = rownames(sce)
     }
-    if (!(returns %in% colnames(Biobase::fData(scd)))) {
-      Biobase::fData(scd)[, returns] <- G_list[, returns]
+    if (!(returns %in% colnames(sce@int_elementMetadata))) {
+      sce@int_elementMetadata[, returns] = G_list[, returns]
     }
-    if (!("description" %in% colnames(Biobase::fData(scd)))) {
-      Biobase::fData(scd)[, "description"] <- G_list[, "description"]
+    if (!("description" %in% colnames(sce@int_elementMetadata))) {
+      sce@int_elementMetadata[, "description"] <- G_list[, "description"]
     }
-    rownames(scd) <- G_list[, returns]
+    rownames(sce) <- G_list[, returns]
   }
   else {
     G_list <- G_list[!is.na(G_list[, returns]), ]
-    scd <- scd[!is.na(G_list[, returns]), ]
-    if (!(gene_id_type(scd) %in% colnames(Biobase::fData(scd)))) {
-      Biobase::fData(scd)[, gene_id_type(scd)] <- rownames(scd)
+    sce <- sce[!is.na(G_list[, returns]), ]
+    if (!(gene_id_type(sce) %in% colnames(sce@int_elementMetadata))) {
+      sce@int_elementMetadata[, gene_id_type(sce)] <- rownames(sce)
     }
-    if (!(returns %in% colnames(Biobase::fData(scd)))) {
-      Biobase::fData(scd)[, returns] <- G_list[, returns]
+    if (!(returns %in% colnames(sce@int_elementMetadata))) {
+      sce@int_elementMetadata[, returns] <- G_list[, returns]
     }
-    if (!("description" %in% colnames(Biobase::fData(scd)))) {
-      Biobase::fData(scd)[, "description"] <- G_list[, "description"]
+    if (!("description" %in% colnames(sce@int_elementMetadata))) {
+      sce@int_elementMetadata[, "description"] <- G_list[, "description"]
     }
-    rownames(scd) <- G_list[, returns]
+    rownames(sce) <- G_list[, returns]
   }
-  gene_id_type(scd) <- returns
-  return(scd)
+  gene_id_type(sce) <- returns
+  return(sce)
 }

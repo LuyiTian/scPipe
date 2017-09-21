@@ -3,46 +3,49 @@
 \docType{methods}
 \name{gene_id_type}
 \alias{gene_id_type}
+\alias{gene_id_type}
 \alias{gene_id_type<-}
+\alias{gene_id_type.sce}
+\alias{gene_id_type,SingleCellExperiment-method}
 \alias{gene_id_type}
-\alias{gene_id_type.SCData}
-\alias{gene_id_type,SCData-method}
+\alias{gene_id_type<-,SingleCellExperiment-method}
 \alias{gene_id_type}
-\alias{gene_id_type<-,SCData-method}
-\alias{gene_id_type}
-\title{Get or set \code{gene_id_type} from an SCData object}
+\title{Get or set \code{gene_id_type} from a SingleCellExperiment object}
 \usage{
 gene_id_type(object)
 
 gene_id_type(object) <- value
 
-gene_id_type.SCData(object)
+gene_id_type.sce(object)
 
-\S4method{gene_id_type}{SCData}(object)
+\S4method{gene_id_type}{SingleCellExperiment}(object)
 
-\S4method{gene_id_type}{SCData}(object) <- value
+\S4method{gene_id_type}{SingleCellExperiment}(object) <- value
 }
 \arguments{
-\item{object}{An \code{\link{SCData}} object.}
+\item{object}{A \code{\link{SingleCellExperiment}} object.}
 
 \item{value}{Value to be assigned to corresponding object.}
 }
 \value{
+the gene id type used by Biomart
+
 gene id type string
 }
 \description{
-Get or set \code{gene_id_type} from an SCData object
+Get or set \code{gene_id_type} from a SingleCellExperiment object
 }
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
-QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-scd = newSCData(countData = as.matrix(sc_sample_data),
-               QualityControlInfo = QualityControlInfo,
-               useForExprs = "counts",
-               organism = "mmusculus_gene_ensembl",
-               gene_id_type = "external_gene_name")
-gene_id_type(scd)
+sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+organism(sce) = "mmusculus_gene_ensembl"
+gene_id_type(sce) = "ensembl_gene_id"
+QC_metrics(sce) = sc_sample_qc
+demultiplex_info(sce) = cell_barcode_matching
+UMI_dup_info(sce) = UMI_duplication
+
+gene_id_type(sce)
 
 }
 \author{

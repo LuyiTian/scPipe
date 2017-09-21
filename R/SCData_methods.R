@@ -1,32 +1,7 @@
-# merge matrix for multiple SCData object
-.merge_mat = function(scd_list, func) {
-  if (all(unlist(lapply(scd_list, function(x) {!is.null(func(x))})))) {
-    all_exprs = lapply(scd_list, function(x) {func(x)})
-    all_gene_id = rownames(all_exprs[[1]])
-    all_cell_id = colnames(all_exprs[[1]])
-    for (i in 2:length(all_exprs)) {
-      all_gene_id = union(all_gene_id, rownames(all_exprs[[i]]))
-      all_cell_id = c(all_cell_id, colnames(all_exprs[[i]]))
-    }
-    merged_exprs = matrix(0,
-                          nrow = length(all_gene_id),
-                          ncol = length(all_cell_id),
-                          dimnames = list(all_gene_id, all_cell_id))
-    for (i in 1:length(all_exprs)) {
-      merged_exprs[rownames(all_exprs[[i]]), colnames(all_exprs[[i]])] = all_exprs[[i]]
-    }
-  }
-  else {
-    stop("all data should contain expression matrix.")
-  }
-  return(merged_exprs)
-}
-
-
 # guess the organism and species from input data
-.guess_attr = function(expr_mat) {
-  hsp_ensembl = length(grep("^ENSG", rownames(expr_mat)))
-  mm_ensembl = length(grep("^ENSMUSG", rownames(expr_mat)))
+.guess_attr = function(row_names) {
+  hsp_ensembl = length(grep("^ENSG",row_names))
+  mm_ensembl = length(grep("^ENSMUSG", row_names))
   if ((hsp_ensembl>0) & (hsp_ensembl>mm_ensembl)) {
     return(list(organism="hsapiens_gene_ensembl", gene_id_type="ensembl_gene_id"))
   }
@@ -39,476 +14,103 @@
 }
 
 
-#' Create a new SCData object.
-#'
-#' SCData extends Bioconductor's ExpressionSet class, and the same basic interface is
-#' supported. \code{newSCData()} expects a matrix of expression values as its first
-#' argument, with rows as features (usually genes) and columns as cells.
-#' Per-feature and per-cell metadata can be supplied with the featureData and
-#' phenoData arguments, respectively. Use of these optional arguments is
-#' strongly encouraged. The SCData also includes a slot 'counts' to store an
-#' object containing raw count data.
-#'
-#'@param exprsData matrix of expression values
-#'@param countData matrix of count values
-#'@param tpmData matrix of transcript per million values
-#'@param fpkmData matrix of fragments per kilobase of transcript per million
-#'  values
-#'@param cpmData matrix of counts per million values
-#'@param phenoData data.frame containing attributes of individual cells
-#'@param FACSData contains the index sorted FACSData, rows are cell and columns
-#'  are each cell surface markers
-#'@param featureData data.frame containing attributes of features (e.g. genes)
-#'@param experimentData MIAME class object containing metadata data and details
-#'  about the experiment and dataset
-#'@param logged Scalar of class \code{"logical"}, indicating whether or not the
-#'  expression data in the `exprs` slot have been log2-transformed
-#'@param gene_id_type the type of gene id. could be `ensembl_gene_id` or
-#'  `external_gene_name` or other type which can be assessed by
-#'  \code{listAttributes} from \code{biomaRt} package. can be gussed from the
-#'  annotation if not provided
-#'@param organism the name of organism given in the \code{biomaRt} package. (i.e
-#'  `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`) if it is not provided
-#'  the function will guess the organism name from the gene id.
-#'@param logExprsOffset Scalar of class \code{"numeric"}, providing an offset
-#'  applied to expression data in the `exprs` slot when undergoing
-#'  log2-transformation to avoid trying to take logs of zero
-#'@param reducedExprDimension Matrix of class \code{"numeric"}, containing
-#'  reduced-dimension coordinates for gene expression of single cell, where each
-#'  row represent a cell and each column represent a dimension
-#'@param reducedFACSDimension Matrix of class \code{"numeric"}, containing
-#'  reduced-dimension coordinates for surface marker phenotypes of single cell
-#'@param onesense Matrix of class \code{"numeric"}, containing onesense tSNE
-#'  coordinates for both phenotype and transcriptome
-#'@param QualityControlInfo Data frame of class \code{"AnnotatedDataFrame"} that
-#'  can contain QC metrics used for in QC
-#'@param useForExprs Character string (one of 'exprs','tpm','counts' or 'fpkm')
-#'  indicating which expression representation both internal methods and
-#'  external packages should use. Defaults to 'exprs'
-#'
-#' @return a new SCData object
-#' @author Luyi Tian
-#'
-#' @details for more details see \code{SCData}
-#' @importFrom Biobase annotatedDataFrameFrom
-#' @importFrom Biobase AnnotatedDataFrame
-#' @importFrom Biobase assayDataNew
-#' @importFrom Biobase assayDataElement
-#' @import methods
-#' @export
-#' @examples
-#' #TODO
-#'
-newSCData <- function(exprsData = NULL,
-                      countData = NULL,
-                      tpmData = NULL,
-                      fpkmData = NULL,
-                      cpmData = NULL,
-                      phenoData = NULL,
-                      FACSData = NULL,
-                      featureData = NULL,
-                      experimentData = NULL,
-                      logged = FALSE,
-                      gene_id_type = NULL,
-                      organism = NULL,
-                      logExprsOffset = 1,
-                      reducedExprDimension = NULL,
-                      reducedFACSDimension = NULL,
-                      onesense = NULL,
-                      QualityControlInfo = NULL,
-                      useForExprs = c("exprs", "tpm", "cpm", "counts", "fpkm")) {
+# check the object, fix empty slot with default.
+validObject = function(object){
+  if (!is(object, "SingleCellExperiment")) {
+    stop("object must be an `SingleCellExperiment` object.")
+  }
+  
+  if(!("scPipe" %in% names(object@int_metadata))){
+    object@int_metadata$scPipe$version = packageVersion("scPipe")  # set version information
+  }
+  
+  if(min(dim(object)) == 0){
+    stop("The dimension of sce should be larger than zero.")
+  }else if(is.null(rownames(object)) | is.null(colnames(object))){
+    stop("rowname/colname does not exists for sce.")
+  }else if(!all(rownames(QC_metrics(object)) == colnames(object))){
+    stop("The rownames of QC metrics is not consistant with column names of the object.")
+  }
+  
 
-  # Check that at least we have the expression data we wanted
-  if (missing(useForExprs)) {
-    stop("Need to specify which expresssion matrix to use by `useForExprs`.")
+  if(any(is.null(organism(object)) || is.na(organism(object)))){
+    tmp_res = .guess_attr(rownames(object))
+    if((!is.na(tmp_res$organism)) & (!is.na(tmp_res$gene_id_type))){
+      gene_id_type(object) = tmp_res$gene_id_type
+      organism(object) = tmp_res$organism
+      print(paste("organism/gene_id_type not provided. make a guess:", 
+                  tmp_res$organism,
+                  "/",
+                  tmp_res$gene_id_type))
+    } 
   }
-  exprs_mat <- switch(useForExprs,
-                      exprs = exprsData,
-                      tpm = tpmData,
-                      cpm = cpmData,
-                      fpkm = fpkmData,
-                      counts = countData)
-  if (is.null(exprs_mat)) {
-    stop("the data related to `useForExprs` is null. \n(i.e if you choose `count` in `useForExprs` then you should set countData)")
-  }
-
-  # Generate valid phenoData, FACSData, featureData and QualityControlInfo if not provided
-  if (is.null(phenoData)) {
-    phenoData <- annotatedDataFrameFrom(exprs_mat, byrow = FALSE)
-  }
-  if (is.null(FACSData)) {
-    FACSData <- annotatedDataFrameFrom(exprs_mat, byrow = FALSE)
-  }
-  if (is.null(featureData)) {
-    featureData <- annotatedDataFrameFrom(exprs_mat, byrow = TRUE)
-  }
-  if (is.null(QualityControlInfo)) {
-    QualityControlInfo <- annotatedDataFrameFrom(exprs_mat, byrow = FALSE)
-  }
-
-  # set ERCC spikein information
-  spikein = grepl("^ERCC", rownames(exprs_mat))
-  if (any(spikein)) {
-    featureData$isSpike = spikein
-  }
-  else {
-    featureData$isSpike = spikein
-    print("cannot detect ERCC Spikeins from data.")
-  }
-
-  # Generate valid reducedExprDimension, onesense and reducedFACSDimension if not provided
-  if (is.null(reducedExprDimension)) {
-    reducedExprDimension = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
-    rownames(reducedExprDimension) = colnames(exprs_mat)
-  }
-  if (is.null(reducedFACSDimension)) {
-    reducedFACSDimension = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
-    rownames(reducedFACSDimension) = colnames(exprs_mat)
-  }
-  if (is.null(onesense)) {
-    onesense = matrix(0, nrow = ncol(exprs_mat), ncol = 0)
-    rownames(onesense) = colnames(exprs_mat)
-  }
-
-  # Check experimentData
-  expData_null = new("MIAME",
-                      name = "<your name here>",
-                      lab = "<your lab here>",
-                      contact = "<email address>",
-                      title = "<title for this dataset>",
-                      abstract = "<abstract for this dataset>",
-                      url = "<your website here>",
-                      other = list(
-                        notes = "This dataset created from ...",
-                        coauthors = c("")
-                      ))
-  if ( !is.null( experimentData ) ) {
-    if ( is(experimentData, "MIAME") )
-      expData = experimentData
-    else {
-      expData = expData_null
-      warning("experimentData supplied is not an 'MIAME' object. Thus, experimentData is being set to an empty MIAME object.\n Please supply a valid 'MIAME' class object containing experiment data to experimentData(object).")
-    }
-  } else {
-    expData = expData_null
-  }
-
-  # Generate new SCData object
-  assaydata = assayDataNew("lockedEnvironment", exprs = exprs_mat)
-  scd = new("SCData",
-            assayData = assaydata,
-            phenoData = phenoData,
-            featureData = featureData,
-            FACSData = FACSData,
-            experimentData = expData,
-            logExprsOffset = logExprsOffset,
-            logged = logged,
-            reducedExprDimension = reducedExprDimension,
-            reducedFACSDimension = reducedFACSDimension,
-            onesense = onesense,
-            QualityControlInfo = QualityControlInfo,
-            useForExprs = useForExprs)
-
-  # check organism names or gene_id_type is set correctly
-  tmp_res = .guess_attr(exprs_mat)
-  if (is.null(organism)) {
-    if (is.na(tmp_res$organism)) {
-      warnings("organism should provided \n List of possible names can be \nretrieved using the function `listDatasets`from `biomaRt` package. \n(i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)")
-      organism(scd) = NULL
-    }
-    else {
-      print(paste("organism not provided. make a guess:", tmp_res$organism))
-      organism(scd) = tmp_res$organism
-    }
-  }
-  else {
-    # set organism
-    organism(scd) = organism
-  }
-  if (is.null(gene_id_type)) {
-    if (is.na(tmp_res$gene_id_type)) {
-      warnings("gene_id_type should be provided. \n A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. \nthe commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.")
-      gene_id_type(scd) = NULL
-    }
-    else {
-      print(paste("gene_id_type not provided. make a guess:", tmp_res$gene_id_type))
-      gene_id_type(scd) = tmp_res$gene_id_type
-    }
-  }
-  else {
-    gene_id_type(scd) = gene_id_type
-  }
-
-
-  # Add non-null slots to assayData for SCData object, omitting null slots
-  if ( !is.null(tpmData) )
-    tpm(scd) = tpmData
-  if ( !is.null(fpkmData) )
-    fpkm(scd) = fpkmData
-  if ( !is.null(countData) )
-    counts(scd) = countData
-  if ( !is.null(cpmData) )
-    cpm(scd) = cpmData
-
-  # remove cells that have zero counts
-  scd = scd[, colSums(exprs_mat)>0]
-
-  # Check validity of object
-  validObject(scd)
-  return(scd)
+  return(object)
 }
 
 
-# check validity for SCData class object
-
-setValidity("SCData", function(object) {
-  msg <- NULL
-  valid <- TRUE
-
-  # Check that the dimensions of the reducedExprDimension and
-  # reducedFACSDimension slot are sensible
-  if ( (length(object@reducedExprDimension) != 0) &&
-       (nrow(object@reducedExprDimension) != ncol(object)) ) {
-    valid <- FALSE
-    msg <- c(msg, "Number of cells in reducedExprDimension doesn't match number of cells in SCData.")
-  }
-  if ( (length(object@reducedFACSDimension) != 0) &&
-       (nrow(object@reducedFACSDimension) != ncol(object)) ) {
-    valid <- FALSE
-    msg <- c(msg, "Number of cells in reducedFACSDimension doesn't match number of cells in SCData.")
-  }
-
-  if (valid) TRUE else msg
-})
-
-
-#' Subsetting SCData Objects
-#'
-#' Subset method for SCData objects, which subsets both the expression data,
-#' phenotype data, feature data and other slots in the object.
-#'
-#' @return an SCData object
-#' @rdname SCData-subset
-#' @name SCData-subset
-#' @inheritParams base::Extract
-#' @param i,j,... indices specifying elements to extract or replace. Indices
-#' are numeric or character vectors or empty (missing) or \code{NULL}. Numeric
-#' values are coerced to integer as by \code{\link[base]{as.integer}} (and hence
-#' truncated towards zero). Character vectors will be matched to the names of
-#' the object (or for matrices/arrays, the dimnames): see
-#' \code{\link[base]{Extract}} for further details.
-#'
-#' For \code{[}-indexing only: \code{i, j, ...} can be logical vectors, indicating
-#' elements/slices to select. Such vectors are recycled if necessary to match
-#' the corresponding extent. \code{i, j, ...} can also be negative integers,
-#' indicating elements/slices to leave out of the selection. When indexing
-#' arrays by \code{[} a single argument i can be a matrix with as many columns
-#' as there are dimensions of \code{x}; the result is then a vector with
-#' elements corresponding to the sets of indices in each row of \code{i}. An
-#' index value of \code{NULL} is treated as if it were \code{integer(0)}.
-#'
-#' @aliases [,SCData,ANY-method [,SCData,ANY,ANY-method [,SCData,ANY,ANY,ANY-method
-#' @rdname SCData-subset
-#' @export
-#' @seealso \code{\link[base]{Extract}}
-#'
-setMethod('[', 'SCData', function(x, i, j, drop=FALSE) {
-  if ( !missing(i) && missing(j) ) {
-    # select features
-    x = selectMethod('[', 'ExpressionSet')(x, i, , drop = drop)
-  }
-  else if ( missing(i) && !missing(j) ) {
-    # select cells
-    x = selectMethod('[', 'ExpressionSet')(x, , j, drop = drop)
-    if ( length(x@reducedExprDimension) != 0 ) {
-      x@reducedExprDimension =
-        as.matrix(x@reducedExprDimension[j, , drop = drop])
-    }
-    if ( length(x@reducedFACSDimension) != 0 ) {
-      x@reducedFACSDimension =
-        as.matrix(x@reducedFACSDimension[j, , drop = drop])
-    }
-    if ( length(x@onesense) != 0 ) {
-      x@onesense =
-        as.matrix(x@onesense[j, , drop = drop])
-    }
-    if ( length(x@QualityControlInfo) != 0 ) {
-      x@QualityControlInfo =
-        x@QualityControlInfo[j, , drop = drop]
-    }
-    x@FACSData = x@FACSData[j, , drop = drop]
-  }
-  else if ( !missing(i) && !missing(j) ) {
-    # selcet features (i) and cells (j)
-    x <- selectMethod('[', 'ExpressionSet')(x, i, j, drop = drop)
-    if ( length(x@reducedExprDimension) != 0 ) {
-      x@reducedExprDimension =
-        as.matrix(x@reducedExprDimension[j, , drop = drop])
-    }
-    if ( length(x@reducedFACSDimension) != 0 ) {
-      x@reducedFACSDimension =
-        as.matrix(x@reducedFACSDimension[j, , drop = drop])
-    }
-    if ( length(x@onesense) != 0 ) {
-      x@onesense =
-        as.matrix(x@onesense[j, , drop = drop])
-    }
-    if ( length(x@QualityControlInfo) != 0 ) {
-      x@QualityControlInfo =
-        x@QualityControlInfo[j, , drop = drop]
-    }
-    x@FACSData = x@FACSData[j, , drop = drop]
-  }
-  ## Check validity of object
-  validObject(x)
-  return(x)
-})
-
-#' merge multiple SCData object
-#' @rdname merge_SCData
-#' @name merge_SCData
-#' @param ... multiple SCDatas. They shold have the same value for class attribute.
-#' @param all only contains interset for features or union.
-#' @param batch (optional) batch information
-#' @return a merged SCData object
-#' @importFrom Biobase varLabels
-#'
-#' @export
-#'
-merge_SCData <- function(...,
-                        all = TRUE,
-                        batch = NULL) {
-  scd_list <- list(...)
-  if (!is.null(batch)) {
-    if (!(length(batch) == length(scd_list))) {
-      stop("the length of batch should equal to the number of dataset")
-    }
-  }
-  else {
-    batch = 1:length(scd_list)
-  }
-
-
-  if (length(scd_list) < 2) {
-    stop("should at least contain two SCData object.")
-  }
-  if (!all(unlist(lapply(scd_list, function(x) {is(x, "SCData")})))) {
-    stop("all data should be SCData object")
-  }
-  logged = scd_list[[1]]@logged
-  if (!all(unlist(lapply(scd_list, function(x) {x@logged == logged})))) {
-    stop("data do not have the same value for the 'logged' slot.")
-  }
-
-  useForExprs = scd_list[[1]]@useForExprs
-  if (!all(unlist(lapply(scd_list, function(x) {x@useForExprs == useForExprs})))) {
-    stop("data do not have the same value for the 'useForExprs' slot.")
-  }
-
-  logExprsOffset = scd_list[[1]]@logExprsOffset
-  if (!all(unlist(lapply(scd_list, function(x) {x@logExprsOffset == logExprsOffset})))) {
-    stop("data do not have the same value for the 'logExprsOffset' slot.")
-  }
-
-  the_organism = organism.SCData(scd_list[[1]])
-  if (!all(unlist(lapply(scd_list, function(x) {organism.SCData(x) == the_organism})))) {
-    stop("data do not have the same value for the 'organism' slot.")
-  }
-
-  gene_id_type = scd_list[[1]]@gene_id_type
-  if (!all(unlist(lapply(scd_list, function(x) {x@gene_id_type == gene_id_type})))) {
-    stop("data do not have the same value for the 'gene_id_type' slot.")
-  }
-
-  print("merge expression matrix")
-  merged_exprs = .merge_mat(scd_list, exprs)
-
-  print("merge phenotype")
-  ph_col = varLabels(scd_list[[1]])
-  merged_ph = NULL
-  if (length(ph_col)>0) {
-    if (all(unlist(lapply(scd_list, function(x) {varLabels(x) == ph_col})))) {
-      merged_ph =
-        AnnotatedDataFrame(data=Reduce(rbind, lapply(scd_list, function(x) {pData(x)})))
-    }
-    else {
-      stop("the colnames in phenoData should be the same for all data.")
-    }
-  }
-  if ("batch" %in% colnames(merged_ph)) {
-    print("already contains batch information. ignore batch argument.")
-  }
-  else {
-    batch_num =unname(unlist(lapply(scd_list, function(x) {nrow(pData(x))})))
-    merged_ph$batch = rep(batch, times=as.vector(batch_num))
-  }
-
-
-  print("merge quality control metrics")
-  qc_col = varLabels(QCMetrics(scd_list[[1]]))
-  merged_qc = NULL
-  if (length(qc_col)>0) {
-    if (all(unlist(lapply(scd_list, function(x) {varLabels(QCMetrics(x)) == qc_col})))) {
-      merged_qc =
-        AnnotatedDataFrame(data=Reduce(rbind, (lapply(scd_list, function(x) {pData(QCMetrics(x))}))))
-    }
-    else {
-      stop("the colnames in QCMetrics should be the same for all data.")
-    }
-  }
-
-  print("merge FACS data")
-  fac_col = varLabels(FACSData(scd_list[[1]]))
-  merged_fac = NULL
-  if (length(fac_col)>0) {
-    if (all(unlist(lapply(scd_list, function(x) {varLabels(FACSData(x)) == fac_col})))) {
-      merged_fac =
-        AnnotatedDataFrame(data=Reduce(rbind, (lapply(scd_list, function(x) {pData(FACSData(x))}))))
-    }
-    else {
-      stop("the colnames in phenoData should be the same for all data.")
-    }
-  }
-  print("create new SCData object")
-  new_scd <- newSCData(exprsData = merged_exprs,
-              phenoData = merged_ph,
-              #featureData = NULL, #TODO
-              FACSData = merged_fac,
-              #experimentData = NULL, #TODO
-              logExprsOffset = logExprsOffset,
-              logged = logged,
-              gene_id_type = gene_id_type,
-              organism = the_organism,
-              #reducedExprDimension = NULL,
-              #reducedFACSDimension = NULL,
-              #onesense = NULL,
-              QualityControlInfo = merged_qc,
-              useForExprs = "exprs")
-
-  if (!is.null(fpkm(scd_list[[1]]))) {
-    fpkm(new_scd) = .merge_mat(scd_list, fpkm)
-  }
-
-  if (!is.null(cpm(scd_list[[1]]))) {
-    cpm(new_scd) = .merge_mat(scd_list, cpm)
-  }
-
-  if (!is.null(counts(scd_list[[1]]))) {
-    counts(new_scd) = .merge_mat(scd_list, counts)
-  }
-
-  if (!is.null(tpm(scd_list[[1]]))) {
-    tpm(new_scd) = .merge_mat(scd_list, tpm)
-  }
-  return(new_scd)
-}
-
-#' Get or set quality control metrics from an SCData object
-#' @rdname QCMetrics
-#' @param object An \code{\link{SCData}} object.
+#' Get or set quality control metrics in a SingleCellExperiment object
+#' @rdname QC_metrics
+#' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
-#' @return A \code{AnnotatedDataFrame} of quality control metrics.
+#' @return A DataFrame of quality control metrics.
+#' @author Luyi Tian
+#' 
+#' @importFrom S4Vectors DataFrame SimpleList
+#'
+#' @export
+#'
+#' @examples
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' QC_metrics(sce) = sc_sample_qc
+#' 
+#' head(QC_metrics(sce))
+#'
+QC_metrics.sce <- function(object) {
+  if(!("scPipe" %in% names(object@int_metadata))){
+    warning("`scPipe` not in `int_metadata`. cannot identify quality control columns")
+    return(NULL)
+  }else if(!("QC_cols" %in% names(object@int_metadata$scPipe))){
+    warning("The int_metadata$scPipe does not have `QC_cols`. 
+      cannot identifyquality control  columns")
+    return(NULL)
+  }
+  return(object@int_colData[, object@int_metadata$scPipe$QC_cols])
+}
+
+#' @rdname QC_metrics
+#' @aliases QC_metrics
+#' @export
+#'
+setMethod("QC_metrics", signature(object = "SingleCellExperiment"),
+          QC_metrics.sce)
+
+#' @rdname QC_metrics
+#' @aliases QC_metrics
+#' @export
+setReplaceMethod("QC_metrics",
+                 signature="SingleCellExperiment",
+                 function(object, value) {
+                   if(!("scPipe" %in% names(object@int_metadata))){
+                     object@int_metadata[["scPipe"]] = list(QC_cols=colnames(value))
+                   }else{
+                     object@int_metadata$scPipe$QC_cols = colnames(value)
+                   }
+                   object@int_colData = DataFrame(value)
+                   return(object)
+                 })
+
+
+#' @title demultiplex_info
+#' 
+#' @description Get or set cell barcode demultiplx results in a SingleCellExperiment object
+#' @rdname demultiplex_info
+#' @param object A \code{\link{SingleCellExperiment}} object.
+#' @param value Value to be assigned to corresponding object.
+#'
+#' @return A DataFrame of cell barcode demultiplx results.
 #' @author Luyi Tian
 #'
 #' @export
@@ -516,169 +118,162 @@ merge_SCData <- function(...,
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' QCMetrics(scd)
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' 
+#' demultiplex_info(sce)
 #'
-QCMetrics.SCData <- function(object) {
-  return(object@QualityControlInfo)
-}
+demultiplex_info.sce <- function(object) {
+  if(!("scPipe" %in% names(object@int_metadata))){
+    warning("`scPipe` not in `int_metadata`. cannot find columns for cell barcode demultiplex results")
+    return(NULL)
+  }else if(!("demultiplex_info" %in% names(object@int_metadata$scPipe))){
+    warning("The int_metadata$scPipe does not have `demultiplex_info`.")
+    return(NULL)
+  }
+  return(object@int_metadata$scPipe$demultiplex_info)
+  }
 
-#' @rdname QCMetrics
-#' @aliases QCMetrics
+#' @rdname demultiplex_info
+#' @aliases demultiplex_info
 #' @export
 #'
-setMethod("QCMetrics", signature(object = "SCData"),
-          QCMetrics.SCData)
+setMethod("demultiplex_info", signature(object = "SingleCellExperiment"),
+          demultiplex_info.sce)
 
-#' @rdname QCMetrics
-#' @aliases QCMetrics
+#' @rdname demultiplex_info
+#' @aliases demultiplex_info
 #' @export
-setReplaceMethod("QCMetrics",
-                 signature="SCData",
+setReplaceMethod("demultiplex_info",
+                 signature="SingleCellExperiment",
                  function(object, value) {
-                   object@QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(value))
-                   validObject(object) # could add other checks
+                   if(!("scPipe" %in% names(object@int_metadata))){
+                     object@int_metadata[["scPipe"]] = list(demultiplex_info=value)
+                   }else{
+                     object@int_metadata$scPipe$demultiplex_info = value
+                   }
+                   object = validObject(object) # could add other checks
                    return(object)
                  })
 
 
-#' Get or set \code{organism} from an SCData object
-#' @rdname organism
-#' @param object An \code{\link{SCData}} object.
+
+
+#' Get or set UMI duplication results in a SingleCellExperiment object
+#' @rdname UMI_dup_info
+#' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
+#' @return A DataFrame of UMI duplication results.
+#' @author Luyi Tian
+#'
+#' @export
+#'
+#' @examples
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' 
+#' head(UMI_dup_info(sce))
+#'
+UMI_dup_info.sce <- function(object) {
+  if(!("scPipe" %in% names(object@int_metadata))){
+    warning("`scPipe` not in `int_metadata`. cannot find columns for cell barcode demultiplex results")
+    return(NULL)
+  }else if(!("UMI_dup_info" %in% names(object@int_metadata$scPipe))){
+    warning("The int_metadata$scPipe does not have `UMI_dup_info`.")
+    return(NULL)
+  }
+  return(object@int_metadata$scPipe$UMI_dup_info)
+}
+
+#' @rdname UMI_dup_info
+#' @aliases UMI_dup_info
+#' @export
+#'
+setMethod("UMI_dup_info", signature(object = "SingleCellExperiment"),
+          UMI_dup_info.sce)
+
+#' @rdname UMI_dup_info
+#' @aliases UMI_dup_info
+#' @export
+setReplaceMethod("UMI_dup_info",
+                 signature="SingleCellExperiment",
+                 function(object, value) {
+                   if(!("scPipe" %in% names(object@int_metadata))){
+                     object@int_metadata[["scPipe"]] = list(UMI_dup_info=value)
+                   }else{
+                     object@int_metadata$scPipe$UMI_dup_info = value
+                   }
+                   object = validObject(object) # could add other checks
+                   return(object)
+                 })
+
+
+
+#' Get or set \code{organism} from a SingleCellExperiment object
+#' @rdname organism
+#' @param object A \code{\link{SingleCellExperiment}} object.
+#' @param value Value to be assigned to corresponding object.
+#'
+#' @importFrom BiocGenerics organism organism<-
 #' @return organism string
 #' @author Luyi Tian
 #' @export
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' organism(scd)
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' 
+#' organism(sce)
 #'
-organism.SCData <- function(object) {
-  return(object@organism)
+organism.sce <- function(object) {
+  return(object@int_metadata$Biomart$organism)
 }
 
 
 #' @aliases organism
 #' @rdname organism
 #' @export
-setMethod("organism", signature(object="SCData"),
-          organism.SCData)
+setMethod("organism", signature(object="SingleCellExperiment"),
+          organism.sce)
 
 
 #' @aliases organism
 #' @rdname organism
 #' @export
 #' @export
-setReplaceMethod("organism",
-           signature="SCData",
-           function(object, value) {
-               object@organism = value
-               validObject(object) # could add other checks
-               return(object)
-             })
-
-
-#' Get or set FACs data for an SCData object
-#' @rdname FACSData
-#' @param object An \code{\link{SCData}} object.
-#' @param value Value to be assigned to corresponding object.
-#'
-#' @return A \code{AnnotatedDataFrame} of FACS data.
-#' @author Luyi Tian
-#'
-#' @export
-#'
-#' @examples
-#' data("sc_sample_data")
-#' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' FACSData(scd)
-#'
-FACSData.SCData <- function(object) {
-  return(object@FACSData)
-}
-
-#' @rdname FACSData
-#' @aliases FACSData
-#' @export
-#'
-setMethod("FACSData", signature(object = "SCData"),
-          FACSData.SCData)
-
-#' @aliases FACSData
-#' @rdname FACSData
-#' @export
-setReplaceMethod("FACSData",
-                 signature="SCData",
+setReplaceMethod("organism",signature="SingleCellExperiment",
                  function(object, value) {
-                   object@FACSData = new("AnnotatedDataFrame", data = as.data.frame(value))
-                   validObject(object) # could add other checks
+                   if(is.null(value)){
+                     object@int_metadata$Biomart$organism = NA
+                     }else if(value == "NA"){
+                       object@int_metadata$Biomart$organism = NA
+                       }else{
+                         object@int_metadata$Biomart$organism = value
+                         }
                    return(object)
-                 }
-)
+                   })
 
 
-#' Get or set \code{reducedExprDimension} from an SCData object
-#' @param object An \code{\link{SCData}} object.
-#'
-#' @return A matrix of reduced-dimension coordinates for gene
-#' expression of single cell.
-#' @author Luyi Tian
-#' @rdname DimReducedExpr
-#' @aliases DimReducedExpr
-#' @export
-#'
-#' @examples
-#' data("sc_sample_data")
-#' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' DimReducedExpr(scd)
-#'
-setMethod("DimReducedExpr", signature(object = "SCData"),
-  DimReducedExpr.SCData <- function(object) {
-    return(object@reducedExprDimension)
-  })
 
-
-#' @inheritParams DimReducedExpr
-#' @param value Value to be assigned to corresponding object.
-#' @aliases DimReducedExpr
-#' @rdname DimReducedExpr
-#' @exportMethod "DimReducedExpr<-"
-setReplaceMethod("DimReducedExpr",
-                 signature="SCData",
-                 function(object, value) {
-                   object@reducedExprDimension = value
-                   validObject(object) # could add other checks
-                   return(object)
-                 })
-
-#' Get or set \code{gene_id_type} from an SCData object
+#' Get or set \code{gene_id_type} from a SingleCellExperiment object
 #' @rdname gene_id_type
-#' @param object An \code{\link{SCData}} object.
+#' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
 #'
 #' @return gene id type string
@@ -689,222 +284,40 @@ setReplaceMethod("DimReducedExpr",
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' gene_id_type(scd)
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' 
+#' gene_id_type(sce)
 #'
-gene_id_type.SCData <- function(object) {
-  return(object@gene_id_type)
+gene_id_type.sce <- function(object) {
+  return(object@int_metadata$Biomart$gene_id_type)
 }
 
 
 #' @rdname gene_id_type
 #' @aliases gene_id_type
 #' @export
-setMethod("gene_id_type", signature(object = "SCData"),
-          gene_id_type.SCData)
+setMethod("gene_id_type", signature(object = "SingleCellExperiment"),
+          gene_id_type.sce)
 
 
 #' @aliases gene_id_type
 #' @rdname gene_id_type
 #' @export
-setReplaceMethod("gene_id_type",
-                 signature="SCData",
+setReplaceMethod("gene_id_type",signature="SingleCellExperiment",
                  function(object, value) {
-                   object@gene_id_type = value
-                   validObject(object) # could add other checks
+                   if(is.null(value)){
+                     object@int_metadata$Biomart$gene_id_type = NA
+                   }else if(value == "NA"){
+                     object@int_metadata$Biomart$gene_id_type = NA
+                   }else{
+                     object@int_metadata$Biomart$gene_id_type = value
+                   }
                    return(object)
                  })
 
 
-#' Accessors for the 'counts' element of an SCData object.
-#'
-#' The counts element holds the count data as a matrix of non-negative integer
-#' count values, one row for each feature (gene, exon, region, etc), and one
-#' column for each cell. It is an element of the assayData slot of the SCData
-#' object.
-#'
-#' @rdname counts
-#' @aliases counts counts,SCData-method counts<-,SCData,matrix-method
-#'
-#' @param object a \code{SCData} object.
-#' @param value an integer matrix
-#' @author Luyi Tian
-#' @export
-#' @return the raw count
-#'
-#' @examples
-#' data("sc_sample_data")
-#' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' counts(scd)
-#'
-counts.SCData <- function(object) {
-  object@assayData$counts
-}
-
-#' @rdname counts
-#' @aliases counts,SCData-method
-#' @export
-setMethod("counts", signature(object = "SCData"), counts.SCData)
-
-#' @rdname counts
-#' @export
-setReplaceMethod("counts", signature(object = "SCData", value = "matrix"),
-                 function(object, value) {
-                   Biobase::assayDataElement(object, "counts") <- value
-                   validObject(object)
-                   object
-                 })
-
-#' Accessors for the 'tpm' (transcripts per million) element of an SCData object.
-#'
-#' The \code{tpm} element of the arrayData slot in an SCData object holds
-#' a matrix containing transcripts-per-million values. It has the same dimensions
-#' as the 'exprs' and 'counts' elements, which hold the transformed expression
-#' data and count data, respectively.
-#'
-#' @rdname tpm
-#'
-#' @param object a \code{SCData} object.
-#' @param value a matrix of class \code{"numeric"}
-#'
-#' @author Luyi Tian
-#' @export
-#' @aliases tpm tpm,SCData-method tpm<-,SCData,matrix-method
-#'
-#' @examples
-#' data("sc_sample_data")
-#' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' tpm(scd)
-#'
-tpm.SCData <- function(object) {
-  object@assayData$tpm
-}
-
-
-#' @rdname tpm
-#' @export
-#' @aliases tpm,SCData-method
-setMethod("tpm", signature(object = "SCData"), tpm.SCData)
-
-#' @rdname tpm
-#' @export
-#' @aliases tpm<-,SCData,matrix-method
-setReplaceMethod("tpm", signature(object = "SCData", value = "matrix"),
-                 function(object, value) {
-                   Biobase::assayDataElement(object, "tpm") <- value
-                   validObject(object)
-                   object
-                 })
-
-#' Accessors for the 'cpm' (counts per million) element of an SCData object.
-#'
-#' The \code{cpm} element of the arrayData slot in an SCData object holds
-#' a matrix containing counts-per-million values. It has the same dimensions
-#' as the 'exprs' and 'counts' elements, which hold the transformed expression
-#' data and count data, respectively.
-#'
-#'
-#' @rdname cpm
-#'
-#' @param object a \code{SCData} object.
-#' @param value a matrix of class \code{"numeric"}
-#'
-#' @author Luyi Tian
-#' @export
-#' @aliases cpm cpm,SCData-method cpm<-,SCData,matrix-method
-#'
-#' @examples
-#' data("sc_sample_data")
-#' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' cpm(scd)
-#'
-cpmSCData <- function(object) {
-  object@assayData$cpm
-}
-
-
-#' @rdname cpm
-#' @export
-#' @aliases cpm,SCData-method
-setMethod("cpm", signature(object = "SCData"), cpmSCData)
-
-#' @rdname cpm
-#' @export
-#' @aliases cpm<-,SCData,matrix-method
-setReplaceMethod("cpm", signature(object = "SCData", value = "matrix"),
-                 function(object, value) {
-                   Biobase::assayDataElement(object, "cpm") <- value
-                   validObject(object)
-                   object
-                 })
-
-#' Accessors for the 'fpkm' (fragments per kilobase of exon per million reads mapped) element of an SCData object.
-#'
-#' The \code{fpkm} element of the arrayData slot in an SCData object holds
-#' a matrix containing fragments per kilobase of exon per million reads mapped
-#' (FPKM) values. It has the same dimensions as the 'exprs' and 'counts'
-#' elements, which hold the transformed expression data and count data,
-#' respectively.
-#'
-#' @name fpkm
-#' @rdname fpkm
-#' @aliases fpkm fpkm,SCData-method fpkm<-,SCData,matrix-method
-#'
-#' @param object a \code{SCData} object.
-#' @param value a matrix of class \code{"numeric"}
-#'
-#' @author Luyi Tian
-#' @export
-#'
-#' @examples
-#' data("sc_sample_data")
-#' data("sc_sample_qc")
-#' QualityControlInfo = new("AnnotatedDataFrame", data = as.data.frame(sc_sample_qc))
-#' scd = newSCData(countData = as.matrix(sc_sample_data),
-#'                QualityControlInfo = QualityControlInfo,
-#'                useForExprs = "counts",
-#'                organism = "mmusculus_gene_ensembl",
-#'                gene_id_type = "external_gene_name")
-#' fpkm(scd)
-#'
-fpkm.SCData <- function(object) {
-  object@assayData$fpkm
-}
-
-#' @rdname fpkm
-#' @export
-#' @aliases fpkm,SCData-method
-setMethod("fpkm", signature(object = "SCData"), fpkm.SCData)
-
-#' @rdname fpkm
-#' @export
-#' @aliases fpkm<-,SCData,matrix-method
-setReplaceMethod("fpkm", signature(object = "SCData", value = "matrix"),
-                 function(object, value) {
-                   Biobase::assayDataElement(object, "fpkm") <- value
-                   validObject(object)
-                   object
-                 })
