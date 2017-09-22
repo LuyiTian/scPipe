@@ -97,8 +97,8 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' @param annofn genome annotation gff file. It can have multiple files names in a vector.
 #' @param am mapping status tag (default: YE)
 #' @param ge gene id tag (default: GE)
-#' @param bc cell barcode tag (default: YC)
-#' @param mb molecular barcode tag (default: YM)
+#' @param bc cell barcode tag (default: BC)
+#' @param mb molecular barcode tag (default: OX)
 #' @param bc_len total barcode length
 #' @param UMI_len UMI length
 #' @param stnd perform strand specific mapping or not
@@ -119,7 +119,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' }
 #' 
 sc_exon_mapping = function(inbam, outbam, annofn,
-                            am="YE", ge="GE", bc="YC", mb="YM",
+                            am="YE", ge="GE", bc="BC", mb="OX",
                             bc_len=8, UMI_len=6, stnd=TRUE, fix_chr=FALSE) {
   if (stnd) {
     i_stnd = 1
@@ -153,8 +153,8 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #' @param max_mis maximum mismatch allowed in barcode. default to be 1
 #' @param am mapping status tag (default: YE)
 #' @param ge gene id tag (default: GE)
-#' @param bc cell barcode tag (default: YC)
-#' @param mb molecular barcode tag (default: YM)
+#' @param bc cell barcode tag (default: BC)
+#' @param mb molecular barcode tag (default: OX)
 #' @param mito mitochondrial chromosome name. 
 #' This should be consistant with the chromosome names in the bam file.
 #' @param has_UMI whether the protocol contains UMI (default: TRUE)
@@ -174,8 +174,8 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 sc_demultiplex = function(inbam, outdir, bc_anno,
                           max_mis=1,
                           am="YE", ge="GE",
-                          bc="YC",
-                          mb="YM",
+                          bc="BC",
+                          mb="OX",
                           mito="MT",
                           has_UMI=TRUE) {
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
