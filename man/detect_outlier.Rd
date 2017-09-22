@@ -28,7 +28,7 @@ in the `colData(sce)`.}
 }
 \value{
 an updated \code{SingleCellExperiment} object with an `outlier`` column in 
-\code{int_colData}
+\code{colData}
 }
 \description{
 the algorithm will try to find \code{comp} number of components in quality

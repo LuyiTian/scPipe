@@ -44,7 +44,7 @@
 #' @details detect outlier using Mahalanobis distances
 #'
 #' @return an updated \code{SingleCellExperiment} object with an `outlier`` column in 
-#' \code{int_colData}
+#' \code{colData}
 #'
 #' @importFrom stats cov pchisq mahalanobis complete.cases qchisq
 #' @importFrom robustbase covMcd
@@ -80,7 +80,7 @@ detect_outlier <- function(sce,
   }
   if (!all(sel_col %in% colnames(QC_metrics(sce)))) {
     tmp <- sel_col[!(sel_col %in% colnames(QC_metrics(sce)))]
-    print("the following QC metrics not find in int_colData from sce:")
+    print("the following QC metrics not find in colData from sce:")
     print(tmp)
     if(any(c("number_of_genes", "total_count_per_cell") %in% tmp)){
       stop("the quality control metrics should at least contain the numebr of 

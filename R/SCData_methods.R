@@ -77,7 +77,7 @@ QC_metrics.sce <- function(object) {
       cannot identifyquality control  columns")
     return(NULL)
   }
-  return(object@int_colData[, object@int_metadata$scPipe$QC_cols])
+  return(colData(object)[, object@int_metadata$scPipe$QC_cols])
 }
 
 #' @rdname QC_metrics
@@ -98,7 +98,7 @@ setReplaceMethod("QC_metrics",
                    }else{
                      object@int_metadata$scPipe$QC_cols = colnames(value)
                    }
-                   object@int_colData = DataFrame(value)
+                   colData(object) = DataFrame(value)
                    return(object)
                  })
 
