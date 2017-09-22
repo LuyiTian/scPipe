@@ -5,7 +5,7 @@
 \title{sc_trim_barcode}
 \usage{
 sc_trim_barcode(outfq, r1, r2 = NULL, read_structure = list(bs1 = -1, bl1 =
-  2, bs2 = 6, bl2 = 8, us = 0, ul = 6), filter_settings = list(rmlow = TRUE,
+  0, bs2 = 6, bl2 = 8, us = 0, ul = 6), filter_settings = list(rmlow = TRUE,
   rmN = TRUE, minq = 20, numbq = 2))
 }
 \arguments{
@@ -17,14 +17,20 @@ sc_trim_barcode(outfq, r1, r2 = NULL, read_structure = list(bs1 = -1, bl1 =
 
 \item{read_structure}{a list contains read structure configuration:\itemize{
 \item{bs1} is the starting position of barcode in read one, if there is no reads in read one set it to -1.
-\item{bl1} is the length of barcode in read one, if there is no barcode in read one this number is used for trimming the beginning of read one.
+\item{bl1} is the length of barcode in read one, if there is no barcode in read one this number is used 
+for trimming the beginning of read one.
 \item{bs2} is the starting position of barcode in read two
 \item{bl2} is the length of barcode in read two
 \item{us} is the starting position of UMI
 \item{ul} is the length of UMI
 }}
 
-\item{filter_settings}{A list contains read filter settings:}
+\item{filter_settings}{A list contains read filter settings:\itemize{
+\item{rmlow} whether to remove the low quality reads.
+\item{rmN} whether to remove reads that contains N in UMI or cell barcode.
+\item{minq} the minimum base pair quality that we allowed
+\item{numbq} the maximum number of base pair that have quality below \code{numbq}
+}}
 }
 \value{
 no return
@@ -32,6 +38,17 @@ no return
 \description{
 This function will reformat the fastq file and move the barcode 
 and UMI sequence to read names.
+}
+\details{
+The default read structure in this function represents CEL-seq paired-ended reads, 
+with one cell barcode in read two start from 6bp and UMI sequence in read two start from the first bp. 
+So the read structure will be : `list(bs1=-1, bl1=0, bs2=6, bl2=8, us=0, ul=6)`. 
+`bs1=-1, bl1=0` means we dont have index in read one so we set a negative value to start position 
+and zero to the length. `bs2=6, bl2=8` means we have index in read two which start at 6bp with 8bp 
+in its length. `us=0, ul=6` means we have UMI from the start of read two and the length in 6bp. 
+NOTE: we use the zero based index so the index of the sequence start from zero. For a typical Drop-seq
+experiment the setting will be `list(bs1=-1, bl1=0, bs2=0, bl2=12, us=12, ul=8)`, which means the 
+read one only contains transcript, the first 12bp in read two are index, followed by 8bp UMIs.
 }
 \examples{
 data_dir="celseq2_demo"

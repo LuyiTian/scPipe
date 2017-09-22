@@ -66,24 +66,24 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
 
   if(report){
     create_report(sample_name=basename(datadir),
-                             outdir=datadir,
-                             r1="NA",
-                             r2="NA",
-                             outfq="NA",
-                             read_structure = list(bs1=1, bl1=1, bs2=1, bl2=1, us=1, ul=1),
-                             filter_settings = list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
-                             align_bam = "NA",
-                             genome_index = "NA",
-                             map_bam = "NA",
-                             exon_anno = "NA",
-                             stnd = TRUE,
-                             fix_chr=FALSE,
-                             barcode_anno="NA",
-                             max_mis=1,
-                             UMI_cor=1,
-                             gene_fl=FALSE,
-                             organism=organism,
-                             gene_id_type=gene_id_type)
+                  outdir=datadir,
+                  r1=NA,
+                  r2=NA,
+                  outfq=NA,
+                  read_structure = list(bs1=1, bl1=1, bs2=1, bl2=1, us=1, ul=1),
+                  filter_settings = list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
+                  align_bam = NA,
+                  genome_index = NA,
+                  map_bam = NA,
+                  exon_anno = NA,
+                  stnd = TRUE,
+                  fix_chr=FALSE,
+                  barcode_anno=NA,
+                  max_mis=1,
+                  UMI_cor=1,
+                  gene_fl=FALSE,
+                  organism=organism,
+                  gene_id_type=gene_id_type)
   }
 
   
@@ -146,7 +146,7 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
 create_report = function(sample_name,
                          outdir,
                          r1,
-                         r2=NULL,
+                         r2=NA,
                          outfq,
                          read_structure,
                          filter_settings,
@@ -164,73 +164,79 @@ create_report = function(sample_name,
                          gene_id_type) {
   fn = system.file("extdata", "report_template.Rmd", package = "scPipe")
   tx = readLines(fn)
-  
-  tx = gsub(pattern = "SAMPLE_NAME__", replacement = sample_name, x = tx)
-  tx = gsub(pattern = "FQ1__", replacement = r1, x = tx)
-  if (!is.null(r2)) {
-    tx = gsub(pattern = "FQ2__", replacement = r2, x = tx)
-  }
-  else {
-    tx = gsub(pattern = "FQ2__", replacement = "NA", x = tx)
-  }
-  
-  tx = gsub(pattern = "FQOUT__", replacement = outfq, x = tx)
+
   if (read_structure$bs1<0) {
-    tx = gsub(pattern = "BC1_INFO__", replacement = "NA", x = tx)
+    bc1_info = NA
   }
   else {
-    tx = gsub(pattern = "BC1_INFO__", replacement = 
-                paste0("start at position ", read_structure$bs1, ", length ", read_structure$bl1), x = tx)
+    bc1_info = paste0("start at position ", read_structure$bs1, ", length ", read_structure$bl1)
   }
   
-  tx = gsub(pattern = "BC1_INFO__", replacement = 
-              paste0("start at position ", read_structure$bs2, ", length ", read_structure$bl2), x = tx)
-  tx = gsub(pattern = "UMI_INFO__", replacement = 
-              paste0("start at position ", read_structure$us, ", length ", read_structure$ul), x = tx)
-  
-  tx = gsub(pattern = "RM_N__", replacement = as.character(filter_settings$rmN), x = tx)
-  tx = gsub(pattern = "RM_LOW__", replacement = as.character(filter_settings$rmlow), x = tx)
-  tx = gsub(pattern = "MIN_Q__", replacement = filter_settings$minq, x = tx)
-  tx = gsub(pattern = "NUM_BQ__", replacement = filter_settings$numbq, x = tx)
-  
-  tx = gsub(pattern = "BAM_ALIGN__", replacement = align_bam, x = tx)
-  tx = gsub(pattern = "G_INDEX__", replacement = genome_index, x = tx)
-  tx = gsub(pattern = "BAM_MAP__", replacement = map_bam, x = tx)
-  
-  tx = gsub(pattern = "OUTDIR__", replacement = outdir, x = tx)
-  tx = gsub(pattern = "ANNO_GFF__", replacement = paste(exon_anno, collapse=", "), x = tx)
-  
-  tx = gsub(pattern = "STND__", replacement = as.character(stnd), x = tx)
-  tx = gsub(pattern = "FIX_CHR__", replacement = as.character(fix_chr), x = tx)
-  tx = gsub(pattern = "BC_ANNO__", replacement = barcode_anno, x = tx)
-  tx = gsub(pattern = "MAX_MIS__", replacement = max_mis, x = tx)
+  bc2_info = paste0("start at position ", read_structure$bs2, ", length ", read_structure$bl2)
+  umi_info = paste0("start at position ", read_structure$us, ", length ", read_structure$ul)
   
   if (UMI_cor == 1) {
-    tx = gsub(pattern = "UMI_COR__", replacement = "simple correction and merge UMI with distance 1", x = tx)
+    UMI_correction = "simple correction and merge UMI with distance 1"
   }
   else if (UMI_cor == 0) {
-    tx = gsub(pattern = "UMI_COR__", replacement = "no correction", x = tx)
+    UMI_correction = "no correction"
   }
   else {
-    tx = gsub(pattern = "UMI_COR__", replacement = "unknown", x = tx)
+    UMI_correction = "unknown"
   }
-  
-  tx = gsub(pattern = "GENE_FL__", replacement = as.character(gene_fl), x = tx)
-  if(!missing(organism)){
-    if(!is.null(organism)){
-      tx = gsub(pattern = "SPECIES__", replacement = organism, x = tx)
-    }
-  }
-  if(!missing(gene_id_type)){
-    if(!is.null(gene_id_type)){
-      tx = gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
-    }
-   
-  }
-  
+  print(list(samplename=sample_name,
+             fq1=r1,
+             fq2=r2,
+             outfq=outfq,
+             bc1_info=bc1_info,
+             bc2_info=bc2_info,
+             umi_info=umi_info,
+             rm_n=filter_settings$rmN,
+             rm_low=filter_settings$rmlow,
+             min_q=filter_settings$minq,
+             num_bq=filter_settings$numbq,
+             bam_align=align_bam,
+             g_index=genome_index,
+             bam_map=map_bam,
+             outdir=outdir,
+             anno_gff=paste(exon_anno, collapse=", "),
+             stnd=stnd,
+             fix_chr=fix_chr,
+             bc_anno=barcode_anno,
+             max_mis=max_mis,
+             UMI_cor=UMI_correction,
+             gene_fl=gene_fl,
+             species=organism,
+             gene_id_type=gene_id_type
+  ))
   writeLines(tx, con=file.path(outdir, "report.Rmd"))
   knitr::wrap_rmd(file.path(outdir, "report.Rmd"), width = 120, backup = NULL)
-  rmarkdown::render(file.path(outdir, "report.Rmd"), output_file = file.path(outdir, "report.html"))
+  rmarkdown::render(file.path(outdir, "report.Rmd"), output_file = file.path(outdir, "report.html"), 
+                    params = list(samplename=sample_name,
+                                  fq1=r1,
+                                  fq2=r2,
+                                  fqout=outfq,
+                                  bc1_info=bc1_info,
+                                  bc2_info=bc2_info,
+                                  umi_info=umi_info,
+                                  rm_n=filter_settings$rmN,
+                                  rm_low=filter_settings$rmlow,
+                                  min_q=filter_settings$minq,
+                                  num_bq=filter_settings$numbq,
+                                  bam_align=align_bam,
+                                  g_index=genome_index,
+                                  bam_map=map_bam,
+                                  outdir=outdir,
+                                  anno_gff=paste(exon_anno, collapse=", "),
+                                  stnd=stnd,
+                                  fix_chr=fix_chr,
+                                  bc_anno=barcode_anno,
+                                  max_mis=max_mis,
+                                  UMI_cor=UMI_correction,
+                                  gene_fl=gene_fl,
+                                  species=organism,
+                                  gene_id_type=gene_id_type
+                                  ))
 }
 
 

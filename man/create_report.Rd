@@ -4,7 +4,7 @@
 \alias{create_report}
 \title{create_report}
 \usage{
-create_report(sample_name, outdir, r1, r2 = NULL, outfq, read_structure,
+create_report(sample_name, outdir, r1, r2 = NA, outfq, read_structure,
   filter_settings, align_bam, genome_index, map_bam, exon_anno, stnd, fix_chr,
   barcode_anno, max_mis, UMI_cor, gene_fl, organism, gene_id_type)
 }
