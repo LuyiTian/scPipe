@@ -103,8 +103,10 @@ the most difference that come from different protocols is the read structure, wh
 The easiest way to create a SingleCellExperiment object is using `create_sce_by_dir`, it will read the gene counting matrix as well as the quality control informations in stat folder.
 
 ```{r}
+if(!(.Platform$OS.type == "windows")){
 sce = create_sce_by_dir(data_dir)
 dim(sce)
+}
 ```
 
 The dataset we created using ERCC simulated reads only contains 10 cells with perfect quality. So we will use the example dataset in scPipe, which is a part from Christine Biben's blood cells with different cell type that contains 383 cells and 1000 genes, to show the quality control functions in scPipe. This shows the way to create the SingleCellExperiment object without using `create_sce_by_dir`:
