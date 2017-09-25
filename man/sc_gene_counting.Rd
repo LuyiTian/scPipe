@@ -9,11 +9,14 @@ sc_gene_counting(outdir, bc_anno, UMI_cor = 1, gene_fl = FALSE)
 \arguments{
 \item{outdir}{output folder that contains \code{sc_demultiplex} output}
 
-\item{bc_anno}{barcode annotation, first column is cell id, second column is cell barcode sequence}
+\item{bc_anno}{barcode annotation, first column is cell id, second column 
+is cell barcode sequence}
 
-\item{UMI_cor}{correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.}
+\item{UMI_cor}{correct UMI sequence error: 0 means no correction, 1 means 
+simple correction and merge UMI with distance 1.}
 
-\item{gene_fl}{whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene}
+\item{gene_fl}{whether to remove low abundant gene count. low abundant is 
+defined as only one copy of one UMI for this gene}
 }
 \value{
 no return
@@ -23,7 +26,8 @@ This function will merge UMI and generate gene counting matrix
 }
 \examples{
 data_dir="celseq2_demo"
-barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
+barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", 
+package = "scPipe")
 \dontrun{
 # refer to the vignettes for the complete workflow
 ...

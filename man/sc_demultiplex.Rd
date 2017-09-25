@@ -5,14 +5,16 @@
 \title{sc_demultiplex}
 \usage{
 sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
-  bc = "YC", mb = "YM", mito = "MT", has_UMI = TRUE)
+  bc = "BC", mb = "OX", mito = "MT", has_UMI = TRUE)
 }
 \arguments{
-\item{inbam}{input bam file. This should be the output of \code{sc_exon_mapping}}
+\item{inbam}{input bam file. This should be the output of 
+\code{sc_exon_mapping}}
 
 \item{outdir}{output folder}
 
-\item{bc_anno}{barcode annotation, first column is cell id, second column is cell barcode sequence}
+\item{bc_anno}{barcode annotation, first column is cell id, second column 
+is cell barcode sequence}
 
 \item{max_mis}{maximum mismatch allowed in barcode. default to be 1}
 
@@ -20,9 +22,9 @@ sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
 
 \item{ge}{gene id tag (default: GE)}
 
-\item{bc}{cell barcode tag (default: YC)}
+\item{bc}{cell barcode tag (default: BC)}
 
-\item{mb}{molecular barcode tag (default: YM)}
+\item{mb}{molecular barcode tag (default: OX)}
 
 \item{mito}{mitochondrial chromosome name. 
 This should be consistant with the chromosome names in the bam file.}
@@ -33,17 +35,22 @@ This should be consistant with the chromosome names in the bam file.}
 no return
 }
 \description{
-This function will process bam file by cell barcode, output to outdir/count/[cell_id].csv.
+This function will process bam file by cell barcode, 
+output to outdir/count/[cell_id].csv.
 the output contains information for all reads that can be mapped to exons.
-including the gene id, UMI of that read and the distance to transcript end position.
+including the gene id, UMI of that read and the distance to transcript end 
+position.
 }
 \examples{
 data_dir="celseq2_demo"
-barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", package = "scPipe")
+barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", 
+    package = "scPipe")
 \dontrun{
 # refer to the vignettes for the complete workflow
 ...
-sc_demultiplex(file.path(data_dir, "out.map.bam"), data_dir, barcode_annotation_fn,has_UMI=FALSE)
+sc_demultiplex(file.path(data_dir, "out.map.bam"), 
+    data_dir, 
+    barcode_annotation_fn,has_UMI=FALSE)
 ...
 }
 

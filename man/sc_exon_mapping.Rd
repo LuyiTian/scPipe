@@ -4,23 +4,24 @@
 \alias{sc_exon_mapping}
 \title{sc_exon_mapping}
 \usage{
-sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "YC",
-  mb = "YM", bc_len = 8, UMI_len = 6, stnd = TRUE, fix_chr = FALSE)
+sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "BC",
+  mb = "OX", bc_len = 8, UMI_len = 6, stnd = TRUE, fix_chr = FALSE)
 }
 \arguments{
 \item{inbam}{input bam file. This is the output of alignment program.}
 
 \item{outbam}{output bam file with gene and barcode tag}
 
-\item{annofn}{genome annotation gff file. It can have multiple files names in a vector.}
+\item{annofn}{genome annotation gff file. It can have multiple files 
+names in a vector.}
 
 \item{am}{mapping status tag (default: YE)}
 
 \item{ge}{gene id tag (default: GE)}
 
-\item{bc}{cell barcode tag (default: YC)}
+\item{bc}{cell barcode tag (default: BC)}
 
-\item{mb}{molecular barcode tag (default: YM)}
+\item{mb}{molecular barcode tag (default: OX)}
 
 \item{bc_len}{total barcode length}
 
@@ -34,14 +35,15 @@ sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "YC",
 no return
 }
 \description{
-This function will take the alinged read and map them to exons. 
-The result will be written into optional fields in bam file with different tags. 
-following this link for more information regarding to bam file format:
+This function will take the alinged read and map them to exons.
+The result will be written into optional fields in bam file with different 
+tags. following this link for more information regarding to bam file format:
 http://samtools.github.io/hts-specs
 }
 \examples{
 data_dir="celseq2_demo"
-ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3", package = "scPipe")
+ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3", 
+    package = "scPipe")
 \dontrun{
 # for the complete workflow, refer to the vignettes
 ...
