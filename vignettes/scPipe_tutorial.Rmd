@@ -161,6 +161,7 @@ The final step will be to remove the low quality cells by the `remove_outliers` 
 ```{r}
 sce = remove_outliers(sce)
 dim(sce)
+```
 
 # Downstream analysis
 
