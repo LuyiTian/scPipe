@@ -4,10 +4,11 @@
 \name{sc_sample_qc}
 \alias{sc_sample_qc}
 \title{quality control information for a small sample scRNA-seq dataset to 
-demonstrate capabilities of scPipe}
-\format{a data.frame instance, 1 row per cell.}
+demonstrate capabilities of scPipe.}
+\format{a data.frame instance, one row per cell.}
 \source{
-Christin Biben, WEHI
+Christin Biben (WEHI). She FACS sorted cells from several immune
+cell types including B cells, granulocyte and some early progenitors.
 }
 \usage{
 sc_sample_qc
@@ -16,8 +17,42 @@ sc_sample_qc
 NULL, but makes a data frame with cell quality control data.frame
 }
 \description{
-This data.frame contains cell quality control information for the 100 
-cells.
+This data.frame contains cell quality control information 
+for the 100 cells. For each cell it has: \itemize{
+ \item{unaligned} the number of unaligned reads.
+ \item{aligned_unmapped} the number of reads that aligned to genome but 
+ fail to map to any features. 
+ \item{mapped_to_exon} is the number of reads that mapped
+ to exon.
+ \item{mapped_to_intron} is the number of reads that mapped to intron.
+ \item{ambiguous_mapping} is the number of reads that mapped to multiple
+ features. They are not considered in the following analysis.
+ \item{mapped_to_ERCC} is the number of reads that mapped to ERCC 
+ spike-in controls.
+ \item{mapped_to_MT} is the number of reads that mapped to mitochondrial
+ genes.
+ \item{total_count_per_cell} is the number of reads that mapped to exon
+ after UMI deduplication. In contrast, `mapped_to_exon` is the 
+ number of reads mapped to exon before UMI deduplication.
+ \item{number_of_genes} is the number of genes detected for each cells
+ \item{non_ERCC_percent} is 1 - (percentage of ERCC reads). Reads are
+ UMI deduplicated.
+ \item{non_mt_percent} is 1 - (percentage of mitochondrial reads).
+ Reads are UMI deduplicated.
+ \item{non_ribo_percent} is 1- (percentage of ribosomal reads).
+ Reads are UMI deduplicated.
+ }
+}
+\examples{
+data("sc_sample_data")
+data("sc_sample_qc")
+sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+organism(sce) = "mmusculus_gene_ensembl"
+gene_id_type(sce) = "ensembl_gene_id"
+QC_metrics(sce) = sc_sample_qc
+head(QC_metrics(sce))
+plot_mapping(sce,percentage=TRUE,dataname="sc_sample")
+
 }
 \author{
 Luyi Tian

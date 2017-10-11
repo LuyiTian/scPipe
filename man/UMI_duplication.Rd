@@ -3,11 +3,12 @@
 \docType{data}
 \name{UMI_duplication}
 \alias{UMI_duplication}
-\title{UMI dulication statistics for a small sample scRNA-seq dataset to 
+\title{UMI duplication statistics for a small sample scRNA-seq dataset to 
 demonstrate capabilities of scPipe}
-\format{a data.frame instance.}
+\format{a data.frame instance, one row per cell.}
 \source{
-Christin Biben, WEHI
+Christin Biben (WEHI). She FACS sorted cells from several immune
+cell types including B cells, granulocyte and some early progenitors.
 }
 \usage{
 sc_sample_qc
@@ -16,9 +17,22 @@ sc_sample_qc
 NULL, but makes a data frame with UMI dulication statistics
 }
 \description{
-This data.frame contains UMI dulication statistics, where the
+This data.frame contains UMI duplication statistics, where the
 first column is the number of duplication, and the second column is the
 count of UMIs.
+}
+\examples{
+data("sc_sample_data")
+data("sc_sample_qc")
+sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+organism(sce) = "mmusculus_gene_ensembl"
+gene_id_type(sce) = "ensembl_gene_id"
+QC_metrics(sce) = sc_sample_qc
+demultiplex_info(sce) = cell_barcode_matching
+UMI_dup_info(sce) = UMI_duplication
+
+head(UMI_dup_info(sce))
+
 }
 \author{
 Luyi Tian

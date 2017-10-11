@@ -33,6 +33,16 @@
 #' @source Christin Biben (WEHI). She FACS sorted cells from several immune
 #' cell types including B cells, granulocyte and some early progenitors. 
 #' @author Luyi Tian
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' head(QC_metrics(sce))
+#' plot_mapping(sce,percentage=TRUE,dataname="sc_sample")
+#' 
 NULL
 
 #' @name UMI_duplication
@@ -49,6 +59,18 @@ NULL
 #' @source Christin Biben (WEHI). She FACS sorted cells from several immune
 #' cell types including B cells, granulocyte and some early progenitors. 
 #' @author Luyi Tian
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' 
+#' head(UMI_dup_info(sce))
+#' 
 NULL
 
 #' @name cell_barcode_matching
@@ -77,4 +99,16 @@ NULL
 #' @source Christin Biben (WEHI). She FACS sorted cells from several immune
 #' cell types including B cells, granulocyte and some early progenitors. 
 #' @author Luyi Tian
+#' @examples 
+#' data("sc_sample_data")
+#' data("sc_sample_qc")
+#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' organism(sce) = "mmusculus_gene_ensembl"
+#' gene_id_type(sce) = "ensembl_gene_id"
+#' QC_metrics(sce) = sc_sample_qc
+#' demultiplex_info(sce) = cell_barcode_matching
+#' UMI_dup_info(sce) = UMI_duplication
+#' 
+#' demultiplex_info(sce)
+#' 
 NULL
