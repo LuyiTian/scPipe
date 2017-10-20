@@ -113,7 +113,7 @@ overall_stat = demultiplex_info(sce)
 datatable(overall_stat,width=800)
 ```
 
-plot barcode matching in pie chart:
+Plot barcode matching in pie chart:
 ```{r}
 plot_demultiplex(sce)
 ```
@@ -141,7 +141,7 @@ if (any(colSums(counts(sce)) == 0)){
 
 `r if (zero_cells > 0){paste(zero_cells, "cells have zero read counts, remove them.")}`
 
-datatable of all QC metrics:
+Datatable of all QC metrics:
 ```{r}
 sce = calculate_QC_metrics(sce)
 if(!all(colSums(as.data.frame(QC_metrics(sce)))>0)){
@@ -150,7 +150,7 @@ if(!all(colSums(as.data.frame(QC_metrics(sce)))>0)){
 datatable(as.data.frame(QC_metrics(sce)),width=800,options=list(scrollX= TRUE))
 ```
 
-summary of all QC metrics:
+Summary of all QC metrics:
 ```{r}
 datatable(do.call(cbind, lapply(QC_metrics(sce), summary)),width=800,options=list(scrollX= TRUE))
 ```
@@ -166,20 +166,20 @@ ggplotly(ggplot(as.data.frame(QC_metrics(sce)), aes(x=mapped_to_exon,y=number_of
 
 A robustified Mahalanobis Distance is calculated for each cell then outliers is detected based on the distance. However, due to the complex nature of single cell transcriptome and protocol used, such method can only be used to assist the quality control process. Visual inspection of the quality control metrics is still required. By default we use `comp =1` and the algorithm will try to separate the quality control metrics into two gaussian mixtures.
 
-the number of outliers:
+The number of outliers:
 ```{r}
 sce_qc = detect_outlier(sce,type="low",comp = 1)
 table(QC_metrics(sce_qc)$outliers)
 ```
 
-pairwise plot for QC metrics, colored by outliers:
+Pairwise plot for QC metrics, colored by outliers:
 ```{r, warning=FALSE, message=FALSE}
 plot_QC_pairs(sce_qc)
 ```
 
 ## plot highest expressed genes
 
-remove low quality cells and plot highest expressed genes.
+Remove low quality cells and plot highest expressed genes.
 
 ```{r}
 sce_qc = remove_outliers(sce_qc)
@@ -190,7 +190,7 @@ plotQC(sce_qc, type = "highest-expression", n=20)
 
 ## remove low abundant genes
 
-plot the average count for each genes:
+Plot the average count for each genes:
 ```{r}
 ave.counts <- rowMeans(counts(sce_qc))
 hist(log10(ave.counts), breaks=100, main="", col="grey80",
@@ -207,13 +207,13 @@ sce_qc = sce_qc[(keep1 & keep2), ]
 dim(sce_qc)
 ```
 
-we got `r nrow(sce_qc)` genes left after removing low abundant genes.
+We got `r nrow(sce_qc)` genes left after removing low abundant genes.
 
 # data normalization
 
-## normalization by `Scran` and `Scater`
+## normalization by `scran` and `scater`
 
-compute the normalization size factor
+Compute the normalization size factor
 
 ```{r}
 ncells = ncol(sce_qc)
@@ -233,7 +233,7 @@ if (min(sizeFactors(sce_qc)) <=0){
 }
 ```
 
-pca plot using gene expressions as input, colored by the number of genes.
+PCA plot using gene expressions as input, colored by the number of genes.
 
 ```{r}
 cpm(sce_qc) = calculateCPM(sce_qc, use.size.factors=FALSE)
@@ -242,7 +242,7 @@ plotPCA(sce_qc, exprs_values="cpm", colour_by="total_features")
 
 ### normalize the data using size factor and get high variable genes
 
-the high variable genes is chosed based on `trendVar` and `trendVar` on `Scran` with `FDR>0.05` and biological variation larger than `0.5`. If the number of high variable genes is smaller than 100 we will select the top 100 genes with largest biological variation, if the number is larger than 500 we will only keep top 500 genes with largest biological variation.
+The high variable genes is chosed based on `trendVar` and `trendVar` on `scran` with `FDR>0.05` and biological variation larger than `0.5`. If the number of high variable genes is smaller than 100 we will select the top 100 genes with largest biological variation, if the number is larger than 500 we will only keep top 500 genes with largest biological variation.
 
 ```{r}
 sce_qc <- normalize(sce_qc)
@@ -315,8 +315,3 @@ out20 <- plotTSNE(sce_qc, exprs_values="logcounts", perplexity=20, colour_by="to
      feature_set=rownames(hvg.out))  + ggtitle("Perplexity = 20")
 multiplot(out5, out10, out20, cols=3)
 ```
-
-
-
-
-
