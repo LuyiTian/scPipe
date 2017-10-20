@@ -125,7 +125,7 @@ demultiplex_info(sce) = cell_barcode_matching
 UMI_dup_info(sce) = UMI_duplication
 ```
 
-There are several plots we can create to assess the overall quality of the experiment. The first is to look at the cell barcode demultiplexing statistics. To do this we generate a pie chart that shows the percentage of reads that uniquely match to the cell barcodes, as well as the unmatched proportion of reads and their alignment rates to introns and exons. If we observe a large proportion of unmatched reads that map to exons, this indicates a failure of the cell barcode demultiplexing.
+There are several plots we can create to assess the overall quality of the experiment. The first is to look at the cell barcode demultiplexing statistics. To do this we generate a bar plot that shows the percentage of reads that uniquely match to the cell barcodes, as well as the unmatched proportion of reads and their alignment rates to introns and exons. If we observe a large proportion of unmatched reads that map to exons, this indicates a failure of the cell barcode demultiplexing.
 
 ```{r}
 plot_demultiplex(sce)
