@@ -418,7 +418,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
     kseq_destroy(seq1); kseq_destroy(seq2); // free seq
     gzclose(fq1); gzclose(fq2); // close fastq file
     o_stream.close(); // close out fastq file
-    Rcpp::Rcerr << "pass QC: " << passed_reads << std::endl;
-    Rcpp::Rcerr << "removed_have_N: " << removed_have_N << std::endl;
-    Rcpp::Rcerr << "removed_low_qual: " << removed_low_qual << std::endl;
+    Rcpp::Rcout << "pass QC: " << passed_reads << std::endl;
+    Rcpp::Rcout << "removed_have_N: " << removed_have_N << std::endl;
+    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
 }
