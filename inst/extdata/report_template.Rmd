@@ -113,7 +113,7 @@ overall_stat = demultiplex_info(sce)
 datatable(overall_stat,width=800)
 ```
 
-Plot barcode matching in pie chart:
+Plot barcode match statistics in pie chart:
 ```{r}
 plot_demultiplex(sce)
 ```
@@ -164,7 +164,7 @@ ggplotly(ggplot(as.data.frame(QC_metrics(sce)), aes(x=mapped_to_exon,y=number_of
 
 ## detect outlier cells
 
-A robustified Mahalanobis Distance is calculated for each cell then outliers is detected based on the distance. However, due to the complex nature of single cell transcriptome and protocol used, such method can only be used to assist the quality control process. Visual inspection of the quality control metrics is still required. By default we use `comp =1` and the algorithm will try to separate the quality control metrics into two gaussian mixtures.
+A robustified Mahalanobis Distance is calculated for each cell then outliers are detected based on the distance. However, due to the complex nature of single cell transcriptome and protocol used, such method can only be used to assist the quality control process. Visual inspection of the quality control metrics is still required. By default we use `comp = 1` and the algorithm will try to separate the quality control metrics into two gaussian clusters.
 
 The number of outliers:
 ```{r}
@@ -177,9 +177,9 @@ Pairwise plot for QC metrics, colored by outliers:
 plot_QC_pairs(sce_qc)
 ```
 
-## plot highest expressed genes
+## plot highest expression genes
 
-Remove low quality cells and plot highest expressed genes.
+Remove low quality cells and plot highest expression genes.
 
 ```{r}
 sce_qc = remove_outliers(sce_qc)
@@ -197,7 +197,7 @@ hist(log10(ave.counts), breaks=100, main="", col="grey80",
      xlab=expression(Log[10]~"average count"))
 ```
 
-As a loose filter we keep genes that expressed in at least two cells and for cells that express that gene, the average count larger than two. However this is not the gold standard and the filter may variy depending on the data.
+As a loose filter we keep genes that are expressed in at least two cells and for cells that express that gene, the average count larger than two. However this is not the gold standard and the filter may variy depending on the data.
 
 ```{r}
 keep1 = (apply(counts(sce_qc),1,function(x) mean(x[x>0])) > 1)  # average count larger than one
@@ -217,7 +217,7 @@ Compute the normalization size factor
 
 ```{r}
 ncells = ncol(sce_qc)
-if (ncells >200){
+if (ncells > 200){
   sce_qc <- computeSumFactors(sce_qc)
 }else{
   sce_qc <- computeSumFactors(sce_qc, sizes=as.integer(c(ncells/7,ncells/6,ncells/5,ncells/4,ncells/3)))
@@ -225,10 +225,10 @@ if (ncells >200){
 summary(sizeFactors(sce_qc))
 ```
 
-`r if (min(sizeFactors(sce_qc)) <=0){paste("we have negative size factors in the data. They indicate low quality cells and we have removed them. To avoid negative size factors, the best solution is to increase the stringency of the filtering.")}`
+`r if (min(sizeFactors(sce_qc)) <= 0){paste("We have negative size factors in the data. They indicate low quality cells and we have removed them. To avoid negative size factors, the best solution is to increase the stringency of the filtering.")}`
 
 ```{r}
-if (min(sizeFactors(sce_qc)) <=0){
+if (min(sizeFactors(sce_qc)) <= 0) {
   sce_qc = sce_qc[, sizeFactors(sce_qc)>0]
 }
 ```
@@ -242,7 +242,7 @@ plotPCA(sce_qc, exprs_values="cpm", colour_by="total_features")
 
 ### normalize the data using size factor and get high variable genes
 
-The high variable genes is chosed based on `trendVar` and `trendVar` on `scran` with `FDR>0.05` and biological variation larger than `0.5`. If the number of high variable genes is smaller than 100 we will select the top 100 genes with largest biological variation, if the number is larger than 500 we will only keep top 500 genes with largest biological variation.
+The highly variable genes are chosen based on `trendVar` from `scran` with `FDR>0.05` and biological variation larger than `0.5`. If the number of highly variable genes is smaller than 100 we will select the top 100 genes with largest biological variation, if the number is larger than 500 we will only keep top 500 genes with largest biological variation.
 
 ```{r}
 sce_qc <- normalize(sce_qc)
