@@ -44,6 +44,7 @@ library(scran)
 library(scPipe)
 library(Rtsne)
 ```
+
 # 1. parameters for each preprocessing step
 
 ## 1.1 parameters for `sc_trim_barcode`
@@ -81,7 +82,6 @@ assume read1 contains the transcript
 * transctiptome annotations: `r params$anno_gff`
 * do strand specific mapping: params$stnd
 * fix chromosome names: fix_chr
-
 
 ## 1.4 parameters for `sc_demultiplex`
 
@@ -121,9 +121,7 @@ plot_demultiplex(sce)
 ## reads alignment statistics per cell
 
 ```{r}
-
 ggplotly(plot_mapping(sce,dataname=params$samplename,percentage = FALSE))
-
 ```
 
 ```{r}
@@ -161,9 +159,6 @@ Number of reads mapped to exon before UMI deduplication VS number of genes detec
 ```{r}
 ggplotly(ggplot(as.data.frame(QC_metrics(sce)), aes(x=mapped_to_exon,y=number_of_genes))+geom_point(alpha=0.8))
 ```
-
-
-
 
 # quality control
 
@@ -238,7 +233,6 @@ if (min(sizeFactors(sce_qc)) <=0){
 }
 ```
 
-
 pca plot using gene expressions as input, colored by the number of genes.
 
 ```{r}
@@ -275,7 +269,6 @@ points(var.out$mean[rownames(var.out) %in% rownames(hvg.out)], var.out$total[row
 ## heatmap of high variable genes
 
 ```{r}
-
 gene_exp = exprs(sce_qc)
 
 gene_exp = gene_exp[rownames(hvg.out),]
