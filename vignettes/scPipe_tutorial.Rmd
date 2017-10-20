@@ -63,7 +63,7 @@ sc_trim_barcode(file.path(data_dir, "combined.fastq"),
 Next we align reads to the genome. This example uses `Rsubread` but any aligner that support RNA-seq alignment and gives standard BAM output can be used here. The `Rsubread` package is not available on Windows, so the following alignment step will only run on Mac OSX or Linux.
 
 ```{r,eval=TRUE}
-if(!(.Platform$OS.type == "windows")){
+if(.Platform$OS.type != "windows"){
   Rsubread::buildindex(basename=file.path(data_dir, "ERCC_index"), reference=ERCCfa_fn)
 
   Rsubread::align(index=file.path(data_dir, "ERCC_index"),
@@ -77,7 +77,7 @@ if(!(.Platform$OS.type == "windows")){
 After the read alignment, we assign reads to exons based on the annotation provided using the `sc_exon_mapping` function. Currently `scPipe` only supports annotation in `gff3` or `bed` format.
 
 ```{r,eval=TRUE}
-if(!(.Platform$OS.type == "windows")){
+if(.Platform$OS.type != "windows"){
   sc_exon_mapping(file.path(data_dir, "out.aln.bam"),
                 file.path(data_dir, "out.map.bam"),
                 ERCCanno_fn)
@@ -89,7 +89,7 @@ if(!(.Platform$OS.type == "windows")){
 Next we use the `sc_demultiplex` function to split the reads into separate `.csv` files for each cell in the `/count` subfolder. Each file contains three columns and each row corresponds to a distinct read. The first column contains the gene ID that the read maps to, the second column gives the UMI sequence for that read and the third column is the distance to the transcript end position (TES) in bp. This file will be used for UMI deduplication and to generate a gene count matrix by calling the `sc_gene_counting` function.
 
 ```{r,eval=TRUE}
-if(!(.Platform$OS.type == "windows")){
+if(.Platform$OS.type != "windows"){
   sc_demultiplex(file.path(data_dir, "out.map.bam"), data_dir, barcode_annotation_fn,has_UMI=FALSE)
 
   sc_gene_counting(data_dir, barcode_annotation_fn)
@@ -108,7 +108,7 @@ The greatest difference between scRNA-seq protocols is in their read structure, 
 The easiest way to create a *SingleCellExperiment* object from the output of `scPipe` preprocessing is using `create_sce_by_dir` function, that will read in the gene count matrix together with the QC information available in the `stat` folder.
 
 ```{r}
-if(!(.Platform$OS.type == "windows")){
+if(.Platform$OS.type != "windows"){
 sce = create_sce_by_dir(data_dir)
 dim(sce)
 }
