@@ -104,10 +104,10 @@ The organism is "`r params$species`", and gene id type is "`r params$gene_id_typ
 ## overall cell barcode matching
 
 ```{r, warning=FALSE, message=FALSE}
-if(any(is.null(params$species) || is.na(params$species))){
-  sce = create_sce_by_dir(params$outdir, organism=params$species, gene_id_type=params$gene_id_type)
-}else{
+if (is.null(params$species) || is.na(params$species)) {
   sce = create_sce_by_dir(params$outdir)
+} else {
+  sce = create_sce_by_dir(params$outdir, organism=params$species, gene_id_type=params$gene_id_type)
 }
 overall_stat = demultiplex_info(sce)
 datatable(overall_stat,width=800)
