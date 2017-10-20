@@ -67,7 +67,7 @@ assume read1 contains the transcript
 
 * remove reads that have `N` in its barcode or UMI: `r params$rm_n`
 * remove reads with low quality: `r params$rm_low`
-`r if (params$rm_low){paste("\t* minimum read quality:", params$min_q,"\n","\t* maximum number of base below minimum read quality:",params$num_bq,"\n")}`
+`r if (params$rm_low){paste("\t* minimum read quality:", params$min_q, "\n", "\t* maximum number of base below minimum read quality:", params$num_bq, "\n")}`
   
 ## 1.2 parameters for alignment
 
@@ -110,7 +110,7 @@ if (is.null(params$species) || is.na(params$species)) {
   sce = create_sce_by_dir(params$outdir, organism=params$species, gene_id_type=params$gene_id_type)
 }
 overall_stat = demultiplex_info(sce)
-datatable(overall_stat,width=800)
+datatable(overall_stat, width=800)
 ```
 
 Plot barcode match statistics in pie chart:
@@ -121,11 +121,11 @@ plot_demultiplex(sce)
 ## reads alignment statistics per cell
 
 ```{r}
-ggplotly(plot_mapping(sce,dataname=params$samplename,percentage = FALSE))
+ggplotly(plot_mapping(sce, dataname=params$samplename, percentage = FALSE))
 ```
 
 ```{r}
-ggplotly(plot_mapping(sce,dataname=params$samplename,percentage = TRUE))
+ggplotly(plot_mapping(sce, dataname=params$samplename, percentage = TRUE))
 ```
 
 ## summary and distributions of some basic statistics
@@ -133,7 +133,7 @@ ggplotly(plot_mapping(sce,dataname=params$samplename,percentage = TRUE))
 ```{r}
 if (any(colSums(counts(sce)) == 0)){
   zero_cells = sum(colSums(counts(sce)) == 0)
-  sce = sce[,colSums(counts(sce)) > 0]
+  sce = sce[, colSums(counts(sce)) > 0]
 }else{
   zero_cells = 0
 }
@@ -145,19 +145,19 @@ Datatable of all QC metrics:
 ```{r}
 sce = calculate_QC_metrics(sce)
 if(!all(colSums(as.data.frame(QC_metrics(sce)))>0)){
-  QC_metrics(sce) = QC_metrics(sce)[,colSums(as.data.frame(QC_metrics(sce)))>0]
+  QC_metrics(sce) = QC_metrics(sce)[, colSums(as.data.frame(QC_metrics(sce)))>0]
 }
-datatable(as.data.frame(QC_metrics(sce)),width=800,options=list(scrollX= TRUE))
+datatable(as.data.frame(QC_metrics(sce)), width=800, options=list(scrollX= TRUE))
 ```
 
 Summary of all QC metrics:
 ```{r}
-datatable(do.call(cbind, lapply(QC_metrics(sce), summary)),width=800,options=list(scrollX= TRUE))
+datatable(do.call(cbind, lapply(QC_metrics(sce), summary)), width=800, options=list(scrollX= TRUE))
 ```
 
 Number of reads mapped to exon before UMI deduplication VS number of genes detected:
 ```{r}
-ggplotly(ggplot(as.data.frame(QC_metrics(sce)), aes(x=mapped_to_exon,y=number_of_genes))+geom_point(alpha=0.8))
+ggplotly(ggplot(as.data.frame(QC_metrics(sce)), aes(x=mapped_to_exon, y=number_of_genes))+geom_point(alpha=0.8))
 ```
 
 # quality control
@@ -168,7 +168,7 @@ A robustified Mahalanobis Distance is calculated for each cell then outliers are
 
 The number of outliers:
 ```{r}
-sce_qc = detect_outlier(sce,type="low",comp = 1)
+sce_qc = detect_outlier(sce, type="low", comp = 1)
 table(QC_metrics(sce_qc)$outliers)
 ```
 
@@ -200,7 +200,7 @@ hist(log10(ave.counts), breaks=100, main="", col="grey80",
 As a loose filter we keep genes that are expressed in at least two cells and for cells that express that gene, the average count larger than two. However this is not the gold standard and the filter may variy depending on the data.
 
 ```{r}
-keep1 = (apply(counts(sce_qc),1,function(x) mean(x[x>0])) > 1)  # average count larger than one
+keep1 = (apply(counts(sce_qc), 1, function(x) mean(x[x>0])) > 1)  # average count larger than one
 keep2 = (rowSums(counts(sce_qc)>0) > 2)  # expressed in at least three cells
 
 sce_qc = sce_qc[(keep1 & keep2), ]
@@ -220,7 +220,7 @@ ncells = ncol(sce_qc)
 if (ncells > 200){
   sce_qc <- computeSumFactors(sce_qc)
 }else{
-  sce_qc <- computeSumFactors(sce_qc, sizes=as.integer(c(ncells/7,ncells/6,ncells/5,ncells/4,ncells/3)))
+  sce_qc <- computeSumFactors(sce_qc, sizes=as.integer(c(ncells/7, ncells/6, ncells/5, ncells/4, ncells/3)))
 }
 summary(sizeFactors(sce_qc))
 ```
@@ -251,12 +251,12 @@ var.fit <- trendVar(sce_qc, method="loess", use.spikes=FALSE, span=0.2)
 var.out <- decomposeVar(sce_qc, var.fit)
 
 if (length(which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)) < 100){
-  hvg.out <- var.out[order(var.out$bio, decreasing=TRUE)[1:100],]
+  hvg.out <- var.out[order(var.out$bio, decreasing=TRUE)[1:100], ]
 }else if(length(which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)) > 500){
-  hvg.out <- var.out[order(var.out$bio, decreasing=TRUE)[1:500],]
+  hvg.out <- var.out[order(var.out$bio, decreasing=TRUE)[1:500], ]
 }else{
-  hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >= 0.5),]
-  hvg.out <- hvg.out[order(hvg.out$bio, decreasing=TRUE),]
+  hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >= 0.5), ]
+  hvg.out <- hvg.out[order(hvg.out$bio, decreasing=TRUE), ]
 }
 
 plot(var.out$mean, var.out$total, pch=16, cex=0.6, xlab="Mean log-expression",
@@ -271,7 +271,7 @@ points(var.out$mean[rownames(var.out) %in% rownames(hvg.out)], var.out$total[row
 ```{r}
 gene_exp = exprs(sce_qc)
 
-gene_exp = gene_exp[rownames(hvg.out),]
+gene_exp = gene_exp[rownames(hvg.out), ]
 
 hc.rows <- hclust(dist(gene_exp))
 hc.cols <- hclust(dist(t(gene_exp)))
@@ -302,10 +302,10 @@ plotPCA(sce_qc, exprs_values="logcounts", colour_by="total_features")
 
 ## dimensionality reduction by t-SNE
 
-```{r,fig.width=10,fig.height=3.5}
+```{r, fig.width=10, fig.height=3.5}
 set.seed(100)
-if(any(duplicated(t(logcounts(sce_qc)[rownames(hvg.out),])))){
-  sce_qc = sce_qc[,!duplicated(t(logcounts(sce_qc)[rownames(hvg.out),]))]
+if(any(duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ])))){
+  sce_qc = sce_qc[, !duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ]))]
 }
 out5 <- plotTSNE(sce_qc, exprs_values="logcounts", perplexity=5, colour_by="total_features",
      feature_set=rownames(hvg.out)) + ggtitle("Perplexity = 5")
