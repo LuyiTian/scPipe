@@ -10,7 +10,7 @@ plot_demultiplex(sce)
 \item{sce}{a \code{SingleCellExperiment} object}
 }
 \value{
-a pie chart
+a bar chart
 }
 \description{
 plot cell barcode demultiplex result for the experiment.

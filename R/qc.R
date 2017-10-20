@@ -228,10 +228,10 @@ calculate_QC_metrics <- function(sce) {
   if (all(gene_number == 0)) {
     stop("all genes have zero count. check the expression matrix.")
   }else{
-    if (!("scPipe" %in% names(sce@int_metadata))){
-      sce@int_metadata[["scPipe"]] = list(QC_cols=c("number_of_genes"))
-    }else if(!("QC_cols" %in% names(sce@int_metadata$scPipe))){
-      sce@int_metadata[["scPipe"]] = list(QC_cols=c("number_of_genes"))
+    if (!("scPipe" %in% names(sce@metadata))){
+      sce@metadata[["scPipe"]] = list(QC_cols=c("number_of_genes"))
+    }else if(!("QC_cols" %in% names(sce@metadata$scPipe))){
+      sce@metadata[["scPipe"]] = list(QC_cols=c("number_of_genes"))
       QC_metrics(object) = DataFrame(row.names = colnames(object)) 
       # create a empty QC metrics if not exists
     }
@@ -245,7 +245,7 @@ calculate_QC_metrics <- function(sce) {
   if(!is.null(spikeNames(sce))){
     if(any(isSpike(sce,"ERCC"))){
       exon_count = colSums(assay(sce,"counts")[!isSpike(sce,"ERCC"),])
-      ERCC_count = assay(sce,"counts")[isSpike(sce,"ERCC"),]
+      ERCC_count = colSums(assay(sce,"counts")[isSpike(sce,"ERCC"),])
       QC_metrics(sce)$non_ERCC_percent = exon_count/(ERCC_count+exon_count+1e-5)
     }else{
       print("no ERCC spike-in. skip `non_ERCC_percent`")
@@ -412,7 +412,7 @@ plot_mapping <- function(sce,
 #'
 #' @param sce a \code{SingleCellExperiment} object
 #'
-#' @return a pie chart
+#' @return a bar chart
 #' @export
 #'
 #' @examples
@@ -430,17 +430,31 @@ plot_mapping <- function(sce,
 plot_demultiplex = function(sce){
   sce = validObject(sce) # check the sce object
   demultiplex_stat = demultiplex_info(sce)
+  demultiplex_stat[,"count"] = demultiplex_stat[,"count"]/sum(demultiplex_stat[,"count"])
   if(is.null(demultiplex_stat)){
     stop("`demultiplex_stat` does not exists in sce. demultiplex_info(sce) == NULL)")
   }
+  demultiplex_stat$label_y = demultiplex_stat[,"count"]+0.05
+  demultiplex_stat$label_tx = percent(demultiplex_stat[,"count"])
+  #kp = demultiplex_stat[,"count"]/sum(demultiplex_stat[,"count"])>0.2
+  #label_tx[!kp] = ""
   
-  p = ggplot(data=demultiplex_stat, aes(x="", y=demultiplex_stat[,"count"], 
-                                        fill=demultiplex_stat[,"status"]))+
+  blank_theme = theme_minimal()+
+    theme(
+      axis.text.x = element_text(angle = 30, hjust=1,size=12),
+      panel.border = element_blank(),
+      plot.title=element_text(size=14, face="bold"),
+      legend.position="none"
+    )
+  
+  p = ggplot(data=demultiplex_stat, aes(x=status, y=count, 
+                                        fill=status))+
     geom_bar(width = 1, stat = "identity")+
-    coord_polar("y", start=0)+
+    #coord_polar("y", start=0)+
     scale_fill_brewer(palette="Dark2")+
-    theme_minimal()+
-    labs(title="Cell barcode demultiplex statistics", y="count",fill="status")
+    blank_theme+
+    geom_text(aes(y = label_y, label = label_tx))+
+    labs(title="Cell barcode demultiplex statistics", y="percentage",x="demultiplex status")
   return(p)
 }
 
@@ -479,7 +493,7 @@ plot_UMI_dup = function(sce, log10_x = TRUE){
       break
     }
   }
-  p = ggplot(data=tmp, aes(x=tmp[,"duplication.number"], y=tmp[,"count"])) + 
+  p = ggplot(data=tmp, aes(x=tmp[,"duplication_number"], y=tmp[,"count"])) + 
     geom_smooth(method = "loess",se = FALSE)+theme_bw()
   if(log10_x){
     p = p+scale_x_log10()+

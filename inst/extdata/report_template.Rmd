@@ -7,30 +7,31 @@ output:
     toc_float: true
     collapsed: false
 params:
-  samplename: NA
-  fq1: NA
-  fq2: NA
-  fqout: NA
-  bc1_info: NA
-  bc2_info: NA
-  umi_info: NA
-  rm_n: NA
-  rm_low: NA
-  min_q: NA
-  num_bq: NA
-  bam_align: NA
-  g_index: NA
-  bam_map: NA
-  outdir: NA
-  anno_gff: NA
-  stnd: NA
-  fix_chr: NA
-  bc_anno: NA
-  max_mis: NA
-  UMI_cor: NA
-  gene_fl: NA
-  species: NA
-  gene_id_type: NA
+  samplename: "SAMPLE_NAME__"
+  fq1: "FQ1__"
+  fq2: "FQ2__"
+  fqout: "FQOUT__"
+  bc1_info: "BC1_INFO__"
+  bc2_info: "BC2_INFO__"
+  umi_info: "UMI_INFO__"
+  rm_n: RM_N__
+  rm_low: RM_LOW__
+  min_q: MIN_Q__
+  num_bq: NUM_BQ__
+  bam_align: "BAM_ALIGN__"
+  g_index: "G_INDEX__"
+  bam_map: "BAM_MAP__"
+  outdir: "OUTDIR__"
+  anno_gff: "ANNO_GFF__"
+  stnd: STND__
+  fix_chr: FIX_CHR__
+  bc_anno: "BC_ANNO__"
+  max_mis: MAX_MIS__
+  UMI_cor: "UMI_COR__"
+  gene_fl: GENE_FL__
+  species: "SPECIES__"
+  gene_id_type: "GENE_ID_TYPE__"
+
 ---
 ```{r, warning=FALSE, echo=FALSE, message=FALSE}
 library(scales)
