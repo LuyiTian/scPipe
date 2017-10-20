@@ -255,7 +255,7 @@ calculate_QC_metrics <- function(sce) {
   }
 
   # get mt percentage
-  if (!is.na((gene_id_type(sce)))) {
+  if (!is.na(gene_id_type(sce))) {
     mt_genes <- get_genes_by_GO(returns=gene_id_type(sce),
                                 dataset=organism(sce),
                                 go=c("GO:0005739"))
@@ -273,7 +273,7 @@ calculate_QC_metrics <- function(sce) {
   }
 
   # get ribosomal percentage
-  if (!is.na((gene_id_type(sce)))) {
+  if (!is.na(gene_id_type(sce))) {
     ribo_genes <- get_genes_by_GO(returns=gene_id_type(sce),
                                dataset=organism(sce),
                                go=c("GO:0005840"))
