@@ -232,7 +232,7 @@ calculate_QC_metrics <- function(sce) {
       sce@metadata[["scPipe"]] = list(QC_cols=c("number_of_genes"))
     }else if(!("QC_cols" %in% names(sce@metadata$scPipe))){
       sce@metadata[["scPipe"]] = list(QC_cols=c("number_of_genes"))
-      QC_metrics(object) = DataFrame(row.names = colnames(object)) 
+      QC_metrics(sce) = DataFrame(row.names = colnames(sce)) 
       # create a empty QC metrics if not exists
     }
     QC_metrics(sce)$number_of_genes = gene_number
