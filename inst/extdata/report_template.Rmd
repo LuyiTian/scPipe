@@ -29,7 +29,7 @@ params:
   max_mis: MAX_MIS__
   UMI_cor: "UMI_COR__"
   gene_fl: GENE_FL__
-  species: "SPECIES__"
+  organism: "ORGANISM__"
   gene_id_type: "GENE_ID_TYPE__"
 
 ---
@@ -99,15 +99,15 @@ assume read1 contains the transcript
 
 # 2. data summary
 
-The organism is "`r params$species`", and gene id type is "`r params$gene_id_type`".
+The organism is "`r params$organism`", and gene id type is "`r params$gene_id_type`".
 
 ## overall cell barcode matching
 
 ```{r, warning=FALSE, message=FALSE}
-if (is.null(params$species) || is.na(params$species)) {
+if (is.null(params$organism) || is.na(params$organism)) {
   sce = create_sce_by_dir(params$outdir)
 } else {
-  sce = create_sce_by_dir(params$outdir, organism=params$species, gene_id_type=params$gene_id_type)
+  sce = create_sce_by_dir(params$outdir, organism=params$organism, gene_id_type=params$gene_id_type)
 }
 overall_stat = demultiplex_info(sce)
 datatable(overall_stat, width=800)

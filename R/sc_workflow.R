@@ -80,7 +80,7 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
                   r1="NA",
                   r2="NA",
                   outfq="NA",
-                  read_structure = list(bs1=1, bl1=1, bs2=1, bl2=1, us=1, ul=1),
+                  read_structure=list(bs1=1, bl1=1, bs2=1, bl2=1, us=1, ul=1),
                   filter_settings = list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
                   align_bam = "NA",
                   genome_index = "NA",
@@ -228,7 +228,7 @@ create_report = function(sample_name,
   tx = gsub(pattern = "GENE_FL__", replacement = as.character(gene_fl), x = tx)
   if(!missing(organism)){
     if(!is.null(organism)){
-      tx = gsub(pattern = "SPECIES__", replacement = organism, x = tx)
+      tx = gsub(pattern = "ORGANISM__", replacement = organism, x = tx)
     }
   }
   if(!missing(gene_id_type)){
