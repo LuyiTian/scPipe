@@ -94,13 +94,13 @@ ggplotly(ggplot(as.data.frame(QC_metrics(sce)), aes(x=mapped_to_exon, y=number_o
 ## Detect outlier cells
 
 A robustified Mahalanobis Distance is calculated for each cell then outliers are detected based on the distance.
-However, due to the complex nature of single cell transcriptome and protocol used, such method can only be used to
+However, due to the complex nature of single cell transcriptomes and protocol used, such a method can only be used to
 assist the quality control process. Visual inspection of the quality control metrics is still required. By default we
 use `comp = 1` and the algorithm will try to separate the quality control metrics into two gaussian clusters.
 
 The number of outliers:
 ```{r}
-sce_qc = detect_outlier(sce, type="low", comp=2)
+sce_qc = detect_outlier(sce, type="low", comp=1)
 table(QC_metrics(sce_qc)$outliers)
 ```
 
