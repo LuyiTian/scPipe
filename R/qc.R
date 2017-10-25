@@ -493,7 +493,16 @@ plot_UMI_dup = function(sce, log10_x = TRUE){
       break
     }
   }
-  p = ggplot(data=tmp, aes(x=tmp[,"duplication_number"], y=tmp[,"count"])) + 
+  dup_col = ""
+  if ("duplication_number" %in% colnames(tmp)){
+    dup_col = "duplication_number"
+  }else if("duplication.number" %in% colnames(tmp)){
+    dup_col = "duplication.number"
+  }else{
+    print("cannot find column contains UMI duplication number.")
+    return(NULL)
+  }
+  p = ggplot(data=tmp, aes(x=tmp[, dup_col], y=tmp[,"count"])) + 
     geom_smooth(method = "loess",se = FALSE)+theme_bw()
   if(log10_x){
     p = p+scale_x_log10()+
