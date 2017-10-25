@@ -45,17 +45,17 @@ library(scPipe)
 library(Rtsne)
 ```
 
-# 1. parameters for each preprocessing step
+# Parameters for each preprocessing step
 
-## 1.1 parameters for `sc_trim_barcode`
+## Parameters for `sc_trim_barcode`
 
-### file path
+### File paths
 
 * input fastq1: `r params$fq1`
 * input fastq2: `r params$fq2`
 * output fastq: `r params$fqout`
 
-### read structure
+### Read structure
 
 assume read1 contains the transcript
 
@@ -63,19 +63,19 @@ assume read1 contains the transcript
 * barcode in read2: `r params$bc2_info`
 * UMI in read2: `r params$umi_info`
 
-### read filter
+### Read filter
 
 * remove reads that have `N` in its barcode or UMI: `r params$rm_n`
 * remove reads with low quality: `r params$rm_low`
 `r if (params$rm_low){paste("\t* minimum read quality:", params$min_q, "\n", "\t* maximum number of base below minimum read quality:", params$num_bq, "\n")}`
   
-## 1.2 parameters for alignment
+## Parameters for alignment
 
 * input fastq: `r params$fqout`
 * output bam file: `r params$bam_align`
 * genome index: `r params$g_index`
 
-## 1.3 parameters for `sc_exon_mapping`
+## Parameters for `sc_exon_mapping`
 
 * input bam file: `r params$bam_align`
 * output bam file: `r params$bam_map`
@@ -83,25 +83,25 @@ assume read1 contains the transcript
 * do strand specific mapping: params$stnd
 * fix chromosome names: fix_chr
 
-## 1.4 parameters for `sc_demultiplex`
+## Parameters for `sc_demultiplex`
 
 * input bam file: `r params$bam_map`
 * output folder: `r params$outdir`
 * barcode annotation file: `r params$bc_anno`
 * maximum mismatch allowed in barcode: `r params$max_mis`
 
-## 1.5 parameters for `sc_gene_counting`
+## Parameters for `sc_gene_counting`
 
 * output folder: `r params$outdir`
 * barcode annotation file: `r params$bc_anno`
 * UMI correction: `r params$UMI_cor`
 * gene filtering: `r params$gene_fl`
 
-# 2. data summary
+# Data summary
 
 The organism is "`r params$organism`", and gene id type is "`r params$gene_id_type`".
 
-## overall cell barcode matching
+## Overall barcode statistics
 
 ```{r, warning=FALSE, message=FALSE}
 if (is.null(params$organism) || is.na(params$organism)) {
@@ -118,7 +118,7 @@ Plot barcode match statistics in pie chart:
 plot_demultiplex(sce)
 ```
 
-## reads alignment statistics per cell
+## Read alignment statistics
 
 ```{r}
 ggplotly(plot_mapping(sce, dataname=params$samplename, percentage = FALSE))
@@ -128,13 +128,13 @@ ggplotly(plot_mapping(sce, dataname=params$samplename, percentage = FALSE))
 ggplotly(plot_mapping(sce, dataname=params$samplename, percentage = TRUE))
 ```
 
-## summary and distributions of some basic statistics
+## Summary and distributions of QC metrics
 
 ```{r}
-if (any(colSums(counts(sce)) == 0)){
+if (any(colSums(counts(sce)) == 0)) {
   zero_cells = sum(colSums(counts(sce)) == 0)
   sce = sce[, colSums(counts(sce)) > 0]
-}else{
+} else {
   zero_cells = 0
 }
 ```
@@ -160,11 +160,14 @@ Number of reads mapped to exon before UMI deduplication VS number of genes detec
 ggplotly(ggplot(as.data.frame(QC_metrics(sce)), aes(x=mapped_to_exon, y=number_of_genes))+geom_point(alpha=0.8))
 ```
 
-# quality control
+# Quality control
 
-## detect outlier cells
+## Detect outlier cells
 
-A robustified Mahalanobis Distance is calculated for each cell then outliers are detected based on the distance. However, due to the complex nature of single cell transcriptome and protocol used, such method can only be used to assist the quality control process. Visual inspection of the quality control metrics is still required. By default we use `comp = 1` and the algorithm will try to separate the quality control metrics into two gaussian clusters.
+A robustified Mahalanobis Distance is calculated for each cell then outliers are detected based on the distance.
+However, due to the complex nature of single cell transcriptomes and protocol used, such a method can only be used to
+assist the quality control process. Visual inspection of the quality control metrics is still required. By default we
+use `comp = 1` and the algorithm will try to separate the quality control metrics into two gaussian clusters.
 
 The number of outliers:
 ```{r}
@@ -209,17 +212,17 @@ dim(sce_qc)
 
 We got `r nrow(sce_qc)` genes left after removing low abundant genes.
 
-# data normalization
+# Data normalization
 
-## normalization by `scran` and `scater`
+## Normalization by `scran` and `scater`
 
 Compute the normalization size factor
 
 ```{r}
 ncells = ncol(sce_qc)
-if (ncells > 200){
+if (ncells > 200) {
   sce_qc <- computeSumFactors(sce_qc)
-}else{
+} else {
   sce_qc <- computeSumFactors(sce_qc, sizes=as.integer(c(ncells/7, ncells/6, ncells/5, ncells/4, ncells/3)))
 }
 summary(sizeFactors(sce_qc))
@@ -240,11 +243,13 @@ cpm(sce_qc) = calculateCPM(sce_qc, use.size.factors=FALSE)
 plotPCA(sce_qc, exprs_values="cpm", colour_by="total_features")
 ```
 
-### normalize the data using size factor and get high variable genes
+### Normalize the data using size factor and get high variable genes
 
-The highly variable genes are chosen based on `trendVar` from `scran` with `FDR>0.05` and biological variation larger than `0.5`. If the number of highly variable genes is smaller than 100 we will select the top 100 genes with largest biological variation, if the number is larger than 500 we will only keep top 500 genes with largest biological variation.
+The highly variable genes are chosen based on `trendVar` from `scran` with `FDR > 0.05` and biological variation larger
+than `0.5`. If the number of highly variable genes is smaller than 100 we will select the top 100 genes by
+biological variation. If the number is larger than 500 we will only keep top 500 genes by biological variation.
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 sce_qc <- normalize(sce_qc)
 
 var.fit <- trendVar(sce_qc, method="loess", use.spikes=FALSE, span=0.2)
@@ -266,7 +271,7 @@ lines(var.out$mean[o], var.out$tech[o], col="dodgerblue", lwd=2)
 points(var.out$mean[rownames(var.out) %in% rownames(hvg.out)], var.out$total[rownames(var.out) %in% rownames(hvg.out)], col="red", pch=16)
 ```
 
-## heatmap of high variable genes
+## Heatmap of high variable genes
 
 ```{r}
 gene_exp = exprs(sce_qc)
@@ -292,19 +297,19 @@ plot_ly(
 layout(autosize = F, margin = m)
 ```
 
-# dimensionality reduction using high variable genes
+# Dimensionality reduction using high variable genes
 
-## dimensionality reduction by PCA
+## Dimensionality reduction by PCA
 
 ```{r}
 plotPCA(sce_qc, exprs_values="logcounts", colour_by="total_features")
 ```
 
-## dimensionality reduction by t-SNE
+## Dimensionality reduction by t-SNE
 
 ```{r, fig.width=10, fig.height=3.5}
 set.seed(100)
-if(any(duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ])))){
+if (any(duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ])))) {
   sce_qc = sce_qc[, !duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ]))]
 }
 out5 <- plotTSNE(sce_qc, exprs_values="logcounts", perplexity=5, colour_by="total_features",
