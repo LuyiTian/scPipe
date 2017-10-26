@@ -6,15 +6,15 @@ test_that("new SingleCellExperiment doesnot contain QC information", {
   sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
   expect_that(sce, is_a("SingleCellExperiment"))
   expect_warning(QC_metrics(sce),
-                 "`scPipe` not in `int_metadata`. cannot identify quality control columns")
+                 "`scPipe` not in `metadata`. cannot identify quality control columns")
   expect_equal(QC_metrics(sce), NULL)
   
   expect_warning(demultiplex_info(sce),
-                 "`scPipe` not in `int_metadata`. cannot find columns for cell barcode demultiplex results")
+                 "`scPipe` not in `metadata`. cannot find columns for cell barcode demultiplex results")
   expect_equal(demultiplex_info(sce), NULL)
   
   expect_warning(UMI_dup_info(sce),
-                 "`scPipe` not in `int_metadata`. cannot find columns for cell barcode demultiplex results")
+                 "`scPipe` not in `metadata`. cannot find columns for cell barcode demultiplex results")
   expect_equal(UMI_dup_info(sce), NULL)
   
 })
