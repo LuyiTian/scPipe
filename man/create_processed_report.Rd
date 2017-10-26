@@ -15,6 +15,8 @@ create_processed_report(outdir = ".", organism, gene_id_type,
 
 \item{gene_id_type}{gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`}
+
+\item{report_name}{the name of the report .Rmd and .html files.}
 }
 \description{
 create an HTML report summarising pro-processed data. This is an alternative to the more verbose \code{create_report} that requires only the processed counts and stats folders.

@@ -236,6 +236,7 @@ create_report = function(sample_name,
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
+#' @param report_name the name of the report .Rmd and .html files.
 #'
 #' @examples 
 #' \dontrun{
