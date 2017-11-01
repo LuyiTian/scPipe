@@ -32,7 +32,7 @@ The organism is ``r params$organism``, and gene id type is ``r params$gene_id_ty
 ## Cell barcode statistics
 
 ```{r, warning=FALSE, message=FALSE}
-sce <- sce <- create_sce_by_dir(
+sce <- create_sce_by_dir(
   params$outdir,
   organism = params$organism,
   gene_id_type = params$gene_id_type
