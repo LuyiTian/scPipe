@@ -389,8 +389,13 @@ plot_mapping <- function(sce,
       geom_bar(stat="identity", width=1)+
       ylab("number of reads")+
       xlab("cell sorted by number of reads mapped to exon")+
-      theme(axis.title.x=element_blank(), axis.text.x=element_blank())+
-      ggtitle(paste0("overall mapping statistics of ", dataname, " (number of reads)"))
+      theme(axis.title.x=element_blank(), axis.text.x=element_blank())
+
+      if (dataname != "") {
+        p <- p + ggtitle(paste0("Overall mapping statistics of ", dataname, " (number of reads)"))
+      } else {
+        p <- p + ggtitle(paste0("Overall mapping statistics (number of reads)"))
+      }
   }
   else {
     p <- ggplot(dat.m1, aes_string(x="sample_name", y="value", fill="variable")) + scale_fill_brewer(palette="Set1")+
@@ -398,8 +403,13 @@ plot_mapping <- function(sce,
       ylab("percentage of reads")+
       xlab("cell sorted by number of reads mapped_to_exon")+
       scale_y_continuous(labels=percent_format())+
-      theme(axis.title.x=element_blank(), axis.text.x=element_blank())+
-      ggtitle(paste0("overall mapping statistics of ", dataname, " (percentage)"))
+      theme(axis.title.x=element_blank(), axis.text.x=element_blank())
+
+      if (dataname != "") {
+        p <- p + ggtitle(paste0("Overall mapping statistics of ", dataname, " (percentage)"))
+      } else {
+        p <- p + ggtitle(paste0("Overall mapping statistics (percentage)"))
+      }
   }
 
   return(p)
