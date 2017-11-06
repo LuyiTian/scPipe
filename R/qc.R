@@ -91,7 +91,7 @@ detect_outlier <- function(sce,
     }
   }
   x_all <- as.data.frame(QC_metrics(sce)[, colnames(QC_metrics(sce)) %in% sel_col])
-  x_all$total_count_per_cell = log2(x_all$total_count_per_cell + 1)
+  x_all$total_count_per_cell <- log2(x_all$total_count_per_cell + 1)
 
   if (!all(complete.cases(x_all))) {
     stop("we find NAs in the selected columns, check the quality control matrix")
