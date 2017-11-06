@@ -86,7 +86,7 @@ detect_outlier <- function(sce,
     print("the following QC metrics not find in colData from sce:")
     print(tmp)
     if (any(c("number_of_genes", "total_count_per_cell") %in% tmp)) {
-      stop("the quality control metrics should at least contain the numebr of 
+      stop("the quality control metrics should at least contain the number of 
            genes(`number_of_genes`) and counts per cell(`total_count_per_cell`)!")
     }
   }
