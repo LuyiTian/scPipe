@@ -83,7 +83,7 @@ detect_outlier <- function(sce,
   }
   if (!all(sel_col %in% colnames(QC_metrics(sce)))) {
     tmp <- sel_col[!(sel_col %in% colnames(QC_metrics(sce)))]
-    print("the following QC metrics not find in colData from sce:")
+    print("the following QC metrics not found in colData from sce:")
     print(tmp)
     if (any(c("number_of_genes", "total_count_per_cell") %in% tmp)) {
       stop("the quality control metrics should at least contain the number of 
@@ -94,7 +94,7 @@ detect_outlier <- function(sce,
   x_all$total_count_per_cell <- log2(x_all$total_count_per_cell + 1)
 
   if (!all(complete.cases(x_all))) {
-    stop("we find NAs in the selected columns, check the quality control matrix")
+    stop("NAs found in the selected columns, check the quality control matrix")
   }
   if (is.null(dim(x_all))) {
     QC_metrics(sce)$outliers <- FALSE
