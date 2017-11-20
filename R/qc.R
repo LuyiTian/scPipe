@@ -75,7 +75,7 @@ detect_outlier <- function(sce,
                           conf=c(0.9, 0.99),
                           batch=FALSE) {
   type <- match.arg(type)
-  sce = validObject(sce)
+  sce <- validObject(sce)
   # check format:
   if (is.null(sel_col)) {
     sel_col <- c("number_of_genes", "total_count_per_cell", "non_mt_percent",
@@ -83,65 +83,62 @@ detect_outlier <- function(sce,
   }
   if (!all(sel_col %in% colnames(QC_metrics(sce)))) {
     tmp <- sel_col[!(sel_col %in% colnames(QC_metrics(sce)))]
-    print("the following QC metrics not find in colData from sce:")
+    print("the following QC metrics not found in colData from sce:")
     print(tmp)
-    if(any(c("number_of_genes", "total_count_per_cell") %in% tmp)){
-      stop("the quality control metrics should at least contain the numebr of 
+    if (any(c("number_of_genes", "total_count_per_cell") %in% tmp)) {
+      stop("the quality control metrics should at least contain the number of 
            genes(`number_of_genes`) and counts per cell(`total_count_per_cell`)!")
     }
   }
-  x_all <- as.data.frame(
-    QC_metrics(sce)[, colnames(QC_metrics(sce)) %in% sel_col])
-  x_all$total_count_per_cell = log2(x_all$total_count_per_cell+1)
+  x_all <- as.data.frame(QC_metrics(sce)[, colnames(QC_metrics(sce)) %in% sel_col])
+  x_all$total_count_per_cell <- log2(x_all$total_count_per_cell + 1)
 
   if (!all(complete.cases(x_all))) {
-    stop("we find NAs in the selected columns, check the quality control matrix")
+    stop("NAs found in the selected columns, check the quality control matrix")
   }
   if (is.null(dim(x_all))) {
     QC_metrics(sce)$outliers <- FALSE
     return(sce)
   }
-  if(!batch){
-    batch_info = rep(1,nrow(x_all))
-  }else{
-    if ("batch" %in% colnames(colData(sce))){
-      batch_info = colData(sce)$batch
-    }else{
+  if (!batch) {
+    batch_info <- rep(1, nrow(x_all))
+  } else {
+    if ("batch" %in% colnames(colData(sce))) {
+      batch_info <- colData(sce)$batch
+    } else {
       stop("did not find column `batch` in colData(sce).")
     }
   }
-  outliers = rep(FALSE,nrow(x_all))
+  outliers <- rep(FALSE, nrow(x_all))
   
-  for(a_batch in unique(batch_info)){
-    x = x_all[batch_info == a_batch, ]
+  for(a_batch in unique(batch_info)) {
+    x <- x_all[batch_info == a_batch, ]
     dist <- mahalanobis(x, center=colMeans(x), cov=cov(x))
-    keep <- !(dist>qchisq(0.99, ncol(x)))
+    keep <- !(dist > qchisq(0.99, ncol(x)))
     mod <- Mclust(x[keep, ],
                   G=comp,
                   modelNames="EEE",
-                  verbose = FALSE)
+                  verbose=FALSE)
+
     if (comp == 1) {
       covr <- covMcd(x, alpha=0.7)
       dist <- mahalanobis(x,
                           center=covr$center,
                           cov=covr$cov)
-      mean_diff <- sign(t(x)-covr$center)
-      QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
+      mean_diff <- sign(t(x) - covr$center)
+      QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t) > 0}))]
       neg_dist <- dist[QC_sign == -1]
       pos_dist <- dist[QC_sign == 1]
       if (type == "both") {
         outlier_cells <- .qq_outliers_robust(neg_dist, ncol(x), conf[1])
         outlier_cells <- c(outlier_cells,
                            .qq_outliers_robust(pos_dist, ncol(x), conf[2]))
-      }
-      else if (type == "low") {
+      } else if (type == "low") {
         outlier_cells <- .qq_outliers_robust(neg_dist, ncol(x), conf[1])
-      }
-      else if (type == "high") {
+      } else if (type == "high") {
         outlier_cells <- .qq_outliers_robust(pos_dist, ncol(x), conf[2])
       }
-    }
-    else {
+    } else {
       ord_fst <- c(1:comp)[order(mod$parameters$mean[1, ], decreasing = TRUE)]
       poor_comp <- ord_fst[2:comp]
       good_comp <- ord_fst[1]
@@ -154,8 +151,8 @@ detect_outlier <- function(sce,
                               center=covr$center,
                               cov=covr$cov)
       
-      mean_diff <- sign(t(sub_x)-covr$center)
-      QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
+      mean_diff <- sign(t(sub_x) - covr$center)
+      QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t) > 0}))]
       neg_dist <- sub_dist[QC_sign == -1]
       pos_dist <- sub_dist[QC_sign == 1]
       outlier_cells <- .qq_outliers_robust(neg_dist, ncol(sub_x), conf[1])
@@ -164,16 +161,15 @@ detect_outlier <- function(sce,
       outlier_cells <- c(outlier_cells, rownames(x[!keep1, ]))
       if (!(type == "both")) {
         mean_diff <- sign(t(x)-mod$parameters$mean[, good_comp])
-        QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t)>0}))]
+        QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t) > 0}))]
         if (type == "low") {
           outlier_cells <- rownames(x)[(rownames(x) %in% outlier_cells) & (QC_sign == -1)]
-        }
-        else if (type == "high") {
+        } else if (type == "high") {
           outlier_cells <- rownames(x)[(rownames(x) %in% outlier_cells) & (QC_sign == 1)]
         }
       }
     }
-    if(any(rownames(x)  %in% outlier_cells)){
+    if (any(rownames(x)  %in% outlier_cells)) {
       outliers[batch_info == a_batch][rownames(x)  %in% outlier_cells] = TRUE
     }
   }
@@ -219,7 +215,7 @@ detect_outlier <- function(sce,
 #'
 calculate_QC_metrics <- function(sce) {
   sce = validObject(sce) # check the sce object
-  if(!("counts" %in% names(assays(sce)))){
+  if (!("counts" %in% names(assays(sce)))){
     stop("counts not in names(assays(sce)). cannot find count data.")
   }
   
@@ -230,9 +226,9 @@ calculate_QC_metrics <- function(sce) {
   }else{
     if (!("scPipe" %in% names(sce@metadata))){
       sce@metadata[["scPipe"]] = list(QC_cols=c("number_of_genes"))
-    }else if(!("QC_cols" %in% names(sce@metadata$scPipe))){
+    }else if (!("QC_cols" %in% names(sce@metadata$scPipe))){
       sce@metadata[["scPipe"]] = list(QC_cols=c("number_of_genes"))
-      QC_metrics(object) = DataFrame(row.names = colnames(object)) 
+      QC_metrics(sce) = DataFrame(row.names = colnames(sce)) 
       # create a empty QC metrics if not exists
     }
     QC_metrics(sce)$number_of_genes = gene_number
@@ -242,8 +238,8 @@ calculate_QC_metrics <- function(sce) {
   QC_metrics(sce)$total_count_per_cell = colSums(assay(sce,"counts"))
   
   # get ERCC ratio
-  if(!is.null(spikeNames(sce))){
-    if(any(isSpike(sce,"ERCC"))){
+  if (!is.null(spikeNames(sce))){
+    if (any(isSpike(sce,"ERCC"))){
       exon_count = colSums(assay(sce,"counts")[!isSpike(sce,"ERCC"),])
       ERCC_count = colSums(assay(sce,"counts")[isSpike(sce,"ERCC"),])
       QC_metrics(sce)$non_ERCC_percent = exon_count/(ERCC_count+exon_count+1e-5)
@@ -297,7 +293,7 @@ calculate_QC_metrics <- function(sce) {
 #' @param sce a \code{SingleCellExperiment} object
 #' @param sel_col a vector of column names which indicate the columns to use for plot.
 #' by default it will be the statistics generated by `calQC_metrics()`
-#' @importFrom GGally ggpairs
+#' @importFrom GGally ggpairs wrap
 #' @import ggplot2
 #' @export
 #' @return a ggplot2 object
@@ -320,18 +316,24 @@ plot_QC_pairs = function(sce, sel_col=NULL) {
     sel_col = c("number_of_genes", "total_count_per_cell", "non_mt_percent",
                   "non_ERCC_percent", "non_ribo_percent", "outliers")
   }
-  if(!any(sel_col %in% colnames(QC_metrics(sce)))){
+  if (!any(sel_col %in% colnames(QC_metrics(sce)))){
     stop("`sel_col` not in colnames(QC_metrics(sce))).")
   }
   x = as.data.frame(QC_metrics(sce)[, colnames(QC_metrics(sce)) %in% sel_col])
 
 
   if ("outliers" %in% colnames(x)) {
-    return(ggpairs(x, mapping = ggplot2::aes_string(colour = "outliers")))
+    plot_output <- ggpairs(
+      x,
+      mapping = ggplot2::aes_string(colour = "outliers"),
+      upper = list(continuous = wrap("cor", size=3, hjust=0.8))
+    )
   }
   else {
-    return(ggpairs(x))
+    plot_output <- ggpairs(x)
   }
+
+  return(plot_output)
 }
 
 #' plot mapping statistics for \code{SingleCellExperiment} object.
@@ -383,8 +385,13 @@ plot_mapping <- function(sce,
       geom_bar(stat="identity", width=1)+
       ylab("number of reads")+
       xlab("cell sorted by number of reads mapped to exon")+
-      theme(axis.title.x=element_blank(), axis.text.x=element_blank())+
-      ggtitle(paste0("overall mapping statistics of ", dataname, " (number of reads)"))
+      theme(axis.title.x=element_blank(), axis.text.x=element_blank())
+
+      if (dataname != "") {
+        p <- p + ggtitle(paste0("Overall mapping statistics of ", dataname, " (number of reads)"))
+      } else {
+        p <- p + ggtitle(paste0("Overall mapping statistics (number of reads)"))
+      }
   }
   else {
     p <- ggplot(dat.m1, aes_string(x="sample_name", y="value", fill="variable")) + scale_fill_brewer(palette="Set1")+
@@ -392,8 +399,13 @@ plot_mapping <- function(sce,
       ylab("percentage of reads")+
       xlab("cell sorted by number of reads mapped_to_exon")+
       scale_y_continuous(labels=percent_format())+
-      theme(axis.title.x=element_blank(), axis.text.x=element_blank())+
-      ggtitle(paste0("overall mapping statistics of ", dataname, " (percentage)"))
+      theme(axis.title.x=element_blank(), axis.text.x=element_blank())
+
+      if (dataname != "") {
+        p <- p + ggtitle(paste0("Overall mapping statistics of ", dataname, " (percentage)"))
+      } else {
+        p <- p + ggtitle(paste0("Overall mapping statistics (percentage)"))
+      }
   }
 
   return(p)
@@ -431,7 +443,7 @@ plot_demultiplex = function(sce){
   sce = validObject(sce) # check the sce object
   demultiplex_stat = demultiplex_info(sce)
   demultiplex_stat[,"count"] = demultiplex_stat[,"count"]/sum(demultiplex_stat[,"count"])
-  if(is.null(demultiplex_stat)){
+  if (is.null(demultiplex_stat)){
     stop("`demultiplex_stat` does not exists in sce. demultiplex_info(sce) == NULL)")
   }
   demultiplex_stat$label_y = demultiplex_stat[,"count"]+0.05
@@ -496,7 +508,7 @@ plot_UMI_dup = function(sce, log10_x = TRUE){
   dup_col = ""
   if ("duplication_number" %in% colnames(tmp)){
     dup_col = "duplication_number"
-  }else if("duplication.number" %in% colnames(tmp)){
+  }else if ("duplication.number" %in% colnames(tmp)){
     dup_col = "duplication.number"
   }else{
     print("cannot find column contains UMI duplication number.")
@@ -504,7 +516,7 @@ plot_UMI_dup = function(sce, log10_x = TRUE){
   }
   p = ggplot(data=tmp, aes(x=tmp[, dup_col], y=tmp[,"count"])) + 
     geom_smooth(method = "loess",se = FALSE)+theme_bw()
-  if(log10_x){
+  if (log10_x){
     p = p+scale_x_log10()+
       labs(title="distribution of UMI duplication numbers(log10).", 
            x="log10(UMI duplication numbers)")

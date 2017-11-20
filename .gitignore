@@ -3,6 +3,7 @@
 .RData
 .Rproj
 .vscode
+..Rcheck
 scPipe.Rproj
 inst/doc
 src/*.o

@@ -213,7 +213,7 @@ create_report = function(sample_name,
   tx = gsub(pattern = "GENE_FL__", replacement = as.character(gene_fl), x = tx)
   if(!missing(organism)){
     if(!is.null(organism)){
-      tx = gsub(pattern = "SPECIES__", replacement = organism, x = tx)
+      tx = gsub(pattern = "ORGANISM__", replacement = organism, x = tx)
     }
   }
   if(!missing(gene_id_type)){
@@ -228,5 +228,55 @@ create_report = function(sample_name,
   rmarkdown::render(file.path(outdir, "report.Rmd"), output_file = file.path(outdir, "report.html"))
 }
 
+#' create_processed_report
+#' 
+#' create an HTML report summarising pro-processed data. This is an alternative to the more verbose \code{create_report} that requires only the processed counts and stats folders.
+#' @param outdir output folder
+#' @param organism the organism of the data. List of possible names can be retrieved using the function 
+#' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
+#' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
+#' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
+#' @param report_name the name of the report .Rmd and .html files.
+#'
+#' @examples 
+#' \dontrun{
+#' create_report(
+#'        outdir="output_dir_of_scPipe",
+#'        organism="mmusculus_gene_ensembl",
+#'        gene_id_type="ensembl_gene_id")
+#' }
+#'
+#' @export
 
+create_processed_report <- function(
+  outdir = ".",
+  organism,
+  gene_id_type,
+  report_name = "report"
+) {
+  fn <-  system.file("extdata", "report_template_slim.Rmd", package = "scPipe")
+  tx <- readLines(fn)
+  fill_report_field <- function(field, value) {
+    pattern <- paste0(field, "__")
+    gsub(pattern, value, tx)
+  }
 
+  if (!missing(organism) && !is.null(organism)) {
+    tx <- fill_report_field("ORGANISM", organism)
+  } else {
+    tx <- fill_report_field("ORGANISM", NA)
+  }
+
+  if (!missing(gene_id_type) && !is.null(gene_id_type)) {
+    tx <- fill_report_field("GENE_ID_TYPE", gene_id_type)
+  } else {
+    tx <- fill_report_field("GENE_ID_TYPE", NA)
+  }
+
+  report_path <- file.path(outdir, paste0(report_name, ".Rmd"))
+  writeLines(tx, con = report_path)
+  rmarkdown::render(
+      input = report_path,
+      envir = new.env()
+  )
+}

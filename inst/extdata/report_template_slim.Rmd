@@ -1,0 +1,276 @@
+---
+title: "scPipe experiment report"
+date: "`r format(Sys.time(), '%b %d %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: no
+
+params:
+  outdir: "."
+  organism: "mmusculus_gene_ensembl"
+  gene_id_type: "ensembl_gene_id"
+---
+```{r, warning=FALSE, echo=FALSE, message=FALSE}
+library(scales)
+library(readr)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(scater)
+library(scran)
+library(scPipe)
+library(Rtsne)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Data summary
+
+The organism is ``r params$organism``, and gene id type is ``r params$gene_id_type``.
+
+## Cell barcode statistics
+
+```{r, warning=FALSE, message=FALSE}
+sce <- create_sce_by_dir(
+  params$outdir,
+  organism = params$organism,
+  gene_id_type = params$gene_id_type
+)
+overall_stat <- demultiplex_info(sce)
+datatable(overall_stat, width=800)
+```
+
+Plot barcode match statistics in pie chart:
+```{r}
+plot_demultiplex(sce) +
+  theme(axis.text.x = element_text(size = 10))
+```
+
+## Read alignment statistics
+
+```{r}
+ggplotly(plot_mapping(sce, percentage=FALSE))
+```
+
+```{r}
+ggplotly(plot_mapping(sce, dataname=params$samplename, percentage=TRUE))
+```
+
+## Summary and distributions of QC metrics
+
+```{r}
+if (any(colSums(counts(sce)) == 0)) {
+  zero_cells <- sum(colSums(counts(sce)) == 0)
+  sce <- sce[, colSums(counts(sce)) > 0]
+} else {
+  zero_cells = 0
+}
+```
+
+`r if (zero_cells > 0){paste(zero_cells, "cells have zero read counts, remove them.")}`
+
+Datatable of all QC metrics:
+```{r}
+sce <- calculate_QC_metrics(sce)
+
+rounded_qc_metrics <- round(as.data.frame(QC_metrics(sce)), 2)
+datatable(rounded_qc_metrics, width=800, options=list(scrollX=TRUE))
+```
+
+Summary of all QC metrics:
+```{r}
+summary_table <- round(do.call(cbind, lapply(QC_metrics(sce), summary)), 2)
+datatable(summary_table, width=800, options=list(scrollX=TRUE))
+```
+
+Number of reads mapped to exon before UMI deduplication VS number of genes detected:
+```{r}
+ggplotly(ggplot(as.data.frame(QC_metrics(sce)), aes(x=mapped_to_exon, y=number_of_genes))+geom_point(alpha=0.8))
+```
+
+# Quality control
+
+## Detect outlier cells
+
+A robustified Mahalanobis Distance is calculated for each cell then outliers are detected based on the distance.
+However, due to the complex nature of single cell transcriptomes and protocol used, such a method can only be used to
+assist the quality control process. Visual inspection of the quality control metrics is still required. By default we
+use `comp = 1` and the algorithm will try to separate the quality control metrics into two gaussian clusters.
+
+The number of outliers:
+```{r}
+sce_qc = detect_outlier(sce, type="low", comp=1)
+table(QC_metrics(sce_qc)$outliers)
+```
+
+Pairwise plot for QC metrics, colored by outliers:
+```{r, warning=FALSE, message=FALSE, fig.width=10, fig.height=10}
+plot_QC_pairs(sce_qc) + theme_bw()
+```
+
+## Plot high expression genes
+
+Remove low quality cells and plot highest expression genes.
+
+```{r}
+sce_qc <- remove_outliers(sce_qc)
+sce_qc <- convert_geneid(sce_qc, returns="external_gene_name")
+sce_qc <- calculateQCMetrics(sce_qc)
+plotQC(sce_qc, type = "highest-expression", n=20)
+```
+
+## Remove low abundance genes
+
+Plot the log10 average count for each gene:
+```{r}
+ave.counts <- rowMeans(counts(sce_qc))
+hist(log10(ave.counts), breaks=100, main="", col="grey80",
+     xlab=expression(Log[10]~"average count"))
+```
+
+As a loose filter we keep genes that are expressed in at least two cells and for cells that express that gene, the
+average count larger than 1. This is not 
+
+```{r}
+keep1 <- rowMeans(counts(sce_qc)) > 1 # average count larger than one
+keep2 <- rowSums(counts(sce_qc) > 0) > 2 # expressed in at least three cells
+
+sce_qc <- sce_qc[(keep1 & keep2), ]
+dim(sce_qc)
+```
+
+We have `r nrow(sce_qc)` genes left after removing low abundance genes.
+
+# Data normalization
+
+## Sample normalization
+
+We perform normalization using `scater` and `scran`, 
+
+5-point summary of size factors:
+```{r}
+ncells <- ncol(sce_qc)
+if (ncells > 200) {
+  sce_qc <- computeSumFactors(sce_qc)
+  sce_qc <- computeSpikeFactors(sce_qc, general.use=FALSE)
+} else {
+  sizes <- as.integer(c(ncells/7, ncells/6, ncells/5, ncells/4, ncells/3))
+  sce_qc <- computeSumFactors(sce_qc, sizes=sizes)
+  sce_qc <- computeSpikeFactors(sce_qc, general.use=FALSE)
+}
+summary(sizeFactors(sce_qc))
+```
+
+`r if (min(sizeFactors(sce_qc)) <= 0) { print("We have negative size factors in the data. They indicate low quality cells
+and we have removed them. To avoid negative size factors, the best solution is to increase the stringency of the
+filtering.") }`
+
+```{r}
+# filter out samples with negative size factors
+if (min(sizeFactors(sce_qc)) <= 0) {
+  sce_qc <- sce_qc[, sizeFactors(sce_qc) > 0]
+}
+```
+
+PCA plot using gene expressions as input, colored by the number of genes.
+
+```{r}
+cpm(sce_qc) = calculateCPM(sce_qc, use.size.factors=TRUE)
+plotPCA(sce_qc, exprs_values="cpm", colour_by="total_features")
+```
+
+### Normalize the data using size factor and get high variable genes
+
+The highly variable genes are chosen based on `trendVar` from `scran` with `FDR > 0.05` and biological variation larger
+than `0.5`. If the number of highly variable genes is smaller than 100 we will select the top 100 genes by
+biological variation. If the number is larger than 500 we will only keep top 500 genes by biological variation.
+
+```{r, warning=FALSE, message=FALSE}
+sce_qc <- normalize(sce_qc)
+
+var.fit <- trendVar(sce_qc, method="loess", use.spikes=FALSE, span=0.2)
+var.out <- decomposeVar(sce_qc, var.fit)
+var.out <- var.out[order(var.out$bio, decreasing=TRUE), ]
+
+signif.genes <- which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)
+
+if (length(signif.genes) < 100) {
+  hvg.out <- var.out[1:100, ]
+} else if (length(signif.genes) > 500){
+  hvg.out <- var.out[1:500, ]
+} else {
+  hvg.out <- var.out[signif.genes, ]
+}
+
+plot(var.out$mean, var.out$total, pch=16, cex=0.6,
+     xlab="Mean log-expression", ylab="Variance of log-expression")
+o <- order(var.out$mean)
+lines(var.out$mean[o], var.out$tech[o], col="dodgerblue", lwd=2)
+points(var.out$mean[rownames(var.out) %in% rownames(hvg.out)],
+       var.out$total[rownames(var.out) %in% rownames(hvg.out)],
+       col="red", pch=16)
+```
+
+## Heatmap of high variable genes
+
+```{r}
+gene_exp <- exprs(sce_qc)
+
+gene_exp <- gene_exp[rownames(hvg.out), ]
+
+hc.rows <- hclust(dist(gene_exp))
+hc.cols <- hclust(dist(t(gene_exp)))
+
+gene_exp = gene_exp[hc.rows$order, hc.cols$order]
+
+m = list(
+  l = 100,
+  r = 40,
+  b = 10,
+  t = 10,
+  pad = 0
+)
+
+plot_ly(
+  x = colnames(gene_exp), y = rownames(gene_exp),
+  z = gene_exp, type = "heatmap"
+) %>%
+  layout(autosize = F, margin = m)
+```
+
+# Dimensionality reduction using high variable genes
+
+## Dimensionality reduction by PCA
+
+```{r}
+plotPCA(sce_qc, exprs_values="logcounts", colour_by="total_features")
+```
+
+## Dimensionality reduction by t-SNE
+
+```{r, fig.width=10, fig.height=3.5}
+set.seed(100)
+if (any(duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ])))) {
+  sce_qc <- sce_qc[, !duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ]))]
+}
+
+out5 <- plotTSNE(sce_qc, exprs_values="logcounts", perplexity=5,
+                 colour_by="total_features", feature_set=rownames(hvg.out)) + 
+                    ggtitle("Perplexity = 5")
+out10 <- plotTSNE(sce_qc, exprs_values="logcounts", perplexity=10,
+                  colour_by="total_features", feature_set=rownames(hvg.out))  + 
+                    ggtitle("Perplexity = 10")
+out20 <- plotTSNE(sce_qc, exprs_values="logcounts", perplexity=20,
+                  colour_by="total_features", feature_set=rownames(hvg.out))  + 
+                    ggtitle("Perplexity = 20")
+
+multiplot(out5, out10, out20, cols=3)
+```
+
+# Session information
+
+```{r}
+sessionInfo()
+```
+
