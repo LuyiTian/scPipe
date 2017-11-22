@@ -98,14 +98,14 @@ std::unordered_map<std::string, int> summarize_barcode(std::string fn, int bc_le
     return counter;
 }
 
-void write_barcode_summary(std::string outfn, std::string surfix, std::unordered_map<std::string, int> counter)
+void write_barcode_summary(std::string outfn, std::string suffix, std::unordered_map<std::string, int> counter)
 {
     std::ofstream o_file(outfn);  // output file
     int cnt = 0;
     int dig = std::to_string(counter.size()).length()+1;
     for (auto const& bc: counter)
     {
-        o_file << surfix << padding(cnt, dig) << "," << bc.first << "," << bc.second << std::endl;
+        o_file << suffix << padding(cnt, dig) << "," << bc.first << "," << bc.second << std::endl;
         cnt++;
     }
 }
