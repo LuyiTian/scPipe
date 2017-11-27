@@ -254,7 +254,7 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
 #' @param infq input fastq file, shoule be the output file of 
 #' \code{sc_trim_barcode}
 #' @param outcsv output barcode annotation
-#' @param surfix the surfix of cell name, default to be `CELL_`. The cell name
+#' @param suffix the suffix of cell name, default to be `CELL_`. The cell name
 #' will be CELL_001, CELL_002 accordingly.
 #' @param bc_len the length of cell barcode, should be consistent with bl1+bl2
 #' in \code{sc_trim_barcode}
@@ -276,10 +276,10 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
 #' }
 #' 
 #' 
-sc_detect_bc = function(infq, outcsv, surfix="CELL_", bc_len, 
+sc_detect_bc = function(infq, outcsv, suffix="CELL_", bc_len, 
                         max_reads=1000000, min_count=10, max_mismatch=1) {
   if (!file.exists(infq)) {stop("input fastq file does not exists.")}
   if (max_reads=="all") {m_r = -1}
   else {m_r=max_reads}
-  rcpp_sc_detect_bc(infq, outcsv, surfix, bc_len, m_r, min_count, max_mismatch)
+  rcpp_sc_detect_bc(infq, outcsv, suffix, bc_len, m_r, min_count, max_mismatch)
 }

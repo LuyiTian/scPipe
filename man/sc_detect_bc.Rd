@@ -4,7 +4,7 @@
 \alias{sc_detect_bc}
 \title{sc_detect_bc}
 \usage{
-sc_detect_bc(infq, outcsv, surfix = "CELL_", bc_len, max_reads = 1e+06,
+sc_detect_bc(infq, outcsv, suffix = "CELL_", bc_len, max_reads = 1e+06,
   min_count = 10, max_mismatch = 1)
 }
 \arguments{
@@ -13,7 +13,7 @@ sc_detect_bc(infq, outcsv, surfix = "CELL_", bc_len, max_reads = 1e+06,
 
 \item{outcsv}{output barcode annotation}
 
-\item{surfix}{the surfix of cell name, default to be `CELL_`. The cell name
+\item{suffix}{the suffix of cell name, default to be `CELL_`. The cell name
 will be CELL_001, CELL_002 accordingly.}
 
 \item{bc_len}{the length of cell barcode, should be consistent with bl1+bl2

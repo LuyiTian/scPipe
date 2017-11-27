@@ -70,11 +70,10 @@ validObject = function(object){
 #'
 QC_metrics.sce <- function(object) {
   if(!("scPipe" %in% names(object@metadata))){
-    warning("`scPipe` not in `metadata`. cannot identify quality control columns")
+    warning("`scPipe` not in `metadata`. Cannot identify quality control columns")
     return(NULL)
-  }else if(!("QC_cols" %in% names(object@metadata$scPipe))){
-    warning("The metadata$scPipe does not have `QC_cols`. 
-      cannot identifyquality control  columns")
+  } else if (!("QC_cols" %in% names(object@metadata$scPipe))) {
+    warning("metadata$scPipe is missing `QC_cols`. Cannot identify quality control columns")
     return(NULL)
   }
   return(colData(object)[, object@metadata$scPipe$QC_cols])
@@ -90,17 +89,21 @@ setMethod("QC_metrics", signature(object = "SingleCellExperiment"),
 #' @rdname QC_metrics
 #' @aliases QC_metrics
 #' @export
-setReplaceMethod("QC_metrics",
-                 signature="SingleCellExperiment",
-                 function(object, value) {
-                   if(!("scPipe" %in% names(object@metadata))){
-                     object@metadata[["scPipe"]] = list(QC_cols=colnames(value))
-                   }else{
-                     object@metadata$scPipe$QC_cols = colnames(value)
-                   }
-                   colData(object) = DataFrame(value)
-                   return(object)
-                 })
+setReplaceMethod(
+  "QC_metrics",
+  signature = "SingleCellExperiment",
+  function(object, value) {
+    if (!("scPipe" %in% names(object@metadata))) {
+      object@metadata[["scPipe"]] = list(QC_cols=colnames(value))
+    } else {
+      object@metadata$scPipe$QC_cols = colnames(value)
+    }
+
+    colData(object)[, colnames(value)] <- DataFrame(value)
+
+    return(object)
+  }
+)
 
 
 #' @title demultiplex_info

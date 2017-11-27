@@ -163,7 +163,7 @@ void rcpp_sc_gene_counting(Rcpp::CharacterVector outdir,
 
 void rcpp_sc_detect_bc(Rcpp::CharacterVector infq,
                            Rcpp::CharacterVector outcsv,
-                           Rcpp::CharacterVector surfix,
+                           Rcpp::CharacterVector suffix,
                            Rcpp::NumericVector bc_len,
                            Rcpp::NumericVector max_reads,
                            Rcpp::NumericVector min_count,
@@ -171,7 +171,7 @@ void rcpp_sc_detect_bc(Rcpp::CharacterVector infq,
 {
   std::string c_infq = Rcpp::as<std::string>(infq);
   std::string c_outcsv = Rcpp::as<std::string>(outcsv);
-  std::string c_surfix = Rcpp::as<std::string>(surfix);
+  std::string c_suffix = Rcpp::as<std::string>(suffix);
   int c_bc_len = Rcpp::as<int>(bc_len);
   int c_max_reads = Rcpp::as<int>(max_reads);
   int c_min_count = Rcpp::as<int>(min_count);
@@ -179,6 +179,6 @@ void rcpp_sc_detect_bc(Rcpp::CharacterVector infq,
   
   
   std::unordered_map<std::string, int> counter = summarize_barcode(c_infq, c_bc_len, c_max_reads, c_max_mismatch, c_min_count);
-  write_barcode_summary(c_outcsv, c_surfix, counter);
+  write_barcode_summary(c_outcsv, c_suffix, counter);
 }
 

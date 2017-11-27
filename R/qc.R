@@ -78,19 +78,20 @@ detect_outlier <- function(sce,
   sce <- validObject(sce)
   # check format:
   if (is.null(sel_col)) {
-    sel_col <- c("number_of_genes", "total_count_per_cell", "non_mt_percent",
-                "non_ERCC_percent")
+    sel_col <- c("number_of_genes", "total_count_per_cell", 
+                 "non_mt_percent", "non_ERCC_percent")
   }
   if (!all(sel_col %in% colnames(QC_metrics(sce)))) {
     tmp <- sel_col[!(sel_col %in% colnames(QC_metrics(sce)))]
-    print("the following QC metrics not found in colData from sce:")
-    print(tmp)
+    message("the following QC metrics not found in colData from sce:")
+    message(tmp)
     if (any(c("number_of_genes", "total_count_per_cell") %in% tmp)) {
       stop("the quality control metrics should at least contain the number of 
            genes(`number_of_genes`) and counts per cell(`total_count_per_cell`)!")
     }
   }
-  x_all <- as.data.frame(QC_metrics(sce)[, colnames(QC_metrics(sce)) %in% sel_col])
+  qc_cols <- colnames(QC_metrics(sce)) %in% sel_col
+  x_all <- as.data.frame(QC_metrics(sce)[, qc_cols])
   x_all$total_count_per_cell <- log2(x_all$total_count_per_cell + 1)
 
   if (!all(complete.cases(x_all))) {
@@ -111,7 +112,7 @@ detect_outlier <- function(sce,
   }
   outliers <- rep(FALSE, nrow(x_all))
   
-  for(a_batch in unique(batch_info)) {
+  for (a_batch in unique(batch_info)) {
     x <- x_all[batch_info == a_batch, ]
     dist <- mahalanobis(x, center=colMeans(x), cov=cov(x))
     keep <- !(dist > qchisq(0.99, ncol(x)))
@@ -155,25 +156,29 @@ detect_outlier <- function(sce,
       QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t) > 0}))]
       neg_dist <- sub_dist[QC_sign == -1]
       pos_dist <- sub_dist[QC_sign == 1]
+
       outlier_cells <- .qq_outliers_robust(neg_dist, ncol(sub_x), conf[1])
       outlier_cells <- c(outlier_cells,
                          .qq_outliers_robust(pos_dist, ncol(sub_x), conf[2]))
       outlier_cells <- c(outlier_cells, rownames(x[!keep1, ]))
+
       if (!(type == "both")) {
         mean_diff <- sign(t(x)-mod$parameters$mean[, good_comp])
         QC_sign <- c(-1, 1)[as.factor(apply(mean_diff, 2, function(t) {sum(t) > 0}))]
+        is_outlier_cell <- rownames(x) %in% outlier_cells
         if (type == "low") {
-          outlier_cells <- rownames(x)[(rownames(x) %in% outlier_cells) & (QC_sign == -1)]
+          outlier_cells <- rownames(x)[is_outlier_cell & (QC_sign == -1)]
         } else if (type == "high") {
-          outlier_cells <- rownames(x)[(rownames(x) %in% outlier_cells) & (QC_sign == 1)]
+          outlier_cells <- rownames(x)[is_outlier_cell & (QC_sign == 1)]
         }
       }
     }
-    if (any(rownames(x)  %in% outlier_cells)) {
+
+    if (any(rownames(x) %in% outlier_cells)) {
       outliers[batch_info == a_batch][rownames(x)  %in% outlier_cells] = TRUE
     }
   }
-  QC_metrics(sce)$outliers = as.factor(outliers)
+  QC_metrics(sce)$outliers <- as.factor(outliers)
   return(sce)
 }
 
