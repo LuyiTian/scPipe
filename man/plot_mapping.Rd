@@ -9,12 +9,12 @@ plot_mapping(sce, sel_col = NULL, percentage = FALSE, dataname = "")
 \arguments{
 \item{sce}{a \code{SingleCellExperiment} object}
 
-\item{sel_col}{a vector of column names, indicating the columns to use for plot.
-by default it will be the mapping result.}
+\item{sel_col}{a vector of column names, indicating the columns to use for
+plot. by default it will be the mapping result.}
 
-\item{percentage}{logic. Whether to convert the number of reads to percentage}
+\item{percentage}{TRUE to convert the number of reads to percentage}
 
-\item{dataname}{the name of this dataset which appears in the plot title}
+\item{dataname}{the name of this dataset, used as plot title}
 }
 \value{
 a ggplot2 object

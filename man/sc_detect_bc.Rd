@@ -33,7 +33,7 @@ number will be considered as sequence error and merged, default to be 1.}
 no return
 }
 \description{
-detect cell barcode and generate the barcode annotation
+Detect cell barcode and generate the barcode annotation
 }
 \examples{
 \dontrun{

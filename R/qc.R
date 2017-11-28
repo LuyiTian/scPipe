@@ -478,15 +478,14 @@ plot_demultiplex = function(sce){
 }
 
 
-#' plot_UMI_dup
+#' Plot UMI duplication density
 #'
-#' @description Plot UMI duplication number distributions for
-#' each UMI sequence in each genes.
+#' @description Plot the density of UMI duplication frequency.
 #'
 #' @param sce a \code{SingleCellExperiment} object
 #' @param log10_x whether to use log10 scale for x axis
 #'
-#' @return a line chart of the UMI duplication distributions
+#' @return a line chart of the UMI duplication distribution
 #' @export
 #'
 #' @examples
@@ -536,10 +535,13 @@ plot_UMI_dup = function(sce, log10_x = TRUE){
 
 
 
-#' remove outliers for \code{SingleCellExperiment}
-#' @param sce an \code{SingleCellExperiment} object
+#' Remove outliers in \code{SingleCellExperiment}
+#'
+#' @description Removes outliers flagged by \code{detect_outliers()}
+#'
+#' @param sce a \code{SingleCellExperiment} object
 #' @export
-#' @return an \code{SingleCellExperiment} object without outliers
+#' @return a \code{SingleCellExperiment} object without outliers
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
