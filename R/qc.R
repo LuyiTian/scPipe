@@ -346,10 +346,10 @@ plot_QC_pairs = function(sce, sel_col=NULL) {
 #' Plot mapping statistics for \code{SingleCellExperiment} object.
 #'
 #' @param sce a \code{SingleCellExperiment} object
-#' @param sel_col a vector of column names, indicating the columns to use for plot.
-#' by default it will be the mapping result.
-#' @param percentage logic. Whether to convert the number of reads to percentage
-#' @param dataname the name of this dataset which appears in the plot title
+#' @param sel_col a vector of column names, indicating the columns to use for
+#'   plot. by default it will be the mapping result.
+#' @param percentage TRUE to convert the number of reads to percentage
+#' @param dataname the name of this dataset, used as plot title
 #'
 #' @import scales reshape ggplot2
 #' @importFrom stats prcomp reorder
@@ -422,16 +422,16 @@ plot_mapping <- function(sce,
 
 #' plot_demultiplex
 #'
-#' @description plot cell barcode demultiplex result for the experiment.
-#' It will include the percentage of reads that match the cell barcode.
-#' For the reads that does not match any barcode, it will gives the percentage of
-#' reads aligned and mapped to exon. If there is high proportion of reads
-#' that do not match any barcode but mapped to exon, it might indicatea a failure in cell
-#' barcode demultiplexing
+#'@description Plot cell barcode demultiplexing result for the
+#'  \code{SingleCellExperiment}. The barcode demultiplexing result is shown
+#'  using a barplot, with the bars indicating proportions of total reads.
+#'  Barcode matches and mismatches are summarised along with whether or not the
+#'  read mapped to the genome. High proportion of genome aligned reads with no
+#'  barcode match may indicate barcode integration failure.
 #'
 #' @param sce a \code{SingleCellExperiment} object
 #'
-#' @return a bar chart
+#' @return a ggplot2 bar chart
 #' @export
 #'
 #' @examples
