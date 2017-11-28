@@ -9,7 +9,7 @@
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`
-#' @param pheno_data the external phenotype data that linked to each single cell. this should be an \code{AnnotatedDataFrame} object
+#' @param pheno_data the external phenotype data that linked to each single cell. This should be an \code{AnnotatedDataFrame} object
 #' @param report whether to generate the html report in the data folder
 #' 
 #' @details after we run \code{sc_gene_counting} and finish the preprocessing step. \code{create_sce_by_dir}
@@ -95,18 +95,18 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
 #' @param r1 file path of read1
 #' @param r2 file path of read2 default to be NULL
 #' @param outfq file path of the output of \code{sc_trim_barcode}
-#' @param read_structure a list contains read structure configuration. for more help see `?sc_trim_barcode`
+#' @param read_structure a list contains read structure configuration. For more help see `?sc_trim_barcode`
 #' @param filter_settings a list contains read filter settings for more help see `?sc_trim_barcode`
 #' @param align_bam the aligned bam file
 #' @param genome_index genome index used for alignment
 #' @param map_bam the mapped bam file
-#' @param exon_anno the gff exon annotation used. can have multiple files
+#' @param exon_anno the gff exon annotation used. Can have multiple files
 #' @param stnd whether to perform strand specific mapping
 #' @param fix_chr add `chr` to chromosome names, fix inconsistant names.
 #' @param barcode_anno cell barcode annotation file path.
-#' @param max_mis maximum mismatch allowed in barcode. default to be 1
+#' @param max_mis maximum mismatch allowed in barcode. Default to be 1
 #' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.
-#' @param gene_fl whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene
+#' @param gene_fl whether to remove low abundant gene count. Low abundant is defined as only one copy of one UMI for this gene
 #' @param organism the organism of the data. List of possible names can be retrieved using the function 
 #' `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)
 #' @param gene_id_type gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 

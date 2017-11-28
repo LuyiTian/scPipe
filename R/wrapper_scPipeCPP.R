@@ -98,7 +98,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' 
 #' @description This function will take the alinged read and map them to exons.
 #' The result will be written into optional fields in bam file with different 
-#' tags. following this link for more information regarding to bam file format:
+#' tags. Following this link for more information regarding to bam file format:
 #' http://samtools.github.io/hts-specs
 #' 
 #' @name sc_exon_mapping
@@ -167,7 +167,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #' @param outdir output folder
 #' @param bc_anno barcode annotation, first column is cell id, second column 
 #' is cell barcode sequence
-#' @param max_mis maximum mismatch allowed in barcode. default to be 1
+#' @param max_mis maximum mismatch allowed in barcode. Default to be 1
 #' @param am mapping status tag (default: YE)
 #' @param ge gene id tag (default: GE)
 #' @param bc cell barcode tag (default: BC)
@@ -216,7 +216,7 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 #' is cell barcode sequence
 #' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means 
 #' simple correction and merge UMI with distance 1.
-#' @param gene_fl whether to remove low abundant gene count. low abundant is 
+#' @param gene_fl whether to remove low abundant gene count. Low abundant is 
 #' defined as only one copy of one UMI for this gene
 #'
 #' @export
