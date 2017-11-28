@@ -2,17 +2,17 @@
 % Please edit documentation in R/qc.R
 \name{plot_mapping}
 \alias{plot_mapping}
-\title{plot mapping statistics for \code{SingleCellExperiment} object.}
+\title{Plot mapping statistics for \code{SingleCellExperiment} object.}
 \usage{
 plot_mapping(sce, sel_col = NULL, percentage = FALSE, dataname = "")
 }
 \arguments{
 \item{sce}{a \code{SingleCellExperiment} object}
 
-\item{sel_col}{a vector of column names, indicate the columns to use for plot.
+\item{sel_col}{a vector of column names, indicating the columns to use for plot.
 by default it will be the mapping result.}
 
-\item{percentage}{logic. whether to convert the number of reads to percentage}
+\item{percentage}{logic. Whether to convert the number of reads to percentage}
 
 \item{dataname}{the name of this dataset which appears in the plot title}
 }
@@ -20,12 +20,12 @@ by default it will be the mapping result.}
 a ggplot2 object
 }
 \description{
-plot mapping statistics for \code{SingleCellExperiment} object.
+Plot mapping statistics for \code{SingleCellExperiment} object.
 }
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
-sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 organism(sce) = "mmusculus_gene_ensembl"
 gene_id_type(sce) = "ensembl_gene_id"
 QC_metrics(sce) = sc_sample_qc

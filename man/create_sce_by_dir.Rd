@@ -16,7 +16,7 @@ create_sce_by_dir(datadir, organism = NULL, gene_id_type = NULL,
 \item{gene_id_type}{gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
 the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`}
 
-\item{pheno_data}{the external phenotype data that linked to each single cell. this should be an \code{AnnotatedDataFrame} object}
+\item{pheno_data}{the external phenotype data that linked to each single cell. This should be an \code{AnnotatedDataFrame} object}
 
 \item{report}{whether to generate the html report in the data folder}
 }
@@ -25,12 +25,12 @@ a SingleCellExperiment object
 }
 \description{
 after we run \code{sc_gene_counting} and finish the preprocessing step. \code{create_sce_by_dir}
-can be used to generate the \link{SingleCellExperiment} obeject from the folder that contains gene counting matrix and QC statistics.
+can be used to generate the \link{SingleCellExperiment} obeject from the folder that contains gene count matrix and QC statistics.
 it can also generate the html report based on the gene count and quality control statistics
 }
 \details{
 after we run \code{sc_gene_counting} and finish the preprocessing step. \code{create_sce_by_dir}
-can be used to generate the SingleCellExperiment obeject from the folder that contains gene counting matrix and QC statistics.
+can be used to generate the SingleCellExperiment obeject from the folder that contains gene count matrix and QC statistics.
 }
 \examples{
 \dontrun{
@@ -43,7 +43,7 @@ sce = create_sce_by_dir(datadir="output_dir_of_scPipe",
 # or directly from the gene count and quality control matrix:
 data("sc_sample_data")
 data("sc_sample_qc")
-sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 organism(sce) = "mmusculus_gene_ensembl"
 gene_id_type(sce) = "ensembl_gene_id"
 QC_metrics(sce) = sc_sample_qc

@@ -22,7 +22,7 @@ create_report(sample_name, outdir, r1 = "NA", r2 = "NA", outfq = "NA",
 
 \item{outfq}{file path of the output of \code{sc_trim_barcode}}
 
-\item{read_structure}{a list contains read structure configuration. for more help see `?sc_trim_barcode`}
+\item{read_structure}{a list contains read structure configuration. For more help see `?sc_trim_barcode`}
 
 \item{filter_settings}{a list contains read filter settings for more help see `?sc_trim_barcode`}
 
@@ -32,7 +32,7 @@ create_report(sample_name, outdir, r1 = "NA", r2 = "NA", outfq = "NA",
 
 \item{map_bam}{the mapped bam file}
 
-\item{exon_anno}{the gff exon annotation used. can have multiple files}
+\item{exon_anno}{the gff exon annotation used. Can have multiple files}
 
 \item{stnd}{whether to perform strand specific mapping}
 
@@ -40,11 +40,11 @@ create_report(sample_name, outdir, r1 = "NA", r2 = "NA", outfq = "NA",
 
 \item{barcode_anno}{cell barcode annotation file path.}
 
-\item{max_mis}{maximum mismatch allowed in barcode. default to be 1}
+\item{max_mis}{maximum mismatch allowed in barcode. Default to be 1}
 
 \item{UMI_cor}{correct UMI sequence error: 0 means no correction, 1 means simple correction and merge UMI with distance 1.}
 
-\item{gene_fl}{whether to remove low abundant gene count. low abundant is defined as only one copy of one UMI for this gene}
+\item{gene_fl}{whether to remove low abundant gene count. Low abundant is defined as only one copy of one UMI for this gene}
 
 \item{organism}{the organism of the data. List of possible names can be retrieved using the function 
 `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)}

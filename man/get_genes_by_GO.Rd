@@ -8,9 +8,9 @@ get_genes_by_GO(returns = "ensembl_gene_id",
   dataset = "mmusculus_gene_ensembl", go = NULL)
 }
 \arguments{
-\item{returns}{the gene id which is set as return. default to be ensembl id
+\item{returns}{the gene id which is set as return. Default to be ensembl id
 A possible list of attributes can be retrieved using the
-function \code{listAttributes} from \code{biomaRt} package. the commonly used
+function \code{listAttributes} from \code{biomaRt} package. The commonly used
 id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.}
 
 \item{dataset}{Dataset you want to use. List of possible datasets can be
