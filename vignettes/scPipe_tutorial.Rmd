@@ -119,7 +119,7 @@ The dataset we analysed above used ERCC simulated reads from 10 cells of perfect
 ```{r}
 data("sc_sample_data")
 data("sc_sample_qc")
-sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data))) # generate new sce with gene count matrix
+sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data))) # generate new sce with gene count matrix
 QC_metrics(sce) = sc_sample_qc
 demultiplex_info(sce) = cell_barcode_matching
 UMI_dup_info(sce) = UMI_duplication

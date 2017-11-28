@@ -57,7 +57,7 @@
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -204,7 +204,7 @@ detect_outlier <- function(sce,
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -305,7 +305,7 @@ calculate_QC_metrics <- function(sce) {
 #' @examples 
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -357,7 +357,7 @@ plot_QC_pairs = function(sce, sel_col=NULL) {
 #' @examples 
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -435,7 +435,7 @@ plot_mapping <- function(sce,
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -490,7 +490,7 @@ plot_demultiplex = function(sce){
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -541,7 +541,7 @@ plot_UMI_dup = function(sce, log10_x = TRUE){
 #' @examples 
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc

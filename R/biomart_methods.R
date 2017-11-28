@@ -68,7 +68,7 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 #' # the following example will convert it to `external_gene_name`.
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc

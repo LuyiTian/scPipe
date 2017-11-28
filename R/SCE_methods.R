@@ -63,7 +63,7 @@ validObject = function(object){
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' QC_metrics(sce) = sc_sample_qc
 #' 
 #' head(QC_metrics(sce))
@@ -121,7 +121,7 @@ setReplaceMethod(
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -179,7 +179,7 @@ setReplaceMethod("demultiplex_info",
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -235,7 +235,7 @@ setReplaceMethod("UMI_dup_info",
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -287,7 +287,7 @@ setReplaceMethod("organism",signature="SingleCellExperiment",
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
