@@ -12,7 +12,7 @@ sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "BC",
 
 \item{outbam}{output bam file with gene and barcode tag}
 
-\item{annofn}{genome annotation gff file. It can have multiple files 
+\item{annofn}{genome annotation gff file. It can have multiple files
 names in a vector.}
 
 \item{am}{mapping status tag (default: YE)}
@@ -36,13 +36,13 @@ no return
 }
 \description{
 This function will take the alinged read and map them to exons.
-The result will be written into optional fields in bam file with different 
+The result will be written into optional fields in bam file with different
 tags. Following this link for more information regarding to bam file format:
 http://samtools.github.io/hts-specs
 }
 \examples{
 data_dir="celseq2_demo"
-ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3", 
+ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3",
     package = "scPipe")
 \dontrun{
 # for the complete workflow, refer to the vignettes

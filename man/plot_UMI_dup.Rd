@@ -2,7 +2,7 @@
 % Please edit documentation in R/qc.R
 \name{plot_UMI_dup}
 \alias{plot_UMI_dup}
-\title{Plot UMI duplication density}
+\title{Plot UMI duplication frequency}
 \usage{
 plot_UMI_dup(sce, log10_x = TRUE)
 }
@@ -12,10 +12,10 @@ plot_UMI_dup(sce, log10_x = TRUE)
 \item{log10_x}{whether to use log10 scale for x axis}
 }
 \value{
-a line chart of the UMI duplication distribution
+a line chart of the UMI duplication frequency
 }
 \description{
-Plot the density of UMI duplication frequency.
+Plot the UMI duplication frequency.
 }
 \examples{
 data("sc_sample_data")

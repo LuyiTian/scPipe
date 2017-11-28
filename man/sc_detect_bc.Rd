@@ -8,7 +8,7 @@ sc_detect_bc(infq, outcsv, suffix = "CELL_", bc_len, max_reads = 1e+06,
   min_count = 10, max_mismatch = 1)
 }
 \arguments{
-\item{infq}{input fastq file, shoule be the output file of 
+\item{infq}{input fastq file, shoule be the output file of
 \code{sc_trim_barcode}}
 
 \item{outcsv}{output barcode annotation}
@@ -22,11 +22,11 @@ in \code{sc_trim_barcode}}
 \item{max_reads}{the maximum of reads processed, default is 1000,000, set to
 "all" to process all reads (may spend more time)}
 
-\item{min_count}{minimum counts to keep, barcode will be discarded if 
-it has lower count. Default value is 10. This should be set according 
+\item{min_count}{minimum counts to keep, barcode will be discarded if
+it has lower count. Default value is 10. This should be set according
 to \code{max_reads}.}
 
-\item{max_mismatch}{the maximum mismatch allowed. Barcodes within this 
+\item{max_mismatch}{the maximum mismatch allowed. Barcodes within this
 number will be considered as sequence error and merged, default to be 1.}
 }
 \value{
@@ -37,7 +37,7 @@ Detect cell barcode and generate the barcode annotation
 }
 \examples{
 \dontrun{
-# `sc_detect_bc`` should run before `sc_demultiplex` for 
+# `sc_detect_bc`` should run before `sc_demultiplex` for
 # Drop-seq or 10X protocols
 sc_detect_bc("input.fastq","output.cell_index.csv",bc_len=8)
 sc_demultiplex(...,"output.cell_index.csv")

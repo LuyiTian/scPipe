@@ -478,14 +478,14 @@ plot_demultiplex = function(sce){
 }
 
 
-#' Plot UMI duplication density
+#' Plot UMI duplication frequency
 #'
-#' @description Plot the density of UMI duplication frequency.
+#' @description Plot the UMI duplication frequency.
 #'
 #' @param sce a \code{SingleCellExperiment} object
 #' @param log10_x whether to use log10 scale for x axis
 #'
-#' @return a line chart of the UMI duplication distribution
+#' @return a line chart of the UMI duplication frequency
 #' @export
 #'
 #' @examples
