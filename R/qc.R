@@ -480,7 +480,7 @@ plot_demultiplex = function(sce){
 
 #' plot_UMI_dup
 #'
-#' @description plot UMI duplication number distributions for
+#' @description Plot UMI duplication number distributions for
 #' each UMI sequence in each genes.
 #'
 #' @param sce a \code{SingleCellExperiment} object

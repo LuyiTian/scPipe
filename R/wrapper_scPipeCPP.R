@@ -249,7 +249,7 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
 
 #' sc_detect_bc
 #' 
-#' @description detect cell barcode and generate the barcode annotation
+#' @description Detect cell barcode and generate the barcode annotation
 #'
 #' @param infq input fastq file, shoule be the output file of 
 #' \code{sc_trim_barcode}
