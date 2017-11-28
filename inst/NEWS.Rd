@@ -14,3 +14,9 @@
     \item scPipe support the offical bam tags for cell barcode and UMI
   }
 }
+
+\section{Changes in version 1.0.1 (2017-11-28)}{
+  \itemize{
+    \item Bug Fix: Fixed handling of colData through QC_metrics (https://github.com/LuyiTian/scPipe/issues/34)
+  }
+}
