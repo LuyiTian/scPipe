@@ -209,7 +209,7 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 
 #' sc_gene_counting
 #' 
-#' @description This function will merge UMI and generate gene counting matrix
+#' @description This function will merge UMI and generate gene count matrix
 #'
 #' @param outdir output folder that contains \code{sc_demultiplex} output
 #' @param bc_anno barcode annotation, first column is cell id, second column 

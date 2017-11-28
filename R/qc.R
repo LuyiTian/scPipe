@@ -183,10 +183,10 @@ detect_outlier <- function(sce,
 }
 
 
-#' Calcuate QC metrics from gene counts matrix
+#' Calcuate QC metrics from gene count matrix
 #'
 #' @param sce a \code{SingleCellExperiment} object containing count
-#' @details get QC metrics using gene counting matrix.
+#' @details get QC metrics using gene count matrix.
 #' the QC statistics added are \itemize{
 #'  \item{number_of_genes} number of genes detected.
 #'  \item{total_count_per_cell} sum of read number after UMI deduplication.
