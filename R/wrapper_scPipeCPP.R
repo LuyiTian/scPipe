@@ -60,6 +60,11 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
                              bs1=-1, bl1=0, bs2=6, bl2=8, us=0, ul=6),
                            filter_settings = list(
                              rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)) {
+
+  out_dir <- regmatches(outfq, regexpr(".*/", outfq))
+  if (!dir.exists(out_dir))
+    dir.create(out_dir, recursive = TRUE)
+
   if (filter_settings$rmlow) {
     i_rmlow = 1
   }
