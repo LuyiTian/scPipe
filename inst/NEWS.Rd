@@ -20,3 +20,9 @@
     \item Bug Fix: Fixed handling of colData through QC_metrics (https://github.com/LuyiTian/scPipe/issues/34)
   }
 }
+
+\section{Changes in version 1.0.2 (2017-12-01)}{
+  \itemize{
+    \item fix errors in unittest
+  }
+}

@@ -6,7 +6,7 @@ test_that("new SingleCellExperiment doesnot contain QC information", {
   sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
   expect_that(sce, is_a("SingleCellExperiment"))
   expect_warning(QC_metrics(sce),
-                 "`scPipe` not in `metadata`. cannot identify quality control columns")
+                 "`scPipe` not in `metadata`. Cannot identify quality control columns")
   expect_equal(QC_metrics(sce), NULL)
   
   expect_warning(demultiplex_info(sce),
