@@ -15,9 +15,10 @@ the read name.}
 \item{read_structure}{a list containing the read structure configuration:
 \itemize{
   \item{bs1}: starting position of barcode in read one. -1 if no barcode in
+    read one.
   \item{bl1}: length of barcode in read one, if there is no
-    barcode in read one this number is used
-  for trimming beginning of read one.
+    barcode in read one this number is used for trimming beginning of read
+    one.
   \item{bs2}: starting position of barcode in read two
   \item{bl2}: length of barcode in read two
   \item{us}: starting position of UMI
@@ -39,26 +40,28 @@ the transcript.}
 single reads.}
 }
 \value{
-no return
+generates a trimmed fastq file named \code{outfq}
 }
 \description{
-This function will reformat the fastq file and move the barcode
-and UMI sequence to read names.
+Reformat fastq files so barcode and UMI sequences are moved from
+  the sequence into the read name.
 }
 \details{
-The default read structure in this function represents CEL-seq
-  paired-ended reads, with one cell barcode in read two start from 6bp and
-  UMI sequence in read two start from the first bp. So the read structure
-  will be : \code{list(bs1=-1, bl1=0, bs2=6, bl2=8, us=0, ul=6)}.
-  \code{bs1=-1, bl1=0} means we dont have index in read one so we set a
-  negative value to start position and zero to the length. `bs2=6, bl2=8`
-  means we have index in read two which start at 6bp with 8bp in its length.
-  `us=0, ul=6` means we have UMI from the start of read two and the length in
-  6bp. NOTE: we use the zero based index so the index of the sequence start
-  from zero. For a typical Drop-seq experiment the setting will be
-  \code{list(bs1=-1, bl1=0, bs2=0, bl2=12, us=12, ul=8)}, which means the
-  read one only contains transcript, the first 12bp in read two are index,
-  followed by 8bp UMIs.
+Positions used in this function are 0-indexed, so they start from 0
+ rather than 1. The default read structure in this function represents
+ CEL-seq paired-ended reads. This contains a transcript in the first read, a
+ UMI in the first 8bp of the second read followed by a 6bp barcode. So the
+ read structure will be : \code{list(bs1=-1, bl1=0, bs2=6, bl2=8, us=0,
+ ul=6)}. \code{bs1=-1, bl1=0} indicates negative start position and zero
+ length for the barcode on read one, this is used to denote "no barcode" on
+ read one. \code{bs2=6, bl2=8} indicates there is a barcode in read two that
+ starts at the 7th base with length 8bp. \code{us=0, ul=6} indicates a UMI
+ from first base of read two and the length in 6bp.
+
+ For a typical Drop-seq experiment the read structure will be
+ \code{list(bs1=-1, bl1=0, bs2=0, bl2=12, us=12, ul=8)}, which means the read
+ one only contains transcript, the first 12bp in read two are index, followed
+ by a 8bp UMI.
 }
 \examples{
 data_dir="celseq2_demo"

@@ -1,35 +1,38 @@
 #' sc_trim_barcode
 #'
-#' @description This function will reformat the fastq file and move the barcode
-#' and UMI sequence to read names.
+#' @description Reformat fastq files so barcode and UMI sequences are moved from
+#'   the sequence into the read name.
 #'
-#' @details The default read structure in this function represents CEL-seq
-#'   paired-ended reads, with one cell barcode in read two start from 6bp and
-#'   UMI sequence in read two start from the first bp. So the read structure
-#'   will be : \code{list(bs1=-1, bl1=0, bs2=6, bl2=8, us=0, ul=6)}.
-#'   \code{bs1=-1, bl1=0} means we dont have index in read one so we set a
-#'   negative value to start position and zero to the length. `bs2=6, bl2=8`
-#'   means we have index in read two which start at 6bp with 8bp in its length.
-#'   `us=0, ul=6` means we have UMI from the start of read two and the length in
-#'   6bp. NOTE: we use the zero based index so the index of the sequence start
-#'   from zero. For a typical Drop-seq experiment the setting will be
-#'   \code{list(bs1=-1, bl1=0, bs2=0, bl2=12, us=12, ul=8)}, which means the
-#'   read one only contains transcript, the first 12bp in read two are index,
-#'   followed by 8bp UMIs.
+#'@details Positions used in this function are 0-indexed, so they start from 0
+#'  rather than 1. The default read structure in this function represents
+#'  CEL-seq paired-ended reads. This contains a transcript in the first read, a
+#'  UMI in the first 8bp of the second read followed by a 6bp barcode. So the
+#'  read structure will be : \code{list(bs1=-1, bl1=0, bs2=6, bl2=8, us=0,
+#'  ul=6)}. \code{bs1=-1, bl1=0} indicates negative start position and zero
+#'  length for the barcode on read one, this is used to denote "no barcode" on
+#'  read one. \code{bs2=6, bl2=8} indicates there is a barcode in read two that
+#'  starts at the 7th base with length 8bp. \code{us=0, ul=6} indicates a UMI
+#'  from first base of read two and the length in 6bp.
+#'
+#'  For a typical Drop-seq experiment the read structure will be
+#'  \code{list(bs1=-1, bl1=0, bs2=0, bl2=12, us=12, ul=8)}, which means the read
+#'  one only contains transcript, the first 12bp in read two are index, followed
+#'  by a 8bp UMI.
 #'
 #' @name sc_trim_barcode
 #' @param outfq the output fastq file, which reformat the barcode and UMI into
 #'   the read name.
 #' @param transcript_read read one for pair-end reads. This read should contain
 #'   the transcript.
-#' @param barcode_read read two for pair-end reads. Defaults to \code{NULL} for
-#'   single reads.
+#' @param barcode_read read two for pair-end reads, NULL if single read.
+#'   (default: NULL)
 #' @param read_structure a list containing the read structure configuration:
 #'   \itemize{
 #'     \item{bs1}: starting position of barcode in read one. -1 if no barcode in
+#'       read one.
 #'     \item{bl1}: length of barcode in read one, if there is no
-#'       barcode in read one this number is used
-#'     for trimming beginning of read one.
+#'       barcode in read one this number is used for trimming beginning of read
+#'       one.
 #'     \item{bs2}: starting position of barcode in read two
 #'     \item{bl2}: length of barcode in read two
 #'     \item{us}: starting position of UMI
@@ -43,7 +46,7 @@
 #'  below \code{numbq}
 #'  }
 #' @export
-#' @return no return
+#' @return generates a trimmed fastq file named \code{outfq}
 #'
 #' @examples
 #' data_dir="celseq2_demo"
@@ -101,16 +104,15 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 
 #' sc_exon_mapping
 #'
-#' @description This function will take the alinged read and map them to exons.
+#' @description Map aligned reads to exon annotation.
 #' The result will be written into optional fields in bam file with different
 #' tags. Following this link for more information regarding to bam file format:
 #' http://samtools.github.io/hts-specs
 #'
 #' @name sc_exon_mapping
-#' @param inbam input bam file. This is the output of alignment program.
-#' @param outbam output bam file with gene and barcode tag
-#' @param annofn genome annotation gff file. It can have multiple files
-#' names in a vector.
+#' @param inbam input aligned bam file
+#' @param outbam output bam filename
+#' @param annofn single or vector of gff3 annotation filenames
 #' @param am mapping status tag (default: YE)
 #' @param ge gene id tag (default: GE)
 #' @param bc cell barcode tag (default: BC)
@@ -121,7 +123,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' @param fix_chr add `chr` to chromosome names, fix inconsistant names.
 #'
 #' @export
-#' @return no return
+#' @return generates a bam file with exons assigned
 #' @examples
 #' data_dir="celseq2_demo"
 #' ERCCanno_fn = system.file("extdata", "ERCC92_anno.gff3",
@@ -151,8 +153,12 @@ sc_exon_mapping = function(inbam, outbam, annofn,
     i_fix_chr = 0
   }
 
-  if (!file.exists(inbam)) {stop("input bam file does not exists.")}
-  if (!file.exists(annofn)) {stop("genome annotation file does not exists.")}
+  if (any(!file.exists(inbam))) {
+    stop("At least one input bam file does not exist")
+  }
+  if (any(!file.exists(annofn))) {
+    stop("At least one genome annotation file does not exist")
+  }
 
   rcpp_sc_exon_mapping(inbam, outbam, annofn, am, ge, bc, mb, bc_len,
                        UMI_len, stnd, fix_chr)
@@ -172,7 +178,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #' @param outdir output folder
 #' @param bc_anno barcode annotation, first column is cell id, second column
 #' is cell barcode sequence
-#' @param max_mis maximum mismatch allowed in barcode. Default to be 1
+#' @param max_mis maximum mismatch allowed in barcode. (default: 1)
 #' @param am mapping status tag (default: YE)
 #' @param ge gene id tag (default: GE)
 #' @param bc cell barcode tag (default: BC)
@@ -259,17 +265,15 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
 #' @param infq input fastq file, shoule be the output file of
 #' \code{sc_trim_barcode}
 #' @param outcsv output barcode annotation
-#' @param suffix the suffix of cell name, default to be `CELL_`. The cell name
-#' will be CELL_001, CELL_002 accordingly.
+#' @param suffix the suffix of cell name (default: `CELL_`)
 #' @param bc_len the length of cell barcode, should be consistent with bl1+bl2
 #' in \code{sc_trim_barcode}
-#' @param max_reads the maximum of reads processed, default is 1000,000, set to
-#' "all" to process all reads (may spend more time)
+#' @param max_reads the maximum of reads processed (default: 1,000,000)
 #' @param min_count minimum counts to keep, barcode will be discarded if
 #' it has lower count. Default value is 10. This should be set according
 #' to \code{max_reads}.
 #' @param max_mismatch the maximum mismatch allowed. Barcodes within this
-#' number will be considered as sequence error and merged, default to be 1.
+#' number will be considered as sequence error and merged. (default: 1)
 #' @export
 #' @return no return
 #' @examples
