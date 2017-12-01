@@ -22,9 +22,9 @@
 #' @name sc_trim_barcode
 #' @param outfq the output fastq file, which reformat the barcode and UMI into
 #'   the read name.
-#' @param transcript_read read one for pair-end reads. This read should contain
+#' @param r1 read one for pair-end reads. This read should contain
 #'   the transcript.
-#' @param barcode_read read two for pair-end reads, NULL if single read.
+#' @param r2 read two for pair-end reads, NULL if single read.
 #'   (default: NULL)
 #' @param read_structure a list containing the read structure configuration:
 #'   \itemize{

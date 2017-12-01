@@ -12,6 +12,12 @@ sc_trim_barcode(outfq, r1, r2 = NULL, read_structure = list(bs1 = -1, bl1 =
 \item{outfq}{the output fastq file, which reformat the barcode and UMI into
 the read name.}
 
+\item{r1}{read one for pair-end reads. This read should contain
+the transcript.}
+
+\item{r2}{read two for pair-end reads, NULL if single read.
+(default: NULL)}
+
 \item{read_structure}{a list containing the read structure configuration:
 \itemize{
   \item{bs1}: starting position of barcode in read one. -1 if no barcode in
@@ -32,12 +38,6 @@ the read name.}
 \item{numbq} the maximum number of base pair that have quality
 below \code{numbq}
 }}
-
-\item{transcript_read}{read one for pair-end reads. This read should contain
-the transcript.}
-
-\item{barcode_read}{read two for pair-end reads. Defaults to \code{NULL} for
-single reads.}
 }
 \value{
 generates a trimmed fastq file named \code{outfq}

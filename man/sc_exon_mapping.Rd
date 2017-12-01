@@ -8,12 +8,11 @@ sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "BC",
   mb = "OX", bc_len = 8, UMI_len = 6, stnd = TRUE, fix_chr = FALSE)
 }
 \arguments{
-\item{inbam}{input bam file. This is the output of alignment program.}
+\item{inbam}{input aligned bam file}
 
-\item{outbam}{output bam file with gene and barcode tag}
+\item{outbam}{output bam filename}
 
-\item{annofn}{genome annotation gff file. It can have multiple files
-names in a vector.}
+\item{annofn}{single or vector of gff3 annotation filenames}
 
 \item{am}{mapping status tag (default: YE)}
 
@@ -32,10 +31,10 @@ names in a vector.}
 \item{fix_chr}{add `chr` to chromosome names, fix inconsistant names.}
 }
 \value{
-no return
+generates a bam file with exons assigned
 }
 \description{
-This function will take the alinged read and map them to exons.
+Map aligned reads to exon annotation.
 The result will be written into optional fields in bam file with different
 tags. Following this link for more information regarding to bam file format:
 http://samtools.github.io/hts-specs

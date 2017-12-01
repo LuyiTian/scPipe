@@ -16,7 +16,7 @@ sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
 \item{bc_anno}{barcode annotation, first column is cell id, second column
 is cell barcode sequence}
 
-\item{max_mis}{maximum mismatch allowed in barcode. Default to be 1}
+\item{max_mis}{maximum mismatch allowed in barcode. (default: 1)}
 
 \item{am}{mapping status tag (default: YE)}
 
