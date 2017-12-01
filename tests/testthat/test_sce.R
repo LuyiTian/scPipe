@@ -1,6 +1,6 @@
 
 
-test_that("new SingleCellExperiment doesnot contain QC information", {
+test_that("new SingleCellExperiment does not contain QC information", {
   data("sc_sample_data")
   data("sc_sample_qc")
   sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
@@ -8,19 +8,19 @@ test_that("new SingleCellExperiment doesnot contain QC information", {
   expect_warning(QC_metrics(sce),
                  "`scPipe` not in `metadata`. Cannot identify quality control columns")
   expect_equal(QC_metrics(sce), NULL)
-  
+
   expect_warning(demultiplex_info(sce),
                  "`scPipe` not in `metadata`. Cannot find columns for cell barcode demultiplex results")
   expect_equal(demultiplex_info(sce), NULL)
-  
+
   expect_warning(UMI_dup_info(sce),
                  "`scPipe` not in `metadata`. Cannot find columns for cell barcode demultiplex results")
   expect_equal(UMI_dup_info(sce), NULL)
-  
+
 })
 
 
-test_that("new SingleCellExperiment should work proporly", {
+test_that("new SingleCellExperiment should work properly", {
   data("sc_sample_data")
   data("sc_sample_qc")
   sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
