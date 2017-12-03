@@ -26,3 +26,9 @@
     \item fix errors in unittest
   }
 }
+
+\section{Changes in version 1.0.2 (2017-12-01)}{
+  \itemize{
+    \item fix a bug in `validObject`. the default value for gene id and organism is set to NA
+  }
+}
