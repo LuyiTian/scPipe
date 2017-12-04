@@ -183,10 +183,14 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #' @param bc_anno barcode annotation, first column is cell id, second column
 #' is cell barcode sequence
 #' @param max_mis maximum mismatch allowed in barcode. (default: 1)
-#' @param am mapping status tag (default: YE)
-#' @param ge gene id tag (default: GE)
-#' @param bc cell barcode tag (default: BC)
-#' @param mb molecular barcode tag (default: OX)
+#' @param bam_tags list defining BAM tags where mapping information is
+#'   stored.
+#'   \itemize{
+#'     \item "am": mapping status tag
+#'     \item "ge": gene id
+#'     \item "bc": cell barcode tag
+#'     \item "mb": molecular barcode tag
+#'   }
 #' @param mito mitochondrial chromosome name.
 #' This should be consistant with the chromosome names in the bam file.
 #' @param has_UMI whether the protocol contains UMI (default: TRUE)
@@ -208,16 +212,15 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #'
 sc_demultiplex = function(inbam, outdir, bc_anno,
                           max_mis=1,
-                          am="YE", ge="GE",
-                          bc="BC",
-                          mb="OX",
+                          bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
                           mito="MT",
                           has_UMI=TRUE) {
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
   if (!file.exists(inbam)) {stop("input bam file does not exists.")}
   if (!file.exists(bc_anno)) {stop("barcode annotation file does not exists.")}
-  rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb,
+  rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis,
+                      bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
                       mito, has_UMI)
 }
 
@@ -297,4 +300,54 @@ sc_detect_bc = function(infq, outcsv, suffix="CELL_", bc_len,
   if (max_reads=="all") {m_r = -1}
   else {m_r=max_reads}
   rcpp_sc_detect_bc(infq, outcsv, suffix, bc_len, m_r, min_count, max_mismatch)
+}
+
+#' sc_demultiplex_and_count
+#'
+#' @description Wrapper to run \code{\link{sc_demultiplex}} and
+#'   \code{\link{sc_gene_counting}} with a single command
+#'
+#' @inheritParams sc_demultiplex
+#' @inheritParams sc_gene_counting
+#'
+#' @return no return
+#'
+#' @examples
+#' \dontrun{
+#' refer to the vignettes for the complete workflow, replace demultiplex and
+#' count with single command:
+#' ...
+#' sc_demultiplex_and_count(
+#'    file.path(data_dir, "out.map.bam"),
+#'    data_dir,
+#'    barcode_annotation_fn,
+#'    has_UMI = FALSE
+#' )
+#' ...
+#' }
+#'
+#' @export
+#'
+sc_demultiplex_and_count = function(
+  inbam, outdir, bc_anno,
+  max_mis=1,
+  bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
+  mito = "MT", has_UMI = TRUE, gene_fl = FALSE
+) {
+  sc_demultiplex(
+    inbam = inbam,
+    outdir = outdir,
+    bc_anno = bc_anno,
+    max_mis = max_mis,
+    bam_tags = bam_tags,
+    mito = mito,
+    has_UMI = has_UMI
+  )
+
+  sc_gene_counting(
+    outdir = outdir,
+    bc_anno = bc_anno,
+    UMI_cor = UMI_cor,
+    gene_fl = gene_fl
+  )
 }
