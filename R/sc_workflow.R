@@ -225,7 +225,7 @@ create_report = function(sample_name,
   
   writeLines(tx, con=file.path(outdir, "report.Rmd"))
   knitr::wrap_rmd(file.path(outdir, "report.Rmd"), width = 120, backup = NULL)
-  rmarkdown::render(file.path(outdir, "report.Rmd"), output_file = file.path(outdir, "report.html"))
+  rmarkdown::render(file.path(outdir, "report.Rmd"), output_file = file.path(outdir, "report.html"), knit_root_dir = ".")
 }
 
 #' create_processed_report
@@ -277,6 +277,7 @@ create_processed_report <- function(
   writeLines(tx, con = report_path)
   rmarkdown::render(
       input = report_path,
-      envir = new.env()
+      envir = new.env(),
+      knit_root_dir = "."
   )
 }
