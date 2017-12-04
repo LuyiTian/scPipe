@@ -332,7 +332,7 @@ sc_demultiplex_and_count = function(
   inbam, outdir, bc_anno,
   max_mis=1,
   bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-  mito = "MT", has_UMI = TRUE, gene_fl = FALSE
+  mito = "MT", has_UMI = TRUE, UMI_cor=1, gene_fl = FALSE
 ) {
   sc_demultiplex(
     inbam = inbam,
