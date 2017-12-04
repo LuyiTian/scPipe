@@ -14,3 +14,21 @@
     \item scPipe support the offical bam tags for cell barcode and UMI
   }
 }
+
+\section{Changes in version 1.0.1 (2017-11-28)}{
+  \itemize{
+    \item Bug Fix: Fixed handling of colData through QC_metrics (https://github.com/LuyiTian/scPipe/issues/34)
+  }
+}
+
+\section{Changes in version 1.0.2 (2017-12-01)}{
+  \itemize{
+    \item fix errors in unittest
+  }
+}
+
+\section{Changes in version 1.0.2 (2017-12-01)}{
+  \itemize{
+    \item fix a bug in `validObject`. the default value for gene id and organism is set to NA
+  }
+}
