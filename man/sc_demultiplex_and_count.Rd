@@ -6,7 +6,7 @@
 \usage{
 sc_demultiplex_and_count(inbam, outdir, bc_anno, max_mis = 1,
   bam_tags = list(am = "YE", ge = "GE", bc = "BC", mb = "OX"), mito = "MT",
-  has_UMI = TRUE, gene_fl = FALSE)
+  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE)
 }
 \arguments{
 \item{inbam}{input bam file. This should be the output of
@@ -32,6 +32,9 @@ stored.
 This should be consistant with the chromosome names in the bam file.}
 
 \item{has_UMI}{whether the protocol contains UMI (default: TRUE)}
+
+\item{UMI_cor}{correct UMI sequencing error: 0 means no correction, 1 means
+simple correction and merge UMI with distance 1.}
 
 \item{gene_fl}{whether to remove low abundance genes. A gene is considered to
 have low abundance if only one copy of one UMI is associated with it.}
