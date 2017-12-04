@@ -112,15 +112,19 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' @name sc_exon_mapping
 #' @param inbam input aligned bam file
 #' @param outbam output bam filename
-#' @param annofn single or vector of gff3 annotation filenames
-#' @param am mapping status tag (default: YE)
-#' @param ge gene id tag (default: GE)
-#' @param bc cell barcode tag (default: BC)
-#' @param mb molecular barcode tag (default: OX)
+#' @param annofn single string or vector of gff3 annotation filenames
+#' @param bam_tags list defining BAM tags where mapping information is
+#'   stored.
+#'   \itemize{
+#'     \item "am": mapping status tag
+#'     \item "ge": gene id
+#'     \item "bc": cell barcode tag
+#'     \item "mb": molecular barcode tag
+#'   }
 #' @param bc_len total barcode length
 #' @param UMI_len UMI length
-#' @param stnd perform strand specific mapping or not
-#' @param fix_chr add `chr` to chromosome names, fix inconsistant names.
+#' @param stnd TRUE to perform strand specific mapping. (default: TRUE)
+#' @param fix_chr TRUE to add `chr` to chromosome names, MT to chrM. (default: FALSE)
 #'
 #' @export
 #' @return generates a bam file with exons assigned
@@ -138,7 +142,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' }
 #'
 sc_exon_mapping = function(inbam, outbam, annofn,
-                            am="YE", ge="GE", bc="BC", mb="OX",
+                            bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
                             bc_len=8, UMI_len=6, stnd=TRUE, fix_chr=FALSE) {
   if (stnd) {
     i_stnd = 1
@@ -160,14 +164,14 @@ sc_exon_mapping = function(inbam, outbam, annofn,
     stop("At least one genome annotation file does not exist")
   }
 
-  rcpp_sc_exon_mapping(inbam, outbam, annofn, am, ge, bc, mb, bc_len,
+  rcpp_sc_exon_mapping(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
                        UMI_len, stnd, fix_chr)
 }
 
 
 #' sc_demultiplex
 #'
-#' @description This function will process bam file by cell barcode,
+#' @description Process bam file by cell barcode,
 #' output to outdir/count/[cell_id].csv.
 #' the output contains information for all reads that can be mapped to exons.
 #' including the gene id, UMI of that read and the distance to transcript end
@@ -220,15 +224,15 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 
 #' sc_gene_counting
 #'
-#' @description This function will merge UMI and generate gene count matrix
+#' @description Generate gene counts matrix with UMI deduplication
 #'
-#' @param outdir output folder that contains \code{sc_demultiplex} output
-#' @param bc_anno barcode annotation, first column is cell id, second column
-#' is cell barcode sequence
-#' @param UMI_cor correct UMI sequence error: 0 means no correction, 1 means
-#' simple correction and merge UMI with distance 1.
-#' @param gene_fl whether to remove low abundant gene count. Low abundant is
-#' defined as only one copy of one UMI for this gene
+#' @param outdir output folder containing \code{sc_demultiplex} output
+#' @param bc_anno barcode annotation comma-separated-values, first column is
+#'   cell id, second column is cell barcode sequence
+#' @param UMI_cor correct UMI sequencing error: 0 means no correction, 1 means
+#'   simple correction and merge UMI with distance 1.
+#' @param gene_fl whether to remove low abundance genes. A gene is considered to
+#'   have low abundance if only one copy of one UMI is associated with it.
 #'
 #' @export
 #' @return no return
@@ -246,13 +250,15 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
+
   if (gene_fl) {
     i_gene_fl = 1
-  }
-  else {
+  } else {
     i_gene_fl = 0
   }
-  if (!file.exists(bc_anno)) {stop("barcode annotation file does not exists.")}
+
+  if (!file.exists(bc_anno))
+    stop("barcode annotation file does not exists.")
   rcpp_sc_gene_counting(outdir, bc_anno, UMI_cor, i_gene_fl)
 }
 

@@ -35,7 +35,7 @@ This should be consistant with the chromosome names in the bam file.}
 no return
 }
 \description{
-This function will process bam file by cell barcode,
+Process bam file by cell barcode,
 output to outdir/count/[cell_id].csv.
 the output contains information for all reads that can be mapped to exons.
 including the gene id, UMI of that read and the distance to transcript end

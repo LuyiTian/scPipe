@@ -4,31 +4,33 @@
 \alias{sc_exon_mapping}
 \title{sc_exon_mapping}
 \usage{
-sc_exon_mapping(inbam, outbam, annofn, am = "YE", ge = "GE", bc = "BC",
-  mb = "OX", bc_len = 8, UMI_len = 6, stnd = TRUE, fix_chr = FALSE)
+sc_exon_mapping(inbam, outbam, annofn, bam_tags = list(am = "YE", ge = "GE",
+  bc = "BC", mb = "OX"), bc_len = 8, UMI_len = 6, stnd = TRUE,
+  fix_chr = FALSE)
 }
 \arguments{
 \item{inbam}{input aligned bam file}
 
 \item{outbam}{output bam filename}
 
-\item{annofn}{single or vector of gff3 annotation filenames}
+\item{annofn}{single string or vector of gff3 annotation filenames}
 
-\item{am}{mapping status tag (default: YE)}
-
-\item{ge}{gene id tag (default: GE)}
-
-\item{bc}{cell barcode tag (default: BC)}
-
-\item{mb}{molecular barcode tag (default: OX)}
+\item{bam_tags}{list defining BAM tags where mapping information is
+stored.
+\itemize{
+  \item "am": mapping status tag
+  \item "ge": gene id
+  \item "bc": cell barcode tag
+  \item "mb": molecular barcode tag
+}}
 
 \item{bc_len}{total barcode length}
 
 \item{UMI_len}{UMI length}
 
-\item{stnd}{perform strand specific mapping or not}
+\item{stnd}{TRUE to perform strand specific mapping. (default: TRUE)}
 
-\item{fix_chr}{add `chr` to chromosome names, fix inconsistant names.}
+\item{fix_chr}{TRUE to add `chr` to chromosome names, MT to chrM. (default: FALSE)}
 }
 \value{
 generates a bam file with exons assigned
