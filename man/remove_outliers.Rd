@@ -2,23 +2,23 @@
 % Please edit documentation in R/qc.R
 \name{remove_outliers}
 \alias{remove_outliers}
-\title{remove outliers for \code{SingleCellExperiment}}
+\title{Remove outliers in \code{SingleCellExperiment}}
 \usage{
 remove_outliers(sce)
 }
 \arguments{
-\item{sce}{an \code{SingleCellExperiment} object}
+\item{sce}{a \code{SingleCellExperiment} object}
 }
 \value{
-an \code{SingleCellExperiment} object without outliers
+a \code{SingleCellExperiment} object without outliers
 }
 \description{
-remove outliers for \code{SingleCellExperiment}
+Removes outliers flagged by \code{detect_outliers()}
 }
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
-sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 organism(sce) = "mmusculus_gene_ensembl"
 gene_id_type(sce) = "ensembl_gene_id"
 QC_metrics(sce) = sc_sample_qc

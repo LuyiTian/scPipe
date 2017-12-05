@@ -2,7 +2,7 @@
 % Please edit documentation in R/qc.R
 \name{plot_UMI_dup}
 \alias{plot_UMI_dup}
-\title{plot_UMI_dup}
+\title{Plot UMI duplication frequency}
 \usage{
 plot_UMI_dup(sce, log10_x = TRUE)
 }
@@ -12,16 +12,15 @@ plot_UMI_dup(sce, log10_x = TRUE)
 \item{log10_x}{whether to use log10 scale for x axis}
 }
 \value{
-a line chart of the UMI duplication distributions
+a line chart of the UMI duplication frequency
 }
 \description{
-plot UMI duplication number distributions for
-each UMI sequence in each genes.
+Plot the UMI duplication frequency.
 }
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
-sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 organism(sce) = "mmusculus_gene_ensembl"
 gene_id_type(sce) = "ensembl_gene_id"
 QC_metrics(sce) = sc_sample_qc

@@ -38,7 +38,7 @@ validObject = function(object){
     if((!is.na(tmp_res$organism)) & (!is.na(tmp_res$gene_id_type))){
       gene_id_type(object) = tmp_res$gene_id_type
       organism(object) = tmp_res$organism
-      print(paste("organism/gene_id_type not provided. make a guess:", 
+      print(paste("organism/gene_id_type not provided. Make a guess:", 
                   tmp_res$organism,
                   "/",
                   tmp_res$gene_id_type))
@@ -66,7 +66,7 @@ validObject = function(object){
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' QC_metrics(sce) = sc_sample_qc
 #' 
 #' head(QC_metrics(sce))
@@ -124,7 +124,7 @@ setReplaceMethod(
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -135,7 +135,7 @@ setReplaceMethod(
 #'
 demultiplex_info.sce <- function(object) {
   if(!("scPipe" %in% names(object@metadata))){
-    warning("`scPipe` not in `metadata`. cannot find columns for cell barcode demultiplex results")
+    warning("`scPipe` not in `metadata`. Cannot find columns for cell barcode demultiplex results")
     return(NULL)
   }else if(!("demultiplex_info" %in% names(object@metadata$scPipe))){
     warning("The metadata$scPipe does not have `demultiplex_info`.")
@@ -182,7 +182,7 @@ setReplaceMethod("demultiplex_info",
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -193,7 +193,7 @@ setReplaceMethod("demultiplex_info",
 #'
 UMI_dup_info.sce <- function(object) {
   if(!("scPipe" %in% names(object@metadata))){
-    warning("`scPipe` not in `metadata`. cannot find columns for cell barcode demultiplex results")
+    warning("`scPipe` not in `metadata`. Cannot find columns for cell barcode demultiplex results")
     return(NULL)
   }else if(!("UMI_dup_info" %in% names(object@metadata$scPipe))){
     warning("The metadata$scPipe does not have `UMI_dup_info`.")
@@ -238,7 +238,7 @@ setReplaceMethod("UMI_dup_info",
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -290,7 +290,7 @@ setReplaceMethod("organism",signature="SingleCellExperiment",
 #' @examples
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc

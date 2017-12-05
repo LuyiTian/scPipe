@@ -38,7 +38,7 @@ Get or set quality control metrics in a SingleCellExperiment object
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
-sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 QC_metrics(sce) = sc_sample_qc
 
 head(QC_metrics(sce))

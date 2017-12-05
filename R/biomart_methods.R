@@ -2,9 +2,9 @@
 
 #' Get genes related to certain GO terms from biomart database
 #'
-#' @param returns the gene id which is set as return. default to be ensembl id
+#' @param returns the gene id which is set as return. Default to be ensembl id
 #' A possible list of attributes can be retrieved using the
-#' function \code{listAttributes} from \code{biomaRt} package. the commonly used
+#' function \code{listAttributes} from \code{biomaRt} package. The commonly used
 #' id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.
 #' @param dataset Dataset you want to use. List of possible datasets can be
 #' retrieved using the function \code{listDatasets} from \code{biomaRt} package.
@@ -48,12 +48,12 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 #' convert the gene ids of a SingleCellExperiment object
 #'
 #' @param sce a SingleCellExperiment object
-#' @param returns the gene id which is set as return. default to be `external_gene_name`
+#' @param returns the gene id which is set as return. Default to be `external_gene_name`
 #' A possible list of attributes can be retrieved using the
-#' function \code{listAttributes} from \code{biomaRt} package. the commonly used
+#' function \code{listAttributes} from \code{biomaRt} package. The commonly used
 #' id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.
-#' @param all logic. for genes that cannot covert to new gene id, keep them with the old
-#' id or delete them. the default is keep them.
+#' @param all logic. For genes that cannot covert to new gene id, keep them with the old
+#' id or delete them. The default is keep them.
 #' @details convert the gene id of all datas in the SingleCellExperiment object
 #'
 #' @return sce with converted id
@@ -68,7 +68,7 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 #' # the following example will convert it to `external_gene_name`.
 #' data("sc_sample_data")
 #' data("sc_sample_qc")
-#' sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+#' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' organism(sce) = "mmusculus_gene_ensembl"
 #' gene_id_type(sce) = "ensembl_gene_id"
 #' QC_metrics(sce) = sc_sample_qc
@@ -106,9 +106,9 @@ convert_geneid <- function(sce,
   na_num <- sum(is.na(G_list[, returns]))
   dup_ids <- duplicated(G_list[, returns]) | duplicated(G_list[, returns], fromLast=TRUE)
   dup_num <- (sum(dup_ids)-na_num)/2
-  print(paste0("number of NA in new gene id: ", na_num, ". duplicated id: ", dup_num))
+  print(paste0("Number of NA in new gene id: ", na_num, ". Duplicated id: ", dup_num))
   if (dup_num>0) {
-    print("first 5 duplicated:")
+    print("First 5 duplicated:")
     print(head(G_list[dup_ids & !(is.na(G_list[, returns])), ]))
   }
   G_list[, returns][dup_ids] <- NA

@@ -9,13 +9,13 @@ convert_geneid(sce, returns = "external_gene_name", all = TRUE)
 \arguments{
 \item{sce}{a SingleCellExperiment object}
 
-\item{returns}{the gene id which is set as return. default to be `external_gene_name`
+\item{returns}{the gene id which is set as return. Default to be `external_gene_name`
 A possible list of attributes can be retrieved using the
-function \code{listAttributes} from \code{biomaRt} package. the commonly used
+function \code{listAttributes} from \code{biomaRt} package. The commonly used
 id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.}
 
-\item{all}{logic. for genes that cannot covert to new gene id, keep them with the old
-id or delete them. the default is keep them.}
+\item{all}{logic. For genes that cannot covert to new gene id, keep them with the old
+id or delete them. The default is keep them.}
 }
 \value{
 sce with converted id
@@ -31,7 +31,7 @@ convert the gene id of all datas in the SingleCellExperiment object
 # the following example will convert it to `external_gene_name`.
 data("sc_sample_data")
 data("sc_sample_qc")
-sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 organism(sce) = "mmusculus_gene_ensembl"
 gene_id_type(sce) = "ensembl_gene_id"
 QC_metrics(sce) = sc_sample_qc
