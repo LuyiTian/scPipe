@@ -27,8 +27,14 @@
   }
 }
 
-\section{Changes in version 1.0.2 (2017-12-01)}{
+\section{Changes in version 1.0.3 (2017-12-03)}{
   \itemize{
     \item fix a bug in `validObject`. the default value for gene id and organism is set to NA
+  }
+}
+
+\section{Changes in version 1.0.4 (2017-12-04)}{
+  \itemize{
+    \item In `detect_outlier`, give more informative error message when some cells or QC metrics have zero values.
   }
 }
