@@ -54,7 +54,7 @@ ggplotly(plot_mapping(sce, percentage=FALSE))
 ```
 
 ```{r}
-ggplotly(plot_mapping(sce, dataname=params$samplename, percentage=TRUE))
+ggplotly(plot_mapping(sce, percentage=TRUE))
 ```
 
 ## Summary and distributions of QC metrics
