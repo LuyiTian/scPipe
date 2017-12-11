@@ -110,6 +110,12 @@ detect_outlier <- function(sce,
       stop("did not find column `batch` in colData(sce).")
     }
   }
+  
+  if(any(rowSums(x_all) == 0)){
+    stop("Some cells have zero counts. remove these cells before detecting outlier.")
+  }else if(any(colSums(x_all) == 0){
+    stop("Some QC metrics are all zeros, check your quality control matrix by QC_metrics(sce).")
+  }
   outliers <- rep(FALSE, nrow(x_all))
 
   for (a_batch in unique(batch_info)) {
