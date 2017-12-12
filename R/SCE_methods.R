@@ -43,8 +43,8 @@ validObject = function(object){
                   "/",
                   tmp_res$gene_id_type))
     }else{
-      gene_id_type(object) = NA
-      organism(object) = NA
+      gene_id_type(object) = "NA"
+      organism(object) = "NA"
     } 
   }
   return(object)
