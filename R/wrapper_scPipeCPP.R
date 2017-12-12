@@ -84,6 +84,11 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
   if (!is.null(r2)) {
     if (!file.exists(r1)) {stop("read1 fastq file does not exists.")}
     if (!file.exists(r2)) {stop("read2 fastq file does not exists.")}
+
+    # expand tilde to home path for downstream gzopen() call
+    r1 = path.expand(r1)
+    r2 = path.expand(r2)
+
     rcpp_sc_trim_barcode_paired(outfq, r1, r2,
                                 read_structure$bs1,
                                 read_structure$bl1,
