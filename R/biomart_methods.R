@@ -29,7 +29,7 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
   if (is.null(go)) {
     stop("must provide GO term. (i.e go=c('GO:0005739'))")
   }
-  mart = tryCatch({mart <- useDataset(dataset, useMart("ensembl")) },
+  mart = tryCatch({mart <- useDataset(dataset, useMart("ensembl"), ensemblRedirect=FALSE) },
            error = function(e){
              cat(paste0("cannot connect to the ensembl database. ERROR:\n", e ))
              return(c())
