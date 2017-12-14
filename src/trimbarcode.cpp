@@ -72,13 +72,13 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
     gzFile fq1 = gzopen(fq1_fn, "r"); // input fastq
     if (!fq1) {
         std::stringstream err_msg;
-        err_msg << "Can't open file: %s\n" << fq1_fn;
+        err_msg << "Can't open file: " << fq1_fn << "\n";
         Rcpp::stop(err_msg.str());
     }
     gzFile fq2 = gzopen(fq2_fn, "r");
     if (!fq2) {
         std::stringstream err_msg;
-        err_msg << "Can't open file: %s\n" << fq2_fn;
+        err_msg << "Can't open file: " << fq2_fn << "\n";
         Rcpp::stop(err_msg.str());
     }
 

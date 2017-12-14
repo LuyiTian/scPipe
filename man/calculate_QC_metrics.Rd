@@ -2,35 +2,35 @@
 % Please edit documentation in R/qc.R
 \name{calculate_QC_metrics}
 \alias{calculate_QC_metrics}
-\title{Get QC metrics using gene counting matrix}
+\title{Calcuate QC metrics from gene count matrix}
 \usage{
 calculate_QC_metrics(sce)
 }
 \arguments{
-\item{sce}{a \code{SingleCellExperiment} object containing count}
+\item{sce}{a \code{SingleCellExperiment} object containing gene counts}
 }
 \value{
 an \code{SingleCellExperiment} with updated QC metrics
 }
 \description{
-Get QC metrics using gene counting matrix
+Calcuate QC metrics from gene count matrix
 }
 \details{
-get QC metrics using gene counting matrix.
-the QC statistics added are \itemize{
+get QC metrics using gene count matrix.
+The QC statistics added are \itemize{
  \item{number_of_genes} number of genes detected.
  \item{total_count_per_cell} sum of read number after UMI deduplication.
- \item{non_mt_percent} 1 - percentage of mitochondrial gene counts. 
+ \item{non_mt_percent} 1 - percentage of mitochondrial gene counts.
  Mitochondrial genes are retrived by GO term GO:0005739
  \item{non_ERCC_percent} ratio of exon counts to ERCC counts
  \item{non_ribo_percent} 1 - percentage of ribosomal gene counts
-ribosomal genes are retrived by GO term GO:0005840
+ribosomal genes are retrived by GO term GO:0005840.
 }
 }
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
-sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 organism(sce) = "mmusculus_gene_ensembl"
 gene_id_type(sce) = "ensembl_gene_id"
 QC_metrics(sce) = sc_sample_qc

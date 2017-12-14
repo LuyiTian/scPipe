@@ -10,20 +10,20 @@ plot_demultiplex(sce)
 \item{sce}{a \code{SingleCellExperiment} object}
 }
 \value{
-a bar chart
+a ggplot2 bar chart
 }
 \description{
-plot cell barcode demultiplex result for the experiment.
-It will include the percentage of reads that match the cell barcode.
-For the reads that does not match any barcode, it will gives the percentage of
-reads aligned and mapped to exon. If there is high proportion of reads
-that do not match any barcode but mapped to exon, it might indicatea a failure in cell
-barcode demultiplexing
+Plot cell barcode demultiplexing result for the
+ \code{SingleCellExperiment}. The barcode demultiplexing result is shown
+ using a barplot, with the bars indicating proportions of total reads.
+ Barcode matches and mismatches are summarised along with whether or not the
+ read mapped to the genome. High proportion of genome aligned reads with no
+ barcode match may indicate barcode integration failure.
 }
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
-sce = SingleCellExperiment(assays = list(counts =as.matrix(sc_sample_data)))
+sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 organism(sce) = "mmusculus_gene_ensembl"
 gene_id_type(sce) = "ensembl_gene_id"
 QC_metrics(sce) = sc_sample_qc

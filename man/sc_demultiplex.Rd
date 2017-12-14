@@ -4,29 +4,30 @@
 \alias{sc_demultiplex}
 \title{sc_demultiplex}
 \usage{
-sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, am = "YE", ge = "GE",
-  bc = "BC", mb = "OX", mito = "MT", has_UMI = TRUE)
+sc_demultiplex(inbam, outdir, bc_anno, max_mis = 1, bam_tags = list(am =
+  "YE", ge = "GE", bc = "BC", mb = "OX"), mito = "MT", has_UMI = TRUE)
 }
 \arguments{
-\item{inbam}{input bam file. This should be the output of 
+\item{inbam}{input bam file. This should be the output of
 \code{sc_exon_mapping}}
 
 \item{outdir}{output folder}
 
-\item{bc_anno}{barcode annotation, first column is cell id, second column 
+\item{bc_anno}{barcode annotation, first column is cell id, second column
 is cell barcode sequence}
 
-\item{max_mis}{maximum mismatch allowed in barcode. default to be 1}
+\item{max_mis}{maximum mismatch allowed in barcode. (default: 1)}
 
-\item{am}{mapping status tag (default: YE)}
+\item{bam_tags}{list defining BAM tags where mapping information is
+stored.
+\itemize{
+  \item "am": mapping status tag
+  \item "ge": gene id
+  \item "bc": cell barcode tag
+  \item "mb": molecular barcode tag
+}}
 
-\item{ge}{gene id tag (default: GE)}
-
-\item{bc}{cell barcode tag (default: BC)}
-
-\item{mb}{molecular barcode tag (default: OX)}
-
-\item{mito}{mitochondrial chromosome name. 
+\item{mito}{mitochondrial chromosome name.
 This should be consistant with the chromosome names in the bam file.}
 
 \item{has_UMI}{whether the protocol contains UMI (default: TRUE)}
@@ -35,21 +36,21 @@ This should be consistant with the chromosome names in the bam file.}
 no return
 }
 \description{
-This function will process bam file by cell barcode, 
+Process bam file by cell barcode,
 output to outdir/count/[cell_id].csv.
 the output contains information for all reads that can be mapped to exons.
-including the gene id, UMI of that read and the distance to transcript end 
+including the gene id, UMI of that read and the distance to transcript end
 position.
 }
 \examples{
 data_dir="celseq2_demo"
-barcode_annotation_fn = system.file("extdata", "barcode_anno.csv", 
+barcode_annotation_fn = system.file("extdata", "barcode_anno.csv",
     package = "scPipe")
 \dontrun{
 # refer to the vignettes for the complete workflow
 ...
-sc_demultiplex(file.path(data_dir, "out.map.bam"), 
-    data_dir, 
+sc_demultiplex(file.path(data_dir, "out.map.bam"),
+    data_dir,
     barcode_annotation_fn,has_UMI=FALSE)
 ...
 }

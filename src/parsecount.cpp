@@ -151,7 +151,7 @@ void get_counting_matrix(Barcode bar, string in_dir, int UMI_correct, bool read_
 {
     char sep = ',';
     std::unordered_map<string, string> cnt_files = bar.get_count_file_path(join_path(in_dir, "count"));
-    std::unordered_map<string, std::vector<int>> gene_cnt_matrix; // store gene counting matrix
+    std::unordered_map<string, std::vector<int>> gene_cnt_matrix; // store gene count matrix
     std::vector<string> all_gene_list; // store all gene ids
     std::vector<int> UMI_dup_count(MAX_UMI_DUP+1, 0); // store UMI duplication statistics
     std::unordered_map<string, UMI_dedup_stat> UMI_dedup_stat_dict;
