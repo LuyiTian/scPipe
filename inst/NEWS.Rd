@@ -38,3 +38,11 @@
     \item In `detect_outlier`, give more informative error message when some cells or QC metrics have zero values.
   }
 }
+
+\section{Changes in version 1.0.4 (2017-12-14)}{
+  \itemize{
+    \item Fixed bugs in slim report and trimbarcode error message
+    \item Fix incomplete error message
+    \item Documentation updates, new functions and bug fixes
+  }
+}
