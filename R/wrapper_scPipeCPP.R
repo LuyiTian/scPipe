@@ -337,7 +337,7 @@ sc_demultiplex_and_count = function(
   inbam, outdir, bc_anno,
   max_mis=1,
   bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-  mito = "MT", has_UMI = TRUE, UMI_cor=1, gene_fl = FALSE
+  mito = "MT", has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE
 ) {
   sc_demultiplex(
     inbam = inbam,
@@ -352,6 +352,56 @@ sc_demultiplex_and_count = function(
   sc_gene_counting(
     outdir = outdir,
     bc_anno = bc_anno,
+    UMI_cor = UMI_cor,
+    gene_fl = gene_fl
+  )
+}
+
+#' sc_demultiplex_and_count
+#'
+#' @description Wrapper to run \code{\link{sc_exon_mapping}}, \code{\link{sc_demultiplex}} and
+#'   \code{\link{sc_gene_counting}} with a single command
+#'
+#' @inheritParams sc_exon_mapping
+#' @inheritParams sc_demultiplex
+#' @inheritParams sc_gene_counting
+#'
+#' @return no return
+#'
+#' @examples
+#'
+#' @export
+#'
+sc_count_aligned_bam <- function(
+  inbam, outbam, annofn,
+  bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
+  bc_len=8, UMI_len=6,
+  stnd=TRUE, fix_chr=FALSE,
+  outdir,
+  bc_anno,
+  max_mis=1,
+  mito = "MT",
+  has_UMI = TRUE, UMI_cor=1, gene_fl = FALSE
+) {
+  sc_exon_mapping(
+    inbam = inbam,
+    outbam = outbam,
+    annofn = annofn,
+    bam_tags = bam_tags,
+    bc_len = bc_len,
+    UMI_len = UMI_len,
+    stnd = stnd,
+    fix_chr = fix_chr
+  )
+
+  sc_demultiplex_and_count(
+    inbam = outbam,
+    outdir = outdir,
+    bc_anno = bc_anno,
+    max_mis = max_mis,
+    bam_tags = bam_tags,
+    mito = mito,
+    has_UMI = has_UMI,
     UMI_cor = UMI_cor,
     gene_fl = gene_fl
   )
