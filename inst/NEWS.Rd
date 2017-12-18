@@ -39,10 +39,16 @@
   }
 }
 
-\section{Changes in version 1.0.4 (2017-12-14)}{
+\section{Changes in version 1.0.5 (2017-12-14)}{
   \itemize{
     \item Fixed bugs in slim report and trimbarcode error message
     \item Fix incomplete error message
     \item Documentation updates, new functions and bug fixes
+  }
+}
+
+\section{Changes in version 1.0.6 (2017-12-18)}{
+  \itemize{
+    \item Now the id conversion can also be done by using the bioconductor annotation package, when biomart fails to connect.
   }
 }
