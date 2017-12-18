@@ -259,8 +259,25 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
 
 void fq_write(std::ofstream& o_stream, kseq_t *seq, int trim_n)
 {
-    o_stream << "@" << seq->name.s << "\n" << (seq->seq.s+trim_n) << "\n";
-    o_stream << "+" << "\n" << (seq->qual.s+trim_n) << "\n";
+    o_stream << "@" << seq->name.s << "\n" << 
+        (seq->seq.s+trim_n) << "\n" << 
+        "+" << "\n" << 
+        (seq->qual.s+trim_n) << "\n";
+}
+
+void fq_gz_write(gzFile out_file, kseq_t *seq, int trim_n) {
+    std::stringstream stream;
+    stream << "@" << seq->name.s << "\n" << 
+        (seq->seq.s+trim_n) << "\n" << 
+        "+" << "\n" << 
+        (seq->qual.s+trim_n) << "\n";
+    gzprintf(out_file, "%s", stream.str().c_str());
+}
+
+void clear_file(std::string file) {
+    std::ofstream stream(file);
+    stream << std::ios::trunc;
+    stream.close();
 }
 
 void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_s read_structure, const filter_s filter_settings)
@@ -285,7 +302,15 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         Rcpp::stop(err_msg.str());
     }
 
+    const std::string fq_gz_out = std::string(fq_out) + std::string(".gz");
+
     std::ofstream o_stream(fq_out); // output file
+
+    // clear gz file
+    clear_file(fq_out);
+
+    // open gz file
+    gzFile o_stream_gz = gzopen(fq_gz_out.c_str(), "wba"); // output file
 
     // get settings
     int id1_st = read_structure.id1_st;
@@ -381,36 +406,43 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
 
         passed_reads++;
 
-        seq1->name.s = (char*)realloc(seq1->name.s, name_offset + seq1->name.l);
-        memmove(seq1->name.s+name_offset, seq1->name.s, (seq1->name.l+1)*sizeof(char)); // move original read name
+        const int new_name_length = name_offset + seq1->name.l + 1;
+        seq1->name.s = (char*)realloc(seq1->name.s, new_name_length); // allocate additional memory
+
+        const int name_size = seq1->name.l + 1;
+        char * const seq1_name = seq1->name.s;
+        char * const seq1_seq = seq1->seq.s;
+        char * const seq2_seq = seq2->seq.s;
+        memmove(seq1_name + name_offset, seq1_name, name_size * sizeof(char)); // move original read name
         if (state == TWO_INDEX_WITH_UMI)
         {
-            memcpy(seq1->name.s, seq1->seq.s+id1_st, id1_len*sizeof(char)); // copy index one
-            memcpy(seq1->name.s+id1_len, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id1_len+id2_len] = '_'; // add separator
-            memcpy(seq1->name.s+id1_len+id2_len+1, seq2->seq.s+umi_st, umi_len*sizeof(char)); // copy umi
+            memcpy(seq1_name, seq1_seq + id1_st, id1_len * sizeof(char)); // copy index one
+            memcpy(seq1_name + id1_len, seq2_seq + id2_st, id2_len * sizeof(char)); // copy index two
+            seq1_name[id1_len+id2_len] = '_'; // add separator
+            memcpy(seq1_name + id1_len + id2_len + 1, seq2_seq + umi_st, umi_len * sizeof(char)); // copy umi
         }
         else if (state == TWO_INDEX_NO_UMI)
         {
-            memcpy(seq1->name.s, seq1->seq.s+id1_st, id1_len*sizeof(char)); // copy index one
-            memcpy(seq1->name.s+id1_len, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id1_len+id2_len] = '_'; // add separator
+            memcpy(seq1_name, seq1_seq + id1_st, id1_len * sizeof(char)); // copy index one
+            memcpy(seq1_name + id1_len, seq2_seq + id2_st, id2_len * sizeof(char)); // copy index two
+            seq1_name[id1_len+id2_len] = '_'; // add separator
         }
         else if (state == ONE_INDEX_WITH_UMI)
         {
-            memcpy(seq1->name.s, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id2_len] = '_'; // add separator
-            memcpy(seq1->name.s+id2_len+1, seq2->seq.s+umi_st, umi_len*sizeof(char)); // copy umi
+            memcpy(seq1_name, seq2_seq + id2_st, id2_len * sizeof(char)); // copy index two
+            seq1_name[id2_len] = '_'; // add separator
+            memcpy(seq1_name + id2_len + 1, seq2_seq + umi_st, umi_len * sizeof(char)); // copy umi
         }
         else if (state == ONE_INDEX_NO_UMI)
         {
-            memcpy(seq1->name.s, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id2_len] = '_'; // add separator
+            memcpy(seq1_name, seq2_seq + id2_st, id2_len * sizeof(char)); // copy index two
+            seq1_name[id2_len] = '_'; // add separator
         }
-        seq1->name.s[name_offset-1] = '#';
+        seq1_name[name_offset - 1] = '#';
         seq1->name.l = name_offset + seq1->name.l;
 
         fq_write(o_stream, seq1, bc1_end); // write to fastq file
+        fq_gz_write(o_stream_gz, seq1, bc1_end); // write to fastq file
     }
 
     //Rcpp::Rcout << passed_reads << "\t" << removed_low_qual << "\t" << removed_have_N << std::endl;
