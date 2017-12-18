@@ -33,7 +33,7 @@ validObject = function(object){
   }
   
 
-  if(any(is.null(organism(object)) | is.na(organism(object)))){
+  if(any(is.null(organism(object)) || is.na(organism(object)))){
     tmp_res = .guess_attr(rownames(object))
     if((!is.na(tmp_res$organism)) & (!is.na(tmp_res$gene_id_type))){
       gene_id_type(object) = tmp_res$gene_id_type

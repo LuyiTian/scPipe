@@ -1,4 +1,7 @@
 # biomaRt_func.R
+ensembl_to_db = list(ensembl_gene_id="ENSEMBL",
+                     external_gene_name="SYMBOL",
+                     entrezgene="ENTREZID")
 
 #' Get genes related to certain GO terms from biomart database
 #'
@@ -29,12 +32,31 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
   if (is.null(go)) {
     stop("must provide GO term. (i.e go=c('GO:0005739'))")
   }
-  mart = tryCatch({mart <- useDataset(dataset, useMart("ensembl"), ensemblRedirect=FALSE) },
+  mart = tryCatch({mart <- useDataset(dataset, useMart("ensembl"))},
            error = function(e){
              cat(paste0("cannot connect to the ensembl database. ERROR:\n", e ))
              return(c())
            })
   if(!is(mart,"Mart")){
+    if(dataset == "hsapiens_gene_ensembl"){
+      print("Try to use org.Hs.eg.db.")
+      require(org.Hs.eg.db)
+      if (returns %in% names(ensembl_to_db)){
+        tmp = mapIds(org.Hs.eg.db,keys=go,column=ensembl_to_db[returns][[1]], keytype="GO",multiVals = "list")
+        return(unname(unlist(tmp)))
+      }else{
+        print("Unknown gene id type.")
+      }
+    }else if(dataset == "mmusculus_gene_ensembl"){
+      print("Try to use org.Mm.eg.db.")
+      require(org.Mm.eg.db)
+      if (returns %in% names(ensembl_to_db)){
+        tmp = mapIds(org.Mm.eg.db,keys=go,column=ensembl_to_db[returns][[1]], keytype="GO",multiVals = "list")
+        return(unname(unlist(tmp)))
+      }else{
+        print("Unknown gene id type.")
+      }
+    }
     return(c())
   }
   G_list <- getBM(filters="go",
@@ -97,15 +119,47 @@ convert_geneid <- function(sce,
     return(sce)
   })
   if(!is(mart,"Mart")){
-    return(sce)
+    if(organism == "hsapiens_gene_ensembl"){
+      print("Try to use org.Hs.eg.db.")
+      require(org.Hs.eg.db)
+      if ((returns %in% names(ensembl_to_db)) & (gene_id_type(sce) %in% names(ensembl_to_db))){
+        tmp = mapIds(org.Hs.eg.db,
+                     keys=rownames(sce),
+                     column=ensembl_to_db[returns][[1]], 
+                     keytype=ensembl_to_db[gene_id_type(sce)][[1]],
+                     multiVals = "first")
+        G_list = data.frame(description=rep(NA, length(tmp)))
+        G_list[, gene_id_type(sce)] = names(tmp)
+        G_list[, returns] = tmp
+      }else{
+        print("Unknown gene id type.")
+      }
+    }else if(organism == "mmusculus_gene_ensembl"){
+      print("Try to use org.Mm.eg.db.")
+      require(org.Mm.eg.db)
+      if (returns %in% names(ensembl_to_db)){
+        tmp = mapIds(org.Mm.eg.db,
+                     keys=rownames(sce),
+                     column=ensembl_to_db[returns][[1]], 
+                     keytype=ensembl_to_db[gene_id_type(sce)][[1]],
+                     multiVals = "first")
+        G_list = data.frame(description=rep(NA, length(tmp)))
+        G_list[, gene_id_type(sce)] = names(tmp)
+        G_list[, returns] = tmp
+      }else{
+        print("Unknown gene id type.")
+      }
+    }else{
+      return(sce)
+    }
+  }else{
+    G_list <- getBM(filters=gene_id_type(sce), attributes=c(gene_id_type(sce), returns, "description"), values=rownames(sce), mart=mart)
   }
-  
-  G_list <- getBM(filters=gene_id_type(sce), attributes=c(gene_id_type(sce), returns, "description"), values=rownames(sce), mart=mart)
 
   G_list <- G_list[match(rownames(sce), G_list[, gene_id_type(sce)]), ]
   na_num <- sum(is.na(G_list[, returns]))
   dup_ids <- duplicated(G_list[, returns]) | duplicated(G_list[, returns], fromLast=TRUE)
-  dup_num <- (sum(dup_ids)-na_num)/2
+  dup_num <- (sum(dup_ids)-na_num-1)/2
   print(paste0("Number of NA in new gene id: ", na_num, ". Duplicated id: ", dup_num))
   if (dup_num>0) {
     print("First 5 duplicated:")
