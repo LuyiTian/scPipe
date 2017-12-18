@@ -274,12 +274,6 @@ void fq_gz_write(gzFile out_file, kseq_t *seq, int trim_n) {
     gzprintf(out_file, "%s", stream.str().c_str());
 }
 
-void clear_file(std::string file) {
-    std::ofstream stream(file);
-    stream << std::ios::trunc;
-    stream.close();
-}
-
 void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_s read_structure, const filter_s filter_settings)
 {
 
@@ -302,15 +296,8 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         Rcpp::stop(err_msg.str());
     }
 
-    const std::string fq_gz_out = std::string(fq_out) + std::string(".gz");
-
-    std::ofstream o_stream(fq_out); // output file
-
-    // clear gz file
-    clear_file(fq_out);
-
-    // open gz file
-    gzFile o_stream_gz = gzopen(fq_gz_out.c_str(), "wba"); // output file
+    const std::string fq_gz_out = std::string(fq_out); // name gz file
+    gzFile o_stream_gz = gzopen(fq_gz_out.c_str(), "wb"); // open gz file
 
     // get settings
     int id1_st = read_structure.id1_st;
@@ -441,7 +428,6 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         seq1_name[name_offset - 1] = '#';
         seq1->name.l = name_offset + seq1->name.l;
 
-        fq_write(o_stream, seq1, bc1_end); // write to fastq file
         fq_gz_write(o_stream_gz, seq1, bc1_end); // write to fastq file
     }
 
@@ -449,7 +435,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
 
     kseq_destroy(seq1); kseq_destroy(seq2); // free seq
     gzclose(fq1); gzclose(fq2); // close fastq file
-    o_stream.close(); // close out fastq file
+    gzclose(o_stream_gz);
     Rcpp::Rcout << "pass QC: " << passed_reads << std::endl;
     Rcpp::Rcout << "removed_have_N: " << removed_have_N << std::endl;
     Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
