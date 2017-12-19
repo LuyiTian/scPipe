@@ -396,7 +396,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         const int new_name_length = name_offset + seq1->name.l + 1;
         seq1->name.s = (char*)realloc(seq1->name.s, new_name_length); // allocate additional memory
 
-        const int name_size = seq1->name.l + 1;
+        const int name_size = seq1->name.l + 1; // +1 for the null byte
         char * const seq1_name = seq1->name.s;
         char * const seq1_seq = seq1->seq.s;
         char * const seq2_seq = seq2->seq.s;
