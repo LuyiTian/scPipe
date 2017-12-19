@@ -2,7 +2,7 @@
 % Please edit documentation in R/wrapper_scPipeCPP.R
 \name{sc_count_aligned_bam}
 \alias{sc_count_aligned_bam}
-\title{sc_demultiplex_and_count}
+\title{sc_count_aligned_bam}
 \usage{
 sc_count_aligned_bam(inbam, outbam, annofn, bam_tags = list(am = "YE", ge =
   "GE", bc = "BC", mb = "OX"), bc_len = 8, UMI_len = 6, stnd = TRUE,

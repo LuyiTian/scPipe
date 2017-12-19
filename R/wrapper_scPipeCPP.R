@@ -357,7 +357,7 @@ sc_demultiplex_and_count = function(
   )
 }
 
-#' sc_demultiplex_and_count
+#' sc_count_aligned_bam
 #'
 #' @description Wrapper to run \code{\link{sc_exon_mapping}},
 #'   \code{\link{sc_demultiplex}} and \code{\link{sc_gene_counting}} with a
