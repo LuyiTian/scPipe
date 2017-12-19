@@ -382,7 +382,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         passed_reads++;
 
         seq1->name.s = (char*)realloc(seq1->name.s, name_offset + seq1->name.l);
-        memcpy(seq1->name.s+name_offset, seq1->name.s, seq1->name.l*sizeof(char)); // move original read name
+        memmove(seq1->name.s+name_offset, seq1->name.s, (seq1->name.l+1)*sizeof(char)); // move original read name
         if (state == TWO_INDEX_WITH_UMI)
         {
             memcpy(seq1->name.s, seq1->seq.s+id1_st, id1_len*sizeof(char)); // copy index one

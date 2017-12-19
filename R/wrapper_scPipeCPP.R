@@ -335,9 +335,9 @@ sc_detect_bc = function(infq, outcsv, suffix="CELL_", bc_len,
 #'
 sc_demultiplex_and_count = function(
   inbam, outdir, bc_anno,
-  max_mis=1,
+  max_mis = 1,
   bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-  mito = "MT", has_UMI = TRUE, UMI_cor=1, gene_fl = FALSE
+  mito = "MT", has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE
 ) {
   sc_demultiplex(
     inbam = inbam,
@@ -355,4 +355,70 @@ sc_demultiplex_and_count = function(
     UMI_cor = UMI_cor,
     gene_fl = gene_fl
   )
+}
+
+#' sc_count_aligned_bam
+#'
+#' @description Wrapper to run \code{\link{sc_exon_mapping}},
+#'   \code{\link{sc_demultiplex}} and \code{\link{sc_gene_counting}} with a
+#'   single command
+#'
+#' @inheritParams sc_exon_mapping
+#' @inheritParams sc_demultiplex
+#' @inheritParams sc_gene_counting
+#' @param keep_mapped_bam TRUE if feature mapped bam file should be retained.
+#'
+#' @return no return
+#'
+#' @examples
+#' \dontrun{
+#' sc_count_aligned_bam(
+#'   inbam = "aligned.bam",
+#'   outbam = "mapped.bam",
+#'   annofn = c("MusMusculus-GRCm38p4-UCSC.gff3", "ERCC92_anno.gff3"),
+#'   outdir = "output",
+#'   bc_anno = "barcodes.csv"
+#' )
+#' }
+#'
+#' @export
+#'
+sc_count_aligned_bam <- function(
+  inbam, outbam, annofn,
+  bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
+  bc_len = 8, UMI_len = 6,
+  stnd = TRUE, fix_chr = FALSE,
+  outdir,
+  bc_anno,
+  max_mis = 1,
+  mito = "MT",
+  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
+  keep_mapped_bam = TRUE
+) {
+  sc_exon_mapping(
+    inbam = inbam,
+    outbam = outbam,
+    annofn = annofn,
+    bam_tags = bam_tags,
+    bc_len = bc_len,
+    UMI_len = UMI_len,
+    stnd = stnd,
+    fix_chr = fix_chr
+  )
+
+  sc_demultiplex_and_count(
+    inbam = outbam,
+    outdir = outdir,
+    bc_anno = bc_anno,
+    max_mis = max_mis,
+    bam_tags = bam_tags,
+    mito = mito,
+    has_UMI = has_UMI,
+    UMI_cor = UMI_cor,
+    gene_fl = gene_fl
+  )
+
+  if (!keep_mapped_bam) {
+    unlink(outbam)
+  }
 }
