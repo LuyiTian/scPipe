@@ -443,7 +443,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
 
     kseq_destroy(seq1); kseq_destroy(seq2); // free seq
     gzclose(fq1); gzclose(fq2); // close fastq file
-    gzclose(o_stream_gz);
+    if (write_gz) gzclose(o_stream_gz);
     Rcpp::Rcout << "pass QC: " << passed_reads << std::endl;
     Rcpp::Rcout << "removed_have_N: " << removed_have_N << std::endl;
     Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
