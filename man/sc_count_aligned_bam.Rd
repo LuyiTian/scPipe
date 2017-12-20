@@ -2,12 +2,12 @@
 % Please edit documentation in R/wrapper_scPipeCPP.R
 \name{sc_count_aligned_bam}
 \alias{sc_count_aligned_bam}
-\title{sc_demultiplex_and_count}
+\title{sc_count_aligned_bam}
 \usage{
 sc_count_aligned_bam(inbam, outbam, annofn, bam_tags = list(am = "YE", ge =
   "GE", bc = "BC", mb = "OX"), bc_len = 8, UMI_len = 6, stnd = TRUE,
   fix_chr = FALSE, outdir, bc_anno, max_mis = 1, mito = "MT",
-  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE)
+  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE, keep_mapped_bam = TRUE)
 }
 \arguments{
 \item{inbam}{input aligned bam file}
@@ -50,14 +50,26 @@ simple correction and merge UMI with distance 1.}
 
 \item{gene_fl}{whether to remove low abundance genes. A gene is considered to
 have low abundance if only one copy of one UMI is associated with it.}
+
+\item{keep_mapped_bam}{TRUE if feature mapped bam file should be retained.}
 }
 \value{
 no return
 }
 \description{
-Wrapper to run \code{\link{sc_exon_mapping}}, \code{\link{sc_demultiplex}} and
-  \code{\link{sc_gene_counting}} with a single command
+Wrapper to run \code{\link{sc_exon_mapping}},
+  \code{\link{sc_demultiplex}} and \code{\link{sc_gene_counting}} with a
+  single command
 }
 \examples{
+\dontrun{
+sc_count_aligned_bam(
+  inbam = "aligned.bam",
+  outbam = "mapped.bam",
+  annofn = c("MusMusculus-GRCm38p4-UCSC.gff3", "ERCC92_anno.gff3"),
+  outdir = "output",
+  bc_anno = "barcodes.csv"
+)
+}
 
 }
