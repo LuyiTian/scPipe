@@ -298,8 +298,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
     }
 
     if (write_gz) {
-        const std::string fq_gz_out = std::string(fq_out); // name gz file
-        gzFile o_stream_gz = gzopen(fq_gz_out.c_str(), "wb"); // open gz file
+        gzFile o_stream_gz = gzopen(fq_out, "wb"); // open gz file
     } else {
         std::ofstream o_stream(fq_out); // output file
     }
