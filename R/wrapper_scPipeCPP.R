@@ -164,9 +164,14 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 
   if (any(!file.exists(inbam))) {
     stop("At least one input bam file does not exist")
+  } else {
+    inbam = path.expand(inbam)
   }
+
   if (any(!file.exists(annofn))) {
     stop("At least one genome annotation file does not exist")
+  } else {
+    annofn = path.expand(annofn)
   }
 
   rcpp_sc_exon_mapping(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
@@ -222,8 +227,17 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
                           has_UMI=TRUE) {
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
-  if (!file.exists(inbam)) {stop("input bam file does not exists.")}
-  if (!file.exists(bc_anno)) {stop("barcode annotation file does not exists.")}
+
+  if (!file.exists(inbam)) {
+    stop("input bam file does not exists.")
+  } else {
+    inbam = path.expand(inbam)
+  }
+  if (!file.exists(bc_anno)) {
+    stop("barcode annotation file does not exists.")
+  } else {
+    bc_anno = path.expand(bc_anno)
+  }
   rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis,
                       bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
                       mito, has_UMI)
@@ -265,8 +279,12 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
     i_gene_fl = 0
   }
 
-  if (!file.exists(bc_anno))
+  if (!file.exists(bc_anno)) {
     stop("barcode annotation file does not exists.")
+  } else {
+    bc_anno = path.expand(bc_anno)
+  }
+
   rcpp_sc_gene_counting(outdir, bc_anno, UMI_cor, i_gene_fl)
 }
 
@@ -301,7 +319,11 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
 #'
 sc_detect_bc = function(infq, outcsv, suffix="CELL_", bc_len,
                         max_reads=1000000, min_count=10, max_mismatch=1) {
-  if (!file.exists(infq)) {stop("input fastq file does not exists.")}
+  if (!file.exists(infq)) {
+    stop("input fastq file does not exists.")
+  } else {
+    infq = path.expand(infq)
+  }
   if (max_reads=="all") {m_r = -1}
   else {m_r=max_reads}
   rcpp_sc_detect_bc(infq, outcsv, suffix, bc_len, m_r, min_count, max_mismatch)
