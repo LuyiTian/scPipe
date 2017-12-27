@@ -64,9 +64,9 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
                            filter_settings = list(
                              rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)) {
 
-  out_dir <- regmatches(outfq, regexpr(".*/", outfq))
-  if (!dir.exists(out_dir))
-    dir.create(out_dir, recursive = TRUE)
+  outdir <- regmatches(outfq, regexpr(".*/", outfq))
+  if (!dir.exists(outdir))
+    dir.create(outdir, recursive = TRUE)
 
   if (filter_settings$rmlow) {
     i_rmlow = 1
@@ -228,6 +228,11 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
 
+  if (!dir.exists(outdir))
+    dir.create(outdir, recursive = TRUE)
+
+  outdir = path.expand(outdir)
+
   if (!file.exists(inbam)) {
     stop("input bam file does not exists.")
   } else {
@@ -270,6 +275,11 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 #' }
 #'
 sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
+  if (!dir.exists(outdir))
+    dir.create(outdir, recursive = TRUE)
+
+  outdir = path.expand(outdir)
+
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
 
