@@ -439,8 +439,6 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         }
     }
 
-    //Rcpp::Rcout << passed_reads << "\t" << removed_low_qual << "\t" << removed_have_N << "\n";
-
     kseq_destroy(seq1); kseq_destroy(seq2); // free seq
     gzclose(fq1); gzclose(fq2); // close fastq file
     if (write_gz) gzclose(o_stream_gz);
