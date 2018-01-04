@@ -26,7 +26,6 @@ void Barcode::read_anno(string fn)
     }
     else
     {
-        // std::cout << "the annotation file should be comma or tab separated" << std::endl;
         Rcpp::stop("the annotation file should be comma or tab separated");
     }
 
