@@ -27,12 +27,12 @@ inline bool operator < (const Interval &L, const Interval &R)
 
 inline bool operator > (const Interval &L, const Interval &R)
 {
-  return  operator< (R, L);
+  return L.st > R.en;
 }
 
 inline bool operator == (const Interval &L, const Interval &R)
 {
-   return (L.st < R.en || L.en > R.st);
+   return !(L < R || L > R);
 }
 
 inline bool operator != (const Interval &L, const Interval &R)
