@@ -297,10 +297,12 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         Rcpp::stop(err_msg.str());
     }
 
+    gzFile o_stream_gz;
+    std::ofstream o_stream;
     if (write_gz) {
-        gzFile o_stream_gz = gzopen(fq_out, "wb"); // open gz file
+        o_stream_gz = gzopen(fq_out, "wb"); // open gz file
     } else {
-        std::ofstream o_stream(fq_out); // output file
+        o_stream = std::ofstream(fq_out); // output file
     }
 
     // get settings
