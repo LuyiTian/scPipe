@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "Interval.h"
 
 // for position, we dont store chromosome info because we will put genes from the same chromosome
