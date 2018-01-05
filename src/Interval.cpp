@@ -20,12 +20,32 @@ int Interval::overlap(int st1, int en1)
   }
 }
 
-bool operator < (const Interval &L, const Interval &R)
+inline bool operator == (const Interval &L, const Interval &R)
+{
+   return (L.st < R.en || L.en > R.st);
+}
+
+inline bool operator != (const Interval &L, const Interval &R)
+{
+  return !operator==(L, R);
+}
+
+inline bool operator < (const Interval &L, const Interval &R)
 {
   return L.en < R.st;
 }
 
-bool operator > (const Interval &L, const Interval &R)
+inline bool operator > (const Interval &L, const Interval &R)
 {
-  return L.st > R.en;
+  return  operator< (R, L);
+}
+
+inline bool operator <= (const Interval &L, const Interval &R)
+{
+  return !operator> (L, R);
+}
+
+inline bool operator >= (const Interval &L, const Interval &R)
+{
+  return !operator< (L, R);
 }

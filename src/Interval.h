@@ -15,6 +15,10 @@ public:
     // return 0 if overlap
     int overlap(int st2, int en2);
 
-    friend bool operator < (const Interval &L, const Interval &R);
-    friend bool operator > (const Interval &L, const Interval &R);
+    friend inline bool operator == (const Interval &L, const Interval &R);
+    friend inline bool operator != (const Interval &L, const Interval &R);
+    friend inline bool operator <  (const Interval &L, const Interval &R);
+    friend inline bool operator >  (const Interval &L, const Interval &R);
+    friend inline bool operator <= (const Interval &L, const Interval &R);
+    friend inline bool operator >= (const Interval &L, const Interval &R);
 };
