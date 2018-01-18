@@ -83,7 +83,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     int strand = 0;
     std::vector<string> token;
 
-    //Rcpp::Rcout << "build annotation from gff3 file..." << "\n";
+    // Rcpp::Rcout << "build annotation from gff3 file..." << "\n";
     while(std::getline(infile, line))
     {
         if (line[0] == '#')
@@ -92,22 +92,27 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         }
 
         token = split(line, '\t');
+        string chr_name = token[0];
         parent = get_parent(token[8]);
         strand = get_strand(token[6][0]);
-        if (token[2] == "exon")
+
+        string type = token[2];
+        if (type == "exon")
         {
             if (tmp_trans_dict.end() != tmp_trans_dict.find(parent))
             {
                 if (fix_chrname)
                 {
-                    tmp_gene_dict[fix_name(token[0])][tmp_trans_dict[parent]].add_exon(Interval(std::atoi(token[3].c_str()), std::atoi(token[4].c_str()), strand));
-                    tmp_gene_dict[fix_name(token[0])][tmp_trans_dict[parent]].set_ID(tmp_trans_dict[parent]);
+                    chr_name = fix_name(chr_name);
                 }
-                else
-                {
-                    tmp_gene_dict[token[0]][tmp_trans_dict[parent]].add_exon(Interval(std::atoi(token[3].c_str()), std::atoi(token[4].c_str()), strand));
-                    tmp_gene_dict[token[0]][tmp_trans_dict[parent]].set_ID(tmp_trans_dict[parent]);
-                }
+                auto &genes_list = tmp_gene_dict[chr_name];
+
+                int interval_start = std::atoi(token[3].c_str());
+                int interval_end = std::atoi(token[4].c_str());
+
+                string target = tmp_trans_dict[parent];
+                genes_list[target].add_exon(Interval(interval_start, interval_end, strand));
+                genes_list[target].set_ID(target);
             }
             else
             {
@@ -118,7 +123,6 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             }
 
         }
-
         else if (!parent.empty())
         {
             ID = get_ID(token[8]);
@@ -268,7 +272,7 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
         if (((bam_cigar_type(cig[c]) >> 0) & 1) && ((bam_cigar_type(cig[c]) >> 1) & 1))
         {
             Interval it = Interval(tmp_pos, tmp_pos+bam_cigar_oplen(cig[c]), rev);
-            auto gene_list = Anno.gene_dict[header->target_name[b->core.tid]];
+            auto &gene_list = Anno.gene_dict[header->target_name[b->core.tid]];
             auto iter = std::equal_range(gene_list.begin(), gene_list.end(), it);
             if ((iter.second - iter.first) == 0)
             {
@@ -342,6 +346,11 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
     }
     else
     {
+        // return codes:
+        // 0: unique map to exon
+        // 1: ambiguous map to multiple exon
+        // 2: map to intron
+        // 3: not mapped
         return ret;
     }
 }
