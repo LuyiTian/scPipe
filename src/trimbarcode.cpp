@@ -240,7 +240,7 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
         {
             std::stringstream err_msg;
             err_msg << "fail to write the bam file: " << seq1->name.s << "\n";
-            err_msg << "return code: " << ret << std::endl;
+            err_msg << "return code: " << ret << "\n";
             Rcpp::stop(err_msg.str());
         }
         bam_destroy1(b);
@@ -252,9 +252,9 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
     sam_close(fp); // close bam file
 
     // print stats
-    Rcpp::Rcout << "pass QC: " << passed_reads << std::endl;
-    Rcpp::Rcout << "removed_have_N: " << removed_have_N << std::endl;
-    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
+    Rcpp::Rcout << "pass QC: " << passed_reads << "\n";
+    Rcpp::Rcout << "removed_have_N: " << removed_have_N << "\n";
+    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << "\n";
 }
 
 void fq_write(std::ofstream& o_stream, kseq_t *seq, int trim_n)
@@ -297,10 +297,12 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         Rcpp::stop(err_msg.str());
     }
 
+    gzFile o_stream_gz;
+    std::ofstream o_stream;
     if (write_gz) {
-        gzFile o_stream_gz = gzopen(fq_out, "wb"); // open gz file
+        o_stream_gz = gzopen(fq_out, "wb"); // open gz file
     } else {
-        std::ofstream o_stream(fq_out); // output file
+        o_stream = std::ofstream(fq_out); // output file
     }
 
     // get settings
@@ -439,12 +441,10 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         }
     }
 
-    //Rcpp::Rcout << passed_reads << "\t" << removed_low_qual << "\t" << removed_have_N << std::endl;
-
     kseq_destroy(seq1); kseq_destroy(seq2); // free seq
     gzclose(fq1); gzclose(fq2); // close fastq file
     if (write_gz) gzclose(o_stream_gz);
-    Rcpp::Rcout << "pass QC: " << passed_reads << std::endl;
-    Rcpp::Rcout << "removed_have_N: " << removed_have_N << std::endl;
-    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
+    Rcpp::Rcout << "pass QC: " << passed_reads << "\n";
+    Rcpp::Rcout << "removed_have_N: " << removed_have_N << "\n";
+    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << "\n";
 }

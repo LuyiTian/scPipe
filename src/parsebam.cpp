@@ -42,20 +42,20 @@ void Bamdemultiplex::write_statistics(string overall_stat_f, string chr_stat_f, 
     ofstream overall_stat(join_path(stat_dir, overall_stat_f + ".csv"));
     ofstream chr_stat(join_path(stat_dir, chr_stat_f + ".csv"));
     ofstream cell_stat(join_path(stat_dir, cell_stat_f + ".csv"));
-    overall_stat << "status,count" << std::endl;
+    overall_stat << "status,count" << "\n";
 
     for (const auto& n : overall_count_stat)
     {
-        overall_stat << n.first << "," << n.second << std::endl;
+        overall_stat << n.first << "," << n.second << "\n";
     }
 
-    chr_stat << "chromosome name,count" << std::endl;
+    chr_stat << "chromosome name,count" << "\n";
     for (const auto& n : chr_aligned_stat)
     {
-        chr_stat << n.first << "," << n.second << std::endl;
+        chr_stat << n.first << "," << n.second << "\n";
     }
 
-    cell_stat << "cell_id,unaligned,aligned_unmapped,mapped_to_exon,mapped_to_intron,ambiguous_mapping,mapped_to_ERCC,mapped_to_MT" << std::endl;
+    cell_stat << "cell_id,unaligned,aligned_unmapped,mapped_to_exon,mapped_to_intron,ambiguous_mapping,mapped_to_ERCC,mapped_to_MT" << "\n";
     for (const auto& n : bar.cellid_list)
     {
         cell_stat << n << "," << cell_unaligned[n] << "," << \
@@ -64,7 +64,7 @@ void Bamdemultiplex::write_statistics(string overall_stat_f, string chr_stat_f, 
             cell_mapped_intron[n] << "," << \
             cell_mapped_ambiguous[n] << "," << \
             cell_ERCC[n] << ","<< \
-            cell_MT[n] << std::endl;
+            cell_MT[n] << "\n";
     }
 }
 

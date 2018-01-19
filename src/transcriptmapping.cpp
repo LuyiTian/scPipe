@@ -4,107 +4,6 @@
 using std::string;
 using namespace Rcpp;
 
-Gene::Gene(string id, int st, int en, int snd): Interval(st, en, snd), gene_id(id) {}
-Gene::Gene(string id, int snd): Interval(-1, -1, snd), gene_id(id) {}
-Gene::Gene(): Interval(-1, -1, 0), gene_id("") {}
-
-void Gene::set_ID(string id)
-{
-    gene_id = id;
-}
-
-void Gene::add_exon(Interval it)
-{
-        exon_vec.push_back(it);
-        // expand the gene interval to include the new exon
-        if (st>it.st || st<0)
-        {
-            st = it.st;
-        }
-        if (en < it.en || en<0)
-        {
-            en = it.en;
-        }
-        if (snd == 0)
-        {
-            snd = it.snd;
-        }
-}
-
-int Gene::distance_to_end(Interval it)
-{
-    int distance = 0;
-    int tmp_en = 0;
-    auto iter = std::lower_bound(exon_vec.begin(), exon_vec.end(), it);
-    if (snd == 1)
-    {
-        distance += iter->en - ((iter->st)>it.st?(iter->st):it.st);
-        tmp_en = iter->en;
-        for (auto i = iter+1; i != exon_vec.end(); ++i)
-        {
-            if (tmp_en < i->st)
-            {
-                distance += i->en - i->st;
-                tmp_en = i->en;
-            }
-
-        }
-
-    }
-    else if (snd == -1)
-    {
-        for (auto i = exon_vec.begin(); i != iter; ++i)
-        {
-            if (tmp_en < i->st)
-            {
-                distance += i->en - i->st;
-                tmp_en = i->en;
-            }
-        }
-        if (tmp_en < iter->st)
-        {
-            distance += ((iter->en)<it.en?(iter->en):it.en) - iter->st;
-        }
-    }
-
-    return distance;
-}
-
-bool Gene::in_exon(Interval it)
-{
-    return std::binary_search(exon_vec.begin(), exon_vec.end(), it);
-}
-
-bool Gene::in_exon(Interval it, bool check_strand)
-{
-    if (check_strand && (it.snd*snd == -1))
-    {
-        return false;
-    }
-    else
-    {
-        return std::binary_search(exon_vec.begin(), exon_vec.end(), it);
-    }
-}
-
-void Gene::sort_exon()
-{
-    std::sort(exon_vec.begin(), exon_vec.end());
-}
-
-std::ostream& operator<< (std::ostream& out, const Gene& obj)
-{
-    out << "Gene ID:   " << obj.gene_id  << std::endl;
-    out << "\t" << "start/end:   " << obj.st  << "/" << obj.en << std::endl;
-    out << "\t" << "strand:   " << obj.snd  << std::endl;
-    out << "\t" << "number of exons:   " << obj.exon_vec.size()  << std::endl;
-    for (int i = 0; i < obj.exon_vec.size(); ++i)
-    {
-        out << "\t" << "exon[" << i+1 << "]: (" << obj.exon_vec[i].st << ", " << obj.exon_vec[i].en << ")" << std::endl;
-    }
-    return out;
-}
-
 int GeneAnnotation::get_strand(char st)
 {
     int strand = 0;
@@ -184,7 +83,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     int strand = 0;
     std::vector<string> token;
 
-    //Rcpp::Rcout << "build annotation from gff3 file..." << std::endl;
+    // Rcpp::Rcout << "build annotation from gff3 file..." << "\n";
     while(std::getline(infile, line))
     {
         if (line[0] == '#')
@@ -193,22 +92,27 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         }
 
         token = split(line, '\t');
+        string chr_name = token[0];
         parent = get_parent(token[8]);
         strand = get_strand(token[6][0]);
-        if (token[2] == "exon")
+
+        string type = token[2];
+        if (type == "exon")
         {
             if (tmp_trans_dict.end() != tmp_trans_dict.find(parent))
             {
                 if (fix_chrname)
                 {
-                    tmp_gene_dict[fix_name(token[0])][tmp_trans_dict[parent]].add_exon(Interval(std::atoi(token[3].c_str()), std::atoi(token[4].c_str()), strand));
-                    tmp_gene_dict[fix_name(token[0])][tmp_trans_dict[parent]].set_ID(tmp_trans_dict[parent]);
+                    chr_name = fix_name(chr_name);
                 }
-                else
-                {
-                    tmp_gene_dict[token[0]][tmp_trans_dict[parent]].add_exon(Interval(std::atoi(token[3].c_str()), std::atoi(token[4].c_str()), strand));
-                    tmp_gene_dict[token[0]][tmp_trans_dict[parent]].set_ID(tmp_trans_dict[parent]);
-                }
+                auto &genes_list = tmp_gene_dict[chr_name];
+
+                int interval_start = std::atoi(token[3].c_str());
+                int interval_end = std::atoi(token[4].c_str());
+
+                string target = tmp_trans_dict[parent];
+                genes_list[target].add_exon(Interval(interval_start, interval_end, strand));
+                genes_list[target].set_ID(target);
             }
             else
             {
@@ -219,7 +123,6 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             }
 
         }
-
         else if (!parent.empty())
         {
             ID = get_ID(token[8]);
@@ -320,15 +223,15 @@ std::vector<string> GeneAnnotation::get_genelist()
 
 std::ostream& operator<< (std::ostream& out, const GeneAnnotation& obj)
 {
-    out << "annotation statistics:" << std::endl;
+    out << "annotation statistics:" << "\n";
     for ( const auto& n : obj.gene_dict )
     {
         out << "\t" << "chromosome:[" << n.first << "] number of genes:[" << n.second.size() << "]\n";
     }
     for ( const auto& n : obj.gene_dict )
     {
-        out << "first gene in chromosome " << n.first << " :" << std::endl;
-        out << n.second[0] << std::endl;
+        out << "first gene in chromosome " << n.first << " :" << "\n";
+        out << n.second[0] << "\n";
         //break;
     }
     return out;
@@ -339,13 +242,13 @@ void Mapping::add_annotation(string gff3_fn, bool fix_chrname)
 {
     if (gff3_fn.substr(gff3_fn.find_last_of(".") + 1) == "gff3")
     {
-        Rcpp::Rcout << "add gff3 annotation: " << gff3_fn << std::endl;
+        Rcpp::Rcout << "add gff3 annotation: " << gff3_fn << "\n";
         Anno.parse_gff3_annotation(gff3_fn, fix_chrname);
     }
     else
     {
         Anno.parse_bed_annotation(gff3_fn, fix_chrname);
-        Rcpp::Rcout << "add bed annotation: " << gff3_fn << std::endl;
+        Rcpp::Rcout << "add bed annotation: " << gff3_fn << "\n";
     }
 
 }
@@ -369,7 +272,8 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
         if (((bam_cigar_type(cig[c]) >> 0) & 1) && ((bam_cigar_type(cig[c]) >> 1) & 1))
         {
             Interval it = Interval(tmp_pos, tmp_pos+bam_cigar_oplen(cig[c]), rev);
-            auto iter = std::equal_range(Anno.gene_dict[header->target_name[b->core.tid]].begin(), Anno.gene_dict[header->target_name[b->core.tid]].end(), it);
+            auto &gene_list = Anno.gene_dict[header->target_name[b->core.tid]];
+            auto iter = std::equal_range(gene_list.begin(), gene_list.end(), it);
             if ((iter.second - iter.first) == 0)
             {
                 tmp_ret = tmp_ret>3?3:tmp_ret;
@@ -442,6 +346,11 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
     }
     else
     {
+        // return codes:
+        // 0: unique map to exon
+        // 1: ambiguous map to multiple exon
+        // 2: map to intron
+        // 3: not mapped
         return ret;
     }
 }
@@ -470,7 +379,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     {
         if (Anno.gene_dict.end() == Anno.gene_dict.find(header->target_name[i]))
         {
-            Rcpp::Rcout << header->target_name[i] << " not found in exon annotation." << std::endl;
+            Rcpp::Rcout << header->target_name[i] << " not found in exon annotation." << "\n";
         }
         else
         {
@@ -497,8 +406,8 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
         {
             if (cnt % 1000000 == 0)
             {
-                Rcpp::Rcout << "number of read processed:" << cnt << std::endl;
-                Rcpp::Rcout << tmp_c[0] <<"\t"<< tmp_c[1] <<"\t"<<tmp_c[2] <<"\t"<<tmp_c[3] <<"\t" << std::endl;
+                Rcpp::Rcout << "number of read processed:" << cnt << "\n";
+                Rcpp::Rcout << tmp_c[0] <<"\t"<< tmp_c[1] <<"\t"<<tmp_c[2] <<"\t"<<tmp_c[3] <<"\t" << "\n";
             }
             cnt++;
         }
@@ -553,11 +462,11 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
         }
     }
 
-    Rcpp::Rcout << "\t" << "unique map to exon:" << tmp_c[0] << std::endl;
-    Rcpp::Rcout << "\t" << "ambiguous map to multiple exon:" << tmp_c[1] << std::endl;
-    Rcpp::Rcout << "\t" << "map to intron:" << tmp_c[2] << std::endl;
-    Rcpp::Rcout << "\t" << "not mapped:" << tmp_c[3] << std::endl;
-    Rcpp::Rcout << "\t" << "unaligned:" << unaligned << std::endl;
+    Rcpp::Rcout << "\t" << "unique map to exon:" << tmp_c[0] << "\n";
+    Rcpp::Rcout << "\t" << "ambiguous map to multiple exon:" << tmp_c[1] << "\n";
+    Rcpp::Rcout << "\t" << "map to intron:" << tmp_c[2] << "\n";
+    Rcpp::Rcout << "\t" << "not mapped:" << tmp_c[3] << "\n";
+    Rcpp::Rcout << "\t" << "unaligned:" << unaligned << "\n";
     sam_close(of);
     bgzf_close(fp);
 }
