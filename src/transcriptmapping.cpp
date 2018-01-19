@@ -374,7 +374,6 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     int tmp_c[4] = {0,0,0,0};
 
     bool found_any = false;
-    #pragma omp parallel for
     for (int i = 0; i < header->n_targets; ++i)
     {
         if (Anno.gene_dict.end() == Anno.gene_dict.find(header->target_name[i]))
