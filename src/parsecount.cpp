@@ -41,7 +41,7 @@ int UMI_correct1(std::unordered_map<string, int>& UMI_count)
                     found = true;
                     // merge two UMIs
                     UMI_count[UMI2.first] += UMI_count[UMI1->first];
-                    if (__DEBUG) {Rcpp::Rcout << "merge: " <<  UMI1->first << "::" << UMI2.first << "\t" << UMI1->second << "::" << UMI2.second << std::endl;}
+                    if (__DEBUG) {Rcpp::Rcout << "merge: " <<  UMI1->first << "::" << UMI2.first << "\t" << UMI1->second << "::" << UMI2.second << "\n";}
                     break;
                 }
             }
@@ -113,7 +113,7 @@ void write_mat(string fn, std::unordered_map<string, std::vector<int>> gene_cnt_
     {
         o_file << "," << ce;
     }
-    o_file << std::endl;
+    o_file << "\n";
 
     for (auto const& ge : gene_cnt_matrix)
     {
@@ -122,7 +122,7 @@ void write_mat(string fn, std::unordered_map<string, std::vector<int>> gene_cnt_
         {
             o_file << "," << n;
         }
-        o_file << std::endl;
+        o_file << "\n";
     }
     o_file.close();
 }
@@ -130,19 +130,19 @@ void write_mat(string fn, std::unordered_map<string, std::vector<int>> gene_cnt_
 void write_stat(string cnt_fn, string stat_fn, std::vector<int> UMI_dup_count, std::unordered_map<string, UMI_dedup_stat> UMI_dedup_stat_dict)
 {
     std::ofstream cnt_file(cnt_fn);
-    cnt_file << "duplication number,count" << std::endl;
+    cnt_file << "duplication number,count" << "\n";
     for (int i=0; i<UMI_dup_count.size(); i++)
     {
-        cnt_file << i+1 << "," << UMI_dup_count[i] << std::endl;
+        cnt_file << i+1 << "," << UMI_dup_count[i] << "\n";
     }
     cnt_file.close();
 
     std::ofstream stat_file(stat_fn);
-    stat_file << "cell_id,number of filtered gene,number of corrected UMI,UMI A percentage,UMI T percentage,UMI G percentage,UMI C percentage" << std::endl;
+    stat_file << "cell_id,number of filtered gene,number of corrected UMI,UMI A percentage,UMI T percentage,UMI G percentage,UMI C percentage" << "\n";
     for (auto const& n : UMI_dedup_stat_dict)
     {
         stat_file << n.first << "," << n.second.filtered_gene << "," << n.second.corrected_UMI << "," \
-            << n.second.A_prop << "," << n.second.T_prop << "," << n.second.G_prop << "," << n.second.C_prop << "," << std::endl;
+            << n.second.A_prop << "," << n.second.T_prop << "," << n.second.G_prop << "," << n.second.C_prop << "," << "\n";
     }
     stat_file.close();
 }

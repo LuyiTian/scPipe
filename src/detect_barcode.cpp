@@ -31,7 +31,7 @@ void merge_barcode(std::unordered_map<std::string, int> &counter, int max_mismat
                     found = true;
                     // merge two barcodes
                     counter[bc2.first] += counter[bc1->first];
-                    if (__DEBUG) {Rcpp::Rcout << "merge: " <<  bc1->first << "::" << bc2.first << "\t" << bc1->second << "::" << bc2.second << std::endl;}
+                    if (__DEBUG) {Rcpp::Rcout << "merge: " <<  bc1->first << "::" << bc2.first << "\t" << bc1->second << "::" << bc2.second << "\n";}
                     break;
                 }
             }
@@ -62,12 +62,12 @@ std::unordered_map<std::string, int> summarize_barcode(std::string fn, int bc_le
     }
     else if ((max_reads > 0) && (max_reads < 1000))
     {
-        // std::cerr << "max_reads should be larger than 1000." << std::endl;
+        // std::cerr << "max_reads should be larger than 1000." << "\n";
         Rcpp::stop("max_reads should be larger than 1000.");
     }
     if (bc_len < 4)
     {
-        // std::cerr << "bc_len should be larger than 3." << std::endl;
+        // std::cerr << "bc_len should be larger than 3." << "\n";
         Rcpp::stop("bc_len should be larger than 3.");
     }
 
@@ -105,7 +105,7 @@ void write_barcode_summary(std::string outfn, std::string suffix, std::unordered
     int dig = std::to_string(counter.size()).length()+1;
     for (auto const& bc: counter)
     {
-        o_file << suffix << padding(cnt, dig) << "," << bc.first << "," << bc.second << std::endl;
+        o_file << suffix << padding(cnt, dig) << "," << bc.first << "," << bc.second << "\n";
         cnt++;
     }
 }

@@ -240,7 +240,7 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
         {
             std::stringstream err_msg;
             err_msg << "fail to write the bam file: " << seq1->name.s << "\n";
-            err_msg << "return code: " << ret << std::endl;
+            err_msg << "return code: " << ret << "\n";
             Rcpp::stop(err_msg.str());
         }
         bam_destroy1(b);
@@ -252,19 +252,31 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
     sam_close(fp); // close bam file
 
     // print stats
-    Rcpp::Rcout << "pass QC: " << passed_reads << std::endl;
-    Rcpp::Rcout << "removed_have_N: " << removed_have_N << std::endl;
-    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
+    Rcpp::Rcout << "pass QC: " << passed_reads << "\n";
+    Rcpp::Rcout << "removed_have_N: " << removed_have_N << "\n";
+    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << "\n";
 }
 
 void fq_write(std::ofstream& o_stream, kseq_t *seq, int trim_n)
 {
-    o_stream << "@" << seq->name.s << "\n" << (seq->seq.s+trim_n) << "\n";
-    o_stream << "+" << "\n" << (seq->qual.s+trim_n) << "\n";
+    o_stream << "@" << seq->name.s << "\n" << 
+        (seq->seq.s+trim_n) << "\n" << 
+        "+" << "\n" << 
+        (seq->qual.s+trim_n) << "\n";
+}
+
+void fq_gz_write(gzFile out_file, kseq_t *seq, int trim_n) {
+    std::stringstream stream;
+    stream << "@" << seq->name.s << "\n" << 
+        (seq->seq.s+trim_n) << "\n" << 
+        "+" << "\n" << 
+        (seq->qual.s+trim_n) << "\n";
+    gzprintf(out_file, "%s", stream.str().c_str());
 }
 
 void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_s read_structure, const filter_s filter_settings)
 {
+    bool write_gz = false;
 
     int passed_reads = 0;
     int removed_have_N = 0;
@@ -285,7 +297,13 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
         Rcpp::stop(err_msg.str());
     }
 
-    std::ofstream o_stream(fq_out); // output file
+    gzFile o_stream_gz;
+    std::ofstream o_stream;
+    if (write_gz) {
+        o_stream_gz = gzopen(fq_out, "wb"); // open gz file
+    } else {
+        o_stream = std::ofstream(fq_out); // output file
+    }
 
     // get settings
     int id1_st = read_structure.id1_st;
@@ -381,44 +399,52 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
 
         passed_reads++;
 
-        seq1->name.s = (char*)realloc(seq1->name.s, name_offset + seq1->name.l);
-        memcpy(seq1->name.s+name_offset, seq1->name.s, seq1->name.l*sizeof(char)); // move original read name
+        const int new_name_length = name_offset + seq1->name.l + 1;
+        seq1->name.s = (char*)realloc(seq1->name.s, new_name_length); // allocate additional memory
+
+        const int name_size = seq1->name.l + 1; // +1 for the null byte
+        char * const seq1_name = seq1->name.s;
+        char * const seq1_seq = seq1->seq.s;
+        char * const seq2_seq = seq2->seq.s;
+        memmove(seq1_name + name_offset, seq1_name, name_size * sizeof(char)); // move original read name
         if (state == TWO_INDEX_WITH_UMI)
         {
-            memcpy(seq1->name.s, seq1->seq.s+id1_st, id1_len*sizeof(char)); // copy index one
-            memcpy(seq1->name.s+id1_len, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id1_len+id2_len] = '_'; // add separator
-            memcpy(seq1->name.s+id1_len+id2_len+1, seq2->seq.s+umi_st, umi_len*sizeof(char)); // copy umi
+            memcpy(seq1_name, seq1_seq + id1_st, id1_len * sizeof(char)); // copy index one
+            memcpy(seq1_name + id1_len, seq2_seq + id2_st, id2_len * sizeof(char)); // copy index two
+            seq1_name[id1_len+id2_len] = '_'; // add separator
+            memcpy(seq1_name + id1_len + id2_len + 1, seq2_seq + umi_st, umi_len * sizeof(char)); // copy umi
         }
         else if (state == TWO_INDEX_NO_UMI)
         {
-            memcpy(seq1->name.s, seq1->seq.s+id1_st, id1_len*sizeof(char)); // copy index one
-            memcpy(seq1->name.s+id1_len, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id1_len+id2_len] = '_'; // add separator
+            memcpy(seq1_name, seq1_seq + id1_st, id1_len * sizeof(char)); // copy index one
+            memcpy(seq1_name + id1_len, seq2_seq + id2_st, id2_len * sizeof(char)); // copy index two
+            seq1_name[id1_len+id2_len] = '_'; // add separator
         }
         else if (state == ONE_INDEX_WITH_UMI)
         {
-            memcpy(seq1->name.s, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id2_len] = '_'; // add separator
-            memcpy(seq1->name.s+id2_len+1, seq2->seq.s+umi_st, umi_len*sizeof(char)); // copy umi
+            memcpy(seq1_name, seq2_seq + id2_st, id2_len * sizeof(char)); // copy index two
+            seq1_name[id2_len] = '_'; // add separator
+            memcpy(seq1_name + id2_len + 1, seq2_seq + umi_st, umi_len * sizeof(char)); // copy umi
         }
         else if (state == ONE_INDEX_NO_UMI)
         {
-            memcpy(seq1->name.s, seq2->seq.s+id2_st, id2_len*sizeof(char)); // copy index two
-            seq1->name.s[id2_len] = '_'; // add separator
+            memcpy(seq1_name, seq2_seq + id2_st, id2_len * sizeof(char)); // copy index two
+            seq1_name[id2_len] = '_'; // add separator
         }
-        seq1->name.s[name_offset-1] = '#';
+        seq1_name[name_offset - 1] = '#';
         seq1->name.l = name_offset + seq1->name.l;
 
-        fq_write(o_stream, seq1, bc1_end); // write to fastq file
+        if (write_gz) {
+            fq_gz_write(o_stream_gz, seq1, bc1_end); // write to gzipped fastq file
+        } else {
+            fq_write(o_stream, seq1, bc1_end); // write to fastq file
+        }
     }
-
-    //Rcpp::Rcout << passed_reads << "\t" << removed_low_qual << "\t" << removed_have_N << std::endl;
 
     kseq_destroy(seq1); kseq_destroy(seq2); // free seq
     gzclose(fq1); gzclose(fq2); // close fastq file
-    o_stream.close(); // close out fastq file
-    Rcpp::Rcout << "pass QC: " << passed_reads << std::endl;
-    Rcpp::Rcout << "removed_have_N: " << removed_have_N << std::endl;
-    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
+    if (write_gz) gzclose(o_stream_gz);
+    Rcpp::Rcout << "pass QC: " << passed_reads << "\n";
+    Rcpp::Rcout << "removed_have_N: " << removed_have_N << "\n";
+    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << "\n";
 }

@@ -64,9 +64,9 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
                            filter_settings = list(
                              rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)) {
 
-  out_dir <- regmatches(outfq, regexpr(".*/", outfq))
-  if (!dir.exists(out_dir))
-    dir.create(out_dir, recursive = TRUE)
+  outdir <- regmatches(outfq, regexpr(".*/", outfq))
+  if (!dir.exists(outdir))
+    dir.create(outdir, recursive = TRUE)
 
   if (filter_settings$rmlow) {
     i_rmlow = 1
@@ -164,9 +164,14 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 
   if (any(!file.exists(inbam))) {
     stop("At least one input bam file does not exist")
+  } else {
+    inbam = path.expand(inbam)
   }
+
   if (any(!file.exists(annofn))) {
     stop("At least one genome annotation file does not exist")
+  } else {
+    annofn = path.expand(annofn)
   }
 
   rcpp_sc_exon_mapping(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
@@ -222,8 +227,22 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
                           has_UMI=TRUE) {
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
-  if (!file.exists(inbam)) {stop("input bam file does not exists.")}
-  if (!file.exists(bc_anno)) {stop("barcode annotation file does not exists.")}
+
+  if (!dir.exists(outdir))
+    dir.create(outdir, recursive = TRUE)
+
+  outdir = path.expand(outdir)
+
+  if (!file.exists(inbam)) {
+    stop("input bam file does not exists.")
+  } else {
+    inbam = path.expand(inbam)
+  }
+  if (!file.exists(bc_anno)) {
+    stop("barcode annotation file does not exists.")
+  } else {
+    bc_anno = path.expand(bc_anno)
+  }
   rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis,
                       bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
                       mito, has_UMI)
@@ -256,6 +275,11 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 #' }
 #'
 sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
+  if (!dir.exists(outdir))
+    dir.create(outdir, recursive = TRUE)
+
+  outdir = path.expand(outdir)
+
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
 
@@ -265,8 +289,12 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
     i_gene_fl = 0
   }
 
-  if (!file.exists(bc_anno))
+  if (!file.exists(bc_anno)) {
     stop("barcode annotation file does not exists.")
+  } else {
+    bc_anno = path.expand(bc_anno)
+  }
+
   rcpp_sc_gene_counting(outdir, bc_anno, UMI_cor, i_gene_fl)
 }
 
@@ -301,7 +329,11 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
 #'
 sc_detect_bc = function(infq, outcsv, suffix="CELL_", bc_len,
                         max_reads=1000000, min_count=10, max_mismatch=1) {
-  if (!file.exists(infq)) {stop("input fastq file does not exists.")}
+  if (!file.exists(infq)) {
+    stop("input fastq file does not exists.")
+  } else {
+    infq = path.expand(infq)
+  }
   if (max_reads=="all") {m_r = -1}
   else {m_r=max_reads}
   rcpp_sc_detect_bc(infq, outcsv, suffix, bc_len, m_r, min_count, max_mismatch)
@@ -335,9 +367,9 @@ sc_detect_bc = function(infq, outcsv, suffix="CELL_", bc_len,
 #'
 sc_demultiplex_and_count = function(
   inbam, outdir, bc_anno,
-  max_mis=1,
+  max_mis = 1,
   bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-  mito = "MT", has_UMI = TRUE, UMI_cor=1, gene_fl = FALSE
+  mito = "MT", has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE
 ) {
   sc_demultiplex(
     inbam = inbam,
@@ -355,4 +387,70 @@ sc_demultiplex_and_count = function(
     UMI_cor = UMI_cor,
     gene_fl = gene_fl
   )
+}
+
+#' sc_count_aligned_bam
+#'
+#' @description Wrapper to run \code{\link{sc_exon_mapping}},
+#'   \code{\link{sc_demultiplex}} and \code{\link{sc_gene_counting}} with a
+#'   single command
+#'
+#' @inheritParams sc_exon_mapping
+#' @inheritParams sc_demultiplex
+#' @inheritParams sc_gene_counting
+#' @param keep_mapped_bam TRUE if feature mapped bam file should be retained.
+#'
+#' @return no return
+#'
+#' @examples
+#' \dontrun{
+#' sc_count_aligned_bam(
+#'   inbam = "aligned.bam",
+#'   outbam = "mapped.bam",
+#'   annofn = c("MusMusculus-GRCm38p4-UCSC.gff3", "ERCC92_anno.gff3"),
+#'   outdir = "output",
+#'   bc_anno = "barcodes.csv"
+#' )
+#' }
+#'
+#' @export
+#'
+sc_count_aligned_bam <- function(
+  inbam, outbam, annofn,
+  bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
+  bc_len = 8, UMI_len = 6,
+  stnd = TRUE, fix_chr = FALSE,
+  outdir,
+  bc_anno,
+  max_mis = 1,
+  mito = "MT",
+  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
+  keep_mapped_bam = TRUE
+) {
+  sc_exon_mapping(
+    inbam = inbam,
+    outbam = outbam,
+    annofn = annofn,
+    bam_tags = bam_tags,
+    bc_len = bc_len,
+    UMI_len = UMI_len,
+    stnd = stnd,
+    fix_chr = fix_chr
+  )
+
+  sc_demultiplex_and_count(
+    inbam = outbam,
+    outdir = outdir,
+    bc_anno = bc_anno,
+    max_mis = max_mis,
+    bam_tags = bam_tags,
+    mito = mito,
+    has_UMI = has_UMI,
+    UMI_cor = UMI_cor,
+    gene_fl = gene_fl
+  )
+
+  if (!keep_mapped_bam) {
+    unlink(outbam)
+  }
 }
