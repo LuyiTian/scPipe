@@ -52,3 +52,9 @@
     \item Now the id conversion can also be done by using the bioconductor annotation package, when biomart fails to connect.
   }
 }
+
+\section{Changes in version 1.0.8 (2018-2-5)}{
+  \itemize{
+    \item update the gene id annotation code
+  }
+}
