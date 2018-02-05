@@ -85,6 +85,8 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 #' @importFrom utils head
 #' @importFrom methods is
 #' @importFrom AnnotationDbi mapIds
+#' @import org.Hs.eg.db
+#' @import org.Mm.eg.db
 #'
 #' @export
 #' @examples
@@ -125,7 +127,6 @@ convert_geneid <- function(sce,
   if(length(G_list)==0){
     if(organism == "hsapiens_gene_ensembl"){
       print("Try to use org.Hs.eg.db.")
-      requireNamespace("org.Hs.eg.db", quietly = TRUE)
       if ((returns %in% names(ensembl_to_db)) & (gene_id_type(sce) %in% names(ensembl_to_db))){
         tmp = AnnotationDbi::mapIds(org.Hs.eg.db,
                      keys=rownames(sce),
@@ -140,7 +141,6 @@ convert_geneid <- function(sce,
       }
     }else if(organism == "mmusculus_gene_ensembl"){
       print("Try to use org.Mm.eg.db.")
-      requireNamespace("org.Mm.eg.db", quietly = TRUE)
       if (returns %in% names(ensembl_to_db)){
         tmp = AnnotationDbi::mapIds(org.Mm.eg.db,
                      keys=rownames(sce),
