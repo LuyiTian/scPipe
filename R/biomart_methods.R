@@ -32,26 +32,31 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
   if (is.null(go)) {
     stop("must provide GO term. (i.e go=c('GO:0005739'))")
   }
-  mart = tryCatch({mart <- useDataset(dataset, useMart("ensembl"))},
-           error = function(e){
-             cat(paste0("cannot connect to the ensembl database. ERROR:\n", e ))
-             return(c())
+  G_list = tryCatch({mart <- useDataset(dataset, useMart("ensembl"))
+                      G_list <- getBM(filters="go",
+                        attributes=c(returns),
+                        values=go,
+                        mart=mart)
+                      G_list},
+                    error = function(e){
+                      cat(paste0("cannot connect to the ensembl database. ERROR:\n", e ))
+                      return(c())
            })
-  if(!is(mart,"Mart")){
+  if(length(G_list)==0){
     if(dataset == "hsapiens_gene_ensembl"){
       print("Try to use org.Hs.eg.db.")
-      require(org.Hs.eg.db)
+      requireNamespace("org.Hs.eg.db", quietly = TRUE)
       if (returns %in% names(ensembl_to_db)){
-        tmp = mapIds(org.Hs.eg.db,keys=go,column=ensembl_to_db[returns][[1]], keytype="GO",multiVals = "list")
+        tmp = AnnotationDbi::mapIds(org.Hs.eg.db,keys=go,column=ensembl_to_db[returns][[1]], keytype="GO",multiVals = "list")
         return(unname(unlist(tmp)))
       }else{
         print("Unknown gene id type.")
       }
     }else if(dataset == "mmusculus_gene_ensembl"){
       print("Try to use org.Mm.eg.db.")
-      require(org.Mm.eg.db)
+      requireNamespace("org.Mm.eg.db", quietly = TRUE)
       if (returns %in% names(ensembl_to_db)){
-        tmp = mapIds(org.Mm.eg.db,keys=go,column=ensembl_to_db[returns][[1]], keytype="GO",multiVals = "list")
+        tmp = AnnotationDbi::mapIds(org.Mm.eg.db,keys=go,column=ensembl_to_db[returns][[1]], keytype="GO",multiVals = "list")
         return(unname(unlist(tmp)))
       }else{
         print("Unknown gene id type.")
@@ -59,10 +64,6 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
     }
     return(c())
   }
-  G_list <- getBM(filters="go",
-                  attributes=c(returns),
-                  values=go,
-                  mart=mart)
   return(G_list[, returns])
 }
 
@@ -83,6 +84,9 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 #' @importFrom biomaRt useDataset getBM
 #' @importFrom utils head
 #' @importFrom methods is
+#' @importFrom AnnotationDbi mapIds
+#' @import org.Hs.eg.db
+#' @import org.Mm.eg.db
 #'
 #' @export
 #' @examples
@@ -113,17 +117,18 @@ convert_geneid <- function(sce,
     print("organism not provided.")
     return(sce)
   }
-  mart = tryCatch({mart <- useDataset(organism, useMart("ensembl")) },
+  G_list = tryCatch({mart <- useDataset(organism, useMart("ensembl")) 
+  G_list <- getBM(filters=gene_id_type(sce), attributes=c(gene_id_type(sce), returns, "description"), values=rownames(sce), mart=mart)
+  G_list},
            error = function(e){
              cat(paste0("cannot connect to the ensembl database. ERROR:\n", e ))
-    return(sce)
+    return(c())
   })
-  if(!is(mart,"Mart")){
+  if(length(G_list)==0){
     if(organism == "hsapiens_gene_ensembl"){
       print("Try to use org.Hs.eg.db.")
-      require(org.Hs.eg.db)
       if ((returns %in% names(ensembl_to_db)) & (gene_id_type(sce) %in% names(ensembl_to_db))){
-        tmp = mapIds(org.Hs.eg.db,
+        tmp = AnnotationDbi::mapIds(org.Hs.eg.db,
                      keys=rownames(sce),
                      column=ensembl_to_db[returns][[1]], 
                      keytype=ensembl_to_db[gene_id_type(sce)][[1]],
@@ -136,9 +141,8 @@ convert_geneid <- function(sce,
       }
     }else if(organism == "mmusculus_gene_ensembl"){
       print("Try to use org.Mm.eg.db.")
-      require(org.Mm.eg.db)
       if (returns %in% names(ensembl_to_db)){
-        tmp = mapIds(org.Mm.eg.db,
+        tmp = AnnotationDbi::mapIds(org.Mm.eg.db,
                      keys=rownames(sce),
                      column=ensembl_to_db[returns][[1]], 
                      keytype=ensembl_to_db[gene_id_type(sce)][[1]],
@@ -152,8 +156,6 @@ convert_geneid <- function(sce,
     }else{
       return(sce)
     }
-  }else{
-    G_list <- getBM(filters=gene_id_type(sce), attributes=c(gene_id_type(sce), returns, "description"), values=rownames(sce), mart=mart)
   }
 
   G_list <- G_list[match(rownames(sce), G_list[, gene_id_type(sce)]), ]

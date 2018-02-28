@@ -124,7 +124,7 @@ detect_outlier <- function(sce,
     keep <- !(dist > qchisq(0.99, ncol(x)))
     mod <- Mclust(x[keep, ],
                   G=comp,
-                  modelNames="EEE",
+                  modelNames=c("EEE","EVV", "VVV"),
                   verbose=FALSE)
 
     if (comp == 1) {
