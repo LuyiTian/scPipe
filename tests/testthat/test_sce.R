@@ -1,4 +1,4 @@
-
+context("scPipe testing")
 
 test_that("new SingleCellExperiment does not contain QC information", {
   data("sc_sample_data")
@@ -18,7 +18,6 @@ test_that("new SingleCellExperiment does not contain QC information", {
   expect_equal(UMI_dup_info(sce), NULL)
 
 })
-
 
 test_that("new SingleCellExperiment should work properly", {
   data("sc_sample_data")

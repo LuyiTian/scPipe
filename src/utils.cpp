@@ -30,7 +30,7 @@ void check_file_exists(std::string fn)
     else
     {
         f.close();
-        throw std::invalid_argument("cannot open file: "+ fn + "\n");
+        throw std::invalid_argument("cannot open file: " + fn + "\n");
     }   
 }
 
@@ -75,4 +75,10 @@ std::string padding(int count, int zero_num)
   std::ostringstream ss;
   ss << std::setw(zero_num) << std::setfill('0') << count;
   return ss.str();
+}
+
+void file_error(char *filename) {
+    std::stringstream err_msg;
+    err_msg << "Can't open file: " << filename << "\n";
+    Rcpp::stop(err_msg.str());
 }
