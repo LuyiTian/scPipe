@@ -286,23 +286,25 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
     int l2 = 0;
     gzFile fq1 = gzopen(fq1_fn, "r"); // input fastq
     if (!fq1) {
-        std::stringstream err_msg;
-        err_msg << "Can't open file: %s\n" << fq1_fn;
-        Rcpp::stop(err_msg.str());
+        file_error(fq1_fn);
     }
     gzFile fq2 = gzopen(fq2_fn, "r");
     if (!fq2) {
-        std::stringstream err_msg;
-        err_msg << "Can't open file: %s\n" << fq2_fn;
-        Rcpp::stop(err_msg.str());
+        file_error(fq2_fn);
     }
 
     gzFile o_stream_gz;
     std::ofstream o_stream;
     if (write_gz) {
         o_stream_gz = gzopen(fq_out, "wb"); // open gz file
+        if (!o_stream_gz) {
+            file_error(fq_out);
+        }
     } else {
-        o_stream = std::ofstream(fq_out); // output file
+        o_stream.open(fq_out); // output file
+        if (!o_stream.is_open()) {
+            file_error(fq_out);
+        }
     }
 
     // get settings
