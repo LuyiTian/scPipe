@@ -22,14 +22,6 @@ class GeneAnnotation
 public:
     std::unordered_map<std::string, std::vector<Gene>> gene_dict;
 
-    std::string get_ID(std::string tok);
-
-    std::string get_parent(std::string tok);
-
-    int get_strand(char st);
-    // add `chr` to chromosome name and change `MT` to `chrM`
-    std::string fix_name(std::string na);
-
     //get number of genes
     int ngenes();
 

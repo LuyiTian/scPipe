@@ -4,70 +4,100 @@
 using std::string;
 using namespace Rcpp;
 
-int GeneAnnotation::get_strand(char st)
-{
-    int strand = 0;
-    if (st == '+')
-    {
-        strand = 1;
-    }
-    else if (st == '-')
-    {
-        strand = -1;
-    }
-    return strand;
-}
+// anonymous namespace for file-specific functions
+// functions in this namespace can only be used in this file
+namespace {
+    // index variables for gff3 fields
+    const int SEQID = 0;
+    const int SOURCE = 1;
+    const int TYPE = 2;
+    const int START = 3;
+    const int END = 4;
+    const int SCORE = 5;
+    const int STRAND = 6;
+    const int PHASE = 7;
+    const int ATTRIBUTES  = 8;
 
-string GeneAnnotation::get_parent(string tok)
-{
-    string parent = "";
-    auto subtoken = split(tok, ';');
-    for (auto attr : subtoken)
+    int get_strand(char st)
     {
-        if (attr.substr(0,6) == "Parent")
+        int strand = 0;
+        if (st == '+')
         {
-            parent = split(split(attr, '=')[1],':')[1];
+            strand = 1;
         }
-    }
-    return parent;
-}
-
-string GeneAnnotation::get_ID(string tok)
-{
-    string ID = "";
-    auto subtoken = split(tok, ';');
-    for (auto attr : subtoken)
-    {
-        if (attr.substr(0,2) == "ID")
+        else if (st == '-')
         {
-            ID = split(split(attr, '=')[1],':')[1];
+            strand = -1;
         }
+        return strand;
     }
-    return ID;
-}
 
-string GeneAnnotation::fix_name(string na)
-{
-    string new_na;
-    if (na.compare(0,3,"chr") == 0)
+    string get_parent(string tok)
     {
-        return na;
-    }
-    else if (na.length() > 4) // just fix 1-22, X, Y, MT. ignore contig and ERCC
-    {
-        return na;
-    }
-    else
-    {
-        if (na == "MT")
+        string parent = "";
+        auto subtoken = split(tok, ';');
+        for (auto attr : subtoken)
         {
-            new_na = "chrM";
+            if (attr.substr(0,6) == "Parent")
+            {
+                parent = split(attr, '=')[1];
+                // check for ENSEMBL notation
+                if (parent.find(":") != string::npos) {
+                    parent = split(parent, ':')[1];
+                }
+            }
+        }
+        return parent;
+    }
+
+    string get_ID(string tok)
+    {
+        string ID = "";
+        auto subtoken = split(tok, ';');
+        for (auto attr : subtoken)
+        {
+            if (attr.substr(0,2) == "ID")
+            {
+                ID = split(attr, '=')[1];
+                if (ID.find(":") != string::npos) {
+                    ID = split(ID, ':')[1];
+                }
+            }
+        }
+        return ID;
+    }
+
+    string fix_name(string na)
+    {
+        string new_na;
+        if (na.compare(0,3,"chr") == 0)
+        {
+            return na;
+        }
+        else if (na.length() > 4) // just fix 1-22, X, Y, MT. ignore contig and ERCC
+        {
+            return na;
         }
         else
         {
-            new_na = "chr"+na;
+            if (na == "MT")
+            {
+                new_na = "chrM";
+            }
+            else
+            {
+                new_na = "chr"+na;
+            }
+            return new_na;
         }
-        return new_na;
+    }
+
+    inline bool valid_transcript_type(string type) {
+        return type != "CDS" &&
+               type != "three_prime_UTR" &&
+               type != "five_prime_UTR" &&
+               type != "start_codon" &&
+               type != "stop_codon";
     }
 }
 
@@ -76,43 +106,53 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     std::ifstream infile(gff3_fn);
 
     string line;
-    string ID;
-    string parent;
-    std::unordered_map<string, string> tmp_trans_dict; // store transcript - gene mapping
-    std::unordered_map<string, std::unordered_map<string, Gene>> tmp_gene_dict;
-    int strand = 0;
-    std::vector<string> token;
+    std::unordered_map<string, std::unordered_map<string, Gene>> chr_to_genes_dict;
+    std::unordered_map<string, string> transcript_to_gene_dict; // store transcript - gene mapping
 
-    // Rcpp::Rcout << "build annotation from gff3 file..." << "\n";
+    // create transcript-gene mapping
     while(std::getline(infile, line))
     {
+        // skip header lines
         if (line[0] == '#')
         {
-            continue; // skip header
+            continue;
         }
 
-        token = split(line, '\t');
-        string chr_name = token[0];
-        parent = get_parent(token[8]);
-        strand = get_strand(token[6][0]);
+        std::vector<string> fields = split(line, '\t');
+        string chr_name = fields[SEQID];
+        string parent = get_parent(fields[ATTRIBUTES]);
+        string type = fields[TYPE];
+        string ID = get_ID(fields[ATTRIBUTES]);
+        int strand = get_strand(fields[STRAND][0]);
 
-        string type = token[2];
+        // DEBUG USE
+        // Rcout << "Parsing: " << line << "\n";
+        // Rcout << "Type: " << type << " "
+        //       << "ID: " << ID << " "
+        //       << "Parent: " << parent << "\n\n";
+
+        if (parent.empty())
+        {
+            continue;
+        }
+
         if (type == "exon")
         {
-            if (tmp_trans_dict.end() != tmp_trans_dict.find(parent))
+            if (transcript_to_gene_dict.end() != transcript_to_gene_dict.find(parent))
             {
                 if (fix_chrname)
                 {
                     chr_name = fix_name(chr_name);
                 }
-                auto &genes_list = tmp_gene_dict[chr_name];
 
-                int interval_start = std::atoi(token[3].c_str());
-                int interval_end = std::atoi(token[4].c_str());
+                int interval_start = std::atoi(fields[START].c_str());
+                int interval_end = std::atoi(fields[END].c_str());
 
-                string target = tmp_trans_dict[parent];
-                genes_list[target].add_exon(Interval(interval_start, interval_end, strand));
-                genes_list[target].set_ID(target);
+                auto &current_chr = chr_to_genes_dict[chr_name];
+                string target_gene = transcript_to_gene_dict[parent];
+
+                current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
+                current_chr[target_gene].set_ID(target_gene);
             }
             else
             {
@@ -123,18 +163,17 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             }
 
         }
-        else if (!parent.empty())
+        else if (valid_transcript_type(type))
         {
-            ID = get_ID(token[8]);
             if (!ID.empty())
             {
-                tmp_trans_dict[ID] = parent;
+                transcript_to_gene_dict[ID] = parent;
             }
         }
-
     }
 
-    for (auto iter : tmp_gene_dict)
+    // push features to genes as if they were exons
+    for (auto iter : chr_to_genes_dict)
     {
         for (auto sub_iter : iter.second)
         {
