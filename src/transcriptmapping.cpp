@@ -2,6 +2,8 @@
 #include "transcriptmapping.h"
 
 using std::string;
+using std::vector;
+using std::unordered_map;
 using namespace Rcpp;
 
 // anonymous namespace for file-specific functions
@@ -17,6 +19,16 @@ namespace {
     const int STRAND = 6;
     const int PHASE = 7;
     const int ATTRIBUTES  = 8;
+
+    string get_attribute(const vector<string> all_attributes, const string target_attribute) {
+        for (string attr : all_attributes) {
+            vector<string> key_val_pair = split(attr, '=');
+            if (key_val_pair[0] == target_attribute) {
+                return key_val_pair[1];
+            }
+        }
+        return "";
+    }
 
     int get_strand(char st)
     {
@@ -92,12 +104,33 @@ namespace {
         }
     }
 
-    inline bool valid_transcript_type(string type) {
-        return type != "CDS" &&
-               type != "three_prime_UTR" &&
-               type != "five_prime_UTR" &&
-               type != "start_codon" &&
-               type != "stop_codon";
+    inline const bool parent_is_gene(const vector<string> &recorded_genes, const string &parent)
+    {
+        return find(recorded_genes.rbegin(), recorded_genes.rend(), parent) != recorded_genes.rend();
+    }
+
+    inline const bool parent_is_known_transcript(const unordered_map<string, string> &transcript_to_gene_dict, const string &parent)
+    {
+        return transcript_to_gene_dict.find(parent) != transcript_to_gene_dict.end();
+    }
+
+    inline const bool is_gene(const string &line)
+    {
+        vector<string> fields = split(line, '\t');
+        string type = fields[TYPE];
+        if (type.find("gene") != string::npos)
+        {
+            return true;
+        }
+
+        vector<string> attributes = split(fields[ATTRIBUTES], ';');
+        string id = get_attribute(attributes, "ID");
+        if (id.find("gene:") != string::npos)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
 
@@ -106,8 +139,10 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     std::ifstream infile(gff3_fn);
 
     string line;
-    std::unordered_map<string, std::unordered_map<string, Gene>> chr_to_genes_dict;
-    std::unordered_map<string, string> transcript_to_gene_dict; // store transcript - gene mapping
+    unordered_map<string, unordered_map<string, Gene>> chr_to_genes_dict;
+    unordered_map<string, string> transcript_to_gene_dict; // store transcript - gene mapping
+
+    vector<string> recorded_genes;
 
     // create transcript-gene mapping
     while(std::getline(infile, line))
@@ -131,14 +166,18 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         //       << "ID: " << ID << " "
         //       << "Parent: " << parent << "\n\n";
 
+
         if (parent.empty())
         {
+            if (is_gene(line)) {
+                recorded_genes.push_back(ID);
+            }
             continue;
         }
 
         if (type == "exon")
         {
-            if (transcript_to_gene_dict.end() != transcript_to_gene_dict.find(parent))
+            if (parent_is_known_transcript(transcript_to_gene_dict, parent))
             {
                 if (fix_chrname)
                 {
@@ -163,7 +202,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             }
 
         }
-        else if (valid_transcript_type(type))
+        else if (parent_is_gene(recorded_genes, parent))
         {
             if (!ID.empty())
             {
@@ -172,15 +211,14 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         }
     }
 
-    // push features to genes as if they were exons
-    for (auto iter : chr_to_genes_dict)
+    for (auto chr : chr_to_genes_dict)
     {
-        for (auto sub_iter : iter.second)
+        for (auto gene : chr.second)
         {
-            sub_iter.second.sort_exon();
-            gene_dict[iter.first].push_back(sub_iter.second);
+            gene.second.sort_exon();
+            gene_dict[chr.first].push_back(gene.second);
         }
-        std::sort(gene_dict[iter.first].begin(), gene_dict[iter.first].end());
+        std::sort(gene_dict[chr.first].begin(), gene_dict[chr.first].end());
     }
 
 }
@@ -190,7 +228,7 @@ void GeneAnnotation::parse_bed_annotation(string bed_fn, bool fix_chrname)
     std::ifstream infile(bed_fn);
 
     string line;
-    std::unordered_map<string, std::unordered_map<string, Gene>> tmp_gene_dict;
+    unordered_map<string, unordered_map<string, Gene>> tmp_gene_dict;
     int strand = 0;
     std::vector<string> token;
 
