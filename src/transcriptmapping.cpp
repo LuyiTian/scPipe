@@ -20,7 +20,7 @@ namespace {
     const int PHASE = 7;
     const int ATTRIBUTES  = 8;
 
-    string get_attribute(const vector<string> all_attributes, const string target_attribute) {
+    string get_attribute(const vector<string> &all_attributes, const string &target_attribute) {
         for (string attr : all_attributes) {
             vector<string> key_val_pair = split(attr, '=');
             if (key_val_pair[0] == target_attribute) {
@@ -44,11 +44,10 @@ namespace {
         return strand;
     }
 
-    string get_parent(string tok)
+    string get_parent(const vector<string> &attributes)
     {
         string parent = "";
-        auto subtoken = split(tok, ';');
-        for (auto attr : subtoken)
+        for (auto attr : attributes)
         {
             if (attr.substr(0,6) == "Parent")
             {
@@ -57,16 +56,16 @@ namespace {
                 if (parent.find(":") != string::npos) {
                     parent = split(parent, ':')[1];
                 }
+                break;
             }
         }
         return parent;
     }
 
-    string get_ID(string tok)
+    string get_ID(const vector<string> &attributes)
     {
         string ID = "";
-        auto subtoken = split(tok, ';');
-        for (auto attr : subtoken)
+        for (auto attr : attributes)
         {
             if (attr.substr(0,2) == "ID")
             {
@@ -74,6 +73,7 @@ namespace {
                 if (ID.find(":") != string::npos) {
                     ID = split(ID, ':')[1];
                 }
+                break;
             }
         }
         return ID;
@@ -114,16 +114,14 @@ namespace {
         return transcript_to_gene_dict.find(parent) != transcript_to_gene_dict.end();
     }
 
-    inline const bool is_gene(const string &line)
+    inline const bool is_gene(const vector<string> &fields, vector<string> &attributes)
     {
-        vector<string> fields = split(line, '\t');
         string type = fields[TYPE];
         if (type.find("gene") != string::npos)
         {
             return true;
         }
 
-        vector<string> attributes = split(fields[ATTRIBUTES], ';');
         string id = get_attribute(attributes, "ID");
         if (id.find("gene:") != string::npos)
         {
@@ -153,11 +151,12 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             continue;
         }
 
-        std::vector<string> fields = split(line, '\t');
+        vector<string> fields = split(line, '\t');
+        vector<string> attributes = split(fields[ATTRIBUTES], ';');
         string chr_name = fields[SEQID];
-        string parent = get_parent(fields[ATTRIBUTES]);
+        string parent = get_parent(attributes);
         string type = fields[TYPE];
-        string ID = get_ID(fields[ATTRIBUTES]);
+        string ID = get_ID(attributes);
         int strand = get_strand(fields[STRAND][0]);
 
         // DEBUG USE
@@ -169,7 +168,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
 
         if (parent.empty())
         {
-            if (is_gene(line)) {
+            if (is_gene(fields, attributes)) {
                 recorded_genes.push_back(ID);
             }
             continue;
