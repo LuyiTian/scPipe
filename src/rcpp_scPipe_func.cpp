@@ -69,7 +69,7 @@ void rcpp_sc_trim_barcode_paired(Rcpp::CharacterVector outfq,
 
   paired_fastq_to_fastq((char *)c_r1.c_str(), (char *)c_r2.c_str(), (char *)c_outfq.c_str(), s, fl);
 
-  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n";
+  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
 }
 
 // [[Rcpp::plugins(cpp11)]]
@@ -111,7 +111,7 @@ void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam,
 
   a.parse_align(c_inbam, c_outbam, c_stnd, c_am, c_ge, c_bc, c_mb, c_bc_len, c_UMI_len);
 
-  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n";
+  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
 }
 
 // [[Rcpp::plugins(cpp11)]]
@@ -153,7 +153,7 @@ void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam,
 
   bam_de.barcode_demultiplex(c_inbam, c_max_mis, c_has_UMI);
   bam_de.write_statistics("overall_stat", "chr_stat", "cell_stat");
-  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n";
+  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
 }
 
 // [[Rcpp::plugins(cpp11)]]
@@ -179,7 +179,7 @@ void rcpp_sc_gene_counting(Rcpp::CharacterVector outdir,
   bar.read_anno(c_bc_anno);
   get_counting_matrix(bar, c_outdir, c_UMI_cor, c_gene_fl);
 
-  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n";
+  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
 }
 
 // [[Rcpp::plugins(cpp11)]]
