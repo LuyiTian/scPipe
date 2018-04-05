@@ -242,13 +242,13 @@ void Mapping::add_annotation(string gff3_fn, bool fix_chrname)
 {
     if (gff3_fn.substr(gff3_fn.find_last_of(".") + 1) == "gff3")
     {
-        Rcpp::Rcout << "add gff3 annotation: " << gff3_fn << "\n";
+        Rcpp::Rcout << "adding gff3 annotation: " << gff3_fn << "\n";
         Anno.parse_gff3_annotation(gff3_fn, fix_chrname);
     }
     else
     {
         Anno.parse_bed_annotation(gff3_fn, fix_chrname);
-        Rcpp::Rcout << "add bed annotation: " << gff3_fn << "\n";
+        Rcpp::Rcout << "adding bed annotation: " << gff3_fn << "\n";
     }
 
 }
@@ -355,6 +355,22 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
     }
 }
 
+// anonymous namespace for functions only used in this file
+namespace {
+    void report_every_3_mins(std::atomic<unsigned long long> &cnt, std::atomic<bool> &running) {
+        Timer timer;
+        timer.start();
+
+        std::this_thread::sleep_for(std::chrono::minutes(3));
+        while (running) {
+            std::cout 
+                << cnt << " reads processed" << ", "
+                << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << "\n";
+            std::this_thread::sleep_for(std::chrono::minutes(3));
+        }
+    }
+}
+
 void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_tag, string gene_tag, string cellular_tag, string molecular_tag, int bc_len, int UMI_len)
 {
     int unaligned = 0;
@@ -398,7 +414,18 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     const char * m_ptr = molecular_tag.c_str();
     const char * a_ptr = map_tag.c_str();
     char buf[999] = ""; // assume the length of barcode or UMI is less than 999
-    int cnt = 1;
+    std::atomic<unsigned long long> cnt{0};
+    std::atomic<bool> running{true};
+
+    Rcout << "annotating exon features..." << "\n";
+    Rcout << "updating progress every 3 minutes..." << "\n";
+    // spawn thread to report progress every 3 minutes
+    std::thread reporter_thread(
+        [&cnt, &running]() {
+            report_every_3_mins(cnt, running); 
+        }
+    );
+
     while (bam_read1(fp, b) >= 0)
     {
         if (__DEBUG)
@@ -408,8 +435,9 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
                 Rcpp::Rcout << "number of read processed:" << cnt << "\n";
                 Rcpp::Rcout << tmp_c[0] <<"\t"<< tmp_c[1] <<"\t"<<tmp_c[2] <<"\t"<<tmp_c[3] <<"\t" << "\n";
             }
-            cnt++;
         }
+        cnt++;
+
         if ((b->core.flag&BAM_FUNMAP) > 0)
         {
             unaligned++;
@@ -461,6 +489,10 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
         }
     }
 
+    running = false;
+    reporter_thread.join();
+
+    Rcpp::Rcout << "\t" << "number of read processed:" << cnt << "\n";
     Rcpp::Rcout << "\t" << "unique map to exon:" << tmp_c[0] << "\n";
     Rcpp::Rcout << "\t" << "ambiguous map to multiple exon:" << tmp_c[1] << "\n";
     Rcpp::Rcout << "\t" << "map to intron:" << tmp_c[2] << "\n";
