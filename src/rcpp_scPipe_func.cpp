@@ -6,6 +6,7 @@
 #include "cellbarcode.h"
 #include "transcriptmapping.h"
 #include "detect_barcode.h"
+#include "Timer.h"
 
 read_s get_read_structure(Rcpp::NumericVector bs1,
                           Rcpp::NumericVector bl1,
@@ -62,8 +63,13 @@ void rcpp_sc_trim_barcode_paired(Rcpp::CharacterVector outfq,
   std::string c_r2 = Rcpp::as<std::string>(r2);
   read_s s = get_read_structure(bs1, bl1, bs2, bl2, us, ul);
   filter_s fl = get_filter_structure(rmlow, rmN, minq, numbq);
+  
+  Timer timer;
+  timer.start();
 
   paired_fastq_to_fastq((char *)c_r1.c_str(), (char *)c_r2.c_str(), (char *)c_outfq.c_str(), s, fl);
+
+  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n";
 }
 
 // [[Rcpp::plugins(cpp11)]]
@@ -100,7 +106,12 @@ void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam,
     a.add_annotation(n, c_fix_chr);
   }
 
+  Timer timer;
+  timer.start();
+
   a.parse_align(c_inbam, c_outbam, c_stnd, c_am, c_ge, c_bc, c_mb, c_bc_len, c_UMI_len);
+
+  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n";
 }
 
 // [[Rcpp::plugins(cpp11)]]
@@ -133,10 +144,16 @@ void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam,
   Barcode bar;
   bar.read_anno(c_bc_anno);
 
+  Rcpp::Rcout << "demultiplexing reads by barcode..." << "\n";
+
+  Timer timer;
+  timer.start();
+
   Bamdemultiplex bam_de = Bamdemultiplex(c_outdir, bar, c_bc, c_mb, c_ge, c_am, c_mito);
 
   bam_de.barcode_demultiplex(c_inbam, c_max_mis, c_has_UMI);
   bam_de.write_statistics("overall_stat", "chr_stat", "cell_stat");
+  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n";
 }
 
 // [[Rcpp::plugins(cpp11)]]
@@ -152,10 +169,17 @@ void rcpp_sc_gene_counting(Rcpp::CharacterVector outdir,
   int c_UMI_cor = Rcpp::as<int>(UMI_cor);
   bool c_gene_fl = Rcpp::as<int>(gene_fl)==1?true:false;
 
-
   Barcode bar;
+
+  Rcpp::Rcout << "summarising gene counts..." << "\n";
+
+  Timer timer;
+  timer.start();
+
   bar.read_anno(c_bc_anno);
   get_counting_matrix(bar, c_outdir, c_UMI_cor, c_gene_fl);
+
+  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n";
 }
 
 // [[Rcpp::plugins(cpp11)]]
@@ -176,7 +200,6 @@ void rcpp_sc_detect_bc(Rcpp::CharacterVector infq,
   int c_max_reads = Rcpp::as<int>(max_reads);
   int c_min_count = Rcpp::as<int>(min_count);
   int c_max_mismatch = Rcpp::as<int>(max_mismatch);
-  
   
   std::unordered_map<std::string, int> counter = summarize_barcode(c_infq, c_bc_len, c_max_reads, c_max_mismatch, c_min_count);
   write_barcode_summary(c_outcsv, c_suffix, counter);
