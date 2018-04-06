@@ -79,28 +79,28 @@ namespace {
         return ID;
     }
 
-    string fix_name(string na)
+    string fix_name(string chr_name)
     {
-        string new_na;
-        if (na.compare(0,3,"chr") == 0)
+        string new_chr_name;
+        if (chr_name.compare(0, 3, "chr") == 0)
         {
-            return na;
+            return chr_name;
         }
-        else if (na.length() > 4) // just fix 1-22, X, Y, MT. ignore contig and ERCC
+        else if (chr_name.length() > 4) // just fix 1-22, X, Y, MT. ignore contig and ERCC
         {
-            return na;
+            return chr_name;
         }
         else
         {
-            if (na == "MT")
+            if (chr_name == "MT")
             {
-                new_na = "chrM";
+                new_chr_name = "chrM";
             }
             else
             {
-                new_na = "chr"+na;
+                new_chr_name = "chr" + chr_name;
             }
-            return new_na;
+            return new_chr_name;
         }
     }
 
@@ -142,14 +142,35 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
 
     vector<string> recorded_genes;
 
+    string anno_source = "";
+
     // create transcript-gene mapping
-    while(std::getline(infile, line))
+    while (std::getline(infile, line))
     {
         // skip header lines
         if (line[0] == '#')
         {
+            // attempt to guess annotation source if not already guessed
+            if (anno_source == "") {
+                if (line.find("GENCODE") != std::string::npos) {
+                    anno_source = "gencode";
+                    Rcout << "guessing annotation source: GENCODE" << "\n";
+                } 
+                else if (line.find("Ensembl") != std::string::npos)
+                {
+                    anno_source = "ensembl";
+                    Rcout << "guessing annotation source: ENSEMBL" << "\n";
+                }
+            }
             continue;
+        } else {
+            if (anno_source == "")
+            {
+                anno_source = "refseq";
+                Rcout << "guessing annotation source: RefSeq" << "\n";
+            }
         }
+
 
         vector<string> fields = split(line, '\t');
         vector<string> attributes = split(fields[ATTRIBUTES], ';');
@@ -164,52 +185,58 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         // Rcout << "Type: " << type << " "
         //       << "ID: " << ID << " "
         //       << "Parent: " << parent << "\n\n";
-
-
-        if (parent.empty())
+        if (anno_source == "ensembl")
         {
-            if (is_gene(fields, attributes)) {
-                recorded_genes.push_back(ID);
-            }
-            continue;
-        }
-
-        if (type == "exon")
-        {
-            if (parent_is_known_transcript(transcript_to_gene_dict, parent))
+            if (parent.empty())
             {
-                if (fix_chrname)
+                if (is_gene(fields, attributes)) {
+                    recorded_genes.push_back(ID);
+                }
+                continue;
+            }
+
+            if (type == "exon")
+            {
+                if (parent_is_known_transcript(transcript_to_gene_dict, parent))
                 {
-                    chr_name = fix_name(chr_name);
+                    if (fix_chrname)
+                    {
+                        chr_name = fix_name(chr_name);
+                    }
+
+                    int interval_start = std::atoi(fields[START].c_str());
+                    int interval_end = std::atoi(fields[END].c_str());
+
+                    auto &current_chr = chr_to_genes_dict[chr_name];
+                    string target_gene = transcript_to_gene_dict[parent];
+
+                    current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
+                    current_chr[target_gene].set_ID(target_gene);
+                }
+                else
+                {
+                    std::stringstream err_msg;
+                    err_msg << "cannot find grandparent for exon:" << "\n";
+                    err_msg << line << "\n";
+                    Rcpp::stop(err_msg.str());
                 }
 
-                int interval_start = std::atoi(fields[START].c_str());
-                int interval_end = std::atoi(fields[END].c_str());
-
-                auto &current_chr = chr_to_genes_dict[chr_name];
-                string target_gene = transcript_to_gene_dict[parent];
-
-                current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
-                current_chr[target_gene].set_ID(target_gene);
             }
-            else
+            else if (parent_is_gene(recorded_genes, parent))
             {
-                std::stringstream err_msg;
-                err_msg << "cannot find grandparent for exon:" << "\n";
-                err_msg << line << "\n";
-                Rcpp::stop(err_msg.str());
+                if (!ID.empty())
+                {
+                    transcript_to_gene_dict[ID] = parent;
+                }
             }
-
         }
-        else if (parent_is_gene(recorded_genes, parent))
+        else
         {
-            if (!ID.empty())
-            {
-                transcript_to_gene_dict[ID] = parent;
-            }
+
         }
     }
 
+    // push genes into annotation property
     for (auto chr : chr_to_genes_dict)
     {
         for (auto gene : chr.second)
