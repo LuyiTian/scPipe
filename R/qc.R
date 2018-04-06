@@ -9,7 +9,7 @@
   P <- stats::ppoints(n)
   z <- stats::qchisq(P, df=df)
   ord.x <- x[order(x)]
-  coef <- stats::coef(MASS::rlm(ord.x ~ z, maxit=200))
+  coef <- stats::coef(MASS::rlm(ord.x ~ z, maxit=2000))
   a <- coef[1]
   b <- coef[2]
   zz <- stats::qnorm(1 - (1 - conf)/2)

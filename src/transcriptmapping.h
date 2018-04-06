@@ -8,10 +8,12 @@
 #include <vector>
 #include <cstring>
 #include <Rcpp.h>
+#include <thread>
 #include "config_hts.h"
 #include "utils.h"
 #include "Gene.h"
 #include "Interval.h"
+#include "Timer.h"
 
 #ifndef TRANSCRIPTMAPPING_H
 #define TRANSCRIPTMAPPING_H
