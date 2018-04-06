@@ -28,9 +28,12 @@ class Timer {
                 return std::to_string(minutes_elapsed()) + " minutes " +
                        std::to_string(seconds_elapsed() - 60*minutes_elapsed()) + " seconds";
             }
+            if (hours_elapsed() <= 72) {
+                return std::to_string(hours_elapsed()) + " hours " + 
+                    std::to_string(minutes_elapsed() - 60*hours_elapsed()) + " seconds";
+            }
 
-            return std::to_string(hours_elapsed()) + " hours " + 
-                   std::to_string(minutes_elapsed() - 60*hours_elapsed()) + " seconds";
+            return std::to_string(hours_elapsed()) + " hours";
         }
 
         unsigned int nanoseconds_elapsed() {
