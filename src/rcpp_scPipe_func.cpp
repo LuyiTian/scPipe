@@ -63,7 +63,9 @@ void rcpp_sc_trim_barcode_paired(Rcpp::CharacterVector outfq,
   std::string c_r2 = Rcpp::as<std::string>(r2);
   read_s s = get_read_structure(bs1, bl1, bs2, bl2, us, ul);
   filter_s fl = get_filter_structure(rmlow, rmN, minq, numbq);
-  
+
+  Rcpp::Rcout << "trimming fastq file..." << "\n";
+
   Timer timer;
   timer.start();
 
@@ -101,10 +103,14 @@ void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam,
   bool c_fix_chr = Rcpp::as<int>(fix_chr)==1?true:false;
   std::vector<std::string> token = Rcpp::as<std::vector<std::string>>(annofn);
   Mapping a = Mapping();
+  Rcpp::Rcout << "adding annotation files..." << "\n";
+
   for (const auto& n : token)
   {
     a.add_annotation(n, c_fix_chr);
   }
+
+  Rcpp::Rcout << "mapping exon features..." << "\n";
 
   Timer timer;
   timer.start();
