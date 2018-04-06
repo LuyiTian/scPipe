@@ -431,7 +431,6 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
     }
 }
 
-// anonymous namespace for functions only used in this file
 namespace {
     void report_every_3_mins(std::atomic<unsigned long long> &cnt, std::atomic<bool> &running) {
         Timer timer;
