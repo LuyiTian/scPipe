@@ -9,6 +9,7 @@
 #include <cstring>
 #include <Rcpp.h>
 #include <thread>
+#include <atomic>
 #include "config_hts.h"
 #include "utils.h"
 #include "Gene.h"
