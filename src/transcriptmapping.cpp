@@ -112,6 +112,8 @@ namespace {
     string get_refseq_gene_id(vector<string> attributes)
     {
         string dbxref = get_attribute(attributes, "Dbxref");
+
+        // GeneID may be missing
         if (dbxref.find("GeneID") == std::string::npos)
         {
             return "";
