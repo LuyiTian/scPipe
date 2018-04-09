@@ -104,6 +104,57 @@ namespace {
         }
     }
 
+    string get_gencode_gene_id(vector<string> attributes)
+    {
+        return get_attribute(attributes, "gene_id");
+    }
+
+    string get_refseq_gene_id(vector<string> attributes)
+    {
+        string dbxref = get_attribute(attributes, "Dbxref");
+        auto start = dbxref.find("GeneID") + 7; // start after "GeneID:"
+	    auto end = dbxref.find(",", start);
+        auto id_length = end - start;
+
+        return dbxref.substr(start, id_length);
+    }
+
+    string guess_anno_source(string gff3_fn) {
+        std::ifstream infile(gff3_fn);
+        string line;
+
+        while (std::getline(infile, line))
+        {
+            if (line.find("GENCODE") != std::string::npos) {
+                Rcout << "guessing annotation source: GENCODE" << "\n";
+                return "gencode";
+            }
+            else if (line.find("1\tEnsembl") != std::string::npos)
+            {
+                Rcout << "guessing annotation source: ENSEMBL" << "\n";
+                return "ensembl";
+            }
+            else if (line.find("RefSeq\tregion") != std::string::npos)
+            {
+                Rcout << "guessing annotation source: RefSeq" << "\n";
+                return "refseq";
+            }
+        }
+
+        stop("Annotation source not recognised. Current supported sources: ENSEMBL, GENCODE and RefSeq");
+    }
+
+    string get_gene_id(string &anno_source, vector<string> &attributes) {
+        if (anno_source == "gencode")
+        {
+            return get_gencode_gene_id(attributes);
+        }
+        else if (anno_source == "refseq")
+        {
+            return get_refseq_gene_id(attributes);
+        }
+    }
+
     inline const bool parent_is_gene(const vector<string> &recorded_genes, const string &parent)
     {
         return find(recorded_genes.rbegin(), recorded_genes.rend(), parent) != recorded_genes.rend();
@@ -142,7 +193,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
 
     vector<string> recorded_genes;
 
-    string anno_source = "";
+    string anno_source = guess_anno_source(gff3_fn);
 
     // create transcript-gene mapping
     while (std::getline(infile, line))
@@ -150,27 +201,8 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         // skip header lines
         if (line[0] == '#')
         {
-            // attempt to guess annotation source if not already guessed
-            if (anno_source == "") {
-                if (line.find("GENCODE") != std::string::npos) {
-                    anno_source = "gencode";
-                    Rcout << "guessing annotation source: GENCODE" << "\n";
-                } 
-                else if (line.find("Ensembl") != std::string::npos)
-                {
-                    anno_source = "ensembl";
-                    Rcout << "guessing annotation source: ENSEMBL" << "\n";
-                }
-            }
             continue;
-        } else {
-            if (anno_source == "")
-            {
-                anno_source = "refseq";
-                Rcout << "guessing annotation source: RefSeq" << "\n";
-            }
-        }
-
+        } 
 
         vector<string> fields = split(line, '\t');
         vector<string> attributes = split(fields[ATTRIBUTES], ';');
@@ -179,12 +211,17 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         string type = fields[TYPE];
         string ID = get_ID(attributes);
         int strand = get_strand(fields[STRAND][0]);
+        int interval_start = std::atoi(fields[START].c_str());
+        int interval_end = std::atoi(fields[END].c_str());
+        auto &current_chr = chr_to_genes_dict[chr_name];
 
         // DEBUG USE
         // Rcout << "Parsing: " << line << "\n";
         // Rcout << "Type: " << type << " "
         //       << "ID: " << ID << " "
         //       << "Parent: " << parent << "\n\n";
+        // DEBUG USE
+        
         if (anno_source == "ensembl")
         {
             if (parent.empty())
@@ -195,19 +232,15 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
                 continue;
             }
 
+            if (fix_chrname)
+            {
+                chr_name = fix_name(chr_name);
+            }
+
             if (type == "exon")
             {
                 if (parent_is_known_transcript(transcript_to_gene_dict, parent))
                 {
-                    if (fix_chrname)
-                    {
-                        chr_name = fix_name(chr_name);
-                    }
-
-                    int interval_start = std::atoi(fields[START].c_str());
-                    int interval_end = std::atoi(fields[END].c_str());
-
-                    auto &current_chr = chr_to_genes_dict[chr_name];
                     string target_gene = transcript_to_gene_dict[parent];
 
                     current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
@@ -232,11 +265,15 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         }
         else
         {
+            auto &current_chr = chr_to_genes_dict[chr_name];
 
+            string target_gene = get_gene_id(anno_source, attributes);
+            current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
+            current_chr[target_gene].set_ID(target_gene);
         }
     }
 
-    // push genes into annotation property
+    // push genes into annotation class member
     for (auto chr : chr_to_genes_dict)
     {
         for (auto gene : chr.second)
@@ -465,10 +502,20 @@ namespace {
 
         std::this_thread::sleep_for(std::chrono::minutes(3));
         while (running) {
-            std::cout 
+            std::cout
                 << cnt << " reads processed" << ", "
                 << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << "\n";
-            std::this_thread::sleep_for(std::chrono::minutes(3));
+
+            // sleep for 15 seconds at a time for 3 minutes
+            // if no longer running then break out of sleep so thread can be joined
+            for (int i = 0; i < 12; i++)
+            {
+                std::this_thread::sleep_for(std::chrono::seconds(15));
+                if (!running)
+                {
+                    break;
+                }
+            }
         }
     }
 }
@@ -524,7 +571,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     // spawn thread to report progress every 3 minutes
     std::thread reporter_thread(
         [&cnt, &running]() {
-            report_every_3_mins(cnt, running); 
+            report_every_3_mins(cnt, running);
         }
     );
 
@@ -594,13 +641,21 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     running = false;
     reporter_thread.join();
 
-    Rcpp::Rcout << "\t" << "number of read processed:" << cnt << "\n";
-    Rcpp::Rcout << "\t" << "unique map to exon:" << tmp_c[0] << "\n";
-    Rcpp::Rcout << "\t" << "ambiguous map to multiple exon:" << tmp_c[1] << "\n";
-    Rcpp::Rcout << "\t" << "map to intron:" << tmp_c[2] << "\n";
-    Rcpp::Rcout << "\t" << "not mapped:" << tmp_c[3] << "\n";
-    Rcpp::Rcout << "\t" << "unaligned:" << unaligned << "\n";
+    Rcpp::Rcout << "\t" << "number of read processed: " << cnt << "\n";
+    Rcpp::Rcout << "\t" << "unique map to exon: " << tmp_c[0]
+        << "(" << std::fixed << std::setprecision(2) << 100. * tmp_c[0]/cnt << "%)" << "\n";
+
+    Rcpp::Rcout << "\t" << "ambiguous map to multiple exon: " << tmp_c[1]
+        << "("  << std::fixed << std::setprecision(2) << 100. * tmp_c[1]/cnt << "%)" << "\n";
+
+    Rcpp::Rcout << "\t" << "map to intron: " << tmp_c[2]
+        << "(" << std::fixed << std::setprecision(2) << 100. * tmp_c[2]/cnt << "%)" << "\n";
+
+    Rcpp::Rcout << "\t" << "not mapped: " << tmp_c[2]
+        << "("  << std::fixed << std::setprecision(2) << 100. * tmp_c[3]/cnt << "%)" << "\n";
+        
+    Rcpp::Rcout << "\t" << "unaligned: " << unaligned
+        << "(" << std::fixed << std::setprecision(2) << 100. * unaligned/cnt << "%)" << "\n";
     sam_close(of);
     bgzf_close(fp);
 }
-
