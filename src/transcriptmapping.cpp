@@ -49,7 +49,7 @@ namespace {
         string parent = "";
         for (auto attr : attributes)
         {
-            if (attr.substr(0,6) == "Parent")
+            if (attr.substr(0, 6) == "Parent")
             {
                 parent = split(attr, '=')[1];
                 // check for ENSEMBL notation
@@ -67,7 +67,7 @@ namespace {
         string ID = "";
         for (auto attr : attributes)
         {
-            if (attr.substr(0,2) == "ID")
+            if (attr.substr(0, 2) == "ID")
             {
                 ID = split(attr, '=')[1];
                 if (ID.find(":") != string::npos) {
@@ -112,6 +112,11 @@ namespace {
     string get_refseq_gene_id(vector<string> attributes)
     {
         string dbxref = get_attribute(attributes, "Dbxref");
+        if (dbxref.find("GeneID") == std::string::npos)
+        {
+            return "";
+        }
+        
         auto start = dbxref.find("GeneID") + 7; // start after "GeneID:"
 	    auto end = dbxref.find(",", start);
         auto id_length = end - start;
@@ -268,8 +273,11 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             auto &current_chr = chr_to_genes_dict[chr_name];
 
             string target_gene = get_gene_id(anno_source, attributes);
-            current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
-            current_chr[target_gene].set_ID(target_gene);
+            if (!target_gene.empty())
+            {
+                current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
+                current_chr[target_gene].set_ID(target_gene);
+            }
         }
     }
 
