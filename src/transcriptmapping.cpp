@@ -206,6 +206,13 @@ namespace {
             chr_name = fix_name(chr_name);
         }
 
+        // DEBUG USE
+        // Rcout << "Parsing: " << line << "\n";
+        // Rcout << "Type: " << type << " "
+        //       << "ID: " << ID << " "
+        //       << "Parent: " << parent << "\n\n";
+        // DEBUG USE
+
         if (anno_source == "ensembl")
         {
             if (parent.empty())
@@ -282,13 +289,6 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
 
         vector<string> fields = split(line, '\t');
         vector<string> attributes = split(fields[ATTRIBUTES], ';');
-
-        // DEBUG USE
-        // Rcout << "Parsing: " << line << "\n";
-        // Rcout << "Type: " << type << " "
-        //       << "ID: " << ID << " "
-        //       << "Parent: " << parent << "\n\n";
-        // DEBUG USE
 
         parse_anno_entry(fix_chrname, anno_source, line, fields, attributes, recorded_genes, chr_to_genes_dict, transcript_to_gene_dict);
     }
