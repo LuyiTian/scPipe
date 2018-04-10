@@ -151,7 +151,7 @@ namespace {
         stop("Annotation source not recognised. Current supported sources: ENSEMBL, GENCODE and RefSeq");
     }
 
-    string get_gene_id(string &anno_source, vector<string> &attributes) {
+    string get_gene_id(const string &anno_source, const vector<string> &attributes) {
         if (anno_source == "gencode")
         {
             return get_gencode_gene_id(attributes);
@@ -173,7 +173,7 @@ namespace {
         return transcript_to_gene_dict.find(parent) != transcript_to_gene_dict.end();
     }
 
-    inline const bool is_gene(const vector<string> &fields, vector<string> &attributes)
+    inline const bool is_gene(const vector<string> &fields, const vector<string> &attributes)
     {
         string type = fields[TYPE];
         if (type.find("gene") != string::npos)
@@ -189,31 +189,9 @@ namespace {
 
         return false;
     }
-}
 
-void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
-{
-    std::ifstream infile(gff3_fn);
-
-    string line;
-    unordered_map<string, unordered_map<string, Gene>> chr_to_genes_dict;
-    unordered_map<string, string> transcript_to_gene_dict; // store transcript - gene mapping
-
-    vector<string> recorded_genes;
-
-    string anno_source = guess_anno_source(gff3_fn);
-
-    // create transcript-gene mapping
-    while (std::getline(infile, line))
+    void parse_anno_entry(const bool &fix_chrname, const string &anno_source, const string &line, const vector<string> &fields, const vector<string> &attributes, vector<string> &recorded_genes, unordered_map<string, unordered_map<string, Gene>> &chr_to_genes_dict, unordered_map<string, string> &transcript_to_gene_dict)
     {
-        // skip header lines
-        if (line[0] == '#')
-        {
-            continue;
-        } 
-
-        vector<string> fields = split(line, '\t');
-        vector<string> attributes = split(fields[ATTRIBUTES], ';');
         string chr_name = fields[SEQID];
         string parent = get_parent(attributes);
         string type = fields[TYPE];
@@ -223,13 +201,11 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         int interval_end = std::atoi(fields[END].c_str());
         auto &current_chr = chr_to_genes_dict[chr_name];
 
-        // DEBUG USE
-        // Rcout << "Parsing: " << line << "\n";
-        // Rcout << "Type: " << type << " "
-        //       << "ID: " << ID << " "
-        //       << "Parent: " << parent << "\n\n";
-        // DEBUG USE
-        
+        if (fix_chrname)
+        {
+            chr_name = fix_name(chr_name);
+        }
+
         if (anno_source == "ensembl")
         {
             if (parent.empty())
@@ -237,12 +213,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
                 if (is_gene(fields, attributes)) {
                     recorded_genes.push_back(ID);
                 }
-                continue;
-            }
-
-            if (fix_chrname)
-            {
-                chr_name = fix_name(chr_name);
+                return;
             }
 
             if (type == "exon")
@@ -285,6 +256,41 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
                 }
             }
         }
+    }
+}
+
+void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
+{
+    std::ifstream infile(gff3_fn);
+
+    string line;
+    unordered_map<string, unordered_map<string, Gene>> chr_to_genes_dict;
+    unordered_map<string, string> transcript_to_gene_dict; // store transcript - gene mapping
+
+    vector<string> recorded_genes;
+
+    string anno_source = guess_anno_source(gff3_fn);
+
+    // create transcript-gene mapping
+    while (std::getline(infile, line))
+    {
+        // skip header lines
+        if (line[0] == '#')
+        {
+            continue;
+        } 
+
+        vector<string> fields = split(line, '\t');
+        vector<string> attributes = split(fields[ATTRIBUTES], ';');
+
+        // DEBUG USE
+        // Rcout << "Parsing: " << line << "\n";
+        // Rcout << "Type: " << type << " "
+        //       << "ID: " << ID << " "
+        //       << "Parent: " << parent << "\n\n";
+        // DEBUG USE
+
+        parse_anno_entry(fix_chrname, anno_source, line, fields, attributes, recorded_genes, chr_to_genes_dict, transcript_to_gene_dict);
     }
 
     // push genes into annotation class member
@@ -514,23 +520,22 @@ namespace {
         Timer timer;
         timer.start();
 
-        std::this_thread::sleep_for(std::chrono::minutes(3));
-        while (running) {
-            std::cout
-                << cnt << " reads processed" << ", "
-                << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << "\n";
-
-            // sleep for 15 seconds at a time for 3 minutes
-            // if no longer running then break out of sleep so thread can be joined
-            for (int i = 0; i < 12; i++)
+        do {
+            // sleep thread for a total of 3 minutes (180 seconds)
+            // wake up at shorter intervals to check if process has stopped running
+            for (int i = 0; i < 36; i++)
             {
-                std::this_thread::sleep_for(std::chrono::seconds(15));
+                std::this_thread::sleep_for(std::chrono::seconds(5));
                 if (!running)
                 {
                     break;
                 }
             }
-        }
+
+            std::cout
+                << cnt << " reads processed" << ", "
+                << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << "\n";
+        } while (running);
     }
 }
 
