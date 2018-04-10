@@ -176,7 +176,7 @@ namespace {
     inline const bool is_gene(const vector<string> &fields, const vector<string> &attributes)
     {
         string type = fields[TYPE];
-        if (type.find("gene") != string::npos)
+        if (type == "gene")
         {
             return true;
         }
@@ -188,6 +188,15 @@ namespace {
         }
 
         return false;
+    }
+
+    inline const bool is_exon(const vector<string> &fields, const vector<string> &attributes) {
+        return fields[TYPE] == "exon";
+    }
+
+    inline const bool is_transcript(const vector<string> &fields, const vector<string> &attributes, const vector<string> recorded_genes) {
+        // assume feature is transcript is it has a gene as parent
+        return parent_is_gene(recorded_genes, get_parent(attributes));
     }
 
     void parse_anno_entry(const bool &fix_chrname, const string &anno_source, const string &line, const vector<string> &fields, const vector<string> &attributes, vector<string> &recorded_genes, unordered_map<string, unordered_map<string, Gene>> &chr_to_genes_dict, unordered_map<string, string> &transcript_to_gene_dict)
@@ -213,24 +222,26 @@ namespace {
         //       << "Parent: " << parent << "\n\n";
         // DEBUG USE
 
+        string target_gene;
         if (anno_source == "ensembl")
         {
-            if (parent.empty())
-            {
-                if (is_gene(fields, attributes)) {
-                    recorded_genes.push_back(ID);
-                }
+
+            if (is_gene(fields, attributes)) {
+                recorded_genes.push_back(ID);
                 return;
             }
-
-            if (type == "exon")
+            else if (is_transcript(fields, attributes, recorded_genes))
+            {
+                if (!ID.empty() && !parent.empty())
+                {
+                    transcript_to_gene_dict[ID] = parent;
+                }
+            }
+            else if (is_exon(fields, attributes))
             {
                 if (parent_is_known_transcript(transcript_to_gene_dict, parent))
                 {
-                    string target_gene = transcript_to_gene_dict[parent];
-
-                    current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
-                    current_chr[target_gene].set_ID(target_gene);
+                    target_gene = transcript_to_gene_dict[parent];
                 }
                 else
                 {
@@ -241,27 +252,19 @@ namespace {
                 }
 
             }
-            else if (parent_is_gene(recorded_genes, parent))
-            {
-                if (!ID.empty())
-                {
-                    transcript_to_gene_dict[ID] = parent;
-                }
-            }
         }
-        else
+        else if (anno_source == "gencode" || anno_source == "refseq")
         {
             if (type == "exon")
             {
-                auto &current_chr = chr_to_genes_dict[chr_name];
-                string target_gene = get_gene_id(anno_source, attributes);
-
-                if (!target_gene.empty())
-                {
-                    current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
-                    current_chr[target_gene].set_ID(target_gene);
-                }
+                target_gene = get_gene_id(anno_source, attributes);
             }
+        }
+
+        if (!target_gene.empty())
+        {
+            current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
+            current_chr[target_gene].set_ID(target_gene);
         }
     }
 }
