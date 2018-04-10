@@ -110,7 +110,7 @@ void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam,
     a.add_annotation(n, c_fix_chr);
   }
 
-  Rcpp::Rcout << "mapping exon features..." << "\n";
+  Rcpp::Rcout << "annotating exon features..." << "\n";
 
   Timer timer;
   timer.start();

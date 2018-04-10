@@ -580,7 +580,6 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     std::atomic<unsigned long long> cnt{0};
     std::atomic<bool> running{true};
 
-    Rcout << "annotating exon features..." << "\n";
     Rcout << "updating progress every 3 minutes..." << "\n";
     // spawn thread to report progress every 3 minutes
     std::thread reporter_thread(
