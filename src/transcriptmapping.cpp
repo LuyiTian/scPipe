@@ -160,6 +160,7 @@ namespace {
         {
             return get_refseq_gene_id(attributes);
         }
+        return "";
     }
 
     inline const bool parent_is_gene(const vector<string> &recorded_genes, const string &parent)
