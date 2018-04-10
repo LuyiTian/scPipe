@@ -273,13 +273,16 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         }
         else
         {
-            auto &current_chr = chr_to_genes_dict[chr_name];
-
-            string target_gene = get_gene_id(anno_source, attributes);
-            if (!target_gene.empty())
+            if (type == "exon")
             {
-                current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
-                current_chr[target_gene].set_ID(target_gene);
+                auto &current_chr = chr_to_genes_dict[chr_name];
+                string target_gene = get_gene_id(anno_source, attributes);
+
+                if (!target_gene.empty())
+                {
+                    current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
+                    current_chr[target_gene].set_ID(target_gene);
+                }
             }
         }
     }
