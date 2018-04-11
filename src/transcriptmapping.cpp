@@ -52,12 +52,15 @@ namespace {
         {
             if (attr.substr(0, 6) == "Parent")
             {
-                string parent = attr.substr(attr.find("=") + 1);
                 // check for ENSEMBL notation
-                if (parent.find(":") != string::npos) {
-                    parent = parent.substr(parent.find(":") + 1);
+                if (attr.find(":") != string::npos)
+                {
+                    return attr.substr(attr.find(':') + 1);
                 }
-                return parent;
+                else
+                {
+                    return attr.substr(attr.find('=') + 1);
+                }
             }
         }
         return "";
@@ -201,16 +204,16 @@ namespace {
 
     void parse_anno_entry(const bool &fix_chrname, const string &anno_source, const string &line, vector<string> &recorded_genes, unordered_map<string, unordered_map<string, Gene>> &chr_to_genes_dict, unordered_map<string, string> &transcript_to_gene_dict)
     {
-        vector<string> fields = split(line, '\t');
-        vector<string> attributes = split(fields[ATTRIBUTES], ';');
+        const vector<string> fields = split(line, '\t');
+        const vector<string> attributes = split(fields[ATTRIBUTES], ';');
 
         string chr_name = fields[SEQID];
-        string parent = get_parent(attributes);
-        string type = fields[TYPE];
-        string ID = get_ID(attributes);
-        int strand = get_strand(fields[STRAND][0]);
-        int interval_start = std::atoi(fields[START].c_str());
-        int interval_end = std::atoi(fields[END].c_str());
+        const string parent = get_parent(attributes);
+        const string type = fields[TYPE];
+        const string ID = get_ID(attributes);
+        const int strand = get_strand(fields[STRAND][0]);
+        const int interval_start = std::atoi(fields[START].c_str());
+        const int interval_end = std::atoi(fields[END].c_str());
         auto &current_chr = chr_to_genes_dict[chr_name];
 
         if (fix_chrname)
@@ -228,7 +231,6 @@ namespace {
         string target_gene;
         if (anno_source == "ensembl")
         {
-
             if (is_gene(fields, attributes)) {
                 recorded_genes.push_back(ID);
                 return;
@@ -241,20 +243,20 @@ namespace {
                 }
                 return;
             }
-            else if (is_exon(fields, attributes))
-            {
-                if (parent_is_known_transcript(transcript_to_gene_dict, parent))
-                {
-                    target_gene = transcript_to_gene_dict[parent];
-                }
-                else
-                {
-                    std::stringstream err_msg;
-                    err_msg << "cannot find grandparent for exon:" << "\n";
-                    err_msg << line << "\n";
-                    Rcpp::stop(err_msg.str());
-                }
-            }
+            // else if (is_exon(fields, attributes))
+            // {
+            //     if (parent_is_known_transcript(transcript_to_gene_dict, parent))
+            //     {
+            //         target_gene = transcript_to_gene_dict[parent];
+            //     }
+            //     else
+            //     {
+            //         std::stringstream err_msg;
+            //         err_msg << "cannot find grandparent for exon:" << "\n";
+            //         err_msg << line << "\n";
+            //         Rcpp::stop(err_msg.str());
+            //     }
+            // }
         }
         else if (anno_source == "gencode" || anno_source == "refseq")
         {
