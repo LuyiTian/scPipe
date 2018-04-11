@@ -53,9 +53,9 @@ namespace {
             if (attr.substr(0, 6) == "Parent")
             {
                 // check for ENSEMBL notation
-                if (attr.find(":") != string::npos)
+                if (attr.find(":", 6) != string::npos)
                 {
-                    return attr.substr(attr.find(':') + 1);
+                    return attr.substr(attr.find(':') + 1, 6);
                 }
                 else
                 {
@@ -243,20 +243,20 @@ namespace {
                 }
                 return;
             }
-            // else if (is_exon(fields, attributes))
-            // {
-            //     if (parent_is_known_transcript(transcript_to_gene_dict, parent))
-            //     {
-            //         target_gene = transcript_to_gene_dict[parent];
-            //     }
-            //     else
-            //     {
-            //         std::stringstream err_msg;
-            //         err_msg << "cannot find grandparent for exon:" << "\n";
-            //         err_msg << line << "\n";
-            //         Rcpp::stop(err_msg.str());
-            //     }
-            // }
+            else if (is_exon(fields, attributes))
+            {
+                if (parent_is_known_transcript(transcript_to_gene_dict, parent))
+                {
+                    target_gene = transcript_to_gene_dict[parent];
+                }
+                else
+                {
+                    std::stringstream err_msg;
+                    err_msg << "cannot find grandparent for exon:" << "\n";
+                    err_msg << line << "\n";
+                    Rcpp::stop(err_msg.str());
+                }
+            }
         }
         else if (anno_source == "gencode" || anno_source == "refseq")
         {
