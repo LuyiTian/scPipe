@@ -22,9 +22,11 @@ namespace {
 
     string get_attribute(const vector<string> &all_attributes, const string &target_attribute) {
         for (string attr : all_attributes) {
-            vector<string> key_val_pair = split(attr, '=');
-            if (key_val_pair[0] == target_attribute) {
-                return key_val_pair[1];
+            auto sep_loc = attr.find("=");
+            string key = attr.substr(0, sep_loc);
+            string val = attr.substr(sep_loc + 1);
+            if (key == target_attribute) {
+                return val;
             }
         }
         return "";
