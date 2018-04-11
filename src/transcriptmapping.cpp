@@ -194,7 +194,7 @@ namespace {
         return fields[TYPE] == "exon";
     }
 
-    inline const bool is_transcript(const vector<string> &fields, const vector<string> &attributes, const vector<string> recorded_genes) {
+    inline const bool is_transcript(const vector<string> &fields, const vector<string> &attributes, const vector<string> &recorded_genes) {
         // assume feature is transcript is it has a gene as parent
         return parent_is_gene(recorded_genes, get_parent(attributes));
     }
@@ -237,7 +237,7 @@ namespace {
             {
                 if (!ID.empty() && !parent.empty())
                 {
-                    transcript_to_gene_dict[ID] = parent;
+                    transcript_to_gene_dict.insert(std::make_pair(ID, parent));
                 }
                 return;
             }
@@ -254,7 +254,6 @@ namespace {
                     err_msg << line << "\n";
                     Rcpp::stop(err_msg.str());
                 }
-
             }
         }
         else if (anno_source == "gencode" || anno_source == "refseq")
@@ -299,9 +298,9 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     }
 
     // push genes into annotation class member
-    for (auto chr : chr_to_genes_dict)
+    for (auto &chr : chr_to_genes_dict)
     {
-        for (auto gene : chr.second)
+        for (auto &gene : chr.second)
         {
             gene.second.sort_exon();
             gene_dict[chr.first].push_back(gene.second);

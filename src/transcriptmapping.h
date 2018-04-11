@@ -10,6 +10,7 @@
 #include <Rcpp.h>
 #include <thread>
 #include <atomic>
+#include <utility>
 #include "config_hts.h"
 #include "utils.h"
 #include "Gene.h"
