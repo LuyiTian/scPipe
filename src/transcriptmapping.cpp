@@ -197,8 +197,11 @@ namespace {
         return parent_is_gene(recorded_genes, get_parent(attributes));
     }
 
-    void parse_anno_entry(const bool &fix_chrname, const string &anno_source, const string &line, const vector<string> &fields, const vector<string> &attributes, vector<string> &recorded_genes, unordered_map<string, unordered_map<string, Gene>> &chr_to_genes_dict, unordered_map<string, string> &transcript_to_gene_dict)
+    void parse_anno_entry(const bool &fix_chrname, const string &anno_source, const string &line, vector<string> &recorded_genes, unordered_map<string, unordered_map<string, Gene>> &chr_to_genes_dict, unordered_map<string, string> &transcript_to_gene_dict)
     {
+        vector<string> fields = split(line, '\t');
+        vector<string> attributes = split(fields[ATTRIBUTES], ';');
+
         string chr_name = fields[SEQID];
         string parent = get_parent(attributes);
         string type = fields[TYPE];
@@ -290,10 +293,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             continue;
         } 
 
-        vector<string> fields = split(line, '\t');
-        vector<string> attributes = split(fields[ATTRIBUTES], ';');
-
-        parse_anno_entry(fix_chrname, anno_source, line, fields, attributes, recorded_genes, chr_to_genes_dict, transcript_to_gene_dict);
+        parse_anno_entry(fix_chrname, anno_source, line, recorded_genes, chr_to_genes_dict, transcript_to_gene_dict);
     }
 
     // push genes into annotation class member
