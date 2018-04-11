@@ -21,7 +21,7 @@ namespace {
     const int ATTRIBUTES  = 8;
 
     string get_attribute(const vector<string> &all_attributes, const string &target_attribute) {
-        for (string attr : all_attributes) {
+        for (const string &attr : all_attributes) {
             auto sep_loc = attr.find("=");
             string key = attr.substr(0, sep_loc);
             string val = attr.substr(sep_loc + 1);
@@ -48,7 +48,7 @@ namespace {
 
     string get_parent(const vector<string> &attributes)
     {
-        for (auto attr : attributes)
+        for (const auto &attr : attributes)
         {
             if (attr.substr(0, 6) == "Parent")
             {
@@ -65,7 +65,7 @@ namespace {
 
     string get_ID(const vector<string> &attributes)
     {
-        for (auto attr : attributes)
+        for (const auto &attr : attributes)
         {
             if (attr.substr(0, 2) == "ID")
             {
