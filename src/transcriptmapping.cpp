@@ -237,7 +237,7 @@ namespace {
             {
                 if (!ID.empty() && !parent.empty())
                 {
-                    transcript_to_gene_dict.insert(std::make_pair(ID, parent));
+                    transcript_to_gene_dict[ID] = parent;
                 }
                 return;
             }
