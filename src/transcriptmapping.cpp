@@ -46,37 +46,35 @@ namespace {
 
     string get_parent(const vector<string> &attributes)
     {
-        string parent = "";
         for (auto attr : attributes)
         {
             if (attr.substr(0, 6) == "Parent")
             {
-                parent = split(attr, '=')[1];
+                string parent = attr.substr(attr.find("=") + 1);
                 // check for ENSEMBL notation
                 if (parent.find(":") != string::npos) {
-                    parent = split(parent, ':')[1];
+                    parent = parent.substr(parent.find(":") + 1);
                 }
-                break;
+                return parent;
             }
         }
-        return parent;
+        return "";
     }
 
     string get_ID(const vector<string> &attributes)
     {
-        string ID = "";
         for (auto attr : attributes)
         {
             if (attr.substr(0, 2) == "ID")
             {
-                ID = split(attr, '=')[1];
+                string ID = attr.substr(attr.find("=") + 1);
                 if (ID.find(":") != string::npos) {
-                    ID = split(ID, ':')[1];
+                    ID = ID.substr(ID.find(":") + 1);
                 }
-                break;
+                return ID;
             }
         }
-        return ID;
+        return "";
     }
 
     string fix_name(string chr_name)
@@ -236,6 +234,7 @@ namespace {
                 {
                     transcript_to_gene_dict[ID] = parent;
                 }
+                return;
             }
             else if (is_exon(fields, attributes))
             {
@@ -266,6 +265,8 @@ namespace {
             current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
             current_chr[target_gene].set_ID(target_gene);
         }
+
+        return;
     }
 }
 
@@ -276,7 +277,6 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     string line;
     unordered_map<string, unordered_map<string, Gene>> chr_to_genes_dict;
     unordered_map<string, string> transcript_to_gene_dict; // store transcript - gene mapping
-
     vector<string> recorded_genes;
 
     string anno_source = guess_anno_source(gff3_fn);

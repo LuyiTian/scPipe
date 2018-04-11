@@ -105,14 +105,16 @@ void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam,
   Mapping a = Mapping();
   Rcpp::Rcout << "adding annotation files..." << "\n";
 
+  Timer timer;
   for (const auto& n : token)
   {
+    timer.start();
     a.add_annotation(n, c_fix_chr);
+    Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
   }
 
   Rcpp::Rcout << "annotating exon features..." << "\n";
 
-  Timer timer;
   timer.start();
 
   a.parse_align(c_inbam, c_outbam, c_stnd, c_am, c_ge, c_bc, c_mb, c_bc_len, c_UMI_len);
