@@ -55,7 +55,7 @@ namespace {
                 // check for ENSEMBL notation
                 if (attr.find(":", 6) != string::npos)
                 {
-                    return attr.substr(attr.find(':') + 1, 6);
+                    return attr.substr(attr.find(':', 6) + 1);
                 }
                 else
                 {
