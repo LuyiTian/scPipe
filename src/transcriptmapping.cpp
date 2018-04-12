@@ -22,6 +22,7 @@ namespace {
 
     // file-scope globals
     string anno_source = "";
+    vector<string> recorded_genes;
 
     string get_attribute(const vector<string> &all_attributes, const string &target_attribute) {
         for (const string &attr : all_attributes) {
@@ -49,7 +50,7 @@ namespace {
         return strand;
     }
 
-    string get_parent(const vector<string> &attributes)
+    const string get_parent(const vector<string> &attributes)
     {
         for (const auto &attr : attributes)
         {
@@ -114,12 +115,12 @@ namespace {
         }
     }
 
-    string get_gencode_gene_id(vector<string> attributes)
+    string get_gencode_gene_id(const vector<string> &attributes)
     {
         return get_attribute(attributes, "gene_id");
     }
 
-    string get_refseq_gene_id(vector<string> attributes)
+    string get_refseq_gene_id(const vector<string> &attributes)
     {
         string dbxref = get_attribute(attributes, "Dbxref");
 
@@ -173,17 +174,17 @@ namespace {
         return "";
     }
 
-    inline const bool parent_is_gene(const vector<string> &recorded_genes, const string &parent)
+    const bool parent_is_gene(const string &parent)
     {
         return find(recorded_genes.rbegin(), recorded_genes.rend(), parent) != recorded_genes.rend();
     }
 
-    inline const bool parent_is_known_transcript(const unordered_map<string, string> &transcript_to_gene_dict, const string &parent)
+    const bool parent_is_known_transcript(const unordered_map<string, string> &transcript_to_gene_dict, const string &parent)
     {
         return transcript_to_gene_dict.find(parent) != transcript_to_gene_dict.end();
     }
 
-    inline const bool is_gene(const vector<string> &fields, const vector<string> &attributes)
+    const bool is_gene(const vector<string> &fields, const vector<string> &attributes)
     {
         string type = fields[TYPE];
         if (type == "gene")
@@ -200,16 +201,19 @@ namespace {
         return false;
     }
 
-    inline const bool is_exon(const vector<string> &fields, const vector<string> &attributes) {
+    const bool is_exon(const vector<string> &fields, const vector<string> &attributes) {
         return fields[TYPE] == "exon";
     }
 
-    inline const bool is_transcript(const vector<string> &fields, const vector<string> &attributes, const vector<string> &recorded_genes) {
+    const bool is_transcript(const vector<string> &fields, const vector<string> &attributes) {
+        if (anno_source == "ensembl") {
+            return get_attribute(attributes, "ID").find("transcript") != string::npos;
+        }
         // assume feature is transcript is it has a gene as parent
-        return parent_is_gene(recorded_genes, get_parent(attributes));
+        return parent_is_gene(get_parent(attributes));
     }
 
-    void parse_anno_entry(const bool &fix_chrname, const string &line, vector<string> &recorded_genes, unordered_map<string, unordered_map<string, Gene>> &chr_to_genes_dict, unordered_map<string, string> &transcript_to_gene_dict)
+    void parse_anno_entry(const bool &fix_chrname, const string &line, unordered_map<string, unordered_map<string, Gene>> &chr_to_genes_dict, unordered_map<string, string> &transcript_to_gene_dict)
     {
         const vector<string> fields = split(line, '\t');
         const vector<string> attributes = split(fields[ATTRIBUTES], ';');
@@ -242,7 +246,7 @@ namespace {
                 recorded_genes.push_back(ID);
                 return;
             }
-            else if (is_transcript(fields, attributes, recorded_genes))
+            else if (is_transcript(fields, attributes))
             {
                 if (!ID.empty() && !parent.empty())
                 {
@@ -290,7 +294,6 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     string line;
     unordered_map<string, unordered_map<string, Gene>> chr_to_genes_dict;
     unordered_map<string, string> transcript_to_gene_dict; // store transcript - gene mapping
-    vector<string> recorded_genes;
 
     // assigned to file-scope global
     anno_source = guess_anno_source(gff3_fn);
@@ -304,7 +307,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             continue;
         } 
 
-        parse_anno_entry(fix_chrname, line, recorded_genes, chr_to_genes_dict, transcript_to_gene_dict);
+        parse_anno_entry(fix_chrname, line, chr_to_genes_dict, transcript_to_gene_dict);
     }
 
     // push genes into annotation class member
