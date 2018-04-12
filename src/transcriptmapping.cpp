@@ -20,6 +20,9 @@ namespace {
     const int PHASE = 7;
     const int ATTRIBUTES  = 8;
 
+    // file-scope globals
+    string anno_source = "";
+
     string get_attribute(const vector<string> &all_attributes, const string &target_attribute) {
         for (const string &attr : all_attributes) {
             auto sep_loc = attr.find("=");
@@ -53,9 +56,9 @@ namespace {
             if (attr.substr(0, 6) == "Parent")
             {
                 // check for ENSEMBL notation
-                if (attr.find(":", 6) != string::npos)
+                if (anno_source == "ensembl")
                 {
-                    return attr.substr(attr.find(':', 6) + 1);
+                    return attr.substr(attr.rfind(':') + 1);
                 }
                 else
                 {
@@ -72,11 +75,15 @@ namespace {
         {
             if (attr.substr(0, 2) == "ID")
             {
-                string ID = attr.substr(attr.find("=") + 1);
-                if (ID.find(":") != string::npos) {
-                    ID = ID.substr(ID.find(":") + 1);
+                // check for ENSEMBL notation
+                if (anno_source == "ensembl")
+                {
+                    return attr.substr(attr.rfind(':') + 1);
                 }
-                return ID;
+                else
+                {
+                    return attr.substr(attr.find('=') + 1);
+                }
             }
         }
         return "";
@@ -154,7 +161,7 @@ namespace {
         stop("Annotation source not recognised. Current supported sources: ENSEMBL, GENCODE and RefSeq");
     }
 
-    string get_gene_id(const string &anno_source, const vector<string> &attributes) {
+    string get_gene_id(const vector<string> &attributes) {
         if (anno_source == "gencode")
         {
             return get_gencode_gene_id(attributes);
@@ -202,7 +209,7 @@ namespace {
         return parent_is_gene(recorded_genes, get_parent(attributes));
     }
 
-    void parse_anno_entry(const bool &fix_chrname, const string &anno_source, const string &line, vector<string> &recorded_genes, unordered_map<string, unordered_map<string, Gene>> &chr_to_genes_dict, unordered_map<string, string> &transcript_to_gene_dict)
+    void parse_anno_entry(const bool &fix_chrname, const string &line, vector<string> &recorded_genes, unordered_map<string, unordered_map<string, Gene>> &chr_to_genes_dict, unordered_map<string, string> &transcript_to_gene_dict)
     {
         const vector<string> fields = split(line, '\t');
         const vector<string> attributes = split(fields[ATTRIBUTES], ';');
@@ -262,7 +269,7 @@ namespace {
         {
             if (type == "exon")
             {
-                target_gene = get_gene_id(anno_source, attributes);
+                target_gene = get_gene_id(attributes);
             }
         }
 
@@ -285,7 +292,8 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     unordered_map<string, string> transcript_to_gene_dict; // store transcript - gene mapping
     vector<string> recorded_genes;
 
-    string anno_source = guess_anno_source(gff3_fn);
+    // assigned to file-scope global
+    anno_source = guess_anno_source(gff3_fn);
 
     // create transcript-gene mapping
     while (std::getline(infile, line))
@@ -296,7 +304,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             continue;
         } 
 
-        parse_anno_entry(fix_chrname, anno_source, line, recorded_genes, chr_to_genes_dict, transcript_to_gene_dict);
+        parse_anno_entry(fix_chrname, line, recorded_genes, chr_to_genes_dict, transcript_to_gene_dict);
     }
 
     // push genes into annotation class member
