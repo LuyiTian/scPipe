@@ -1,16 +1,17 @@
 // transcriptmapping.h
 // 
 
-#include <iostream>
-#include <fstream>
-#include <unordered_map>
 #include <algorithm>
-#include <vector>
+#include <atomic>
 #include <cstring>
+#include <fstream>
+#include <iostream>
 #include <Rcpp.h>
 #include <thread>
-#include <atomic>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
+#include <vector>
 #include "config_hts.h"
 #include "utils.h"
 #include "Gene.h"

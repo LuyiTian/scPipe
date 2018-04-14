@@ -4,6 +4,7 @@
 using std::string;
 using std::vector;
 using std::unordered_map;
+using std::unordered_set;
 using namespace Rcpp;
 
 // anonymous namespace for file-specific functions
@@ -22,7 +23,7 @@ namespace {
 
     // file-scope globals
     string anno_source = "";
-    vector<string> recorded_genes;
+    unordered_set<string> recorded_genes;
 
     string get_attribute(const vector<string> &all_attributes, const string &target_attribute) {
         for (const string &attr : all_attributes) {
@@ -176,7 +177,7 @@ namespace {
 
     const bool parent_is_gene(const string &parent)
     {
-        return find(recorded_genes.rbegin(), recorded_genes.rend(), parent) != recorded_genes.rend();
+        return recorded_genes.find(parent) != recorded_genes.end();
     }
 
     const bool parent_is_known_transcript(const unordered_map<string, string> &transcript_to_gene_dict, const string &parent)
@@ -206,9 +207,6 @@ namespace {
     }
 
     const bool is_transcript(const vector<string> &fields, const vector<string> &attributes) {
-        if (anno_source == "ensembl") {
-            return get_attribute(attributes, "ID").find("transcript") != string::npos;
-        }
         // assume feature is transcript is it has a gene as parent
         return parent_is_gene(get_parent(attributes));
     }
@@ -243,7 +241,7 @@ namespace {
         if (anno_source == "ensembl")
         {
             if (is_gene(fields, attributes)) {
-                recorded_genes.push_back(ID);
+                recorded_genes.insert(ID);
                 return;
             }
             else if (is_transcript(fields, attributes))
