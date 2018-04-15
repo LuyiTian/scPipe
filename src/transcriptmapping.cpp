@@ -223,7 +223,6 @@ namespace {
         const int strand = get_strand(fields[STRAND][0]);
         const int interval_start = std::atoi(fields[START].c_str());
         const int interval_end = std::atoi(fields[END].c_str());
-        auto &current_chr = chr_to_genes_dict[chr_name];
 
         if (fix_chrname)
         {
@@ -277,6 +276,7 @@ namespace {
 
         if (!target_gene.empty())
         {
+            auto &current_chr = chr_to_genes_dict[chr_name];
             current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
             current_chr[target_gene].set_ID(target_gene);
         }
@@ -311,6 +311,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     // push genes into annotation class member
     for (auto &chr : chr_to_genes_dict)
     {
+        Rcout << "Adding " << chr.first << "\n";
         for (auto &gene : chr.second)
         {
             gene.second.sort_exon();
