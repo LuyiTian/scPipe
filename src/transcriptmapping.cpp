@@ -311,7 +311,6 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     // push genes into annotation class member
     for (auto &chr : chr_to_genes_dict)
     {
-        Rcout << "Adding " << chr.first << "\n";
         for (auto &gene : chr.second)
         {
             gene.second.sort_exon();
