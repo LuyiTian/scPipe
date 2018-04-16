@@ -674,20 +674,20 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     running = false;
     reporter_thread.join();
 
-    Rcpp::Rcout << "\t" << "number of read processed: " << cnt << "\n";
-    Rcpp::Rcout << "\t" << "unique map to exon: " << tmp_c[0]
+    Rcpp::Rcout << "number of read processed: " << cnt << "\n";
+    Rcpp::Rcout << "unique map to exon: " << tmp_c[0]
         << "(" << std::fixed << std::setprecision(2) << 100. * tmp_c[0]/cnt << "%)" << "\n";
 
-    Rcpp::Rcout << "\t" << "ambiguous map to multiple exon: " << tmp_c[1]
+    Rcpp::Rcout << "ambiguous map to multiple exon: " << tmp_c[1]
         << "("  << std::fixed << std::setprecision(2) << 100. * tmp_c[1]/cnt << "%)" << "\n";
 
-    Rcpp::Rcout << "\t" << "map to intron: " << tmp_c[2]
+    Rcpp::Rcout << "map to intron: " << tmp_c[2]
         << "(" << std::fixed << std::setprecision(2) << 100. * tmp_c[2]/cnt << "%)" << "\n";
 
-    Rcpp::Rcout << "\t" << "not mapped: " << tmp_c[2]
+    Rcpp::Rcout << "not mapped: " << tmp_c[2]
         << "("  << std::fixed << std::setprecision(2) << 100. * tmp_c[3]/cnt << "%)" << "\n";
         
-    Rcpp::Rcout << "\t" << "unaligned: " << unaligned
+    Rcpp::Rcout << "unaligned: " << unaligned
         << "(" << std::fixed << std::setprecision(2) << 100. * unaligned/cnt << "%)" << "\n";
     sam_close(of);
     bgzf_close(fp);
