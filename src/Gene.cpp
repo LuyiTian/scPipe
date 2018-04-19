@@ -68,12 +68,13 @@ int Gene::distance_to_end(Interval it)
     return distance;
 }
 
-bool Gene::in_exon(Interval it)
+bool Gene::in_exon(const Interval &it)
 {
-    return std::binary_search(exon_vec.begin(), exon_vec.end(), it);
+    auto search_result = std::find(exon_vec.begin(), exon_vec.end(), it);
+    return search_result != exon_vec.end();
 }
 
-bool Gene::in_exon(Interval it, bool check_strand)
+bool Gene::in_exon(const Interval &it, const bool check_strand)
 {
     if (check_strand && (it.snd*snd == -1))
     {
@@ -81,7 +82,8 @@ bool Gene::in_exon(Interval it, bool check_strand)
     }
     else
     {
-        return std::binary_search(exon_vec.begin(), exon_vec.end(), it);
+        auto search_result = std::find(exon_vec.begin(), exon_vec.end(), it);
+        return search_result != exon_vec.end();
     }
 }
 

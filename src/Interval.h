@@ -21,4 +21,7 @@ public:
     friend inline bool operator > (const Interval &L, const Interval &R) {
         return L.st > R.en;
     };
+    friend inline bool operator == (const Interval &L, const Interval &R) {
+        return !(L<R) && !(R>L);
+    };
 };
