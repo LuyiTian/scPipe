@@ -361,13 +361,22 @@ namespace {
         Timer timer;
         timer.start();
 
-        std::this_thread::sleep_for(std::chrono::minutes(3));
-        while (running) {
-            std::cout 
+        do {
+            // sleep thread for a total of 3 minutes (180 seconds)
+            // wake up at shorter intervals to check if process has stopped running
+            for (int i = 0; i < 36; i++)
+            {
+                std::this_thread::sleep_for(std::chrono::seconds(5));
+                if (!running)
+                {
+                    break;
+                }
+            }
+
+            std::cout
                 << cnt << " reads processed" << ", "
                 << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << "\n";
-            std::this_thread::sleep_for(std::chrono::minutes(3));
-        }
+        } while (running);
     }
 }
 
