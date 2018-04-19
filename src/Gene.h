@@ -20,8 +20,8 @@ public:
 
     void add_exon(Interval it);
 
-    bool in_exon(Interval it);
-    bool in_exon(Interval it, bool check_strand);
+    bool in_exon(const Interval &it);
+    bool in_exon(const Interval &it, const bool check_strand);
 
     int distance_to_end(Interval it);
     void sort_exon();
