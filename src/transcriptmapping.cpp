@@ -18,7 +18,7 @@ int GeneAnnotation::get_strand(char st)
     return strand;
 }
 
-string GeneAnnotation::get_parent(string tok)
+string GeneAnnotation::get_parent(const string &tok)
 {
     string parent = "";
     auto subtoken = split(tok, ';');
@@ -295,14 +295,14 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
                             else
                             {
                                 // update the distance to end pos
-                                tmp_rest = tmp_rest<(i->distance_to_end(it))?tmp_rest:i->distance_to_end(it);
+                                // tmp_rest = tmp_rest<(i->distance_to_end(it))?tmp_rest:i->distance_to_end(it);
                             }
                         }
                         else
                         {
                             tmp_id = i->gene_id;
                             tmp_ret = 0;
-                            tmp_rest = i->distance_to_end(it);
+                            // tmp_rest = i->distance_to_end(it);
                         }
                     }
                     else if ((it > *i) || (it < *i))

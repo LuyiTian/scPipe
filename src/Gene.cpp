@@ -83,7 +83,7 @@ bool Gene::in_exon(const Interval &it, const bool check_strand)
     else
     {
         auto search_result = std::find(exon_vec.begin(), exon_vec.end(), it);
-        return search_result != exon_vec.end();
+        return exon_vec.end() == search_result;
     }
 }
 

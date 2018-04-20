@@ -26,7 +26,7 @@ public:
 
     std::string get_ID(std::string tok);
 
-    std::string get_parent(std::string tok);
+    std::string get_parent(const std::string &tok);
 
     int get_strand(char st);
     // add `chr` to chromosome name and change `MT` to `chrM`
