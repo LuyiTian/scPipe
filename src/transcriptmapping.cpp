@@ -7,6 +7,269 @@ using std::unordered_map;
 using std::unordered_set;
 using namespace Rcpp;
 
+string GeneAnnotation::get_attribute(const vector<string> &all_attributes, const string &target_attribute) {
+    for (const string &attr : all_attributes) {
+        auto sep_loc = attr.find("=");
+        string key = attr.substr(0, sep_loc);
+        string val = attr.substr(sep_loc + 1);
+        if (key == target_attribute) {
+            return val;
+        }
+    }
+    return "";
+}
+
+int GeneAnnotation::get_strand(char st)
+    {
+        int strand = 0;
+        if (st == '+')
+        {
+            strand = 1;
+        }
+        else if (st == '-')
+        {
+            strand = -1;
+        }
+        return strand;
+    }
+
+std::string GeneAnnotation::get_ID(const std::vector<std::string> &attributes)
+{
+    for (const auto &attr : attributes)
+    {
+        if (attr.substr(0, 2) == "ID")
+        {
+            // check for ENSEMBL notation
+            if (anno_source == "ensembl")
+            {
+                return attr.substr(attr.rfind(':') + 1);
+            }
+            else
+            {
+                return attr.substr(attr.find('=') + 1);
+            }
+        }
+    }
+    return "";
+}
+
+const std::string GeneAnnotation::get_parent(const std::vector<std::string> &attributes)
+{
+    for (const auto &attr : attributes)
+    {
+        if (attr.substr(0, 6) == "Parent")
+        {
+            // check for ENSEMBL notation
+            if (anno_source == "ensembl")
+            {
+                return attr.substr(attr.rfind(':') + 1);
+            }
+            else
+            {
+                return attr.substr(attr.find('=') + 1);
+            }
+        }
+    }
+    return "";
+}
+
+std::string GeneAnnotation::fix_name(std::string chr_name)
+{
+    std::string new_chr_name;
+    if (chr_name.compare(0, 3, "chr") == 0)
+    {
+        return chr_name;
+    }
+    else if (chr_name.length() > 4) // just fix 1-22, X, Y, MT. ignore contig and ERCC
+    {
+        return chr_name;
+    }
+    else
+    {
+        if (chr_name == "MT")
+        {
+            new_chr_name = "chrM";
+        }
+        else
+        {
+            new_chr_name = "chr" + chr_name;
+        }
+        return new_chr_name;
+    }
+}
+
+std::string GeneAnnotation::get_gene_id(const std::vector<std::string> &attributes)
+{
+    if (anno_source == "gencode")
+    {
+        return get_gencode_gene_id(attributes);
+    }
+    else if (anno_source == "refseq")
+    {
+        return get_refseq_gene_id(attributes);
+    }
+    return "";
+}
+
+std::string GeneAnnotation::get_gencode_gene_id(const std::vector<std::string> &attributes)
+{
+    return get_attribute(attributes, "gene_id");
+}
+
+std::string GeneAnnotation::get_refseq_gene_id(const std::vector<std::string> &attributes)
+    {
+        std::string dbxref = get_attribute(attributes, "Dbxref");
+
+        // GeneID may be missing
+        if (dbxref.find("GeneID") == std::string::npos)
+        {
+            return "";
+        }
+        
+        auto start = dbxref.find("GeneID") + 7; // start after "GeneID:"
+	    auto end = dbxref.find(",", start);
+        auto id_length = end - start;
+
+        return dbxref.substr(start, id_length);
+    }
+
+void GeneAnnotation::parse_anno_entry(const bool &fix_chrname, const std::string &line, std::unordered_map<std::string, std::unordered_map<std::string, Gene>> &chr_to_genes_dict, std::unordered_map<std::string, std::string> &transcript_to_gene_dict)
+{
+    const std::vector<std::string> fields = split(line, '\t');
+    const std::vector<std::string> attributes = split(fields[ATTRIBUTES], ';');
+
+    std::string chr_name = fields[SEQID];
+    const std::string parent = get_parent(attributes);
+    const std::string type = fields[TYPE];
+    const std::string ID = get_ID(attributes);
+    const int strand = get_strand(fields[STRAND][0]);
+    const int interval_start = std::atoi(fields[START].c_str());
+    const int interval_end = std::atoi(fields[END].c_str());
+
+    if (fix_chrname)
+    {
+        chr_name = fix_name(chr_name);
+    }
+
+    // DEBUG USE
+    // Rcpp::Rcout << "Parsing: " << line << "\n";
+    // Rcpp::Rcout << "Type: " << type << " "
+    //       << "ID: " << ID << " "
+    //       << "Parent: " << parent << "\n\n";
+    // DEBUG USE
+
+    std::string target_gene;
+    if (anno_source == "ensembl")
+    {
+        if (is_gene(fields, attributes)) {
+            recorded_genes.insert(ID);
+            return;
+        }
+        else if (is_transcript(fields, attributes))
+        {
+            if (!ID.empty() && !parent.empty())
+            {
+                transcript_to_gene_dict[ID] = parent;
+            }
+            return;
+        }
+        else if (is_exon(fields, attributes))
+        {
+            if (parent_is_known_transcript(transcript_to_gene_dict, parent))
+            {
+                target_gene = transcript_to_gene_dict[parent];
+            }
+            else
+            {
+                std::stringstream err_msg;
+                err_msg << "cannot find grandparent for exon:" << "\n";
+                err_msg << line << "\n";
+                Rcpp::stop(err_msg.str());
+            }
+        }
+    }
+    else if (anno_source == "gencode" || anno_source == "refseq")
+    {
+        if (type == "exon")
+        {
+            target_gene = get_gene_id(attributes);
+        }
+    }
+
+    if (!target_gene.empty())
+    {
+        auto &current_chr = chr_to_genes_dict[chr_name];
+        current_chr[target_gene].add_exon(Interval(interval_start, interval_end, strand));
+        current_chr[target_gene].set_ID(target_gene);
+    }
+
+    return;
+}
+
+std::string GeneAnnotation::guess_anno_source(std::string gff3_fn)
+{
+    std::ifstream infile(gff3_fn);
+    std::string line;
+
+    while (std::getline(infile, line))
+    {
+        if (line.find("GENCODE") != std::string::npos) {
+            Rcpp::Rcout << "guessing annotation source: GENCODE" << "\n";
+            return "gencode";
+        }
+        else if (line.find("1\tEnsembl") != std::string::npos)
+        {
+            Rcpp::Rcout << "guessing annotation source: ENSEMBL" << "\n";
+            return "ensembl";
+        }
+        else if (line.find("RefSeq\tregion") != std::string::npos)
+        {
+            Rcpp::Rcout << "guessing annotation source: RefSeq" << "\n";
+            return "refseq";
+        }
+    }
+
+    Rcpp::stop("Annotation source not recognised. Current supported sources: ENSEMBL, GENCODE and RefSeq");
+}
+
+const bool GeneAnnotation::parent_is_gene(const std::string &parent)
+{
+    return recorded_genes.find(parent) != recorded_genes.end();
+}
+
+const bool GeneAnnotation::parent_is_known_transcript(const std::unordered_map<std::string, std::string> &transcript_to_gene_dict, const std::string &parent)
+{
+    return transcript_to_gene_dict.find(parent) != transcript_to_gene_dict.end();
+}
+
+const bool GeneAnnotation::is_gene(const std::vector<std::string> &fields, const std::vector<std::string> &attributes)
+{
+    std::string type = fields[TYPE];
+    if (type == "gene")
+    {
+        return true;
+    }
+
+    std::string id = get_attribute(attributes, "ID");
+    if (id.find("gene:") != std::string::npos)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+const bool GeneAnnotation::is_exon(const std::vector<std::string> &fields, const std::vector<std::string> &attributes)
+{
+    return fields[TYPE] == "exon";
+}
+
+const bool GeneAnnotation::is_transcript(const std::vector<std::string> &fields, const std::vector<std::string> &attributes)
+{
+    // assume feature is transcript is it has a gene as parent
+    return parent_is_gene(get_parent(attributes));
+}
+
 void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
 {
     std::ifstream infile(gff3_fn);
