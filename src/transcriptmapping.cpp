@@ -629,7 +629,8 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
             }
             else
             {
-                tmp_c[ret]++;
+                if (ret >= 0 && ret < 3)
+                    tmp_c[ret]++;
             }
         }
         if (bc_len > 0)
