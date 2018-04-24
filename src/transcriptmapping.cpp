@@ -20,7 +20,8 @@ using namespace std::this_thread;
 using namespace std::chrono;
 using namespace Rcpp;
 
-string GeneAnnotation::get_attribute(const vector<string> &all_attributes, const string &target_attribute) {
+string GeneAnnotation::get_attribute(const vector<string> &all_attributes, const string &target_attribute)
+{
     for (const string &attr : all_attributes) {
         auto sep_loc = attr.find("=");
         string key = attr.substr(0, sep_loc);
@@ -33,18 +34,18 @@ string GeneAnnotation::get_attribute(const vector<string> &all_attributes, const
 }
 
 int GeneAnnotation::get_strand(char st)
+{
+    int strand = 0;
+    if (st == '+')
     {
-        int strand = 0;
-        if (st == '+')
-        {
-            strand = 1;
-        }
-        else if (st == '-')
-        {
-            strand = -1;
-        }
-        return strand;
+        strand = 1;
     }
+    else if (st == '-')
+    {
+        strand = -1;
+    }
+    return strand;
+}
 
 string GeneAnnotation::get_ID(const vector<string> &attributes)
 {
@@ -130,21 +131,21 @@ string GeneAnnotation::get_gencode_gene_id(const vector<string> &attributes)
 }
 
 string GeneAnnotation::get_refseq_gene_id(const vector<string> &attributes)
+{
+    string dbxref = get_attribute(attributes, "Dbxref");
+
+    // GeneID may be missing
+    if (dbxref.find("GeneID") == string::npos)
     {
-        string dbxref = get_attribute(attributes, "Dbxref");
-
-        // GeneID may be missing
-        if (dbxref.find("GeneID") == string::npos)
-        {
-            return "";
-        }
-        
-        auto start = dbxref.find("GeneID") + 7; // start after "GeneID:"
-	    auto end = dbxref.find(",", start);
-        auto id_length = end - start;
-
-        return dbxref.substr(start, id_length);
+        return "";
     }
+    
+    auto start = dbxref.find("GeneID") + 7; // start after "GeneID:"
+    auto end = dbxref.find(",", start);
+    auto id_length = end - start;
+
+    return dbxref.substr(start, id_length);
+}
 
 void GeneAnnotation::parse_anno_entry(
     const bool &fix_chrname,
