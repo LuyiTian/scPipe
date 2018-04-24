@@ -283,7 +283,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     unordered_map<string, unordered_map<string, Gene>> chr_to_genes_dict;
     unordered_map<string, string> transcript_to_gene_dict; // store transcript - gene mapping
 
-    // assigned to file-scope global
+    // assigned to class member
     anno_source = guess_anno_source(gff3_fn);
 
     // create transcript-gene mapping
@@ -306,15 +306,17 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         {
             gene.second.sort_exon();
             gene.second.flatten_exon();
-            gene_dict[chr.first].push_back(gene.second);
+            gene_dict[chr_name].push_back(gene.second);
         }
 
-        auto current_genes = gene_dict[chr.first];
+        auto current_genes = gene_dict[chr_name];
 
+        // genes based on starting position
         std::sort(current_genes.begin(), current_genes.end(),
             [] (Gene &g1, Gene &g2) { return g1.st < g2.st; }
         );
 
+        // create bins of genes
         bins_dict[chr_name].make_bins(current_genes);
     }
 }
