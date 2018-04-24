@@ -184,19 +184,7 @@ void GeneAnnotation::parse_anno_entry(
     string target_gene;
     if (anno_source == "ensembl")
     {
-        if (is_gene(fields, attributes)) {
-            recorded_genes.insert(ID);
-            return;
-        }
-        else if (is_transcript(fields, attributes))
-        {
-            if (!ID.empty() && !parent.empty())
-            {
-                transcript_to_gene_dict[ID] = parent;
-            }
-            return;
-        }
-        else if (is_exon(fields, attributes))
+        if (is_exon(fields, attributes))
         {
             if (parent_is_known_transcript(transcript_to_gene_dict, parent))
             {
@@ -209,6 +197,18 @@ void GeneAnnotation::parse_anno_entry(
                 err_msg << line << "\n";
                 stop(err_msg.str());
             }
+        }
+        else if (is_gene(fields, attributes)) {
+            recorded_genes.insert(ID);
+            return;
+        }
+        else if (is_transcript(fields, attributes))
+        {
+            if (!ID.empty() && !parent.empty())
+            {
+                transcript_to_gene_dict[ID] = parent;
+            }
+            return;
         }
     }
     else if (anno_source == "gencode" || anno_source == "refseq")
