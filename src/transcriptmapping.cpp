@@ -464,9 +464,9 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
                 for (auto gene : gene_list) {
                     if (gene == it) {
                         matched_genes.push_back(gene);
-                        Rcpp::Rcout << it.st << " "
-                            << it.en << ""
-                            << gene.gene_id 
+                        // Rcpp::Rcout << it.st << " " << it.en
+                        //     << " mapped to " << gene.gene_id
+                        //     << " (" << gene.st << " " << gene.en << ")\n";
                     }
                 }
             // }
