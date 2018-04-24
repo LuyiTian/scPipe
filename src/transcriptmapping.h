@@ -64,7 +64,6 @@ public:
     }
 
     void make_bins(std::vector<Gene> &genes) {
-        gene_bins.reserve(40);
         gene_bins.resize(1);
         unsigned int bin_index = 0;
         unsigned int count = 0;

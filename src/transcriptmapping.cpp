@@ -316,15 +316,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         );
 
         bins_dict[chr_name].make_bins(current_genes);
-
-        // Rcpp::Rcout << "Size of chromosome " << chr.first << ": " << current_genes.size() << "\n";
     }
-
-    // for (auto gene : chr_to_genes_dict["21"]) {
-    //     Rcpp::Rcout << gene.second.gene_id << " "
-    //         << gene.second.st << " "
-    //         << gene.second.en << " \n";
-    // }
 }
 
 void GeneAnnotation::parse_bed_annotation(string bed_fn, bool fix_chrname)
@@ -463,9 +455,6 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
                 for (auto &gene : gene_list->genes) {
                     if (gene == it) {
                         matched_genes.push_back(gene);
-                        // Rcpp::Rcout << it.st << " " << it.en
-                        //     << " mapped to " << gene.gene_id
-                        //     << " (" << gene.st << " " << gene.en << ")\n";
                     }
                 }
             }
