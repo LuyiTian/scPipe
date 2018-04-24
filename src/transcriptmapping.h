@@ -25,24 +25,27 @@
 class GeneBin {
 typedef unsigned long long ull_int;
 public:
+    // class data
     ull_int start;
     ull_int end;
     std::vector<Gene> genes;
 
+    // add gene to bin
     void add_gene(Gene gene)
     {
         genes.push_back(gene);
+        // extend boundaries of bin to fully include bin
         if (gene.st < start)
         {
             start = gene.st;
         }
-
         if (gene.en > end)
         {
             end = gene.en;
         }
     }
 
+    // check if interval overlaps bin
     const bool overlaps(const Interval &it) {
         return start < it.en || end > it.st;
     }
@@ -50,8 +53,10 @@ public:
 
 class GeneBins {
 public:
+    // class data
     std::vector<GeneBin> gene_bins;
 
+    // get vector of bins overlapping query interval
     std::vector<GeneBin*> get_bins(Interval it)
     {
         std::vector<GeneBin*> overlapped_bins;
@@ -63,22 +68,28 @@ public:
         return overlapped_bins;
     }
 
+    // create bins from vector of genes
     void make_bins(std::vector<Gene> &genes) {
-        gene_bins.resize(1);
         unsigned int bin_index = 0;
         unsigned int count = 0;
         for (auto gene : genes) {
+            if (bin_index + 1 > gene_bins.size()) {
+                // add bin if required
+                gene_bins.resize(gene_bins.size() + 1);
+            }
+
             gene_bins[bin_index].add_gene(gene);
             count++;
+
             if (count == bin_size) {
+                // bin is full, move to next bin
                 count = 0;
                 bin_index++;
-                gene_bins.resize(gene_bins.size() + 1);
             }
         }
     }
 private:
-    const unsigned int bin_size = 64;
+    const unsigned int bin_size = 128;
 };
 
 // parse gff3 genome annotation
