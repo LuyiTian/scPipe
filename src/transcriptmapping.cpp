@@ -1,10 +1,23 @@
 // transcriptmapping.cpp
 #include "transcriptmapping.h"
 
-using std::string;
-using std::vector;
-using std::unordered_map;
-using std::unordered_set;
+using atoi;
+using atomic;
+using cout;
+using fixed;
+using getline;
+using ifstream;
+using ostream;
+using setprecision;
+using sort;
+using string;
+using stringstream;
+using thread;
+using unordered_map;
+using vector;
+
+using namespace this_thread;
+using namespace chrono;
 using namespace Rcpp;
 
 string GeneAnnotation::get_attribute(const vector<string> &all_attributes, const string &target_attribute) {
@@ -33,7 +46,7 @@ int GeneAnnotation::get_strand(char st)
         return strand;
     }
 
-std::string GeneAnnotation::get_ID(const std::vector<std::string> &attributes)
+string GeneAnnotation::get_ID(const vector<string> &attributes)
 {
     for (const auto &attr : attributes)
     {
@@ -53,7 +66,7 @@ std::string GeneAnnotation::get_ID(const std::vector<std::string> &attributes)
     return "";
 }
 
-const std::string GeneAnnotation::get_parent(const std::vector<std::string> &attributes)
+const string GeneAnnotation::get_parent(const vector<string> &attributes)
 {
     for (const auto &attr : attributes)
     {
@@ -73,9 +86,9 @@ const std::string GeneAnnotation::get_parent(const std::vector<std::string> &att
     return "";
 }
 
-std::string GeneAnnotation::fix_name(std::string chr_name)
+string GeneAnnotation::fix_name(string chr_name)
 {
-    std::string new_chr_name;
+    string new_chr_name;
     if (chr_name.compare(0, 3, "chr") == 0)
     {
         return chr_name;
@@ -98,7 +111,7 @@ std::string GeneAnnotation::fix_name(std::string chr_name)
     }
 }
 
-std::string GeneAnnotation::get_gene_id(const std::vector<std::string> &attributes)
+string GeneAnnotation::get_gene_id(const vector<string> &attributes)
 {
     if (anno_source == "gencode")
     {
@@ -111,17 +124,17 @@ std::string GeneAnnotation::get_gene_id(const std::vector<std::string> &attribut
     return "";
 }
 
-std::string GeneAnnotation::get_gencode_gene_id(const std::vector<std::string> &attributes)
+string GeneAnnotation::get_gencode_gene_id(const vector<string> &attributes)
 {
     return get_attribute(attributes, "gene_id");
 }
 
-std::string GeneAnnotation::get_refseq_gene_id(const std::vector<std::string> &attributes)
+string GeneAnnotation::get_refseq_gene_id(const vector<string> &attributes)
     {
-        std::string dbxref = get_attribute(attributes, "Dbxref");
+        string dbxref = get_attribute(attributes, "Dbxref");
 
         // GeneID may be missing
-        if (dbxref.find("GeneID") == std::string::npos)
+        if (dbxref.find("GeneID") == string::npos)
         {
             return "";
         }
@@ -135,21 +148,21 @@ std::string GeneAnnotation::get_refseq_gene_id(const std::vector<std::string> &a
 
 void GeneAnnotation::parse_anno_entry(
     const bool &fix_chrname,
-    const std::string &line,
-    std::unordered_map<std::string, std::unordered_map<std::string, Gene>> &chr_to_genes_dict,
-    std::unordered_map<std::string, std::string> &transcript_to_gene_dict
+    const string &line,
+    unordered_map<string, unordered_map<string, Gene>> &chr_to_genes_dict,
+    unordered_map<string, string> &transcript_to_gene_dict
 )
 {
-    const std::vector<std::string> fields = split(line, '\t');
-    const std::vector<std::string> attributes = split(fields[ATTRIBUTES], ';');
+    const vector<string> fields = split(line, '\t');
+    const vector<string> attributes = split(fields[ATTRIBUTES], ';');
 
-    std::string chr_name = fields[SEQID];
-    const std::string parent = get_parent(attributes);
-    const std::string type = fields[TYPE];
-    const std::string ID = get_ID(attributes);
+    string chr_name = fields[SEQID];
+    const string parent = get_parent(attributes);
+    const string type = fields[TYPE];
+    const string ID = get_ID(attributes);
     const int strand = get_strand(fields[STRAND][0]);
-    const int interval_start = std::atoi(fields[START].c_str());
-    const int interval_end = std::atoi(fields[END].c_str());
+    const int interval_start = atoi(fields[START].c_str());
+    const int interval_end = atoi(fields[END].c_str());
 
     if (fix_chrname)
     {
@@ -163,7 +176,7 @@ void GeneAnnotation::parse_anno_entry(
     //       << "Parent: " << parent << "\n\n";
     // DEBUG USE
 
-    std::string target_gene;
+    string target_gene;
     if (anno_source == "ensembl")
     {
         if (is_gene(fields, attributes)) {
@@ -186,7 +199,7 @@ void GeneAnnotation::parse_anno_entry(
             }
             else
             {
-                std::stringstream err_msg;
+                stringstream err_msg;
                 err_msg << "cannot find grandparent for exon:" << "\n";
                 err_msg << line << "\n";
                 Rcpp::stop(err_msg.str());
@@ -211,23 +224,23 @@ void GeneAnnotation::parse_anno_entry(
     return;
 }
 
-std::string GeneAnnotation::guess_anno_source(std::string gff3_fn)
+string GeneAnnotation::guess_anno_source(string gff3_fn)
 {
-    std::ifstream infile(gff3_fn);
-    std::string line;
+    ifstream infile(gff3_fn);
+    string line;
 
-    while (std::getline(infile, line))
+    while (getline(infile, line))
     {
-        if (line.find("GENCODE") != std::string::npos) {
+        if (line.find("GENCODE") != string::npos) {
             Rcpp::Rcout << "guessing annotation source: GENCODE" << "\n";
             return "gencode";
         }
-        else if (line.find("1\tEnsembl") != std::string::npos)
+        else if (line.find("1\tEnsembl") != string::npos)
         {
             Rcpp::Rcout << "guessing annotation source: ENSEMBL" << "\n";
             return "ensembl";
         }
-        else if (line.find("RefSeq\tregion") != std::string::npos)
+        else if (line.find("RefSeq\tregion") != string::npos)
         {
             Rcpp::Rcout << "guessing annotation source: RefSeq" << "\n";
             return "refseq";
@@ -237,26 +250,26 @@ std::string GeneAnnotation::guess_anno_source(std::string gff3_fn)
     Rcpp::stop("Annotation source not recognised. Current supported sources: ENSEMBL, GENCODE and RefSeq");
 }
 
-const bool GeneAnnotation::parent_is_gene(const std::string &parent)
+const bool GeneAnnotation::parent_is_gene(const string &parent)
 {
     return recorded_genes.find(parent) != recorded_genes.end();
 }
 
-const bool GeneAnnotation::parent_is_known_transcript(const std::unordered_map<std::string, std::string> &transcript_to_gene_dict, const std::string &parent)
+const bool GeneAnnotation::parent_is_known_transcript(const unordered_map<string, string> &transcript_to_gene_dict, const string &parent)
 {
     return transcript_to_gene_dict.find(parent) != transcript_to_gene_dict.end();
 }
 
-const bool GeneAnnotation::is_gene(const std::vector<std::string> &fields, const std::vector<std::string> &attributes)
+const bool GeneAnnotation::is_gene(const vector<string> &fields, const vector<string> &attributes)
 {
-    std::string type = fields[TYPE];
-    if (type.find("gene") != std::string::npos)
+    string type = fields[TYPE];
+    if (type.find("gene") != string::npos)
     {
         return true;
     }
 
-    std::string id = get_attribute(attributes, "ID");
-    if (id.find("gene:") != std::string::npos)
+    string id = get_attribute(attributes, "ID");
+    if (id.find("gene:") != string::npos)
     {
         return true;
     }
@@ -264,12 +277,12 @@ const bool GeneAnnotation::is_gene(const std::vector<std::string> &fields, const
     return false;
 }
 
-const bool GeneAnnotation::is_exon(const std::vector<std::string> &fields, const std::vector<std::string> &attributes)
+const bool GeneAnnotation::is_exon(const vector<string> &fields, const vector<string> &attributes)
 {
     return fields[TYPE] == "exon";
 }
 
-const bool GeneAnnotation::is_transcript(const std::vector<std::string> &fields, const std::vector<std::string> &attributes)
+const bool GeneAnnotation::is_transcript(const vector<string> &fields, const vector<string> &attributes)
 {
     // assume feature is transcript is it has a gene as parent
     return parent_is_gene(get_parent(attributes));
@@ -277,7 +290,7 @@ const bool GeneAnnotation::is_transcript(const std::vector<std::string> &fields,
 
 void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
 {
-    std::ifstream infile(gff3_fn);
+    ifstream infile(gff3_fn);
 
     string line;
     unordered_map<string, unordered_map<string, Gene>> chr_to_genes_dict;
@@ -287,7 +300,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     anno_source = guess_anno_source(gff3_fn);
 
     // create transcript-gene mapping
-    while (std::getline(infile, line))
+    while (getline(infile, line))
     {
         // skip header lines
         if (line[0] == '#')
@@ -312,7 +325,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         auto current_genes = gene_dict[chr_name];
 
         // genes based on starting position
-        std::sort(current_genes.begin(), current_genes.end(),
+        sort(current_genes.begin(), current_genes.end(),
             [] (Gene &g1, Gene &g2) { return g1.st < g2.st; }
         );
 
@@ -323,26 +336,26 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
 
 void GeneAnnotation::parse_bed_annotation(string bed_fn, bool fix_chrname)
 {
-    std::ifstream infile(bed_fn);
+    ifstream infile(bed_fn);
 
     string line;
     unordered_map<string, unordered_map<string, Gene>> tmp_gene_dict;
     int strand = 0;
-    std::vector<string> token;
+    vector<string> token;
 
-    std::getline(infile, line); // skip the header
-    while(std::getline(infile, line))
+    getline(infile, line); // skip the header
+    while(getline(infile, line))
     {
         token = split(line, '\t');
         strand = get_strand(token[4][0]);
         if (fix_chrname)
         {
-            tmp_gene_dict[fix_name(token[1])][token[0]].add_exon(Interval(std::atoi(token[2].c_str()), std::atoi(token[3].c_str()), strand));
+            tmp_gene_dict[fix_name(token[1])][token[0]].add_exon(Interval(atoi(token[2].c_str()), atoi(token[3].c_str()), strand));
             tmp_gene_dict[fix_name(token[1])][token[0]].set_ID(token[1]);
         }
         else
         {
-            tmp_gene_dict[token[1]][token[0]].add_exon(Interval(std::atoi(token[2].c_str()), std::atoi(token[3].c_str()), strand));
+            tmp_gene_dict[token[1]][token[0]].add_exon(Interval(atoi(token[2].c_str()), atoi(token[3].c_str()), strand));
             tmp_gene_dict[token[1]][token[0]].set_ID(token[1]);
         }
 
@@ -361,7 +374,7 @@ void GeneAnnotation::parse_bed_annotation(string bed_fn, bool fix_chrname)
         }
         if (gene_dict[iter.first].size()>1)
         {
-            std::sort(gene_dict[iter.first].begin(), gene_dict[iter.first].end());
+            sort(gene_dict[iter.first].begin(), gene_dict[iter.first].end());
         }
     }
 }
@@ -382,9 +395,9 @@ int GeneAnnotation::ngenes()
 }
 
 
-std::vector<string> GeneAnnotation::get_genelist()
+vector<string> GeneAnnotation::get_genelist()
 {
-    std::vector<string> gene_list;
+    vector<string> gene_list;
     for (auto iter : gene_dict)
     {
         for (auto sub_iter : iter.second)
@@ -397,7 +410,7 @@ std::vector<string> GeneAnnotation::get_genelist()
 }
 
 
-std::ostream& operator<< (std::ostream& out, const GeneAnnotation& obj)
+ostream& operator<< (ostream& out, const GeneAnnotation& obj)
 {
     out << "annotation statistics:" << "\n";
     for ( const auto& n : obj.gene_dict )
@@ -451,8 +464,8 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
             Interval it = Interval(tmp_pos, tmp_pos+bam_cigar_oplen(cig[c]), rev);
             auto &bins_list = Anno.bins_dict[chr_name];
 
-            const std::vector<GeneBin*> &matched_gene_bins = bins_list.get_bins(it);
-            std::vector<Gene> matched_genes;
+            const vector<GeneBin*> &matched_gene_bins = bins_list.get_bins(it);
+            vector<Gene> matched_genes;
             for (auto &gene_list : matched_gene_bins) {
                 for (auto &gene : gene_list->genes) {
                     if (gene == it) {
@@ -544,7 +557,7 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
 }
 
 namespace {
-    void report_every_3_mins(std::atomic<unsigned long long> &cnt, std::atomic<bool> &running) {
+    void report_every_3_mins(atomic<unsigned long long> &cnt, atomic<bool> &running) {
         Timer timer;
         timer.start();
 
@@ -553,14 +566,14 @@ namespace {
             // wake up at shorter intervals to check if process has stopped running
             for (int i = 0; i < 36; i++)
             {
-                std::this_thread::sleep_for(std::chrono::seconds(5));
+                sleep_for(seconds(5));
                 if (!running)
                 {
                     break;
                 }
             }
 
-            std::cout
+            cout
                 << cnt << " reads processed" << ", "
                 << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << "\n";
         } while (running);
@@ -600,7 +613,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     }
     if (!found_any)
     {
-        std::stringstream err_msg;
+        stringstream err_msg;
         err_msg << "ERROR: The annotation and .bam file contains different chromosome." << "\n";
         Rcpp::stop(err_msg.str());
     }
@@ -610,12 +623,12 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     const char * m_ptr = molecular_tag.c_str();
     const char * a_ptr = map_tag.c_str();
     char buf[999] = ""; // assume the length of barcode or UMI is less than 999
-    std::atomic<unsigned long long> cnt{0};
-    std::atomic<bool> running{true};
+    atomic<unsigned long long> cnt{0};
+    atomic<bool> running{true};
 
     Rcout << "updating progress every 3 minutes..." << "\n";
     // spawn thread to report progress every 3 minutes
-    std::thread reporter_thread(
+    thread reporter_thread(
         [&cnt, &running]() {
             report_every_3_mins(cnt, running);
         }
@@ -678,7 +691,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
         int re = sam_write1(of, header, b);
         if (re < 0)
         {
-            std::stringstream err_msg;
+            stringstream err_msg;
             err_msg << "fail to write the bam file: " << bam_get_qname(b) << "\n";
             err_msg << "return code: " << re << "\n";
             Rcpp::stop(err_msg.str());
@@ -690,19 +703,19 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
 
     Rcpp::Rcout << "number of read processed: " << cnt << "\n";
     Rcpp::Rcout << "unique map to exon: " << tmp_c[0]
-        << " (" << std::fixed << std::setprecision(2) << 100. * tmp_c[0]/cnt << "%)" << "\n";
+        << " (" << fixed << setprecision(2) << 100. * tmp_c[0]/cnt << "%)" << "\n";
 
     Rcpp::Rcout << "ambiguous map to multiple exon: " << tmp_c[1]
-        << " ("  << std::fixed << std::setprecision(2) << 100. * tmp_c[1]/cnt << "%)" << "\n";
+        << " ("  << fixed << setprecision(2) << 100. * tmp_c[1]/cnt << "%)" << "\n";
 
     Rcpp::Rcout << "map to intron: " << tmp_c[2]
-        << " (" << std::fixed << std::setprecision(2) << 100. * tmp_c[2]/cnt << "%)" << "\n";
+        << " (" << fixed << setprecision(2) << 100. * tmp_c[2]/cnt << "%)" << "\n";
 
     Rcpp::Rcout << "not mapped: " << tmp_c[3]
-        << " ("  << std::fixed << std::setprecision(2) << 100. * tmp_c[3]/cnt << "%)" << "\n";
+        << " ("  << fixed << setprecision(2) << 100. * tmp_c[3]/cnt << "%)" << "\n";
         
     Rcpp::Rcout << "unaligned: " << unaligned
-        << " (" << std::fixed << std::setprecision(2) << 100. * unaligned/cnt << "%)" << "\n";
+        << " (" << fixed << setprecision(2) << 100. * unaligned/cnt << "%)" << "\n";
     sam_close(of);
     bgzf_close(fp);
 }
