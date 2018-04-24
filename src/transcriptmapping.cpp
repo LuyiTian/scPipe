@@ -564,9 +564,9 @@ namespace {
         do {
             // sleep thread for a total of 3 minutes (180 seconds)
             // wake up at shorter intervals to check if process has stopped running
-            for (int i = 0; i < 36; i++)
+            for (int i = 0; i < 180; i++)
             {
-                sleep_for(seconds(5));
+                sleep_for(seconds(1));
                 if (!running)
                 {
                     break;
