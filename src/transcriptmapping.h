@@ -22,6 +22,66 @@
 #ifndef TRANSCRIPTMAPPING_H
 #define TRANSCRIPTMAPPING_H
 
+class GeneBin {
+typedef unsigned long long ull_int;
+public:
+    ull_int start;
+    ull_int end;
+    std::vector<Gene> genes;
+
+    void add_gene(Gene gene)
+    {
+        genes.push_back(gene);
+        if (gene.st < start)
+        {
+            start = gene.st;
+        }
+
+        if (gene.en > end)
+        {
+            end = gene.en;
+        }
+    }
+
+    const bool overlaps(const Interval &it) {
+        return start < it.en || end > it.st;
+    }
+};
+
+class GeneBins {
+public:
+    std::vector<GeneBin> gene_bins;
+
+    std::vector<GeneBin> get_bins(Interval it)
+    {
+        std::vector<GeneBin> overlapped_bins;
+        for (auto bin : gene_bins) {
+            if (bin.overlaps(it)) {
+                overlapped_bins.push_back(bin);
+            }
+        }
+        return overlapped_bins;
+    }
+
+    void make_bins(std::vector<Gene> &genes) {
+        gene_bins.reserve(40); // allocate space for around 5000 genes
+        gene_bins.resize(1);
+        unsigned int bin_index = 0;
+        unsigned int count = 0;
+        for (auto gene : genes) {
+            gene_bins[bin_index].add_gene(gene);
+            count++;
+            if (count == bin_size) {
+                count = 0;
+                bin_index++;
+                gene_bins.resize(gene_bins.size() + 1);
+            }
+        }
+    }
+private:
+    const unsigned int bin_size = 128;
+};
+
 // parse gff3 genome annotation
 class GeneAnnotation
 {
@@ -30,6 +90,7 @@ public:
     std::unordered_set<std::string> recorded_genes;
 
     std::unordered_map<std::string, std::vector<Gene>> gene_dict;
+    std::unordered_map<std::string, GeneBins> bins_dict;
 
     //get number of genes
     int ngenes();
@@ -81,7 +142,11 @@ private:
     std::string fix_name(std::string chr_name);
 
     // parse entry of gff3 annotation and add its information to this object
-    void parse_anno_entry(const bool &fix_chrname, const std::string &line, std::unordered_map<std::string, std::unordered_map<std::string, Gene>> &chr_to_genes_dict, std::unordered_map<std::string, std::string> &transcript_to_gene_dict);
+    void parse_anno_entry(
+        const bool &fix_chrname,
+        const std::string &line,
+        std::unordered_map<std::string, std::unordered_map<std::string, Gene>> &chr_to_genes_dict, std::unordered_map<std::string, std::string> &transcript_to_gene_dict
+    );
 
     std::string get_gene_id(const std::vector<std::string> &attributes);
     std::string get_gencode_gene_id(const std::vector<std::string> &attributes);

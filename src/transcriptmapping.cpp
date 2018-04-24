@@ -133,7 +133,12 @@ std::string GeneAnnotation::get_refseq_gene_id(const std::vector<std::string> &a
         return dbxref.substr(start, id_length);
     }
 
-void GeneAnnotation::parse_anno_entry(const bool &fix_chrname, const std::string &line, std::unordered_map<std::string, std::unordered_map<std::string, Gene>> &chr_to_genes_dict, std::unordered_map<std::string, std::string> &transcript_to_gene_dict)
+void GeneAnnotation::parse_anno_entry(
+    const bool &fix_chrname,
+    const std::string &line,
+    std::unordered_map<std::string, std::unordered_map<std::string, Gene>> &chr_to_genes_dict,
+    std::unordered_map<std::string, std::string> &transcript_to_gene_dict
+)
 {
     const std::vector<std::string> fields = split(line, '\t');
     const std::vector<std::string> attributes = split(fields[ATTRIBUTES], ';');
@@ -245,7 +250,7 @@ const bool GeneAnnotation::parent_is_known_transcript(const std::unordered_map<s
 const bool GeneAnnotation::is_gene(const std::vector<std::string> &fields, const std::vector<std::string> &attributes)
 {
     std::string type = fields[TYPE];
-    if (type == "gene")
+    if (type.find("gene") != std::string::npos)
     {
         return true;
     }
@@ -296,15 +301,30 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     // push genes into annotation class member
     for (auto &chr : chr_to_genes_dict)
     {
+        const auto chr_name = chr.first;
         for (auto &gene : chr.second)
         {
             gene.second.sort_exon();
+            gene.second.flatten_exon();
             gene_dict[chr.first].push_back(gene.second);
         }
+
         auto current_genes = gene_dict[chr.first];
-        std::sort(current_genes.begin(), current_genes.end(), [](Gene &g1, Gene &g2) { return g1.st < g2.st; });
+
+        std::sort(current_genes.begin(), current_genes.end(),
+            [] (Gene &g1, Gene &g2) { return g1.st < g2.st; }
+        );
+
+        bins_dict[chr_name].make_bins(current_genes);
+
+        // Rcpp::Rcout << "Size of chromosome " << chr.first << ": " << current_genes.size() << "\n";
     }
 
+    // for (auto gene : chr_to_genes_dict["21"]) {
+    //     Rcpp::Rcout << gene.second.gene_id << " "
+    //         << gene.second.st << " "
+    //         << gene.second.en << " \n";
+    // }
 }
 
 void GeneAnnotation::parse_bed_annotation(string bed_fn, bool fix_chrname)
@@ -341,6 +361,7 @@ void GeneAnnotation::parse_bed_annotation(string bed_fn, bool fix_chrname)
             if (sub_iter.second.exon_vec.size()>1)
             {
                 sub_iter.second.sort_exon();
+                sub_iter.second.flatten_exon();
             }
             gene_dict[iter.first].push_back(sub_iter.second);
         }
@@ -428,27 +449,43 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
     for (int c=0; c<b->core.n_cigar; c++)
     {
         tmp_ret = 9999;
+        string chr_name{header->target_name[b->core.tid]};
         // *   bit 1 set if the cigar operation consumes the query
         // *   bit 2 set if the cigar operation consumes the reference
         if (((bam_cigar_type(cig[c]) >> 0) & 1) && ((bam_cigar_type(cig[c]) >> 1) & 1))
         {
             Interval it = Interval(tmp_pos, tmp_pos+bam_cigar_oplen(cig[c]), rev);
-            auto &gene_list = Anno.gene_dict[header->target_name[b->core.tid]];
-            auto iter = std::equal_range(gene_list.begin(), gene_list.end(), it);
-            if ((iter.second - iter.first) == 0)
+            // auto &bins_list = Anno.bins_dict[chr_name];
+            const auto &gene_list = Anno.gene_dict[chr_name];
+            
+            // std::vector<GeneBin> matched_gene_bins = bins_list.get_bins(it);
+            std::vector<Gene> matched_genes;
+            // for (auto &gene_list : matched_gene_bins) {
+                for (auto gene : gene_list) {
+                    if (gene == it) {
+                        matched_genes.push_back(gene);
+                        Rcpp::Rcout << it.st << " "
+                            << it.en << ""
+                            << gene.gene_id 
+                    }
+                }
+            // }
+
+            if (matched_genes.size() == 0)
             {
-                tmp_ret = tmp_ret>3?3:tmp_ret;
+                // no matching gene
+                tmp_ret = (tmp_ret > 3) ? 3 : tmp_ret;
             }
             else
             {
                 tmp_id = "";
-                for (auto i = iter.first; i < iter.second; ++i)
+                for (auto &gene : matched_genes)
                 {
-                    if (i->in_exon(it, m_strand))
+                    if (gene.in_exon(it, m_strand))
                     {
                         if (tmp_id != "")
                         {
-                            if (tmp_id != i->gene_id)
+                            if (tmp_id != gene.gene_id)
                             {
                                 tmp_ret = 1; // ambiguous mapping
                                 break;
@@ -456,23 +493,23 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
                             else
                             {
                                 // update the distance to end pos
-                                tmp_rest = tmp_rest<(i->distance_to_end(it))?tmp_rest:i->distance_to_end(it);
+                                // tmp_rest = tmp_rest<(gene.distance_to_end(it))?tmp_rest:gene.distance_to_end(it);
                             }
                         }
                         else
                         {
-                            tmp_id = i->gene_id;
+                            tmp_id = gene.gene_id;
                             tmp_ret = 0;
-                            tmp_rest = i->distance_to_end(it);
+                            // tmp_rest = gene.distance_to_end(it);
                         }
                     }
-                    else if ((it > *i) || (it < *i))
+                    else if ((it > gene) || (it < gene))
                     {
-                        tmp_ret = tmp_ret>=3?3:tmp_ret;
+                        tmp_ret = (tmp_ret >= 3) ? 3 : tmp_ret;
                     }
                     else
                     {
-                        tmp_ret = tmp_ret>=2?2:tmp_ret;
+                        tmp_ret = (tmp_ret >= 2) ? 2 : tmp_ret;
                     }
                 }
             }

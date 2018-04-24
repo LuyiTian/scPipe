@@ -89,7 +89,34 @@ bool Gene::in_exon(const Interval &it, const bool check_strand)
 
 void Gene::sort_exon()
 {
-    std::sort(exon_vec.begin(), exon_vec.end());
+    std::sort(exon_vec.begin(), exon_vec.end(),
+        [] (const Interval &a, const Interval &b) { return a.st < b.st; }
+    );
+}
+
+void Gene::flatten_exon() {
+    std::vector<Interval> merged_exons;
+    merged_exons.reserve(exon_vec.size());
+
+    merged_exons.push_back(exon_vec[0]);
+
+    for (auto i = 1; i < exon_vec.size(); i++)
+    {
+        const auto exon = exon_vec[i];
+        const auto &last_merged_exon = merged_exons.back();
+        if (exon.st > last_merged_exon.en) {
+            // if new exon does not overlap last merged exon
+            merged_exons.push_back(exon);
+        }
+        else if (exon.en > last_merged_exon.en) {
+            // if new exon does overlaps last merged exon and ends later
+            auto temp_exon = exon;
+            temp_exon.st = last_merged_exon.st;
+            merged_exons.back() = temp_exon;
+        }
+    }
+
+    exon_vec = merged_exons;
 }
 
 std::ostream& operator<< (std::ostream& out, const Gene& obj)
