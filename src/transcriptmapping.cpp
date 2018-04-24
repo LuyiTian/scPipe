@@ -20,12 +20,17 @@ using namespace std::this_thread;
 using namespace std::chrono;
 using namespace Rcpp;
 
-string GeneAnnotation::get_attribute(const vector<string> &all_attributes, const string &target_attribute)
+string GeneAnnotation::get_attribute(
+    const vector<string> &all_attributes,
+    const string &target_attribute
+)
 {
     for (const string &attr : all_attributes) {
         auto sep_loc = attr.find("=");
-        string key = attr.substr(0, sep_loc);
-        string val = attr.substr(sep_loc + 1);
+        // get key
+        const string key = attr.substr(0, sep_loc);
+        // get value
+        const string val = attr.substr(sep_loc + 1);
         if (key == target_attribute) {
             return val;
         }
