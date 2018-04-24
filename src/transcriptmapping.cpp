@@ -171,8 +171,8 @@ void GeneAnnotation::parse_anno_entry(
     }
 
     // DEBUG USE
-    // Rcpp::Rcout << "Parsing: " << line << "\n";
-    // Rcpp::Rcout << "Type: " << type << " "
+    // Rcout << "Parsing: " << line << "\n";
+    // Rcout << "Type: " << type << " "
     //       << "ID: " << ID << " "
     //       << "Parent: " << parent << "\n\n";
     // DEBUG USE
@@ -203,7 +203,7 @@ void GeneAnnotation::parse_anno_entry(
                 stringstream err_msg;
                 err_msg << "cannot find grandparent for exon:" << "\n";
                 err_msg << line << "\n";
-                Rcpp::stop(err_msg.str());
+                stop(err_msg.str());
             }
         }
     }
@@ -233,22 +233,22 @@ string GeneAnnotation::guess_anno_source(string gff3_fn)
     while (getline(infile, line))
     {
         if (line.find("GENCODE") != string::npos) {
-            Rcpp::Rcout << "guessing annotation source: GENCODE" << "\n";
+            Rcout << "guessing annotation source: GENCODE" << "\n";
             return "gencode";
         }
         else if (line.find("1\tEnsembl") != string::npos)
         {
-            Rcpp::Rcout << "guessing annotation source: ENSEMBL" << "\n";
+            Rcout << "guessing annotation source: ENSEMBL" << "\n";
             return "ensembl";
         }
         else if (line.find("RefSeq\tregion") != string::npos)
         {
-            Rcpp::Rcout << "guessing annotation source: RefSeq" << "\n";
+            Rcout << "guessing annotation source: RefSeq" << "\n";
             return "refseq";
         }
     }
 
-    Rcpp::stop("Annotation source not recognised. Current supported sources: ENSEMBL, GENCODE and RefSeq");
+    stop("Annotation source not recognised. Current supported sources: ENSEMBL, GENCODE and RefSeq");
 }
 
 const bool GeneAnnotation::parent_is_gene(const string &parent)
@@ -432,13 +432,13 @@ void Mapping::add_annotation(string gff3_fn, bool fix_chrname)
 {
     if (gff3_fn.substr(gff3_fn.find_last_of(".") + 1) == "gff3")
     {
-        Rcpp::Rcout << "adding gff3 annotation: " << gff3_fn << "\n";
+        Rcout << "adding gff3 annotation: " << gff3_fn << "\n";
         Anno.parse_gff3_annotation(gff3_fn, fix_chrname);
     }
     else
     {
         Anno.parse_bed_annotation(gff3_fn, fix_chrname);
-        Rcpp::Rcout << "adding bed annotation: " << gff3_fn << "\n";
+        Rcout << "adding bed annotation: " << gff3_fn << "\n";
     }
 
 }
@@ -604,7 +604,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     {
         if (Anno.gene_dict.end() == Anno.gene_dict.find(header->target_name[i]))
         {
-            Rcpp::Rcout << header->target_name[i] << " not found in exon annotation." << "\n";
+            Rcout << header->target_name[i] << " not found in exon annotation." << "\n";
         }
         else
         {
@@ -616,7 +616,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     {
         stringstream err_msg;
         err_msg << "ERROR: The annotation and .bam file contains different chromosome." << "\n";
-        Rcpp::stop(err_msg.str());
+        stop(err_msg.str());
     }
     // for moving barcode and UMI from sequence name to bam tags
     const char * g_ptr = gene_tag.c_str();
@@ -641,8 +641,8 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
         {
             if (cnt % 1000000 == 0)
             {
-                Rcpp::Rcout << "number of read processed:" << cnt << "\n";
-                Rcpp::Rcout << tmp_c[0] <<"\t"<< tmp_c[1] <<"\t"<<tmp_c[2] <<"\t"<<tmp_c[3] <<"\t" << "\n";
+                Rcout << "number of read processed:" << cnt << "\n";
+                Rcout << tmp_c[0] <<"\t"<< tmp_c[1] <<"\t"<<tmp_c[2] <<"\t"<<tmp_c[3] <<"\t" << "\n";
             }
         }
         cnt++;
@@ -695,27 +695,27 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
             stringstream err_msg;
             err_msg << "fail to write the bam file: " << bam_get_qname(b) << "\n";
             err_msg << "return code: " << re << "\n";
-            Rcpp::stop(err_msg.str());
+            stop(err_msg.str());
         }
     }
 
     running = false;
     reporter_thread.join();
 
-    Rcpp::Rcout << "number of read processed: " << cnt << "\n";
-    Rcpp::Rcout << "unique map to exon: " << tmp_c[0]
+    Rcout << "number of read processed: " << cnt << "\n";
+    Rcout << "unique map to exon: " << tmp_c[0]
         << " (" << fixed << setprecision(2) << 100. * tmp_c[0]/cnt << "%)" << "\n";
 
-    Rcpp::Rcout << "ambiguous map to multiple exon: " << tmp_c[1]
+    Rcout << "ambiguous map to multiple exon: " << tmp_c[1]
         << " ("  << fixed << setprecision(2) << 100. * tmp_c[1]/cnt << "%)" << "\n";
 
-    Rcpp::Rcout << "map to intron: " << tmp_c[2]
+    Rcout << "map to intron: " << tmp_c[2]
         << " (" << fixed << setprecision(2) << 100. * tmp_c[2]/cnt << "%)" << "\n";
 
-    Rcpp::Rcout << "not mapped: " << tmp_c[3]
+    Rcout << "not mapped: " << tmp_c[3]
         << " ("  << fixed << setprecision(2) << 100. * tmp_c[3]/cnt << "%)" << "\n";
         
-    Rcpp::Rcout << "unaligned: " << unaligned
+    Rcout << "unaligned: " << unaligned
         << " (" << fixed << setprecision(2) << 100. * unaligned/cnt << "%)" << "\n";
     sam_close(of);
     bgzf_close(fp);
