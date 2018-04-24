@@ -198,16 +198,16 @@ void GeneAnnotation::parse_anno_entry(
                 stop(err_msg.str());
             }
         }
-        else if (is_gene(fields, attributes)) {
-            recorded_genes.insert(ID);
-            return;
-        }
         else if (is_transcript(fields, attributes))
         {
             if (!ID.empty() && !parent.empty())
             {
                 transcript_to_gene_dict[ID] = parent;
             }
+            return;
+        }
+        else if (is_gene(fields, attributes)) {
+            recorded_genes.insert(ID);
             return;
         }
     }
