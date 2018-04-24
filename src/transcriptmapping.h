@@ -52,19 +52,19 @@ class GeneBins {
 public:
     std::vector<GeneBin> gene_bins;
 
-    std::vector<GeneBin> get_bins(Interval it)
+    std::vector<GeneBin*> get_bins(Interval it)
     {
-        std::vector<GeneBin> overlapped_bins;
-        for (auto bin : gene_bins) {
+        std::vector<GeneBin*> overlapped_bins;
+        for (auto &bin : gene_bins) {
             if (bin.overlaps(it)) {
-                overlapped_bins.push_back(bin);
+                overlapped_bins.push_back(&bin);
             }
         }
         return overlapped_bins;
     }
 
     void make_bins(std::vector<Gene> &genes) {
-        gene_bins.reserve(40); // allocate space for around 5000 genes
+        gene_bins.reserve(40);
         gene_bins.resize(1);
         unsigned int bin_index = 0;
         unsigned int count = 0;
@@ -79,7 +79,7 @@ public:
         }
     }
 private:
-    const unsigned int bin_size = 128;
+    const unsigned int bin_size = 64;
 };
 
 // parse gff3 genome annotation

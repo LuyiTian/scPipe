@@ -455,13 +455,12 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
         if (((bam_cigar_type(cig[c]) >> 0) & 1) && ((bam_cigar_type(cig[c]) >> 1) & 1))
         {
             Interval it = Interval(tmp_pos, tmp_pos+bam_cigar_oplen(cig[c]), rev);
-            // auto &bins_list = Anno.bins_dict[chr_name];
-            const auto &gene_list = Anno.gene_dict[chr_name];
-            
-            // std::vector<GeneBin> matched_gene_bins = bins_list.get_bins(it);
+            auto &bins_list = Anno.bins_dict[chr_name];
+
+            const std::vector<GeneBin*> &matched_gene_bins = bins_list.get_bins(it);
             std::vector<Gene> matched_genes;
-            // for (auto &gene_list : matched_gene_bins) {
-                for (auto gene : gene_list) {
+            for (auto &gene_list : matched_gene_bins) {
+                for (auto &gene : gene_list->genes) {
                     if (gene == it) {
                         matched_genes.push_back(gene);
                         // Rcpp::Rcout << it.st << " " << it.en
@@ -469,7 +468,7 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
                         //     << " (" << gene.st << " " << gene.en << ")\n";
                     }
                 }
-            // }
+            }
 
             if (matched_genes.size() == 0)
             {
@@ -708,7 +707,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     Rcpp::Rcout << "map to intron: " << tmp_c[2]
         << "(" << std::fixed << std::setprecision(2) << 100. * tmp_c[2]/cnt << "%)" << "\n";
 
-    Rcpp::Rcout << "not mapped: " << tmp_c[2]
+    Rcpp::Rcout << "not mapped: " << tmp_c[3]
         << "("  << std::fixed << std::setprecision(2) << 100. * tmp_c[3]/cnt << "%)" << "\n";
         
     Rcpp::Rcout << "unaligned: " << unaligned
