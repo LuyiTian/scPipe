@@ -3,7 +3,6 @@
 
 using std::atoi;
 using std::atomic;
-using std::cout;
 using std::fixed;
 using std::getline;
 using std::ifstream;
@@ -579,7 +578,7 @@ namespace {
                 }
             }
 
-            cout
+            Rcout
                 << cnt << " reads processed" << ", "
                 << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << "\n";
         } while (running);
