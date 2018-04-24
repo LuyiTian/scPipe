@@ -1,23 +1,23 @@
 // transcriptmapping.cpp
 #include "transcriptmapping.h"
 
-using atoi;
-using atomic;
-using cout;
-using fixed;
-using getline;
-using ifstream;
-using ostream;
-using setprecision;
-using sort;
-using string;
-using stringstream;
-using thread;
-using unordered_map;
-using vector;
+using std::atoi;
+using std::atomic;
+using std::cout;
+using std::fixed;
+using std::getline;
+using std::ifstream;
+using std::ostream;
+using std::setprecision;
+using std::sort;
+using std::string;
+using std::stringstream;
+using std::thread;
+using std::unordered_map;
+using std::vector;
 
-using namespace this_thread;
-using namespace chrono;
+using namespace std::this_thread;
+using namespace std::chrono;
 using namespace Rcpp;
 
 string GeneAnnotation::get_attribute(const vector<string> &all_attributes, const string &target_attribute) {
