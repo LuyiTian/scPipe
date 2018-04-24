@@ -252,7 +252,8 @@ string GeneAnnotation::guess_anno_source(string gff3_fn)
         }
     }
 
-    stop("Annotation source not recognised. Current supported sources: ENSEMBL, GENCODE and RefSeq");
+    Rcout << "Annotation source not recognised, defaulting to ENSEMBL. Current supported sources: ENSEMBL, GENCODE and RefSeq\n";
+    return "ensembl";
 }
 
 const bool GeneAnnotation::parent_is_gene(const string &parent)
