@@ -468,15 +468,13 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
         if (((bam_cigar_type(cig[c]) >> 0) & 1) && ((bam_cigar_type(cig[c]) >> 1) & 1))
         {
             Interval it = Interval(tmp_pos, tmp_pos+bam_cigar_oplen(cig[c]), rev);
-            auto &bins_list = Anno.bins_dict[chr_name];
+            auto &gene_list = Anno.gene_dict[chr_name];
 
-            const vector<GeneBin*> &matched_gene_bins = bins_list.get_bins(it);
             vector<Gene> matched_genes;
-            for (auto &gene_list : matched_gene_bins) {
-                for (auto &gene : gene_list->genes) {
-                    if (gene == it) {
-                        matched_genes.push_back(gene);
-                    }
+
+            for (auto &gene : gene_list) {
+                if (gene == it) {
+                    matched_genes.push_back(gene);
                 }
             }
 
