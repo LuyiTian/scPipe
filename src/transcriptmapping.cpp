@@ -334,9 +334,6 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         sort(current_genes.begin(), current_genes.end(),
             [] (Gene &g1, Gene &g2) { return g1.st < g2.st; }
         );
-
-        // create bins of genes
-        bins_dict[chr_name].make_bins(current_genes);
     }
 }
 
