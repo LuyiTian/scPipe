@@ -320,7 +320,9 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     // push genes into annotation class member
     for (auto &chr : chr_to_genes_dict)
     {
-        const auto chr_name = chr.first;
+        const auto &chr_name = chr.first;
+
+        // merge overlapping exons in each gene
         for (auto &gene : chr.second)
         {
             gene.second.sort_exon();
@@ -329,8 +331,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         }
 
         auto &current_genes = gene_dict[chr_name];
-
-        // genes based on starting position
+        // sort genes based on starting position
         sort(current_genes.begin(), current_genes.end(),
             [] (Gene &g1, Gene &g2) { return g1.st < g2.st; }
         );
