@@ -472,8 +472,9 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
 
             const vector<GeneBin*> &matched_gene_bins = bins_list.get_bins(it);
             vector<Gene> matched_genes;
-            for (auto &gene_list : matched_gene_bins) {
-                for (auto &gene : gene_list->genes) {
+
+            for (auto &gene_list_ptr : matched_gene_bins) {
+                for (auto &gene : gene_list_ptr->genes) {
                     if (gene == it) {
                         matched_genes.push_back(gene);
                     }
