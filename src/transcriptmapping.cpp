@@ -328,7 +328,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             gene_dict[chr_name].push_back(gene.second);
         }
 
-        auto current_genes = gene_dict[chr_name];
+        auto &current_genes = gene_dict[chr_name];
 
         // genes based on starting position
         sort(current_genes.begin(), current_genes.end(),
