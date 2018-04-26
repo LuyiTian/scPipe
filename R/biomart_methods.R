@@ -18,6 +18,7 @@ ensembl_to_db = list(ensembl_gene_id="ENSEMBL",
 #'
 #' @import biomaRt
 #' @importFrom biomaRt useDataset getBM
+#' @importFrom AnnotationDbi mapIds
 #'
 #' @export
 #' @examples
@@ -45,7 +46,7 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
   if(length(G_list)==0){
     if(dataset == "hsapiens_gene_ensembl"){
       print("Try to use org.Hs.eg.db.")
-      requireNamespace("org.Hs.eg.db", quietly = TRUE)
+      #requireNamespace("org.Hs.eg.db", quietly = TRUE)
       if (returns %in% names(ensembl_to_db)){
         tmp = AnnotationDbi::mapIds(org.Hs.eg.db,keys=go,column=ensembl_to_db[returns][[1]], keytype="GO",multiVals = "list")
         return(unname(unlist(tmp)))
@@ -54,7 +55,7 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
       }
     }else if(dataset == "mmusculus_gene_ensembl"){
       print("Try to use org.Mm.eg.db.")
-      requireNamespace("org.Mm.eg.db", quietly = TRUE)
+      #requireNamespace("org.Mm.eg.db", quietly = TRUE)
       if (returns %in% names(ensembl_to_db)){
         tmp = AnnotationDbi::mapIds(org.Mm.eg.db,keys=go,column=ensembl_to_db[returns][[1]], keytype="GO",multiVals = "list")
         return(unname(unlist(tmp)))
