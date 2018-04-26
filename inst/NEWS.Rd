@@ -58,3 +58,10 @@
     \item update the gene id annotation code
   }
 }
+
+\section{Changes in version 1.0.9 (2018-4-25)}{
+  \itemize{
+    \item fix the bug that might misalign the exon mapping reads
+    \item support gff files from gencode or refseq
+  }
+}
