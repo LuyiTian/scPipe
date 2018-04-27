@@ -27,12 +27,15 @@ typedef unsigned long long ull_int;
 public:
     // class data
     ull_int start;
-    ull_int end;
+    ull_int end = 0;
     std::vector<Gene> genes;
 
     // add gene to bin
     void add_gene(Gene gene)
     {
+        if (genes.size() == 0) {
+            start = gene.st;
+        }
         genes.push_back(gene);
         // extend boundaries of bin to fully include bin
         if (gene.st < start)
@@ -47,7 +50,7 @@ public:
 
     // check if interval overlaps bin
     const bool overlaps(const Interval &it) {
-        return start < it.en || end > it.st;
+        return !(start > it.en) && !(end < it.st);
     }
 };
 
@@ -72,6 +75,7 @@ public:
     void make_bins(std::vector<Gene> &genes) {
         unsigned int bin_index = 0;
         unsigned int count = 0;
+
         for (auto gene : genes) {
             if (bin_index + 1 > gene_bins.size()) {
                 // add bin if required
@@ -89,7 +93,7 @@ public:
         }
     }
 private:
-    const unsigned int bin_size = 128;
+    const unsigned int bin_size = 64;
 };
 
 // parse gff3 genome annotation
