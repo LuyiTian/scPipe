@@ -3,6 +3,7 @@
 
 using std::atoi;
 using std::atomic;
+using std::endl;
 using std::fixed;
 using std::getline;
 using std::ifstream;
@@ -320,7 +321,9 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     // push genes into annotation class member
     for (auto &chr : chr_to_genes_dict)
     {
-        const auto chr_name = chr.first;
+        const auto &chr_name = chr.first;
+
+        // merge overlapping exons in each gene
         for (auto &gene : chr.second)
         {
             gene.second.sort_exon();
@@ -328,14 +331,13 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             gene_dict[chr_name].push_back(gene.second);
         }
 
-        auto current_genes = gene_dict[chr_name];
-
-        // genes based on starting position
+        auto &current_genes = gene_dict[chr_name];
+        // sort genes based on starting position
         sort(current_genes.begin(), current_genes.end(),
             [] (Gene &g1, Gene &g2) { return g1.st < g2.st; }
         );
 
-        // create bins of genes
+        // create bins of genes		
         bins_dict[chr_name].make_bins(current_genes);
     }
 }
@@ -469,11 +471,12 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
         {
             Interval it = Interval(tmp_pos, tmp_pos+bam_cigar_oplen(cig[c]), rev);
             auto &bins_list = Anno.bins_dict[chr_name];
-
             const vector<GeneBin*> &matched_gene_bins = bins_list.get_bins(it);
+
             vector<Gene> matched_genes;
-            for (auto &gene_list : matched_gene_bins) {
-                for (auto &gene : gene_list->genes) {
+
+            for (auto &gene_list_ptr : matched_gene_bins) {
+                for (auto &gene : gene_list_ptr->genes) {
                     if (gene == it) {
                         matched_genes.push_back(gene);
                     }
@@ -581,7 +584,7 @@ namespace {
 
             Rcout
                 << cnt << " reads processed" << ", "
-                << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << "\n";
+                << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << endl;
         } while (running);
     }
 }
@@ -632,13 +635,13 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     atomic<unsigned long long> cnt{0};
     atomic<bool> running{true};
 
-    Rcout << "updating progress every 3 minutes..." << "\n";
+    // Rcout << "updating progress every 3 minutes..." << "\n";
     // spawn thread to report progress every 3 minutes
-    thread reporter_thread(
-        [&cnt, &running]() {
-            report_every_3_mins(cnt, running);
-        }
-    );
+    // thread reporter_thread(
+    //     [&cnt, &running]() {
+    //         report_every_3_mins(cnt, running);
+    //     }
+    // );
 
     while (bam_read1(fp, b) >= 0)
     {
@@ -705,7 +708,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     }
 
     running = false;
-    reporter_thread.join();
+    // reporter_thread.join();
 
     Rcout << "number of read processed: " << cnt << "\n";
     Rcout << "unique map to exon: " << tmp_c[0]
