@@ -3,6 +3,7 @@
 
 using std::atoi;
 using std::atomic;
+using std::endl;
 using std::fixed;
 using std::getline;
 using std::ifstream;
@@ -335,6 +336,9 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         sort(current_genes.begin(), current_genes.end(),
             [] (Gene &g1, Gene &g2) { return g1.st < g2.st; }
         );
+
+        // create bins of genes		
+        bins_dict[chr_name].make_bins(current_genes);
     }
 }
 
@@ -580,7 +584,7 @@ namespace {
 
             Rcout
                 << cnt << " reads processed" << ", "
-                << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << "\n";
+                << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << endl;
         } while (running);
     }
 }
@@ -631,13 +635,13 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     atomic<unsigned long long> cnt{0};
     atomic<bool> running{true};
 
-    Rcout << "updating progress every 3 minutes..." << "\n";
+    // Rcout << "updating progress every 3 minutes..." << "\n";
     // spawn thread to report progress every 3 minutes
-    thread reporter_thread(
-        [&cnt, &running]() {
-            report_every_3_mins(cnt, running);
-        }
-    );
+    // thread reporter_thread(
+    //     [&cnt, &running]() {
+    //         report_every_3_mins(cnt, running);
+    //     }
+    // );
 
     while (bam_read1(fp, b) >= 0)
     {
@@ -704,7 +708,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     }
 
     running = false;
-    reporter_thread.join();
+    // reporter_thread.join();
 
     Rcout << "number of read processed: " << cnt << "\n";
     Rcout << "unique map to exon: " << tmp_c[0]
