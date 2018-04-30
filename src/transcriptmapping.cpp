@@ -566,10 +566,12 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
 }
 
 namespace {
-    void report_every_3_mins(atomic<unsigned long long> &cnt, atomic<bool> &running) {
-        Timer timer;
-        timer.start();
-
+    void report_every_3_mins(
+        atomic<unsigned long long> &cnt,
+        atomic<bool> &running,
+        atomic<bool> &report_message
+    )
+    {
         do {
             // sleep thread for a total of 3 minutes (180 seconds)
             // wake up at shorter intervals to check if process has stopped running
@@ -582,9 +584,7 @@ namespace {
                 }
             }
 
-            Rcout
-                << cnt << " reads processed" << ", "
-                << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << endl;
+            report_message = true;
         } while (running);
     }
 }
@@ -634,14 +634,17 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     char buf[999] = ""; // assume the length of barcode or UMI is less than 999
     atomic<unsigned long long> cnt{0};
     atomic<bool> running{true};
+    atomic<bool> report_message{false};
 
-    // Rcout << "updating progress every 3 minutes..." << "\n";
-    // spawn thread to report progress every 3 minutes
-    // thread reporter_thread(
-    //     [&cnt, &running]() {
-    //         report_every_3_mins(cnt, running);
-    //     }
-    // );
+    Rcout << "updating progress every 3 minutes..." << "\n";
+    // spawn thread to set report_message to true every 3 minutes
+    thread reporter_thread(
+        [&]() {
+            report_every_3_mins(cnt, running, report_message);
+        }
+    );
+    Timer timer;
+    timer.start();
 
     while (bam_read1(fp, b) >= 0)
     {
@@ -654,6 +657,17 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
             }
         }
         cnt++;
+
+        // The Rcout would be conceptually cleaner if it lived inside the spawned thread
+        // but only the master thread can interact with R without error so this code CANNOT
+        // be run inside a child thread
+        if (report_message)
+        {
+            Rcout
+                << cnt << " reads processed" << ", "
+                << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << endl;
+            report_message = false;
+        }
 
         if ((b->core.flag&BAM_FUNMAP) > 0)
         {
@@ -708,7 +722,12 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     }
 
     running = false;
-    // reporter_thread.join();
+    reporter_thread.join();
+
+    // final report of processing speed
+    Rcout
+        << cnt << " reads processed" << ", "
+        << cnt / timer.seconds_elapsed() / 1000 << "k reads/sec" << endl;
 
     Rcout << "number of read processed: " << cnt << "\n";
     Rcout << "unique map to exon: " << tmp_c[0]
