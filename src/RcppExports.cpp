@@ -80,8 +80,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_sc_detect_bc
-void rcpp_sc_detect_bc(Rcpp::CharacterVector infq, Rcpp::CharacterVector outcsv, Rcpp::CharacterVector suffix, Rcpp::NumericVector bc_len, Rcpp::NumericVector max_reads, Rcpp::NumericVector min_count, Rcpp::NumericVector max_mismatch);
-RcppExport SEXP _scPipe_rcpp_sc_detect_bc(SEXP infqSEXP, SEXP outcsvSEXP, SEXP suffixSEXP, SEXP bc_lenSEXP, SEXP max_readsSEXP, SEXP min_countSEXP, SEXP max_mismatchSEXP) {
+void rcpp_sc_detect_bc(Rcpp::CharacterVector infq, Rcpp::CharacterVector outcsv, Rcpp::CharacterVector suffix, Rcpp::NumericVector bc_len, Rcpp::NumericVector max_reads, Rcpp::NumericVector number_of_cells, Rcpp::NumericVector min_count, Rcpp::NumericVector max_mismatch, Rcpp::CharacterVector white_list);
+RcppExport SEXP _scPipe_rcpp_sc_detect_bc(SEXP infqSEXP, SEXP outcsvSEXP, SEXP suffixSEXP, SEXP bc_lenSEXP, SEXP max_readsSEXP, SEXP number_of_cellsSEXP, SEXP min_countSEXP, SEXP max_mismatchSEXP, SEXP white_listSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type infq(infqSEXP);
@@ -89,9 +89,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type suffix(suffixSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type bc_len(bc_lenSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type max_reads(max_readsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type number_of_cells(number_of_cellsSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type min_count(min_countSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type max_mismatch(max_mismatchSEXP);
-    rcpp_sc_detect_bc(infq, outcsv, suffix, bc_len, max_reads, min_count, max_mismatch);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type white_list(white_listSEXP);
+    rcpp_sc_detect_bc(infq, outcsv, suffix, bc_len, max_reads, number_of_cells, min_count, max_mismatch, white_list);
     return R_NilValue;
 END_RCPP
 }
@@ -101,7 +103,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 11},
     {"_scPipe_rcpp_sc_demultiplex", (DL_FUNC) &_scPipe_rcpp_sc_demultiplex, 10},
     {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
-    {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 7},
+    {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 9},
     {NULL, NULL, 0}
 };
 

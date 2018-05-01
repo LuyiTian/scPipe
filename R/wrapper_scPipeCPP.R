@@ -314,8 +314,13 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
 #' @param min_count minimum counts to keep, barcode will be discarded if
 #' it has lower count. Default value is 10. This should be set according
 #' to \code{max_reads}.
+#' @param number_of_cells number of cells kept in result. (default: 10000)
 #' @param max_mismatch the maximum mismatch allowed. Barcodes within this
 #' number will be considered as sequence error and merged. (default: 1)
+#' @param white_list_file a file that list all the possible barcodes
+#' each row is a barcode sequence. the list for 10x can be found at:
+#' https://community.10xgenomics.com/t5/Data-Sharing/List-of-valid-cellular-barcodes/td-p/527 
+#' (default: NULL)
 #' @export
 #' @return no return
 #' @examples
@@ -328,15 +333,24 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
 #'
 #'
 sc_detect_bc = function(infq, outcsv, suffix="CELL_", bc_len,
-                        max_reads=1000000, min_count=10, max_mismatch=1) {
+                        max_reads=1000000, min_count=10, number_of_cells=10000,
+                        max_mismatch=1,white_list_file=NULL) {
   if (!file.exists(infq)) {
     stop("input fastq file does not exists.")
   } else {
     infq = path.expand(infq)
   }
+  if(!is.null(white_list_file)){
+    if(!file.exists(white_list_file)){
+      stop("input whitelist file does not exists.")
+    }
+  } else {
+    white_list_file = ""
+  }
   if (max_reads=="all") {m_r = -1}
   else {m_r=max_reads}
-  rcpp_sc_detect_bc(infq, outcsv, suffix, bc_len, m_r, min_count, max_mismatch)
+  rcpp_sc_detect_bc(infq, outcsv, suffix, bc_len, m_r, number_of_cells, 
+    min_count, max_mismatch, white_list_file)
 }
 
 #' sc_demultiplex_and_count

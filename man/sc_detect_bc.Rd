@@ -5,7 +5,8 @@
 \title{sc_detect_bc}
 \usage{
 sc_detect_bc(infq, outcsv, suffix = "CELL_", bc_len, max_reads = 1e+06,
-  min_count = 10, max_mismatch = 1)
+  min_count = 10, number_of_cells = 10000, max_mismatch = 1,
+  white_list_file = NULL)
 }
 \arguments{
 \item{infq}{input fastq file, shoule be the output file of
@@ -24,8 +25,15 @@ in \code{sc_trim_barcode}}
 it has lower count. Default value is 10. This should be set according
 to \code{max_reads}.}
 
+\item{number_of_cells}{number of cells kept in result. (default: 10000)}
+
 \item{max_mismatch}{the maximum mismatch allowed. Barcodes within this
 number will be considered as sequence error and merged. (default: 1)}
+
+\item{white_list_file}{a file that list all the possible barcodes
+each row is a barcode sequence. the list for 10x can be found at:
+https://community.10xgenomics.com/t5/Data-Sharing/List-of-valid-cellular-barcodes/td-p/527 
+(default: NULL)}
 }
 \value{
 no return
