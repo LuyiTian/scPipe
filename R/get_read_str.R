@@ -8,9 +8,10 @@ get_read_str <- function(protocol) {
 
   switch(
     protocol,
-    "celseq" = list(bs1 = -1, bl1 = 0, bs2 = 6, bl2 = 8, us = 0, ul = 6),
-    "celseq2" = list(bs1 = -1, bl1 = 0, bs2 = 6, bl2 = 8, us = 0, ul = 6),
+    "celseq"  = list(bs1 = -1, bl1 = 0, bs2 = 6, bl2 = 8,  us = 0,  ul = 6),
+    "celseq2" = list(bs1 = -1, bl1 = 0, bs2 = 6, bl2 = 8,  us = 0,  ul = 6),
     "dropseq" = list(bs1 = -1, bl1 = 0, bs2 = 0, bl2 = 12, us = 12, ul = 8),
+    "10x"     = list(bs1 = -1, bl1 = 0, bs2 = 0, bl2 = 16, us = 16, ul = 10),
     default = stop(error_msg)
   )
 }
