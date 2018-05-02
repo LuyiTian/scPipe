@@ -271,13 +271,18 @@ void fq_gz_write(gzFile out_file, kseq_t *seq, int trim_n) {
         (seq->seq.s+trim_n) << "\n" << 
         "+" << "\n" << 
         (seq->qual.s+trim_n) << "\n";
-    gzprintf(out_file, "%s", stream.str().c_str());
+    gzputs(out_file, stream.str().c_str());
 }
 
-void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_s read_structure, const filter_s filter_settings)
+void paired_fastq_to_fastq(
+    char *fq1_fn,
+    char *fq2_fn,
+    char *fq_out,
+    const read_s read_structure,
+    const filter_s filter_settings,
+    const bool write_gz
+)
 {
-    bool write_gz = false;
-
     int passed_reads = 0;
     int removed_have_N = 0;
     int removed_low_qual = 0;
@@ -296,7 +301,7 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
     gzFile o_stream_gz;
     std::ofstream o_stream;
     if (write_gz) {
-        o_stream_gz = gzopen(fq_out, "wb"); // open gz file
+        o_stream_gz = gzopen(fq_out, "wb2"); // open gz file
         if (!o_stream_gz) {
             file_error(fq_out);
         }

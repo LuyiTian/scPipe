@@ -81,6 +81,13 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
     i_rmN = 0
   }
 
+  if (substr(outfq, nchar(outfq) - 2, nchar(outfq)) == ".gz") {
+    write_gz = TRUE
+  }
+  else {
+    write_gz = FALSE
+  }
+
   if (!is.null(r2)) {
     if (!file.exists(r1)) {stop("read1 fastq file does not exists.")}
     if (!file.exists(r2)) {stop("read2 fastq file does not exists.")}
@@ -99,7 +106,8 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
                                 i_rmlow,
                                 i_rmN,
                                 filter_settings$minq,
-                                filter_settings$numbq)
+                                filter_settings$numbq,
+                                write_gz)
   }
   else {
     stop("not implemented.")
