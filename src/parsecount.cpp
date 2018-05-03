@@ -1,8 +1,9 @@
 // parse count
 #include "parsecount.h"
 
-using std::string;
 using namespace Rcpp;
+
+using std::string;
 
 std::unordered_map<string, std::vector<string>> read_count(string fn, char sep)
 {

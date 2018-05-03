@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <unordered_map>
+#include <map>
 #include <algorithm>
 #include <Rcpp.h>
 #include "utils.h"
@@ -25,11 +25,18 @@ struct UMI_dedup_stat
     double C_prop;
 };
 
-std::unordered_map<std::string, std::vector<std::string>> read_count(std::string fn, char sep);
+std::unordered_map<std::string, std::vector<umi_pos_pair>> read_count(std::string fn, char sep);
 
-int UMI_correct1(std::unordered_map<std::string, int>& UMI_count);
+int UMI_correct1(std::unordered_map<umi_pos_pair, int>& UMI_count); // sequence
+int UMI_correct1(std::unordered_map<umi_pos_pair, int>& UMI_count); // sequence + position
 
-std::unordered_map<std::string, int> UMI_dedup(std::unordered_map<std::string, std::vector<std::string>> gene_read, std::vector<int>& UMI_dup_count, UMI_dedup_stat& s, int UMI_correct, bool read_filter);
+std::unordered_map<std::string, int> UMI_dedup(
+    std::unordered_map<std::string, std::vector<umi_pos_pair>> gene_read,
+    std::vector<int>& UMI_dup_count,
+    UMI_dedup_stat& s,
+    int UMI_correct,
+    bool read_filter
+);
 
 void write_mat(std::string fn, std::unordered_map<std::string, std::vector<int>> gene_cnt_matrix, std::vector<std::string> cellid_list);
 
