@@ -200,18 +200,22 @@ void rcpp_sc_detect_bc(Rcpp::CharacterVector infq,
                            Rcpp::CharacterVector suffix,
                            Rcpp::NumericVector bc_len,
                            Rcpp::NumericVector max_reads,
+                           Rcpp::NumericVector number_of_cells,
                            Rcpp::NumericVector min_count,
-                           Rcpp::NumericVector max_mismatch)
+                           Rcpp::NumericVector max_mismatch,
+                           Rcpp::CharacterVector white_list)
 {
   std::string c_infq = Rcpp::as<std::string>(infq);
   std::string c_outcsv = Rcpp::as<std::string>(outcsv);
   std::string c_suffix = Rcpp::as<std::string>(suffix);
+  std::string c_white_list = Rcpp::as<std::string>(white_list);
   int c_bc_len = Rcpp::as<int>(bc_len);
   int c_max_reads = Rcpp::as<int>(max_reads);
   int c_min_count = Rcpp::as<int>(min_count);
   int c_max_mismatch = Rcpp::as<int>(max_mismatch);
+  int c_number_of_cells = Rcpp::as<int>(number_of_cells);
   
-  std::unordered_map<std::string, int> counter = summarize_barcode(c_infq, c_bc_len, c_max_reads, c_max_mismatch, c_min_count);
-  write_barcode_summary(c_outcsv, c_suffix, counter);
+  std::unordered_map<std::string, int> counter = summarize_barcode(c_infq, c_bc_len, c_max_reads, c_max_mismatch, c_min_count, c_white_list);
+  write_barcode_summary(c_outcsv, c_suffix, counter, c_number_of_cells);
 }
 

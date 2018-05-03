@@ -65,3 +65,16 @@
     \item support gff files from gencode or refseq
   }
 }
+
+\section{Changes in version 1.1.0-1.1.3 (2018-4-29)}{
+  \itemize{
+    \item fix the bugs that related to the reimplementation of the exon mapping algorithm
+  }
+}
+
+\section{Changes in version 1.1.4 (2018-5-1)}{
+  \itemize{
+    \item improved the `sc_detect_bc` function. add white list which is a list of known 10x barcode
+    also added a new argument `number_of_cells` to limit the maximum number of cell barcodes in the result.
+  }
+}
