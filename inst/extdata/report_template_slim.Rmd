@@ -153,12 +153,15 @@ We perform normalization using `scater` and `scran`,
 ncells <- ncol(sce_qc)
 if (ncells > 200) {
   sce_qc <- computeSumFactors(sce_qc)
-  sce_qc <- computeSpikeFactors(sce_qc, general.use=FALSE)
 } else {
   sizes <- as.integer(c(ncells/7, ncells/6, ncells/5, ncells/4, ncells/3))
-  sce_qc <- computeSumFactors(sce_qc, sizes=sizes)
+}
+
+has_spikes_ins <- any( str_detect(rownames(sce_qc), "ERCC") )
+if (has_spikes_ins) {
   sce_qc <- computeSpikeFactors(sce_qc, general.use=FALSE)
 }
+
 summary(sizeFactors(sce_qc))
 ```
 
