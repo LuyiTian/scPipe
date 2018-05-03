@@ -5,10 +5,11 @@ using namespace Rcpp;
 using std::ifstream;
 using std::invalid_argument;
 using std::ostringstream;
+using std::stringstream;
 using std::setfill;
 using std::setw;
 using std::string;
-using std::unordered_map;
+using std::map;
 using std::vector;
 
 string join_path(const string p1, const string p2)
@@ -44,9 +45,9 @@ void check_file_exists(string fn)
 }
 
 // tally the element in vector
-unordered_map<umi_pos_pair, int> vector_counter(vector<umi_pos_pair> v)
+map<umi_pos_pair, int> vector_counter(vector<umi_pos_pair> v)
 {
-    unordered_map<umi_pos_pair, int> counter;
+    map<umi_pos_pair, int> counter;
     for(auto const& val: v)
     {
         if (counter.find(val) != counter.end())
