@@ -162,7 +162,10 @@ private:
         std::unordered_map<std::string, std::unordered_map<std::string, Gene>> &chr_to_genes_dict, std::unordered_map<std::string, std::string> &transcript_to_gene_dict
     );
 
+    // generic gene_id getter for gff3 entries
     std::string get_gene_id(const std::vector<std::string> &attributes);
+    
+    // specific gene_id getter for gff3 entries
     std::string get_gencode_gene_id(const std::vector<std::string> &attributes);
     std::string get_refseq_gene_id(const std::vector<std::string> &attributes);
 
