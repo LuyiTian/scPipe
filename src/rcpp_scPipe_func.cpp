@@ -85,11 +85,12 @@ void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam,
                           Rcpp::CharacterVector bc,
                           Rcpp::CharacterVector mb,
                           Rcpp::NumericVector bc_len,
+                          Rcpp::CharacterVector bc_vector,
                           Rcpp::NumericVector UMI_len,
                           Rcpp::NumericVector stnd,
                           Rcpp::NumericVector fix_chr)
 {
-  std::string c_inbam = Rcpp::as<std::string>(inbam);
+  //std::string c_inbam = Rcpp::as<std::string>(inbam);
   std::string c_outbam = Rcpp::as<std::string>(outbam);
 
   std::string c_am = Rcpp::as<std::string>(am);
@@ -101,6 +102,8 @@ void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam,
   int c_UMI_len = Rcpp::as<int>(UMI_len);
   bool c_stnd = Rcpp::as<int>(stnd)==1?true:false;
   bool c_fix_chr = Rcpp::as<int>(fix_chr)==1?true:false;
+  std::vector<std::string> c_inbam_vec = Rcpp::as<std::vector<std::string>>(inbam);
+  std::vector<std::string> c_bc_vec = Rcpp::as<std::vector<std::string>>(bc_vector);
   std::vector<std::string> token = Rcpp::as<std::vector<std::string>>(annofn);
   Mapping a = Mapping();
   Rcpp::Rcout << "adding annotation files..." << "\n";
@@ -116,8 +119,8 @@ void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam,
   Rcpp::Rcout << "annotating exon features..." << "\n";
 
   timer.start();
-
-  a.parse_align(c_inbam, c_outbam, c_stnd, c_am, c_ge, c_bc, c_mb, c_bc_len, c_UMI_len);
+  a.parse_align_warpper(c_inbam_vec, c_bc_vec, c_outbam, c_stnd, c_am, c_ge, c_bc, c_mb, c_bc_len, c_UMI_len);
+  //a.parse_align(c_inbam, c_outbam, c_stnd, c_am, c_ge, c_bc, c_mb, c_bc_len, c_UMI_len);
 
   Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
 }

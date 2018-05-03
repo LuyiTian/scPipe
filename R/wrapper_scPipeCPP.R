@@ -113,9 +113,19 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' The result will be written into optional fields in bam file with different
 #' tags. Following this link for more information regarding to bam file format:
 #' http://samtools.github.io/hts-specs
+#' 
+#' The function can accpet multiple bam file as input, if multiple bam file is
+#' provided and the `bc_len` is zero, then the function will use the barcode in 
+#' the `barcode_vector` to insert into the `bc` bam tag. So the length of 
+#' `barcode_vector` and the length of `inbam` should be the same
+#' If this is the case then the `max_mis` argument in `sc_demultiplex`
+#' should be zero. If `be_len` is larger than zero, then the function will 
+#' still seek for barcode in fastq headers with given length. In this case 
+#' each bam file is not treated as from a single cell.
+#' 
 #'
 #' @name sc_exon_mapping
-#' @param inbam input aligned bam file
+#' @param inbam input aligned bam file. can have multiple files as input
 #' @param outbam output bam filename
 #' @param annofn single string or vector of gff3 annotation filenames
 #' @param bam_tags list defining BAM tags where mapping information is
@@ -127,6 +137,9 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #'     \item "mb": molecular barcode tag
 #'   }
 #' @param bc_len total barcode length
+#' @param barcode_vector a list of barcode if each individual bam is a single 
+#' cell. (default: NULL). The barcode should be of the same length for each
+#' cell.
 #' @param UMI_len UMI length
 #' @param stnd TRUE to perform strand specific mapping. (default: TRUE)
 #' @param fix_chr TRUE to add `chr` to chromosome names, MT to chrM. (default: FALSE)
@@ -148,7 +161,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #'
 sc_exon_mapping = function(inbam, outbam, annofn,
                             bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-                            bc_len=8, UMI_len=6, stnd=TRUE, fix_chr=FALSE) {
+                            bc_len=8, barcode_vector="", UMI_len=6, stnd=TRUE, fix_chr=FALSE) {
   if (stnd) {
     i_stnd = 1
   }
@@ -173,9 +186,10 @@ sc_exon_mapping = function(inbam, outbam, annofn,
   } else {
     annofn = path.expand(annofn)
   }
+  
 
-  rcpp_sc_exon_mapping(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
-                       UMI_len, stnd, fix_chr)
+  rcpp_sc_exon_mapping(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len, 
+                       barcode_vector, UMI_len, stnd, fix_chr)
 }
 
 

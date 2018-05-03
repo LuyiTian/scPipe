@@ -5,8 +5,8 @@ rcpp_sc_trim_barcode_paired <- function(outfq, r1, r2, bs1, bl1, bs2, bl2, us, u
     invisible(.Call('_scPipe_rcpp_sc_trim_barcode_paired', PACKAGE = 'scPipe', outfq, r1, r2, bs1, bl1, bs2, bl2, us, ul, rmlow, rmN, minq, numbq))
 }
 
-rcpp_sc_exon_mapping <- function(inbam, outbam, annofn, am, ge, bc, mb, bc_len, UMI_len, stnd, fix_chr) {
-    invisible(.Call('_scPipe_rcpp_sc_exon_mapping', PACKAGE = 'scPipe', inbam, outbam, annofn, am, ge, bc, mb, bc_len, UMI_len, stnd, fix_chr))
+rcpp_sc_exon_mapping <- function(inbam, outbam, annofn, am, ge, bc, mb, bc_len, bc_vector, UMI_len, stnd, fix_chr) {
+    invisible(.Call('_scPipe_rcpp_sc_exon_mapping', PACKAGE = 'scPipe', inbam, outbam, annofn, am, ge, bc, mb, bc_len, bc_vector, UMI_len, stnd, fix_chr))
 }
 
 rcpp_sc_demultiplex <- function(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito, has_UMI) {

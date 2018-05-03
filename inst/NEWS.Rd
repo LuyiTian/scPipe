@@ -78,3 +78,10 @@
     also added a new argument `number_of_cells` to limit the maximum number of cell barcodes in the result.
   }
 }
+
+\section{Changes in version 1.3.1 (y version bumped by bioconductor) (2018-5-3)}{
+  \itemize{
+    \item updated the `sc_exon_mappping` function so it can accept multiple bam files now, together with
+    a list of cell id or cell barcode.
+  }
+}

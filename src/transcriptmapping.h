@@ -190,11 +190,12 @@ public:
     //  4 - unaligned
     int map_exon(bam_hdr_t *header, bam1_t *b, std::string& gene_id, bool m_strand);
 
-
+    void parse_align_warpper(std::vector<std::string> fn_vec, std::vector<std::string> cell_id_vec, std::string fn_out, bool m_strand, std::string map_tag, std::string gene_tag, std::string cellular_tag, std::string molecular_tag, int bc_len, int UMI_len);
     // @param: m_strand, match based on strand or not
     // @param: fn_out, output bam file
-    // @param: 
-    void parse_align(std::string fn, std::string fn_out, bool m_strand, std::string map_tag, std::string gene_tag, std::string cellular_tag, std::string molecular_tag, int bc_len, int UMI_len);
+    // @param: write_mode, whether to write (wb) or attach (ab) to a bam file.
+    // @param: cell_id, to provide the cell barcode, if not in the header of fastq file.
+    void parse_align(std::string fn, std::string fn_out, bool m_strand, std::string map_tag, std::string gene_tag, std::string cellular_tag, std::string molecular_tag, int bc_len, std::string write_mode, std::string cell_id, int UMI_len);
 
     /* data */
 };
