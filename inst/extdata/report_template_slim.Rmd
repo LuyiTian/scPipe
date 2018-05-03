@@ -176,7 +176,7 @@ if (min(sizeFactors(sce_qc)) <= 0) {
 PCA plot using gene expressions as input, colored by the number of genes.
 
 ```{r}
-cpm(sce_qc) = calculateCPM(sce_qc, use.size.factors=TRUE)
+cpm(sce_qc) = calculateCPM(sce_qc, use_size_factors=TRUE)
 plotPCA(sce_qc, exprs_values="cpm", colour_by="total_features")
 ```
 
