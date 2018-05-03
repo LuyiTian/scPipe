@@ -85,12 +85,12 @@ context("Testing classes") {
 context("Test with toy inputs") {
   test_that("Barcode reading works") {
     Barcode bar;
-    std::string fn = "./inst/extdata/barcode_anno.csv";
+    std::string fn = "../../inst/extdata/barcode_anno.csv";
     bar.read_anno(fn);
 
     expect_true(bar.barcode_dict.count("ATCTGCCC") > 0);
     expect_true(bar.barcode_dict["ACGATCGA"] == "CELL003");
-    expect_true(bar.cellid_list.size() == 3);
-    expect_true(bar.barcode_list.size() == 4);
+    expect_true(bar.cellid_list.size() == 10);
+    expect_true(bar.barcode_list.size() == 10);
   }
 }
