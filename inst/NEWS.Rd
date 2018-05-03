@@ -79,7 +79,7 @@
   }
 }
 
-\section{Changes in version 1.3.1 (2018-5-3)}{
+\section{Changes in version 1.3.2 (2018-5-3)}{
   \itemize{
     \item Added gzipped output for `sc_trim_barcode()`, if output filename ends with `.gz` then gzipped output will be produced.
     \item Added `get_read_str()` function for getting common read structures.
