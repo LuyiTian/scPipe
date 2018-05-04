@@ -2,9 +2,10 @@
 
 using std::string;
 
-Gene::Gene(string id, int st, int en, int snd): Interval(st, en, snd), gene_id(id) {}
-Gene::Gene(string id, int snd): Interval(-1, -1, snd), gene_id(id) {}
-Gene::Gene(): Interval(-1, -1, 0), gene_id("") {}
+Gene::Gene(string id, int st, int en, int snd) : Interval(st, en, snd), gene_id(id) {}
+Gene::Gene(string id, int snd)                 : Interval(-1, -1, snd), gene_id(id) {}
+Gene::Gene(string id)                          : Interval(-1, -1, 0), gene_id(id) {}
+Gene::Gene()                                   : Interval(-1, -1, 0), gene_id("") {}
 
 void Gene::set_ID(string id)
 {
@@ -15,11 +16,11 @@ void Gene::add_exon(Interval it)
 {
         exon_vec.push_back(it);
         // expand the gene interval to include the new exon
-        if (st>it.st || st<0)
+        if (st > it.st || st < 0)
         {
             st = it.st;
         }
-        if (en < it.en || en<0)
+        if (en < it.en || en < 0)
         {
             en = it.en;
         }
@@ -109,7 +110,7 @@ void Gene::flatten_exon() {
             merged_exons.push_back(exon);
         }
         else if (exon.en > last_merged_exon.en) {
-            // if new exon does overlaps last merged exon and ends later
+            // if new exon does overlap last merged exon and ends later
             auto temp_exon = exon;
             temp_exon.st = last_merged_exon.st;
             merged_exons.back() = temp_exon;

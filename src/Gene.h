@@ -16,6 +16,7 @@ public:
 
     Gene(std::string id, int st, int en, int snd);
     Gene(std::string id, int snd);
+    Gene(std::string id);
     Gene();
 
     void set_ID(std::string id);
