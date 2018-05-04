@@ -26,7 +26,6 @@ public:
     bool in_exon(const Interval &it);
     bool in_exon(const Interval &it, const bool check_strand);
 
-    int distance_to_end(Interval it);
     // sort exons by starting position
     void sort_exon();
     // flattens exons so that overlapping exons are merged

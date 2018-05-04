@@ -30,45 +30,6 @@ void Gene::add_exon(Interval it)
         }
 }
 
-int Gene::distance_to_end(Interval it)
-{
-    int distance = 0;
-    int tmp_en = 0;
-    auto iter = std::lower_bound(exon_vec.begin(), exon_vec.end(), it);
-    if (snd == 1)
-    {
-        distance += iter->en - ((iter->st)>it.st?(iter->st):it.st);
-        tmp_en = iter->en;
-        for (auto i = iter+1; i != exon_vec.end(); ++i)
-        {
-            if (tmp_en < i->st)
-            {
-                distance += i->en - i->st;
-                tmp_en = i->en;
-            }
-
-        }
-
-    }
-    else if (snd == -1)
-    {
-        for (auto i = exon_vec.begin(); i != iter; ++i)
-        {
-            if (tmp_en < i->st)
-            {
-                distance += i->en - i->st;
-                tmp_en = i->en;
-            }
-        }
-        if (tmp_en < iter->st)
-        {
-            distance += ((iter->en)<it.en?(iter->en):it.en) - iter->st;
-        }
-    }
-
-    return distance;
-}
-
 bool Gene::in_exon(const Interval &it)
 {
     auto search_result = std::find(exon_vec.begin(), exon_vec.end(), it);
