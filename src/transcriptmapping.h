@@ -23,7 +23,7 @@
 #define TRANSCRIPTMAPPING_H
 
 class GeneBin {
-typedef unsigned long long ull_int;
+using ull_int = unsigned long long;
 public:
     // class data
     ull_int start;
@@ -134,15 +134,15 @@ public:
     
 private:
     // index variables for gff3 fields
-    const int SEQID = 0;
-    const int SOURCE = 1;
-    const int TYPE = 2;
-    const int START = 3;
-    const int END = 4;
-    const int SCORE = 5;
-    const int STRAND = 6;
-    const int PHASE = 7;
-    const int ATTRIBUTES  = 8;
+    const int SEQID      = 0;
+    const int SOURCE     = 1;
+    const int TYPE       = 2;
+    const int START      = 3;
+    const int END        = 4;
+    const int SCORE      = 5;
+    const int STRAND     = 6;
+    const int PHASE      = 7;
+    const int ATTRIBUTES = 8;
 
     // get attribute from gff3 standard columns
     std::string get_attribute(const std::vector<std::string> &all_attributes, const std::string &target_attribute);
@@ -159,7 +159,8 @@ private:
     void parse_anno_entry(
         const bool &fix_chrname,
         const std::string &line,
-        std::unordered_map<std::string, std::unordered_map<std::string, Gene>> &chr_to_genes_dict, std::unordered_map<std::string, std::string> &transcript_to_gene_dict
+        std::unordered_map<std::string, std::unordered_map<std::string, Gene>> &chr_to_genes_dict,
+        std::unordered_map<std::string, std::string> &transcript_to_gene_dict
     );
 
     // generic gene_id getter for gff3 entries
