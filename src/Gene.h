@@ -1,8 +1,10 @@
-#pragma once
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include "Interval.h"
+
+#ifndef GENE_H
+#define GENE_H
 
 // for position, we dont store chromosome info because we will put genes from the same chromosome
 // together in a hashmap
@@ -31,3 +33,5 @@ public:
 
     friend std::ostream& operator<< (std::ostream& out, const Gene& obj);
 };
+
+#endif

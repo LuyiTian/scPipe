@@ -1,6 +1,8 @@
-#pragma once
 #include <chrono>
 #include <string>
+
+#ifndef TIMER_H
+#define TIMER_H
 
 class Timer {
     typedef std::chrono::nanoseconds nanoseconds;
@@ -69,3 +71,4 @@ class Timer {
             return std::chrono::high_resolution_clock::now() - _start_time;
         }
 };
+#endif
