@@ -5,11 +5,11 @@
 \title{sc_exon_mapping}
 \usage{
 sc_exon_mapping(inbam, outbam, annofn, bam_tags = list(am = "YE", ge = "GE",
-  bc = "BC", mb = "OX"), bc_len = 8, UMI_len = 6, stnd = TRUE,
-  fix_chr = FALSE)
+  bc = "BC", mb = "OX"), bc_len = 8, barcode_vector = "", UMI_len = 6,
+  stnd = TRUE, fix_chr = FALSE)
 }
 \arguments{
-\item{inbam}{input aligned bam file}
+\item{inbam}{input aligned bam file. can have multiple files as input}
 
 \item{outbam}{output bam filename}
 
@@ -26,6 +26,10 @@ stored.
 
 \item{bc_len}{total barcode length}
 
+\item{barcode_vector}{a list of barcode if each individual bam is a single 
+cell. (default: NULL). The barcode should be of the same length for each
+cell.}
+
 \item{UMI_len}{UMI length}
 
 \item{stnd}{TRUE to perform strand specific mapping. (default: TRUE)}
@@ -40,6 +44,15 @@ Map aligned reads to exon annotation.
 The result will be written into optional fields in bam file with different
 tags. Following this link for more information regarding to bam file format:
 http://samtools.github.io/hts-specs
+
+The function can accpet multiple bam file as input, if multiple bam file is
+provided and the `bc_len` is zero, then the function will use the barcode in 
+the `barcode_vector` to insert into the `bc` bam tag. So the length of 
+`barcode_vector` and the length of `inbam` should be the same
+If this is the case then the `max_mis` argument in `sc_demultiplex`
+should be zero. If `be_len` is larger than zero, then the function will 
+still seek for barcode in fastq headers with given length. In this case 
+each bam file is not treated as from a single cell.
 }
 \examples{
 data_dir="celseq2_demo"
