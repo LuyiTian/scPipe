@@ -1,4 +1,6 @@
-#pragma once
+#ifndef INTERVAL_H
+#define INTERVAL_H
+
 // the general interval class
 class Interval
 {
@@ -6,14 +8,15 @@ public:
     int st;
     int en;
     int snd; // strand, -1 for negative, 1 for positive, 0 for unknown
-    Interval(int s, int e);
-    Interval(int s, int e, int sd);
+    
+    Interval(int start, int end);
+    Interval(int start, int end, int strand);
 
-    // check if interval (st1, en1) overlaps with (st2, en2)
-    // return -1 if (st2, en2) on the left side of (st1, en1)
-    // return 1 if (st2, en2) on the right side of (st1, en1)
+    // check if this interval overlaps with (start, end)
+    // return -1 if (start, end) on the left side of this interval
+    // return 1 if (start, end) on the right side of this interval
     // return 0 if overlap
-    int overlap(int st2, int en2);
+    int overlap(int start, int end);
 
     friend inline bool operator < (const Interval &L, const Interval &R) {
         return L.en < R.st;
@@ -25,3 +28,5 @@ public:
         return !(L<R) && !(L>R);
     };
 };
+
+#endif

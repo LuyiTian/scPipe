@@ -2,9 +2,10 @@
 
 using std::string;
 
-Gene::Gene(string id, int st, int en, int snd): Interval(st, en, snd), gene_id(id) {}
-Gene::Gene(string id, int snd): Interval(-1, -1, snd), gene_id(id) {}
-Gene::Gene(): Interval(-1, -1, 0), gene_id("") {}
+Gene::Gene(string id, int st, int en, int snd) : Interval(st, en, snd), gene_id(id) {}
+Gene::Gene(string id, int snd)                 : Interval(-1, -1, snd), gene_id(id) {}
+Gene::Gene(string id)                          : Interval(-1, -1, 0), gene_id(id) {}
+Gene::Gene()                                   : Interval(-1, -1, 0), gene_id("") {}
 
 void Gene::set_ID(string id)
 {
@@ -15,11 +16,11 @@ void Gene::add_exon(Interval it)
 {
         exon_vec.push_back(it);
         // expand the gene interval to include the new exon
-        if (st>it.st || st<0)
+        if (st > it.st || st < 0)
         {
             st = it.st;
         }
-        if (en < it.en || en<0)
+        if (en < it.en || en < 0)
         {
             en = it.en;
         }
@@ -27,45 +28,6 @@ void Gene::add_exon(Interval it)
         {
             snd = it.snd;
         }
-}
-
-int Gene::distance_to_end(Interval it)
-{
-    int distance = 0;
-    int tmp_en = 0;
-    auto iter = std::lower_bound(exon_vec.begin(), exon_vec.end(), it);
-    if (snd == 1)
-    {
-        distance += iter->en - ((iter->st)>it.st?(iter->st):it.st);
-        tmp_en = iter->en;
-        for (auto i = iter+1; i != exon_vec.end(); ++i)
-        {
-            if (tmp_en < i->st)
-            {
-                distance += i->en - i->st;
-                tmp_en = i->en;
-            }
-
-        }
-
-    }
-    else if (snd == -1)
-    {
-        for (auto i = exon_vec.begin(); i != iter; ++i)
-        {
-            if (tmp_en < i->st)
-            {
-                distance += i->en - i->st;
-                tmp_en = i->en;
-            }
-        }
-        if (tmp_en < iter->st)
-        {
-            distance += ((iter->en)<it.en?(iter->en):it.en) - iter->st;
-        }
-    }
-
-    return distance;
 }
 
 bool Gene::in_exon(const Interval &it)
@@ -109,7 +71,7 @@ void Gene::flatten_exon() {
             merged_exons.push_back(exon);
         }
         else if (exon.en > last_merged_exon.en) {
-            // if new exon does overlaps last merged exon and ends later
+            // if new exon does overlap last merged exon and ends later
             auto temp_exon = exon;
             temp_exon.st = last_merged_exon.st;
             merged_exons.back() = temp_exon;

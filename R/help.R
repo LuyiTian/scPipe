@@ -9,6 +9,6 @@
 #' @import Rhtslib
 #' @import SingleCellExperiment
 #' @import Rcpp
-#' @useDynLib scPipe
+#' @useDynLib scPipe, .registration = TRUE
 #' @aliases scPipe scPipe-package
 NULL

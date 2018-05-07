@@ -2,7 +2,7 @@
 #include <string>
 #include <fstream>
 #include <stdexcept>
-#include <unordered_map>
+#include <map>
 #include <sstream>
 #include <vector>
 #include <iomanip>
@@ -12,6 +12,8 @@
 
 #ifndef UTILS_H
 #define UTILS_H
+
+typedef std::pair<std::string, int> umi_pos_pair;
 
 // join two paths, add separator if p1 does not end with it.
 std::string join_path(const std::string p1, const std::string p2);
@@ -26,7 +28,7 @@ int hamming_distance(std::string A, std::string B);
 void check_file_exists (std::string name);
 
 // count times of occurrence in a string vector
-std::unordered_map<std::string, int> vector_counter(std::vector<std::string> v);
+std::map<umi_pos_pair, int> vector_counter(std::vector<umi_pos_pair> v);
 
 // split a string by given delimiter
 // from: http://stackoverflow.com/questions/236129/split-a-string-in-c

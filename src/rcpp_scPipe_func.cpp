@@ -56,20 +56,22 @@ void rcpp_sc_trim_barcode_paired(Rcpp::CharacterVector outfq,
                                  Rcpp::NumericVector rmlow,
                                  Rcpp::NumericVector rmN,
                                  Rcpp::NumericVector minq,
-                                 Rcpp::NumericVector numbq) {
+                                 Rcpp::NumericVector numbq,
+                                 Rcpp::LogicalVector write_gz) {
 
   std::string c_outfq = Rcpp::as<std::string>(outfq);
   std::string c_r1 = Rcpp::as<std::string>(r1);
   std::string c_r2 = Rcpp::as<std::string>(r2);
   read_s s = get_read_structure(bs1, bl1, bs2, bl2, us, ul);
   filter_s fl = get_filter_structure(rmlow, rmN, minq, numbq);
+  bool c_write_gz = Rcpp::as<bool>(write_gz);
 
   Rcpp::Rcout << "trimming fastq file..." << "\n";
 
   Timer timer;
   timer.start();
 
-  paired_fastq_to_fastq((char *)c_r1.c_str(), (char *)c_r2.c_str(), (char *)c_outfq.c_str(), s, fl);
+  paired_fastq_to_fastq((char *)c_r1.c_str(), (char *)c_r2.c_str(), (char *)c_outfq.c_str(), s, fl, c_write_gz);
 
   Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
 }

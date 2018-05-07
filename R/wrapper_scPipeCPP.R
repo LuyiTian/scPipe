@@ -81,6 +81,13 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
     i_rmN = 0
   }
 
+  if (substr(outfq, nchar(outfq) - 2, nchar(outfq)) == ".gz") {
+    write_gz = TRUE
+  }
+  else {
+    write_gz = FALSE
+  }
+
   if (!is.null(r2)) {
     if (!file.exists(r1)) {stop("read1 fastq file does not exists.")}
     if (!file.exists(r2)) {stop("read2 fastq file does not exists.")}
@@ -99,7 +106,8 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
                                 i_rmlow,
                                 i_rmN,
                                 filter_settings$minq,
-                                filter_settings$numbq)
+                                filter_settings$numbq,
+                                write_gz)
   }
   else {
     stop("not implemented.")
@@ -271,7 +279,8 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 #' @param bc_anno barcode annotation comma-separated-values, first column is
 #'   cell id, second column is cell barcode sequence
 #' @param UMI_cor correct UMI sequencing error: 0 means no correction, 1 means
-#'   simple correction and merge UMI with distance 1.
+#'   simple correction and merge UMI with distance 1. 2 means merge on both UMI
+#'   alignment position match.
 #' @param gene_fl whether to remove low abundance genes. A gene is considered to
 #'   have low abundance if only one copy of one UMI is associated with it.
 #'
@@ -288,7 +297,7 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 #' ...
 #' }
 #'
-sc_gene_counting = function(outdir, bc_anno, UMI_cor=1, gene_fl=FALSE) {
+sc_gene_counting = function(outdir, bc_anno, UMI_cor=2, gene_fl=FALSE) {
   if (!dir.exists(outdir))
     dir.create(outdir, recursive = TRUE)
 

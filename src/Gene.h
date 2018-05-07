@@ -1,8 +1,10 @@
-#pragma once
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include "Interval.h"
+
+#ifndef GENE_H
+#define GENE_H
 
 // for position, we dont store chromosome info because we will put genes from the same chromosome
 // together in a hashmap
@@ -14,6 +16,7 @@ public:
 
     Gene(std::string id, int st, int en, int snd);
     Gene(std::string id, int snd);
+    Gene(std::string id);
     Gene();
 
     void set_ID(std::string id);
@@ -23,7 +26,6 @@ public:
     bool in_exon(const Interval &it);
     bool in_exon(const Interval &it, const bool check_strand);
 
-    int distance_to_end(Interval it);
     // sort exons by starting position
     void sort_exon();
     // flattens exons so that overlapping exons are merged
@@ -31,3 +33,5 @@ public:
 
     friend std::ostream& operator<< (std::ostream& out, const Gene& obj);
 };
+
+#endif
