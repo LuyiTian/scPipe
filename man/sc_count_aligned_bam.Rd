@@ -46,7 +46,8 @@ This should be consistant with the chromosome names in the bam file.}
 \item{has_UMI}{whether the protocol contains UMI (default: TRUE)}
 
 \item{UMI_cor}{correct UMI sequencing error: 0 means no correction, 1 means
-simple correction and merge UMI with distance 1.}
+simple correction and merge UMI with distance 1. 2 means merge on both UMI
+alignment position match.}
 
 \item{gene_fl}{whether to remove low abundance genes. A gene is considered to
 have low abundance if only one copy of one UMI is associated with it.}
