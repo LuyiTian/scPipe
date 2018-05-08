@@ -4,7 +4,7 @@
 \alias{sc_gene_counting}
 \title{sc_gene_counting}
 \usage{
-sc_gene_counting(outdir, bc_anno, UMI_cor = 1, gene_fl = FALSE)
+sc_gene_counting(outdir, bc_anno, UMI_cor = 2, gene_fl = FALSE)
 }
 \arguments{
 \item{outdir}{output folder containing \code{sc_demultiplex} output}
@@ -13,7 +13,8 @@ sc_gene_counting(outdir, bc_anno, UMI_cor = 1, gene_fl = FALSE)
 cell id, second column is cell barcode sequence}
 
 \item{UMI_cor}{correct UMI sequencing error: 0 means no correction, 1 means
-simple correction and merge UMI with distance 1.}
+simple correction and merge UMI with distance 1. 2 means merge on both UMI
+alignment position match.}
 
 \item{gene_fl}{whether to remove low abundance genes. A gene is considered to
 have low abundance if only one copy of one UMI is associated with it.}
