@@ -442,7 +442,8 @@ ostream& operator<< (ostream& out, const GeneAnnotation& obj)
 
 void Mapping::add_annotation(string gff3_fn, bool fix_chrname)
 {
-    if (gff3_fn.substr(gff3_fn.find_last_of(".") + 1) == "gff3")
+    if (gff3_fn.substr(gff3_fn.find_last_of(".")) == ".gff3" ||
+        gff3_fn.substr(gff3_fn.find_last_of(".")) == ".gff")
     {
         Rcout << "adding gff3 annotation: " << gff3_fn << "\n";
         Anno.parse_gff3_annotation(gff3_fn, fix_chrname);
