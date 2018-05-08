@@ -79,6 +79,13 @@
   }
 }
 
+\section{Changes in version 1.3.1 (y version bumped by bioconductor) (2018-5-3)}{
+  \itemize{
+    \item updated the `sc_exon_mappping` function so it can accept multiple bam files now, together with
+    a list of cell id or cell barcode.
+  }
+}
+
 \section{Changes in version 1.3.2 (2018-5-3)}{
   \itemize{
     \item Added gzipped output for `sc_trim_barcode()`, if output filename ends with `.gz` then gzipped output will be produced.

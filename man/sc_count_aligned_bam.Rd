@@ -10,7 +10,7 @@ sc_count_aligned_bam(inbam, outbam, annofn, bam_tags = list(am = "YE", ge =
   has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE, keep_mapped_bam = TRUE)
 }
 \arguments{
-\item{inbam}{input aligned bam file}
+\item{inbam}{input aligned bam file. can have multiple files as input}
 
 \item{outbam}{output bam filename}
 
