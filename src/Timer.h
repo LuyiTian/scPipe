@@ -23,7 +23,7 @@ class Timer {
         }
 
         std::string time_elapsed() {
-            if (seconds_elapsed() < 1) {
+            if (seconds_elapsed() < 3) {
                 return std::to_string(milliseconds_elapsed()) + " milliseconds";
             }
             if (seconds_elapsed() <= 300) {

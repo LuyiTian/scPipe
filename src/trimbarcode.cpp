@@ -381,10 +381,14 @@ void paired_fastq_to_fastq(
     seq1 =  kseq_init(fq1);
     kseq_t *seq2;
     seq2 =  kseq_init(fq2);
+
+    size_t _interrupt_ind = 0;
     // main loop, iter through each fastq records
     // ideally there should be equal number of reads in fq1 and fq2. we dont check this.
     while (((l1 = kseq_read(seq1)) >= 0) && ((l2 = kseq_read(seq2)) >= 0))
     {
+        if (++_interrupt_ind % 4096 == 0) R_CheckUserInterrupt();
+
         // qual check before we do anything
         if (filter_settings.if_check_qual)
         {
