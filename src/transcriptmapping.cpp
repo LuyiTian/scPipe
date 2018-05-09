@@ -310,7 +310,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     // create transcript-gene mapping
     while (getline(infile, line))
     {
-        if (++_interrupt_ind % 64 == 0) R_CheckUserInterrupt();
+        if (++_interrupt_ind % 64 == 0) checkUserInterrupt()();
         // skip header lines
         if (line[0] == '#')
         {
@@ -691,7 +691,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
             }
         }
         cnt++;
-        if (cnt % 32768 == 0) R_CheckUserInterrupt();
+        if (cnt % 32768 == 0) checkUserInterrupt()();
 
         // The Rcout would be conceptually cleaner if it lived inside the spawned thread
         // but only the master thread can interact with R without error so this code CANNOT
