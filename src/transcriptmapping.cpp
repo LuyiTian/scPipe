@@ -512,11 +512,17 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
                                 tmp_ret = 1; // ambiguous mapping
                                 break;
                             }
+                            else
+                            {
+                                // update the distance to end pos
+                                tmp_rest = tmp_rest<(gene.distance_to_end(it))?tmp_rest:gene.distance_to_end(it);
+                            }
                         }
                         else
                         {
                             tmp_id = gene.gene_id;
                             tmp_ret = 0;
+                            tmp_rest = gene.distance_to_end(it);
                         }
                     }
                     else if ((it > gene) || (it < gene))

@@ -20,6 +20,8 @@ public:
     Gene();
 
     void set_ID(std::string id);
+    
+    int distance_to_end(Interval it);
 
     void add_exon(Interval it);
 

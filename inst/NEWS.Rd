@@ -92,3 +92,9 @@
     \item Added `get_read_str()` function for getting common read structures.
   }
 }
+
+\section{Changes in version 1.3.4 (2018-5-14)}{
+  \itemize{
+    \item put `distance_to_end` back.
+  }
+}
