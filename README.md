@@ -12,13 +12,16 @@ The package is under active development. Feel free to ask any questions or submi
 
 ### From Bioconductor
 
-coming soon
+```
+source("https://bioconductor.org/biocLite.R")
+biocLite("scPipe")
+```
 
 ### From GitHub
 
 ```{r}
-  install.packages("devtools")
-  devtools::install_github("LuyiTian/scPipe")
+install.packages("devtools")
+devtools::install_github("LuyiTian/scPipe")
 ```
 
 ## Getting started
@@ -39,4 +42,4 @@ AAGACGTCTAAGGGCGGTGTACACCCTTTTGAGCAATGATTGCACAACCTGCGATCACCTTATACAGAATTAT+AAAAAA
 For further examples see the vignette.
 
 ## Acknowledgements
-This package is inspired by the `scater` and `scran` packages. The idea to put cell barcode and UMI sequences into the BAM file is from (Drop-seq tools)[http://mccarrolllab.com/dropseq/]. We thank Dr Aaron Lun for suggestions on package development.
+This package is inspired by the `scater` and `scran` packages. The idea to put cell barcode and UMI sequences into the BAM file is from [Drop-seq tools](http://mccarrolllab.com/dropseq/). We thank Dr Aaron Lun for suggestions on package development.

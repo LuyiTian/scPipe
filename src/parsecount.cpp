@@ -133,7 +133,7 @@ int UMI_correct2(map<umi_pos_pair, int>& UMI_count)
 unordered_map<string, int> UMI_dedup(
     unordered_map<string, vector<umi_pos_pair>> gene_read,
     vector<int>& UMI_dup_count,
-    UMI_dedup_stat& s,
+    struct UMI_dedup_stat& dedup_stat,
     int UMI_correct,
     bool read_filter
 )
@@ -144,18 +144,18 @@ unordered_map<string, int> UMI_dedup(
     {
         if (read_filter && a_gene.second.size() == 1)
         {
-            s.filtered_gene++;
+            dedup_stat.filtered_gene++;
             continue;
         }
 
         map<umi_pos_pair, int> UMI_count = vector_counter(a_gene.second);
         if (UMI_correct == 1)
         {
-            s.corrected_UMI += UMI_correct1(UMI_count);
+            dedup_stat.corrected_UMI += UMI_correct1(UMI_count);
         }
         else if (UMI_correct == 2)
         {
-            s.corrected_UMI += UMI_correct2(UMI_count);
+            dedup_stat.corrected_UMI += UMI_correct2(UMI_count);
         }
         else
         {
@@ -179,8 +179,6 @@ unordered_map<string, int> UMI_dedup(
         //TODO: add ATCG percentage
         gene_counter[a_gene.first] = UMI_count.size();
     }
-
-
 
     return gene_counter;
 }

@@ -306,9 +306,11 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
     // assigned to class member
     anno_source = guess_anno_source(gff3_fn);
 
+    size_t _interrupt_ind = 0;
     // create transcript-gene mapping
     while (getline(infile, line))
     {
+        if (++_interrupt_ind % 256 == 0) checkUserInterrupt();
         // skip header lines
         if (line[0] == '#')
         {
@@ -442,7 +444,8 @@ ostream& operator<< (ostream& out, const GeneAnnotation& obj)
 
 void Mapping::add_annotation(string gff3_fn, bool fix_chrname)
 {
-    if (gff3_fn.substr(gff3_fn.find_last_of(".") + 1) == "gff3")
+    if (gff3_fn.substr(gff3_fn.find_last_of(".")) == ".gff3" ||
+        gff3_fn.substr(gff3_fn.find_last_of(".")) == ".gff")
     {
         Rcout << "adding gff3 annotation: " << gff3_fn << "\n";
         Anno.parse_gff3_annotation(gff3_fn, fix_chrname);
@@ -472,7 +475,9 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
         string chr_name{header->target_name[b->core.tid]};
         // *   bit 1 set if the cigar operation consumes the query
         // *   bit 2 set if the cigar operation consumes the reference
-        if (((bam_cigar_type(cig[c]) >> 0) & 1) && ((bam_cigar_type(cig[c]) >> 1) & 1))
+        const bool consumes_qry = (bam_cigar_type(cig[c]) >> 0) & 1;
+        const bool consumes_ref = (bam_cigar_type(cig[c]) >> 1) & 1;
+        if (consumes_qry && consumes_ref)
         {
             Interval it = Interval(tmp_pos, tmp_pos+bam_cigar_oplen(cig[c]), rev);
             auto &bins_list = Anno.bins_dict[chr_name];
@@ -544,9 +549,9 @@ int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_stra
                 ret = ret<tmp_ret?ret:tmp_ret; // choose the smallest
             }
         }
-        else if (!((bam_cigar_type(cig[c]) >> 0) & 1) && ((bam_cigar_type(cig[c]) >> 1) & 1))
+        else if (!consumes_qry && consumes_ref)
         {
-            tmp_pos = tmp_pos+bam_cigar_oplen(cig[c]);
+            tmp_pos += bam_cigar_oplen(cig[c]);
         }
     }
     if (ret == 0)
@@ -631,7 +636,6 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     bam_hdr_t *header = bam_hdr_read(fp);
     sam_hdr_write(of, header);
 
-    string gene_id;
     int tmp_c[4] = {0,0,0,0};
 
     bool found_any = false;
@@ -676,6 +680,8 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
 
     while (bam_read1(fp, b) >= 0)
     {
+        string gene_id;
+
         if (__DEBUG)
         {
             if (cnt % 1000000 == 0)
@@ -685,6 +691,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
             }
         }
         cnt++;
+        if (cnt % 32768 == 0) checkUserInterrupt();
 
         // The Rcout would be conceptually cleaner if it lived inside the spawned thread
         // but only the master thread can interact with R without error so this code CANNOT

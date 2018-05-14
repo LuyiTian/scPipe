@@ -42,10 +42,22 @@ public:
     std::unordered_map<std::string, int> cell_ERCC;
     std::unordered_map<std::string, int> cell_MT;
 
-    Bamdemultiplex(std::string odir, Barcode b, std::string cellular_tag, std::string molecular_tag, std::string gene_tag, std::string map_tag, std::string MT_tag);
+    Bamdemultiplex(
+        std::string odir,
+        Barcode b,
+        std::string cellular_tag,
+        std::string molecular_tag,
+        std::string gene_tag,
+        std::string map_tag,
+        std::string MT_tag
+    );
     int barcode_demultiplex(std::string bam_path, int max_mismatch, bool has_UMI);
 
-    void write_statistics(std::string overall_stat_f, std::string chr_stat_f, std::string cell_stat_f);
+    void write_statistics(
+        std::string overall_stat_f,
+        std::string chr_stat_f,
+        std::string cell_stat_f
+    );
 };
 
 #endif
