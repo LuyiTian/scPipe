@@ -160,7 +160,7 @@ unordered_map<string, int> UMI_dedup(
         else
         {
             Rcout << "not implemented" << "\n";
-            exit(1);
+            stop();
         }
 
         for (auto const& UMI: UMI_count)

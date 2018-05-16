@@ -82,26 +82,30 @@ context("Testing classes") {
   }
 }
 
-context("Test with toy inputs") {
-  Barcode bar;
-  std::string fn = "../../inst/extdata/barcode_anno.csv";
-  bar.read_anno(fn);
+/* 
+ * Need to work out how to access internal data in C++ 
+ * Can't actually use ../../inst/extdata/barcode_anno.csv because testing once
+ * package is built occurs elsewhere, and / doesn't work on Windows anyway.
+ */
+// context("Test with toy inputs") {
+//   Barcode bar;
+//   std::string fn = "../../inst/extdata/barcode_anno.csv";
+//   bar.read_anno(fn);
 
-  test_that("Barcode reading works") {
-    expect_true(bar.barcode_dict.count("ATCTGCCC") > 0);
-    expect_true(bar.barcode_dict["ACGATCGA"] == "CELL003");
-    expect_true(bar.cellid_list.size() == 10);
-    expect_true(bar.barcode_list.size() == 10);
-  }
+//   test_that("Barcode reading works") {
+//     expect_true(bar.barcode_dict.count("ATCTGCCC") > 0);
+//     expect_true(bar.barcode_dict["ACGATCGA"] == "CELL003");
+//     expect_true(bar.cellid_list.size() == 10);
+//     expect_true(bar.barcode_list.size() == 10);
+//   }
 
-  test_that("Closest barcode match works") {
-    std::string bc1 = "ATGATAAA";
-    std::string bc2 = "AAAAAAAA";
-    expect_true(bar.get_closest_match(bc1, 2) == "ATGATCAT");
-    expect_true(bar.get_closest_match(bc2, 2).empty());
-  }
-}
-
+//   test_that("Closest barcode match works") {
+//     std::string bc1 = "ATGATAAA";
+//     std::string bc2 = "AAAAAAAA";
+//     expect_true(bar.get_closest_match(bc1, 2) == "ATGATCAT");
+//     expect_true(bar.get_closest_match(bc2, 2).empty());
+//   }
+// }
 
 context("Test UMI deduplication") {
   std::vector<std::pair<std::string,int>> v1;
@@ -133,4 +137,3 @@ context("Test UMI deduplication") {
     expect_true(s.corrected_UMI == 4);
   }
 }
-
