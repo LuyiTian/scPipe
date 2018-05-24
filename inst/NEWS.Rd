@@ -98,3 +98,9 @@
     \item put `distance_to_end` back.
   }
 }
+
+\section{Changes in version 1.3.5 (2018-5-24)}{
+  \itemize{
+    \item bug fix
+  }
+}
