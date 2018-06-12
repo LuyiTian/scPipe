@@ -619,6 +619,14 @@ void Mapping::parse_align_warpper(vector<string> fn_vec, vector<string> cell_id_
         parse_align(fn_vec[i], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "ab", cell_id_vec[i], UMI_len);
       }
     }
+    else
+    {
+      parse_align(fn_vec[0], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "wb", "", UMI_len);
+      for (int i=1;i<fn_vec.size();i++)
+      {
+        parse_align(fn_vec[i], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "ab", "", UMI_len);
+      }
+    }
   }
   else
   {
