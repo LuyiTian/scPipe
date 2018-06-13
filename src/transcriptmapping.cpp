@@ -632,12 +632,18 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     int ret;
 
     check_file_exists(fn); // htslib does not check if file exist so we do it manually
-    
+
     const char * c_write_mode = write_mode.c_str();
     // open files
     bam1_t *b = bam_init1();
     BGZF *fp = bgzf_open(fn.c_str(), "r"); // input file
     samFile *of = sam_open(fn_out.c_str(), c_write_mode); // output file
+
+    // set up htslib threadpool
+    const size_t n_threads = std::thread::hardware_concurrency();
+    htsThreadPool p = {NULL, 0};
+    p.pool = hts_tpool_init(n_threads - 1);
+    hts_set_opt(of, HTS_OPT_THREAD_POOL, &p);
 
     bam_hdr_t *header = bam_hdr_read(fp);
     sam_hdr_write(of, header);
@@ -670,6 +676,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     const char * m_ptr = molecular_tag.c_str();
     const char * a_ptr = map_tag.c_str();
     char buf[999] = ""; // assume the length of barcode or UMI is less than 999
+
     atomic<unsigned long long> cnt{0};
     atomic<bool> running{true};
     atomic<bool> report_message{false};
@@ -726,6 +733,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
             {
                 ret = map_exon(header, b, gene_id, m_strand);
             }
+
             if (ret <= 0)
             {
                 tmp_c[0]++;
@@ -744,7 +752,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
             bam_aux_append(b, c_ptr, 'Z', bc_len+1, (uint8_t*)buf);
         } else if (cell_id.size()>0)
         {
-          bam_aux_append(b, c_ptr, 'Z', cell_id.size()+1, c_cell_id);
+            bam_aux_append(b, c_ptr, 'Z', cell_id.size()+1, c_cell_id);
         }
         if (UMI_len > 0)
         {
@@ -790,4 +798,5 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
         << " (" << fixed << setprecision(2) << 100. * unaligned/cnt << "%)" << "\n";
     sam_close(of);
     bgzf_close(fp);
+    if (p.pool) hts_tpool_destroy(p.pool);
 }
