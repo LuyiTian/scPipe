@@ -104,3 +104,9 @@
     \item bug fix
   }
 }
+
+\section{Changes in version 1.3.6 (2018-6-12)}{
+  \itemize{
+    \item support multiple bam file for the same sample pooling as input for exon mapping
+  }
+}
