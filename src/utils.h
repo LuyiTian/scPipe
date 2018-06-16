@@ -20,7 +20,7 @@ std::string join_path(const std::string p1, const std::string p2);
 
 // calculate hamming distance of two strings A and B
 // two strings should have equal length
-int hamming_distance(std::string A, std::string B);
+int hamming_distance(const std::string &A, const std::string &B);
 
 // since htslib does not validate file status we 
 // need to check ourself
