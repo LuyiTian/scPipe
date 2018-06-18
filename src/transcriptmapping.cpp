@@ -599,7 +599,7 @@ namespace {
     }
 }
 
-void Mapping::parse_align_warpper(vector<string> fn_vec, vector<string> cell_id_vec, string fn_out, bool m_strand, string map_tag, string gene_tag, string cellular_tag, string molecular_tag, int bc_len, int UMI_len)
+void Mapping::parse_align_warpper(vector<string> fn_vec, vector<string> cell_id_vec, string fn_out, bool m_strand, string map_tag, string gene_tag, string cellular_tag, string molecular_tag, int bc_len, int UMI_len, int nthreads)
 {
   if (fn_vec.size()>1)
   {
@@ -613,39 +613,45 @@ void Mapping::parse_align_warpper(vector<string> fn_vec, vector<string> cell_id_
     }
     if (bc_len==0)
     {
-      parse_align(fn_vec[0], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "wb", cell_id_vec[0], UMI_len);
+      parse_align(fn_vec[0], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "wb", cell_id_vec[0], UMI_len, nthreads);
       for (int i=1;i<fn_vec.size();i++)
       {
-        parse_align(fn_vec[i], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "ab", cell_id_vec[i], UMI_len);
+        parse_align(fn_vec[i], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "ab", cell_id_vec[i], UMI_len, nthreads);
       }
     }
     else
     {
-      parse_align(fn_vec[0], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "wb", "", UMI_len);
+      parse_align(fn_vec[0], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "wb", "", UMI_len, nthreads);
       for (int i=1;i<fn_vec.size();i++)
       {
-        parse_align(fn_vec[i], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "ab", "", UMI_len);
+        parse_align(fn_vec[i], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "ab", "", UMI_len, nthreads);
       }
     }
   }
   else
   {
-    parse_align(fn_vec[0], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "wb", "", UMI_len);
+    parse_align(fn_vec[0], fn_out, m_strand, map_tag, gene_tag, cellular_tag, molecular_tag, bc_len, "wb", "", UMI_len, nthreads);
   }
 }
 
-void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_tag, string gene_tag, string cellular_tag, string molecular_tag, int bc_len, string write_mode, string cell_id, int UMI_len)
+void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_tag, string gene_tag, string cellular_tag, string molecular_tag, int bc_len, string write_mode, string cell_id, int UMI_len, int nthreads)
 {
     int unaligned = 0;
     int ret;
 
     check_file_exists(fn); // htslib does not check if file exist so we do it manually
-    
+
     const char * c_write_mode = write_mode.c_str();
     // open files
     bam1_t *b = bam_init1();
     BGZF *fp = bgzf_open(fn.c_str(), "r"); // input file
     samFile *of = sam_open(fn_out.c_str(), c_write_mode); // output file
+
+    // set up htslib threadpool for output
+    int out_threads = std::max(nthreads - 1, 1);
+    htsThreadPool p = {NULL, 0};
+    p.pool = hts_tpool_init(out_threads);
+    hts_set_opt(of, HTS_OPT_THREAD_POOL, &p);
 
     bam_hdr_t *header = bam_hdr_read(fp);
     sam_hdr_write(of, header);
@@ -678,6 +684,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
     const char * m_ptr = molecular_tag.c_str();
     const char * a_ptr = map_tag.c_str();
     char buf[999] = ""; // assume the length of barcode or UMI is less than 999
+
     atomic<unsigned long long> cnt{0};
     atomic<bool> running{true};
     atomic<bool> report_message{false};
@@ -734,6 +741,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
             {
                 ret = map_exon(header, b, gene_id, m_strand);
             }
+
             if (ret <= 0)
             {
                 tmp_c[0]++;
@@ -752,7 +760,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
             bam_aux_append(b, c_ptr, 'Z', bc_len+1, (uint8_t*)buf);
         } else if (cell_id.size()>0)
         {
-          bam_aux_append(b, c_ptr, 'Z', cell_id.size()+1, c_cell_id);
+            bam_aux_append(b, c_ptr, 'Z', cell_id.size()+1, c_cell_id);
         }
         if (UMI_len > 0)
         {
@@ -798,4 +806,5 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
         << " (" << fixed << setprecision(2) << 100. * unaligned/cnt << "%)" << "\n";
     sam_close(of);
     bgzf_close(fp);
+    if (p.pool) hts_tpool_destroy(p.pool);
 }

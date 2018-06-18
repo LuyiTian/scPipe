@@ -6,6 +6,7 @@
 #include "htslib/sam.h"
 #include "htslib/bgzf.h"
 #include "htslib/kseq.h"
+#include "htslib/thread_pool.h"
 
 /*
 #include <htslib/sam.h>

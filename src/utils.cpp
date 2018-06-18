@@ -18,15 +18,12 @@ string join_path(const string p1, const string p2)
 	return p1.back() == sep ? p1 + p2 : p1 + sep + p2;
 }
 
-int hamming_distance(string A, string B)
+int hamming_distance(const string &A, const string &B)
 {
     int dist = 0;
     for (int i = 0; i < A.length(); ++i)
     {
-        if (A[i] != B[i])
-        {
-            dist++;
-        }
+        dist += (A[i] != B[i]);
     }
     return dist;
 }

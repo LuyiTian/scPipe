@@ -169,7 +169,8 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #'
 sc_exon_mapping = function(inbam, outbam, annofn,
                             bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-                            bc_len=8, barcode_vector="", UMI_len=6, stnd=TRUE, fix_chr=FALSE) {
+                            bc_len=8, barcode_vector="", UMI_len=6, stnd=TRUE, fix_chr=FALSE,
+                            nthreads=1) {
   if (stnd) {
     i_stnd = 1
   }
@@ -197,7 +198,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
   
 
   rcpp_sc_exon_mapping(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len, 
-                       barcode_vector, UMI_len, stnd, fix_chr)
+                       barcode_vector, UMI_len, stnd, fix_chr, nthreads)
 }
 
 
@@ -462,7 +463,8 @@ sc_count_aligned_bam <- function(
   max_mis = 1,
   mito = "MT",
   has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
-  keep_mapped_bam = TRUE
+  keep_mapped_bam = TRUE,
+  nthreads = 1
 ) {
   sc_exon_mapping(
     inbam = inbam,
@@ -472,7 +474,8 @@ sc_count_aligned_bam <- function(
     bc_len = bc_len,
     UMI_len = UMI_len,
     stnd = stnd,
-    fix_chr = fix_chr
+    fix_chr = fix_chr,
+    nthreads = nthreads
   )
 
   sc_demultiplex_and_count(

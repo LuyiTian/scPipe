@@ -29,8 +29,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_sc_exon_mapping
-void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outbam, Rcpp::CharacterVector annofn, Rcpp::CharacterVector am, Rcpp::CharacterVector ge, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::NumericVector bc_len, Rcpp::CharacterVector bc_vector, Rcpp::NumericVector UMI_len, Rcpp::NumericVector stnd, Rcpp::NumericVector fix_chr);
-RcppExport SEXP _scPipe_rcpp_sc_exon_mapping(SEXP inbamSEXP, SEXP outbamSEXP, SEXP annofnSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP bc_lenSEXP, SEXP bc_vectorSEXP, SEXP UMI_lenSEXP, SEXP stndSEXP, SEXP fix_chrSEXP) {
+void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outbam, Rcpp::CharacterVector annofn, Rcpp::CharacterVector am, Rcpp::CharacterVector ge, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::NumericVector bc_len, Rcpp::CharacterVector bc_vector, Rcpp::NumericVector UMI_len, Rcpp::NumericVector stnd, Rcpp::NumericVector fix_chr, Rcpp::NumericVector nthreads);
+RcppExport SEXP _scPipe_rcpp_sc_exon_mapping(SEXP inbamSEXP, SEXP outbamSEXP, SEXP annofnSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP bc_lenSEXP, SEXP bc_vectorSEXP, SEXP UMI_lenSEXP, SEXP stndSEXP, SEXP fix_chrSEXP, SEXP nthreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type inbam(inbamSEXP);
@@ -45,7 +45,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type UMI_len(UMI_lenSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type stnd(stndSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type fix_chr(fix_chrSEXP);
-    rcpp_sc_exon_mapping(inbam, outbam, annofn, am, ge, bc, mb, bc_len, bc_vector, UMI_len, stnd, fix_chr);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type nthreads(nthreadsSEXP);
+    rcpp_sc_exon_mapping(inbam, outbam, annofn, am, ge, bc, mb, bc_len, bc_vector, UMI_len, stnd, fix_chr, nthreads);
     return R_NilValue;
 END_RCPP
 }
@@ -104,7 +105,7 @@ RcppExport SEXP run_testthat_tests();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 14},
-    {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 12},
+    {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 13},
     {"_scPipe_rcpp_sc_demultiplex", (DL_FUNC) &_scPipe_rcpp_sc_demultiplex, 10},
     {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
     {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 9},
