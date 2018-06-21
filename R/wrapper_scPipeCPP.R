@@ -151,6 +151,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' @param UMI_len UMI length
 #' @param stnd TRUE to perform strand specific mapping. (default: TRUE)
 #' @param fix_chr TRUE to add `chr` to chromosome names, MT to chrM. (default: FALSE)
+#' @param nthreads number of threads to use. (default: 1)
 #'
 #' @export
 #' @return generates a bam file with exons assigned

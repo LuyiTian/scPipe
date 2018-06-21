@@ -20,20 +20,17 @@ unordered_map<string, vector<umi_pos_pair>> read_count(string fn, char sep)
     unordered_map<string, vector<umi_pos_pair>> gene_read;
     string line;
     getline(infile, line); // skip header
-    vector<string> tmp_ln;
+    
     while(getline(infile, line))
     {
-        stringstream linestream(line);
-        string gene_id;
-        string UMI;
-        int pos;
-        tmp_ln = split(line,sep);
-        gene_id = tmp_ln[0];
-        UMI = tmp_ln[1];
-        pos = stoi(tmp_ln[2]);
+        size_t comma1_pos = line.find(',');
+        size_t comma2_pos = line.find(',', comma1_pos + 1);
+
+        string gene_id = line.substr(0, comma1_pos);
+        string UMI = line.substr(comma1_pos + 1, comma2_pos - comma1_pos - 1);
+        int pos = stoi(line.substr(comma2_pos + 1));
 
         gene_read[gene_id].push_back(make_pair(UMI, pos));
-
     }
     infile.close();
     return gene_read;
@@ -93,7 +90,7 @@ int UMI_correct2(map<umi_pos_pair, int>& UMI_count)
         found = false;
         for (auto const& UMI2: UMI_count) // use range based
         {
-            if ((UMI1->first.second - UMI2.first.second>-2 && UMI1->first.second - UMI2.first.second < 2) && (hamming_distance(UMI1->first.first, UMI2.first.first) == 1)) // sequencing errors
+            if ((UMI1->first.second - UMI2.first.second> -2 && UMI1->first.second - UMI2.first.second < 2) && (hamming_distance(UMI1->first.first, UMI2.first.first) == 1)) // sequencing errors
             {
                 if (UMI1->second == 1 || UMI1->second < UMI2.second*0.5)
                 {

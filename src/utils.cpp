@@ -42,7 +42,7 @@ void check_file_exists(string fn)
 }
 
 // tally the element in vector
-map<umi_pos_pair, int> vector_counter(vector<umi_pos_pair> v)
+map<umi_pos_pair, int> vector_counter(const vector<umi_pos_pair> &v)
 {
     map<umi_pos_pair, int> counter;
     for(auto const& val: v)
