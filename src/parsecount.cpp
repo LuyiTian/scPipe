@@ -89,7 +89,7 @@ int UMI_correct2(map<umi_pos_pair, int>& UMI_count)
     // iterate backwards to get better erase() performance
     // erase must move all elements in the tail, starting from the tail is much
     // more efficient than starting from the beginning
-    for (auto UMI1 = UMI_count.end(); UMI1 != UMI_count.begin();) // use normal iterator in order to use `erase`
+    for (auto UMI1 = UMI_count.begin(); UMI1 != UMI_count.end();) // use normal iterator in order to use `erase`
     {
         found = false;
         for (auto const& UMI2: UMI_count) // use range based
@@ -125,7 +125,7 @@ int UMI_correct2(map<umi_pos_pair, int>& UMI_count)
         }
         else
         {
-            UMI1--;
+            UMI1++;
         }
     }
     return corrected_UMI;
