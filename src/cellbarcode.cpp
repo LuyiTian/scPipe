@@ -63,7 +63,6 @@ unordered_map<string, string> Barcode::get_count_file_path(string out_dir)
     return out_fn_dict;
 }
 
-
 string Barcode::get_closest_match(string bc_seq, int max_mismatch)
 {
     if (barcode_dict.find(bc_seq) != barcode_dict.end())

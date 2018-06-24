@@ -248,7 +248,8 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
                           max_mis=1,
                           bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
                           mito="MT",
-                          has_UMI=TRUE) {
+                          has_UMI=TRUE,
+                          nthreads = 1) {
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
 
@@ -269,7 +270,7 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
   }
   rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis,
                       bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
-                      mito, has_UMI)
+                      mito, has_UMI, nthreads)
 }
 
 
@@ -408,7 +409,8 @@ sc_demultiplex_and_count = function(
   inbam, outdir, bc_anno,
   max_mis = 1,
   bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-  mito = "MT", has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE
+  mito = "MT", has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
+  nthreads = 1
 ) {
   sc_demultiplex(
     inbam = inbam,
@@ -417,7 +419,8 @@ sc_demultiplex_and_count = function(
     max_mis = max_mis,
     bam_tags = bam_tags,
     mito = mito,
-    has_UMI = has_UMI
+    has_UMI = has_UMI,
+    nthreads = nthreads
   )
 
   sc_gene_counting(
@@ -488,7 +491,8 @@ sc_count_aligned_bam <- function(
     mito = mito,
     has_UMI = has_UMI,
     UMI_cor = UMI_cor,
-    gene_fl = gene_fl
+    gene_fl = gene_fl,
+    nthreads = nthreads
   )
 
   if (!keep_mapped_bam) {

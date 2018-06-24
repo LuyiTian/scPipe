@@ -51,8 +51,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_sc_demultiplex
-void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outdir, Rcpp::CharacterVector bc_anno, Rcpp::NumericVector max_mis, Rcpp::CharacterVector am, Rcpp::CharacterVector ge, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::CharacterVector mito, Rcpp::LogicalVector has_UMI);
-RcppExport SEXP _scPipe_rcpp_sc_demultiplex(SEXP inbamSEXP, SEXP outdirSEXP, SEXP bc_annoSEXP, SEXP max_misSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP mitoSEXP, SEXP has_UMISEXP) {
+void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outdir, Rcpp::CharacterVector bc_anno, Rcpp::NumericVector max_mis, Rcpp::CharacterVector am, Rcpp::CharacterVector ge, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::CharacterVector mito, Rcpp::LogicalVector has_UMI, Rcpp::NumericVector nthreads);
+RcppExport SEXP _scPipe_rcpp_sc_demultiplex(SEXP inbamSEXP, SEXP outdirSEXP, SEXP bc_annoSEXP, SEXP max_misSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP mitoSEXP, SEXP has_UMISEXP, SEXP nthreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type inbam(inbamSEXP);
@@ -65,7 +65,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type mb(mbSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type mito(mitoSEXP);
     Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type has_UMI(has_UMISEXP);
-    rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito, has_UMI);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type nthreads(nthreadsSEXP);
+    rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito, has_UMI, nthreads);
     return R_NilValue;
 END_RCPP
 }
@@ -106,7 +107,7 @@ RcppExport SEXP run_testthat_tests();
 static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 14},
     {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 13},
-    {"_scPipe_rcpp_sc_demultiplex", (DL_FUNC) &_scPipe_rcpp_sc_demultiplex, 10},
+    {"_scPipe_rcpp_sc_demultiplex", (DL_FUNC) &_scPipe_rcpp_sc_demultiplex, 11},
     {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
     {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 9},
     {"run_testthat_tests",                  (DL_FUNC) &run_testthat_tests,                   0},

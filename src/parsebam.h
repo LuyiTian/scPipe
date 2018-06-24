@@ -4,10 +4,13 @@
 #include <cstring>
 #include <string>
 #include <unordered_map>
+#include <thread>
+#include <algorithm>
 #include <Rcpp.h>
 #include "config_hts.h"
 #include "utils.h"
 #include "cellbarcode.h"
+#include "htslib/thread_pool.h"
 
 #ifndef PARSEBAM_H
 #define PARSEBAM_H
@@ -51,7 +54,7 @@ public:
         std::string map_tag,
         std::string MT_tag
     );
-    int barcode_demultiplex(std::string bam_path, int max_mismatch, bool has_UMI);
+    int barcode_demultiplex(std::string bam_path, int max_mismatch, bool has_UMI, int nthreads);
 
     void write_statistics(
         std::string overall_stat_f,

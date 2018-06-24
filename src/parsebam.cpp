@@ -68,12 +68,18 @@ void Bamdemultiplex::write_statistics(string overall_stat_f, string chr_stat_f, 
     }
 }
 
-int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch, bool has_UMI)
+int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch, bool has_UMI, int nthreads)
 {
     check_file_exists(bam_path); // htslib does not check if file exist so we do it manually
     bam1_t *b = bam_init1();
     BGZF *fp = bgzf_open(bam_path.c_str(), "r");
     bam_hdr_t *header = bam_hdr_read(fp);
+
+    int out_threads = std::thread::hardware_concurrency();
+    out_threads = std::max(out_threads, 1);
+    hts_tpool *p = hts_tpool_init(out_threads);
+    int queue_size = std::max(out_threads * 4, 32);
+    bgzf_thread_pool(fp, p, 2);
 
     int mt_idx = -1;
     for (int i = 0; i < header->n_targets; ++i)

@@ -142,7 +142,8 @@ void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam,
                     Rcpp::CharacterVector bc,
                     Rcpp::CharacterVector mb,
                     Rcpp::CharacterVector mito,
-                    Rcpp::LogicalVector has_UMI)
+                    Rcpp::LogicalVector has_UMI,
+                    Rcpp::NumericVector nthreads)
 {
   std::string c_inbam = Rcpp::as<std::string>(inbam);
   std::string c_outdir = Rcpp::as<std::string>(outdir);
@@ -156,6 +157,7 @@ void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam,
 
   int c_max_mis = Rcpp::as<int>(max_mis);
   bool c_has_UMI = Rcpp::as<bool>(has_UMI);
+  int c_nthreads = Rcpp::as<int>(nthreads);
 
   Barcode bar;
   bar.read_anno(c_bc_anno);
@@ -167,7 +169,7 @@ void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam,
 
   Bamdemultiplex bam_de = Bamdemultiplex(c_outdir, bar, c_bc, c_mb, c_ge, c_am, c_mito);
 
-  bam_de.barcode_demultiplex(c_inbam, c_max_mis, c_has_UMI);
+  bam_de.barcode_demultiplex(c_inbam, c_max_mis, c_has_UMI, c_nthreads);
   bam_de.write_statistics("overall_stat", "chr_stat", "cell_stat");
   Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
 }
