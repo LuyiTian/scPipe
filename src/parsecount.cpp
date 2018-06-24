@@ -89,29 +89,31 @@ int UMI_correct2(map<umi_pos_pair, int>& UMI_count)
     // iterate backwards to get better erase() performance
     // erase must move all elements in the tail, starting from the tail is much
     // more efficient than starting from the beginning
-    for (auto UMI1 = UMI_count.begin(); UMI1 != UMI_count.end();) // use normal iterator in order to use `erase`
+    auto umi_pos1 = UMI_count.begin();
+    while (umi_pos1 != UMI_count.end())
     {
         found = false;
-        for (auto const& UMI2: UMI_count) // use range based
-        {   
-            if (abs(UMI1->first.second - UMI2.first.second) < 2)
-            {
-                if (UMI1->second == 1 || 2 * UMI1->second < UMI2.second)
+        for (auto const &umi_pos2 : UMI_count)
+        {
+            auto const &umi1 = umi_pos1->first.first;
+            auto const &pos1 = umi_pos1->first.second;
+            auto const &count1 = umi_pos1->second;
+
+            auto const &umi2 = umi_pos2.first.first;
+            auto const &pos2 = umi_pos2.first.second;
+            auto const &count2 = umi_pos2.second;
+
+            if (abs(pos1 - pos2) < 2)
+                if (count1 == 1 || 2 * count1 < count2) {
                 {
-                    if (hamming_distance(UMI1->first.first, UMI2.first.first) == 1) // sequencing errors
+                    if (hamming_distance(umi1, umi2) <= 1) // sequencing errors
                     {
                         found = true;
                         // merge two UMIs
-                        UMI_count[UMI2.first] += UMI_count[UMI1->first];
-                        if (__DEBUG){Rcout << "merge: " <<  UMI1->first.first << "::" << UMI2.first.first << "\t" << UMI1->second << "::" << UMI2.second << "\n";}
-                        break;
-                    }
-                    else if ((UMI1->first.second != UMI2.first.second) && (UMI1->first.first == UMI2.first.first)) // diff pos
-                    {
-                        found = true;
-                        // merge two UMIs
-                        UMI_count[UMI2.first] += UMI_count[UMI1->first];
-                        if (__DEBUG){Rcout << "merge: " <<  UMI1->first.first << "::" << UMI2.first.first << "\t" << UMI1->second << "::" << UMI2.second << "\n";}
+                        UMI_count[umi_pos2.first] += UMI_count[umi_pos1->first];
+                        if (__DEBUG) {
+                            Rcout << "merge: " <<  umi1 << "::" << umi2 << "\t" << umi_pos1->second << "::" << umi_pos2.second << "\n";
+                        }
                         break;
                     }
                 }
@@ -121,11 +123,11 @@ int UMI_correct2(map<umi_pos_pair, int>& UMI_count)
         {
             // delete UMI1
             corrected_UMI++;
-            UMI1 = UMI_count.erase(UMI1);
+            umi_pos1 = UMI_count.erase(umi_pos1);
         }
         else
         {
-            UMI1++;
+            umi_pos1++;
         }
     }
     return corrected_UMI;
