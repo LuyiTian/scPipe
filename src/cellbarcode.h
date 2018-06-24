@@ -5,6 +5,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <algorithm>
+#include <limits>
 #include <Rcpp.h>
 #include "utils.h"
 
@@ -25,7 +26,7 @@ public:
 
     std::unordered_map<std::string, std::string> get_count_file_path(std::string out_dir);
 
-    std::string get_closest_match(std::string bc_seq, int max_mismatch);
+    std::string get_closest_match(std::string const &bc_seq, int max_mismatch);
 
     friend std::ostream& operator<< (std::ostream& out, const Barcode& obj); 
 };

@@ -63,19 +63,18 @@ unordered_map<string, string> Barcode::get_count_file_path(string out_dir)
     return out_fn_dict;
 }
 
-string Barcode::get_closest_match(string bc_seq, int max_mismatch)
+string Barcode::get_closest_match(string const &bc_seq, int max_mismatch)
 {
     if (barcode_dict.find(bc_seq) != barcode_dict.end())
     {
         return bc_seq;
     }
-    int sml1st = 99999, sml2ed = 99999;
+    int sml1st = std::numeric_limits<int>::max();
+    int sml2ed = std::numeric_limits<int>::max();
     int tmp;
     string closest_match;
 
-
-
-    for ( auto &barcode : barcode_list )
+    for (auto &barcode : barcode_list)
     {
         tmp = hamming_distance(barcode, bc_seq);
         if (tmp <= max_mismatch)
