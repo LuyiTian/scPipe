@@ -52,6 +52,12 @@ void Barcode::read_anno(string fn)
     }
 }
 
+void Barcode::set_threads(int nthreads)
+{
+    nthreads_ = nthreads;
+    t_pool_ = new asio::thread_pool(std::max(nthreads - 1, 1));
+}
+
 unordered_map<string, string> Barcode::get_count_file_path(string out_dir)
 {
     string csv_fmt = ".csv";
@@ -71,25 +77,69 @@ string Barcode::get_closest_match(string const &bc_seq, int max_mismatch)
     }
     int sml1st = std::numeric_limits<int>::max();
     int sml2ed = std::numeric_limits<int>::max();
-    int tmp;
+    std::vector<int> hamming_dists;
+    hamming_dists.reserve(barcode_list.size());
     string closest_match;
 
-    for (auto &barcode : barcode_list)
-    {
-        tmp = hamming_distance(barcode, bc_seq);
-        if (tmp <= max_mismatch)
+    if (barcode_list.size() < 256) {
+        for (int i = 0; i < barcode_list.size(); i++)
         {
-            if (tmp < sml1st)
+            hamming_dists[i] = hamming_distance(barcode_list[i], bc_seq);
+        }
+    }
+    else if (barcode_list.size() < 1024)
+    {
+        asio::post(*t_pool_, [&] () {
+            for (int i = 0; i < barcode_list.size() / 2; i++)
             {
-                sml1st = tmp;
-                closest_match = barcode;
+                hamming_dists[i] = hamming_distance(barcode_list[i], bc_seq);
             }
-            else if (sml1st < tmp && tmp <= sml2ed)
+        });
+
+        for (int i = barcode_list.size() / 2; i < barcode_list.size(); i++)
+        {
+            hamming_dists[i] = hamming_distance(barcode_list[i], bc_seq);
+        }
+    }
+    else
+    {
+        const int CHUNK_SIZE = barcode_list.size() / 4;
+
+        for (int i = 0; i < 3; i++) {
+            asio::post(*t_pool_, [&, i] () {
+                for (int j = i*CHUNK_SIZE; j < (i+1) * CHUNK_SIZE; j++)
+                {
+                    hamming_dists[j] = hamming_distance(barcode_list[j], bc_seq);
+                }
+            });
+        }
+
+        for (int j = 3*CHUNK_SIZE; j < barcode_list.size(); j++)
+        {
+            hamming_dists[j] = hamming_distance(barcode_list[j], bc_seq);
+        }
+    }
+
+    t_pool_->join();
+
+    for (int i = 0; i < hamming_dists.size(); i++)
+    {
+        string const &bc = barcode_list[i];
+        int dist = hamming_dists[i];
+        if (dist <= max_mismatch)
+        {
+            if (dist < sml1st)
             {
-                sml2ed = tmp;
+                sml1st = dist;
+                closest_match = bc;
+            }
+            else if (sml1st < dist && dist <= sml2ed)
+            {
+                sml2ed = dist;
             }
         }
     }
+
     if (sml1st < sml2ed)
     {
         return closest_match;

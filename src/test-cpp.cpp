@@ -9,7 +9,6 @@
 
 // All test files should include the <testthat.h>
 // header file.
-#include <testthat.h>
 
 #include "Gene.h"
 #include "Interval.h"
@@ -17,6 +16,11 @@
 #include "cellbarcode.h"
 #include "parsecount.h"
 #include "utils.h"
+
+
+// ALWAYS INCLUDE TESTTHAT LAST
+// Macros defined in this file can break other headers
+#include <testthat.h>
 
 context("Testing utilities") {
   test_that("Path constructor works") {
