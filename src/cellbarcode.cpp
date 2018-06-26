@@ -78,7 +78,7 @@ string Barcode::get_closest_match(string const &bc_seq, int max_mismatch)
     int sml1st = std::numeric_limits<int>::max();
     int sml2ed = std::numeric_limits<int>::max();
     std::vector<int> hamming_dists;
-    hamming_dists.reserve(barcode_list.size());
+    hamming_dists.resize(barcode_list.size());
     string closest_match;
 
     if (barcode_list.size() < 256) {
