@@ -82,11 +82,11 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch, bool 
     out_threads = std::max(nthreads, 1);
 
     hts_tpool *p;
-    int queue_size;
+    const int queue_size = 64;
 
     if (out_threads > 1) {
         p = hts_tpool_init(out_threads);
-        bgzf_thread_pool(fp, p, 64);
+        bgzf_thread_pool(fp, p, queue_size);
     }
 
     int mt_idx = -1;
