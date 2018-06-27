@@ -90,7 +90,7 @@ string Barcode::get_closest_match(string const &bc_seq, int max_mismatch)
                 sml1st = dist;
                 closest_match = bc;
             }
-            else if (sml1st < dist && dist <= sml2ed)
+            else if (sml1st <= dist && dist < sml2ed)
             {
                 sml2ed = dist;
             }

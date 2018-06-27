@@ -110,3 +110,9 @@
     \item support multiple bam file for the same sample pooling as input for exon mapping
   }
 }
+
+\section{Changes in version 1.3.8 (2018-6-27)}{
+  \itemize{
+    \item fix a minor bug in cell barcode demultiplexing
+  }
+}
