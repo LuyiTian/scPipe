@@ -228,6 +228,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #' @param mito mitochondrial chromosome name.
 #' This should be consistant with the chromosome names in the bam file.
 #' @param has_UMI whether the protocol contains UMI (default: TRUE)
+#' @param nthreads number of threads to use. (default: 1)
 #'
 #' @export
 #' @return no return

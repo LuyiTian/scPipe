@@ -6,7 +6,7 @@
 \usage{
 sc_demultiplex_and_count(inbam, outdir, bc_anno, max_mis = 1,
   bam_tags = list(am = "YE", ge = "GE", bc = "BC", mb = "OX"), mito = "MT",
-  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE)
+  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE, nthreads = 1)
 }
 \arguments{
 \item{inbam}{input bam file. This should be the output of
@@ -39,6 +39,8 @@ alignment position match.}
 
 \item{gene_fl}{whether to remove low abundance genes. A gene is considered to
 have low abundance if only one copy of one UMI is associated with it.}
+
+\item{nthreads}{number of threads to use. (default: 1)}
 }
 \value{
 no return
