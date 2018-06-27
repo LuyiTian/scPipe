@@ -86,7 +86,7 @@ string Barcode::get_closest_match(string bc_seq, int max_mismatch)
                 sml1st = tmp;
                 closest_match = barcode;
             }
-            else if (sml1st < tmp && tmp <= sml2ed)
+            else if (sml1st <= tmp && tmp < sml2ed)
             {
                 sml2ed = tmp;
             }
