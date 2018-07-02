@@ -68,12 +68,26 @@ void Bamdemultiplex::write_statistics(string overall_stat_f, string chr_stat_f, 
     }
 }
 
-int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch, bool has_UMI)
+int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch, bool has_UMI, int nthreads)
 {
     check_file_exists(bam_path); // htslib does not check if file exist so we do it manually
     bam1_t *b = bam_init1();
     BGZF *fp = bgzf_open(bam_path.c_str(), "r");
     bam_hdr_t *header = bam_hdr_read(fp);
+
+    // Early benchmarking shows BAM reading doesn't saturate even 2 cores
+    // so capped reading threads to 2
+    int out_threads = std::min(nthreads - 1, 2);
+    // make sure we're not using 0 or negative cores
+    out_threads = std::max(nthreads, 1);
+
+    hts_tpool *p;
+    const int queue_size = 64;
+
+    if (out_threads > 1) {
+        p = hts_tpool_init(out_threads);
+        bgzf_thread_pool(fp, p, queue_size);
+    }
 
     int mt_idx = -1;
     for (int i = 0; i < header->n_targets; ++i)
@@ -102,8 +116,11 @@ int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch, bool 
     string match_res;
     int map_status;
 
+    size_t _interrupt_ind = 0;
+
     while (bam_read1(fp, b) >= 0)
     {
+        if (++_interrupt_ind % 1024 == 0) checkUserInterrupt();
         //match barcode
         bc_seq = (char*)(bam_aux_get(b, c_ptr) + 1); // +1 to skip `Z`
         match_res = bar.get_closest_match(bc_seq, max_mismatch);

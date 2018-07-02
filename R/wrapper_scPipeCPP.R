@@ -151,6 +151,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' @param UMI_len UMI length
 #' @param stnd TRUE to perform strand specific mapping. (default: TRUE)
 #' @param fix_chr TRUE to add `chr` to chromosome names, MT to chrM. (default: FALSE)
+#' @param nthreads number of threads to use. (default: 1)
 #'
 #' @export
 #' @return generates a bam file with exons assigned
@@ -227,6 +228,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #' @param mito mitochondrial chromosome name.
 #' This should be consistant with the chromosome names in the bam file.
 #' @param has_UMI whether the protocol contains UMI (default: TRUE)
+#' @param nthreads number of threads to use. (default: 1)
 #'
 #' @export
 #' @return no return
@@ -247,7 +249,8 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
                           max_mis=1,
                           bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
                           mito="MT",
-                          has_UMI=TRUE) {
+                          has_UMI=TRUE,
+                          nthreads = 1) {
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
 
@@ -268,7 +271,7 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
   }
   rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis,
                       bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
-                      mito, has_UMI)
+                      mito, has_UMI, nthreads)
 }
 
 
@@ -407,7 +410,8 @@ sc_demultiplex_and_count = function(
   inbam, outdir, bc_anno,
   max_mis = 1,
   bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-  mito = "MT", has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE
+  mito = "MT", has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
+  nthreads = 1
 ) {
   sc_demultiplex(
     inbam = inbam,
@@ -416,7 +420,8 @@ sc_demultiplex_and_count = function(
     max_mis = max_mis,
     bam_tags = bam_tags,
     mito = mito,
-    has_UMI = has_UMI
+    has_UMI = has_UMI,
+    nthreads = nthreads
   )
 
   sc_gene_counting(
@@ -487,7 +492,8 @@ sc_count_aligned_bam <- function(
     mito = mito,
     has_UMI = has_UMI,
     UMI_cor = UMI_cor,
-    gene_fl = gene_fl
+    gene_fl = gene_fl,
+    nthreads = nthreads
   )
 
   if (!keep_mapped_bam) {

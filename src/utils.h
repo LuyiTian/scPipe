@@ -28,7 +28,7 @@ int hamming_distance(const std::string &A, const std::string &B);
 void check_file_exists (std::string name);
 
 // count times of occurrence in a string vector
-std::map<umi_pos_pair, int> vector_counter(std::vector<umi_pos_pair> v);
+std::map<umi_pos_pair, int> vector_counter(const std::vector<umi_pos_pair> &v);
 
 // split a string by given delimiter
 // from: http://stackoverflow.com/questions/236129/split-a-string-in-c

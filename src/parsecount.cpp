@@ -20,20 +20,17 @@ unordered_map<string, vector<umi_pos_pair>> read_count(string fn, char sep)
     unordered_map<string, vector<umi_pos_pair>> gene_read;
     string line;
     getline(infile, line); // skip header
-    vector<string> tmp_ln;
+    
     while(getline(infile, line))
     {
-        stringstream linestream(line);
-        string gene_id;
-        string UMI;
-        int pos;
-        tmp_ln = split(line,sep);
-        gene_id = tmp_ln[0];
-        UMI = tmp_ln[1];
-        pos = stoi(tmp_ln[2]);
+        size_t comma1_pos = line.find(',');
+        size_t comma2_pos = line.find(',', comma1_pos + 1);
+
+        string gene_id = line.substr(0, comma1_pos);
+        string UMI = line.substr(comma1_pos + 1, comma2_pos - comma1_pos - 1);
+        int pos = stoi(line.substr(comma2_pos + 1));
 
         gene_read[gene_id].push_back(make_pair(UMI, pos));
-
     }
     infile.close();
     return gene_read;
@@ -88,30 +85,37 @@ int UMI_correct2(map<umi_pos_pair, int>& UMI_count)
 {
     bool found = false;
     int corrected_UMI = 0;
-    for (auto UMI1 = UMI_count.begin(); UMI1 != UMI_count.end();) // use normal iterator in order to use `erase`
+
+    // iterate backwards to get better erase() performance
+    // erase must move all elements in the tail, starting from the tail is much
+    // more efficient than starting from the beginning
+    auto umi_pos1 = UMI_count.begin();
+    while (umi_pos1 != UMI_count.end())
     {
         found = false;
-        for (auto const& UMI2: UMI_count) // use range based
+        for (auto const &umi_pos2 : UMI_count)
         {
-            if ((UMI1->first.second - UMI2.first.second>-2 && UMI1->first.second - UMI2.first.second < 2) && (hamming_distance(UMI1->first.first, UMI2.first.first) == 1)) // sequencing errors
-            {
-                if (UMI1->second == 1 || UMI1->second < UMI2.second*0.5)
+            auto const &umi1 = umi_pos1->first.first;
+            auto const &pos1 = umi_pos1->first.second;
+            auto const &count1 = umi_pos1->second;
+
+            auto const &umi2 = umi_pos2.first.first;
+            auto const &pos2 = umi_pos2.first.second;
+            auto const &count2 = umi_pos2.second;
+
+            if (abs(pos1 - pos2) < 2)
+                if (count1 == 1 || 2 * count1 < count2) {
                 {
-                    found = true;
-                    // merge two UMIs
-                    UMI_count[UMI2.first] += UMI_count[UMI1->first];
-                    if (__DEBUG){Rcout << "merge: " <<  UMI1->first.first << "::" << UMI2.first.first << "\t" << UMI1->second << "::" << UMI2.second << "\n";}
-                    break;
-                }
-            }else if ((UMI1->first.second - UMI2.first.second>-2 && UMI1->first.second - UMI2.first.second < 2 && UMI1->first.second != UMI2.first.second) && (UMI1->first.first == UMI2.first.first)) // diff pos
-            {
-                if (UMI1->second == 1 || UMI1->second < UMI2.second*0.5)
-                {
-                    found = true;
-                    // merge two UMIs
-                    UMI_count[UMI2.first] += UMI_count[UMI1->first];
-                    if (__DEBUG){Rcout << "merge: " <<  UMI1->first.first << "::" << UMI2.first.first << "\t" << UMI1->second << "::" << UMI2.second << "\n";}
-                    break;
+                    if (hamming_distance(umi1, umi2) <= 1) // sequencing errors
+                    {
+                        found = true;
+                        // merge two UMIs
+                        UMI_count[umi_pos2.first] += UMI_count[umi_pos1->first];
+                        if (__DEBUG) {
+                            Rcout << "merge: " <<  umi1 << "::" << umi2 << "\t" << umi_pos1->second << "::" << umi_pos2.second << "\n";
+                        }
+                        break;
+                    }
                 }
             }
         }
@@ -119,11 +123,11 @@ int UMI_correct2(map<umi_pos_pair, int>& UMI_count)
         {
             // delete UMI1
             corrected_UMI++;
-            UMI1 = UMI_count.erase(UMI1);
+            umi_pos1 = UMI_count.erase(umi_pos1);
         }
         else
         {
-            UMI1++;
+            umi_pos1++;
         }
     }
     return corrected_UMI;

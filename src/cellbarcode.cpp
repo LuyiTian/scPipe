@@ -63,35 +63,40 @@ unordered_map<string, string> Barcode::get_count_file_path(string out_dir)
     return out_fn_dict;
 }
 
-
-string Barcode::get_closest_match(string bc_seq, int max_mismatch)
+string Barcode::get_closest_match(const string &bc_seq, int max_mismatch)
 {
     if (barcode_dict.find(bc_seq) != barcode_dict.end())
     {
         return bc_seq;
     }
-    int sml1st = 99999, sml2ed = 99999;
-    int tmp;
+    int sml1st = std::numeric_limits<int>::max();
+    int sml2ed = std::numeric_limits<int>::max();
+    std::vector<int> hamming_dists(barcode_list.size());
     string closest_match;
 
-
-
-    for ( auto &barcode : barcode_list )
+    for (int i = 0; i < barcode_list.size(); i++)
     {
-        tmp = hamming_distance(barcode, bc_seq);
-        if (tmp <= max_mismatch)
+        hamming_dists[i] = hamming_distance(barcode_list[i], bc_seq);
+    }
+
+    for (int i = 0; i < hamming_dists.size(); i++)
+    {
+        string const &bc = barcode_list[i];
+        int dist = hamming_dists[i];
+        if (dist <= max_mismatch)
         {
-            if (tmp < sml1st)
+            if (dist < sml1st)
             {
-                sml1st = tmp;
-                closest_match = barcode;
+                sml1st = dist;
+                closest_match = bc;
             }
-            else if (sml1st <= tmp && tmp < sml2ed)
+            else if (sml1st <= dist && dist < sml2ed)
             {
-                sml2ed = tmp;
+                sml2ed = dist;
             }
         }
     }
+
     if (sml1st < sml2ed)
     {
         return closest_match;

@@ -7,7 +7,8 @@
 sc_count_aligned_bam(inbam, outbam, annofn, bam_tags = list(am = "YE", ge =
   "GE", bc = "BC", mb = "OX"), bc_len = 8, UMI_len = 6, stnd = TRUE,
   fix_chr = FALSE, outdir, bc_anno, max_mis = 1, mito = "MT",
-  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE, keep_mapped_bam = TRUE)
+  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE, keep_mapped_bam = TRUE,
+  nthreads = 1)
 }
 \arguments{
 \item{inbam}{input aligned bam file. can have multiple files as input}
@@ -53,6 +54,8 @@ alignment position match.}
 have low abundance if only one copy of one UMI is associated with it.}
 
 \item{keep_mapped_bam}{TRUE if feature mapped bam file should be retained.}
+
+\item{nthreads}{number of threads to use. (default: 1)}
 }
 \value{
 no return
