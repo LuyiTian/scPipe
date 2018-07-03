@@ -111,8 +111,16 @@
   }
 }
 
+\section{Changes in version 1.3.7 (2018-6-23)}{
+  \itemize{
+    \item added multithreading to `parse_align`
+    \item added nthreads argument to `parse_align` and all upstream wrappers
+  }
+}
+
 \section{Changes in version 1.3.8 (2018-6-27)}{
   \itemize{
     \item fix a minor bug in cell barcode demultiplexing
+    \item corrected `suffix` argument in `sc_detect_bc` to `prefix`
   }
 }
