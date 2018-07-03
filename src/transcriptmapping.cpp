@@ -336,7 +336,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         auto &current_genes = gene_dict[chr_name];
         // sort genes based on starting position
         sort(current_genes.begin(), current_genes.end(),
-            [] (Gene &g1, Gene &g2) { return g1.st < g2.st; }
+            [] (const Gene &g1, const Gene &g2) { return g1.st < g2.st; }
         );
 
         // create bins of genes		
@@ -385,7 +385,7 @@ void GeneAnnotation::parse_bed_annotation(string bed_fn, bool fix_chrname)
         if (gene_dict[iter.first].size()>1)
         {
             sort(gene_dict[iter.first].begin(), gene_dict[iter.first].end(),
-                [] (Gene &g1, Gene &g2) { return g1.st < g2.st; }
+                [] (const Gene &g1, const Gene &g2) { return g1.st < g2.st; }
             );
         }
 
