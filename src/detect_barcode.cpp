@@ -160,7 +160,7 @@ std::unordered_map<std::string, int> summarize_barcode(std::string fn, int bc_le
     return counter;
 }
 
-void write_barcode_summary(std::string outfn, std::string suffix, std::unordered_map<std::string, int> counter, int number_of_cells)
+void write_barcode_summary(std::string outfn, std::string prefix, std::unordered_map<std::string, int> counter, int number_of_cells)
 {
     std::ofstream o_file(outfn);  // output file
     int cnt = 0;
@@ -178,7 +178,7 @@ void write_barcode_summary(std::string outfn, std::string suffix, std::unordered
     std::reverse(items.begin(),items.end()); // highest -> lowest
     for (auto const& bc: items)
     {
-        o_file << suffix << padding(cnt, dig) << "," << bc.second << "," << bc.first << "\n";
+        o_file << prefix << padding(cnt, dig) << "," << bc.second << "," << bc.first << "\n";
         cnt++;
         if(number_of_cells > 0 && cnt > number_of_cells)
         {

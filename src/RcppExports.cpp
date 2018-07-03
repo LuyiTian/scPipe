@@ -84,20 +84,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_sc_detect_bc
-void rcpp_sc_detect_bc(Rcpp::CharacterVector infq, Rcpp::CharacterVector outcsv, Rcpp::CharacterVector suffix, Rcpp::NumericVector bc_len, Rcpp::NumericVector max_reads, Rcpp::NumericVector number_of_cells, Rcpp::NumericVector min_count, Rcpp::NumericVector max_mismatch, Rcpp::CharacterVector white_list);
-RcppExport SEXP _scPipe_rcpp_sc_detect_bc(SEXP infqSEXP, SEXP outcsvSEXP, SEXP suffixSEXP, SEXP bc_lenSEXP, SEXP max_readsSEXP, SEXP number_of_cellsSEXP, SEXP min_countSEXP, SEXP max_mismatchSEXP, SEXP white_listSEXP) {
+void rcpp_sc_detect_bc(Rcpp::CharacterVector infq, Rcpp::CharacterVector outcsv, Rcpp::CharacterVector prefix, Rcpp::NumericVector bc_len, Rcpp::NumericVector max_reads, Rcpp::NumericVector number_of_cells, Rcpp::NumericVector min_count, Rcpp::NumericVector max_mismatch, Rcpp::CharacterVector white_list);
+RcppExport SEXP _scPipe_rcpp_sc_detect_bc(SEXP infqSEXP, SEXP outcsvSEXP, SEXP prefixSEXP, SEXP bc_lenSEXP, SEXP max_readsSEXP, SEXP number_of_cellsSEXP, SEXP min_countSEXP, SEXP max_mismatchSEXP, SEXP white_listSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type infq(infqSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outcsv(outcsvSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type suffix(suffixSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type prefix(prefixSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type bc_len(bc_lenSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type max_reads(max_readsSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type number_of_cells(number_of_cellsSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type min_count(min_countSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type max_mismatch(max_mismatchSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type white_list(white_listSEXP);
-    rcpp_sc_detect_bc(infq, outcsv, suffix, bc_len, max_reads, number_of_cells, min_count, max_mismatch, white_list);
+    rcpp_sc_detect_bc(infq, outcsv, prefix, bc_len, max_reads, number_of_cells, min_count, max_mismatch, white_list);
     return R_NilValue;
 END_RCPP
 }
