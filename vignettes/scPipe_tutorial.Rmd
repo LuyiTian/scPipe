@@ -21,7 +21,7 @@ CEL-seq2 is a modified version of the CEL-seq method with higher sensitivity and
 
 We begin by creating a folder to store the results.
 
-```{r,eval=TRUE}
+```{r, message=FALSE}
 library(scPipe)
 library(SingleCellExperiment)
 data_dir = tempdir()
@@ -127,13 +127,13 @@ UMI_dup_info(sce) = UMI_duplication
 
 There are several plots we can create to assess the overall quality of the experiment. The first is to look at the cell barcode demultiplexing statistics. To do this we generate a bar plot that shows the percentage of reads that uniquely match to the cell barcodes, as well as the unmatched proportion of reads and their alignment rates to introns and exons. If we observe a large proportion of unmatched reads that map to exons, this indicates a failure of the cell barcode demultiplexing.
 
-```{r}
+```{r, fig.height=7, fig.width=7}
 plot_demultiplex(sce)
 ```
 
 A second plot shows the duplication rate which can be used to evaluate read deapth. UMIs are routinely used to mark individual molecules and after PCR amplification, the same molecule with have multiple copys, which can be identified and removed if they are observed to have the same UMI sequence. Therefore, the copy number of UMIs is an indication of the PCR amplification rate. 
 
-```{r}
+```{r, fig.height=7, fig.width=7}
 plot_UMI_dup(sce)
 ```
 
@@ -146,13 +146,13 @@ sce = detect_outlier(sce)
 
 We can plot the alignment statistics per sample as a barplot using
 
-```{r}
+```{r, fig.height=7, fig.width=7}
 plot_mapping(sce, percentage = TRUE, dataname = "sc_sample_data")
 ```
 
 and generate pairwise plots of the QC metrics as follows:
 
-```{r}
+```{r, warning=FALSE, message=FALSE, fig.height=7, fig.width=7}
 plot_QC_pairs(sce)
 ```
 

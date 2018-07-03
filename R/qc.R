@@ -479,7 +479,7 @@ plot_demultiplex = function(sce){
     scale_fill_brewer(palette="Dark2")+
     blank_theme+
     geom_text(aes(y = label_y, label = label_tx))+
-    labs(title="Cell barcode demultiplex statistics", y="percentage",x="demultiplex status")
+    labs(title="Cell barcode demultiplexing statistics", y="percentage",x="")
   return(p)
 }
 
@@ -523,18 +523,20 @@ plot_UMI_dup = function(sce, log10_x = TRUE){
   }else if ("duplication.number" %in% colnames(tmp)){
     dup_col = "duplication.number"
   }else{
-    print("cannot find column contains UMI duplication number.")
+    print("cannot find column containing UMI duplication number.")
     return(NULL)
   }
   p = ggplot(data=tmp, aes(x=tmp[, dup_col], y=tmp[,"count"])) +
     geom_smooth(method = "loess",se = FALSE)+theme_bw()
   if (log10_x){
     p = p+scale_x_log10()+
-      labs(title="distribution of UMI duplication numbers(log10).",
-           x="log10(UMI duplication numbers)")
+          labs(title="Distribution of UMI duplication numbers(log10).",
+               x="log10(UMI duplication number)",
+               y="frequency")
   }else{
     p = p+labs(title="Distribution of UMI duplication numbers.",
-               x="UMI duplication numbers",y="count")
+               x="UMI duplication number",
+               y="frequency")
   }
   return(p)
 }
