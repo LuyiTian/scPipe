@@ -17,7 +17,7 @@ rcpp_sc_gene_counting <- function(outdir, bc_anno, UMI_cor, gene_fl) {
     invisible(.Call(`_scPipe_rcpp_sc_gene_counting`, outdir, bc_anno, UMI_cor, gene_fl))
 }
 
-rcpp_sc_detect_bc <- function(infq, outcsv, suffix, bc_len, max_reads, number_of_cells, min_count, max_mismatch, white_list) {
-    invisible(.Call(`_scPipe_rcpp_sc_detect_bc`, infq, outcsv, suffix, bc_len, max_reads, number_of_cells, min_count, max_mismatch, white_list))
+rcpp_sc_detect_bc <- function(infq, outcsv, prefix, bc_len, max_reads, number_of_cells, min_count, max_mismatch, white_list) {
+    invisible(.Call(`_scPipe_rcpp_sc_detect_bc`, infq, outcsv, prefix, bc_len, max_reads, number_of_cells, min_count, max_mismatch, white_list))
 }
 

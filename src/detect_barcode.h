@@ -27,7 +27,7 @@ std::unordered_map<std::string, int> summarize_barcode(
 
 void write_barcode_summary(
     std::string outfn,
-    std::string surfix,
+    std::string prefix,
     std::unordered_map<std::string, int> counter,
     int number_of_cells
 );
