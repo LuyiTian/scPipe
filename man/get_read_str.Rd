@@ -14,10 +14,12 @@ list of UMI and Barcode locations for use in other scPipe functions
 }
 \description{
 The supported protocols are:
-* CelSeq
-* CelSeq2
-* DropSeq
-* 10x
+\itemize{
+ \item CelSeq
+ \item CelSeq2
+ \item DropSeq
+ \item 10x (also called ChromiumV1)
+}
 If you know the structure of a specific protocol and would like it supported,
 please leave a issue post at www.github.com/luyitian/scPipe.
 }
