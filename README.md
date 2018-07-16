@@ -10,15 +10,15 @@ The package is under active development. Feel free to ask any questions or submi
 
 ## Installation
 
-### From Bioconductor (Developmental Version)
+### From Bioconductor
 
 ```
 if (!require("BiocManager"))
     install.packages("BiocManager")
-BiocManager::install("scPipe", version = "devel")
+BiocManager::install("scPipe")
 ```
 
-### From GitHub
+### From GitHub (Developmental version)
 
 ```{r}
 install.packages("devtools")
