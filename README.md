@@ -10,11 +10,12 @@ The package is under active development. Feel free to ask any questions or submi
 
 ## Installation
 
-### From Bioconductor
+### From Bioconductor (Developmental Version)
 
 ```
-source("https://bioconductor.org/biocLite.R")
-biocLite("scPipe")
+if (!require("BiocManager"))
+    install.packages("BiocManager")
+BiocManager::install("scPipe", version = "devel")
 ```
 
 ### From GitHub
