@@ -10,7 +10,7 @@ sc_trim_barcode(outfq, r1, r2 = NULL, read_structure = list(bs1 = -1, bl1 =
 }
 \arguments{
 \item{outfq}{the output fastq file, which reformat the barcode and UMI into
-the read name.}
+the read name. Files ending in \code{.gz} will be automatically compressed.}
 
 \item{r1}{read one for pair-end reads. This read should contain
 the transcript.}
