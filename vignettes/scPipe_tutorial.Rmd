@@ -52,7 +52,7 @@ fq_R2 = system.file("extdata", "simu_R2.fastq.gz", package = "scPipe")
 The pipeline starts with fastq file reformatting. We move the barcode and UMI sequences to the read name and leave the transcript sequence as is. This outputs a read name that looks like `@[barcode_sequence]*[UMI_sequence]#[readname]` ... The read structure of read 2 in our example dataset has the 8 bp long cell barcode starting at position 6 and the 6 bp long UMI sequence starting at the first position. So the read structure will be : `list(bs1=-1, bl1=0, bs2=6, bl2=8, us=0, ul=6)`. `bs1=-1, bl1=0` means we don't have an index in read 1 so we set a negative value as its start position and give it zero length. `bs2=6, bl2=8` means we have an index in read two which starts at position 6 in the read and is 8 bases in length. `us=0, ul=6` means we have a UMI at the start of read 2 which is 6 bases long. **NOTE**: we use a zero based index system, so the indexing of the sequence starts at zero.
 
 ```{r,eval=TRUE}
-sc_trim_barcode(file.path(data_dir, "combined.fastq"),
+sc_trim_barcode(file.path(data_dir, "combined.fastq.gz"),
                 fq_R1,
                 fq_R2,
                 read_structure = list(bs1=-1, bl1=0, bs2=6, bl2=8, us=0, ul=6))
@@ -67,7 +67,7 @@ if(.Platform$OS.type != "windows"){
   Rsubread::buildindex(basename=file.path(data_dir, "ERCC_index"), reference=ERCCfa_fn)
 
   Rsubread::align(index=file.path(data_dir, "ERCC_index"),
-      readfile1=file.path(data_dir, "combined.fastq"),
+      readfile1=file.path(data_dir, "combined.fastq.gz"),
       output_file=file.path(data_dir, "out.aln.bam"), phredOffset=64)
 }
 ```
