@@ -122,7 +122,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' tags. Following this link for more information regarding to bam file format:
 #' http://samtools.github.io/hts-specs
 #' 
-#' The function can accpet multiple bam file as input, if multiple bam file is
+#' The function can accept multiple bam file as input, if multiple bam file is
 #' provided and the `bc_len` is zero, then the function will use the barcode in 
 #' the `barcode_vector` to insert into the `bc` bam tag. So the length of 
 #' `barcode_vector` and the length of `inbam` should be the same
