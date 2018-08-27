@@ -64,7 +64,7 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
   }
   QC_metrics(sce) = cell_stat
   if(!is.null(pheno_data)){
-    colData(sce) = pheno_data[order(rownames(pheno_data)),]
+    colData(sce) = cbind(colData(sce), pheno_data[order(rownames(pheno_data)),])
   }
   
   demultiplex_info(sce) = demultiplex_stat
