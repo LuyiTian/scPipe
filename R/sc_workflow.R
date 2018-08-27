@@ -178,7 +178,7 @@ create_report = function(sample_name,
                 paste0("start at position ", read_structure$bs1, ", length ", read_structure$bl1), x = tx)
   }
   
-  tx = gsub(pattern = "BC1_INFO__", replacement = 
+  tx = gsub(pattern = "BC2_INFO__", replacement = 
               paste0("start at position ", read_structure$bs2, ", length ", read_structure$bl2), x = tx)
   tx = gsub(pattern = "UMI_INFO__", replacement = 
               paste0("start at position ", read_structure$us, ", length ", read_structure$ul), x = tx)

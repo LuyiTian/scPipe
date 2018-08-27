@@ -80,8 +80,8 @@ assume read1 contains the transcript
 * input bam file: `r params$bam_align`
 * output bam file: `r params$bam_map`
 * transctiptome annotations: `r params$anno_gff`
-* do strand specific mapping: params$stnd
-* fix chromosome names: fix_chr
+* do strand specific mapping: `r params$stnd`
+* fix chromosome names: `r params$fix_chr`
 
 ## Parameters for `sc_demultiplex`
 
