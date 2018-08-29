@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <Rcpp.h>
+#include <regex>
 #include <string>
 #include <thread>
 #include <unordered_map>

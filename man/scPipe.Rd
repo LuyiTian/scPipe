@@ -4,7 +4,6 @@
 \name{scPipe}
 \alias{scPipe}
 \alias{scPipe-package}
-\alias{scPipe-package}
 \title{scPipe - single cell RNA-seq pipeline}
 \description{
 The scPipe will do cell barcode demultiplexing, UMI deduplication and quality control on

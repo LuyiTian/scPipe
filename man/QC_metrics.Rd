@@ -3,13 +3,10 @@
 \docType{methods}
 \name{QC_metrics}
 \alias{QC_metrics}
-\alias{QC_metrics}
 \alias{QC_metrics<-}
 \alias{QC_metrics.sce}
 \alias{QC_metrics,SingleCellExperiment-method}
-\alias{QC_metrics}
 \alias{QC_metrics<-,SingleCellExperiment-method}
-\alias{QC_metrics}
 \title{Get or set quality control metrics in a SingleCellExperiment object}
 \usage{
 QC_metrics(object)

@@ -124,3 +124,9 @@
     \item corrected `suffix` argument in `sc_detect_bc` to `prefix`
   }
 }
+
+\section{Changes in version 1.3.10 (2018-8-29)}{
+  \itemize{
+    \item disabled multiple bam file input to sc_exon_mapping
+  }
+}
