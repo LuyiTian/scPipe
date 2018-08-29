@@ -20,7 +20,7 @@ LinkingTo: Rcpp, Rhtslib (>= 1.13.1), zlibbioc, testthat
 Imports: Rhtslib, biomaRt, GGally, MASS, mclust, Rcpp (>= 0.11.3), reshape, BiocGenerics, robustbase, scales, utils, stats, S4Vectors, SummarizedExperiment, AnnotationDbi, org.Hs.eg.db, org.Mm.eg.db
 License: GPL (>= 2)
 Encoding: UTF-8
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 NeedsCompilation: yes
 URL: https://github.com/LuyiTian/scPipe
 BugReports: https://github.com/LuyiTian/scPipe
