@@ -21,7 +21,7 @@
 #'
 #' @name sc_trim_barcode
 #' @param outfq the output fastq file, which reformat the barcode and UMI into
-#'   the read name.
+#'   the read name. Files ending in \code{.gz} will be automatically compressed.
 #' @param r1 read one for pair-end reads. This read should contain
 #'   the transcript.
 #' @param r2 read two for pair-end reads, NULL if single read.
@@ -122,7 +122,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' tags. Following this link for more information regarding to bam file format:
 #' http://samtools.github.io/hts-specs
 #' 
-#' The function can accpet multiple bam file as input, if multiple bam file is
+#' The function can accept multiple bam file as input, if multiple bam file is
 #' provided and the `bc_len` is zero, then the function will use the barcode in 
 #' the `barcode_vector` to insert into the `bc` bam tag. So the length of 
 #' `barcode_vector` and the length of `inbam` should be the same

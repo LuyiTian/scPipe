@@ -64,7 +64,7 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
   }
   QC_metrics(sce) = cell_stat
   if(!is.null(pheno_data)){
-    colData(sce) = pheno_data[order(rownames(pheno_data)),]
+    colData(sce) = cbind(colData(sce), pheno_data[order(rownames(pheno_data)),])
   }
   
   demultiplex_info(sce) = demultiplex_stat
@@ -178,7 +178,7 @@ create_report = function(sample_name,
                 paste0("start at position ", read_structure$bs1, ", length ", read_structure$bl1), x = tx)
   }
   
-  tx = gsub(pattern = "BC1_INFO__", replacement = 
+  tx = gsub(pattern = "BC2_INFO__", replacement = 
               paste0("start at position ", read_structure$bs2, ", length ", read_structure$bl2), x = tx)
   tx = gsub(pattern = "UMI_INFO__", replacement = 
               paste0("start at position ", read_structure$us, ", length ", read_structure$ul), x = tx)
