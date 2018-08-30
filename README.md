@@ -13,8 +13,9 @@ The package is under active development. Feel free to ask any questions or submi
 ### From Bioconductor
 
 ```
-source("https://bioconductor.org/biocLite.R")
-biocLite("scPipe")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("scPipe")
 ```
 
 ### From GitHub
