@@ -74,7 +74,7 @@ anno_to_saf <- function(anno) {
     anno_df <- as.data.frame(anno)
 
     n_exons <- anno_df %>%
-        dplyr::filter(type == "exons") %>%
+        dplyr::filter(type == "exon") %>%
         nrow()
 
     if (n_exons == 0) {

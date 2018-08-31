@@ -203,8 +203,8 @@ sc_exon_mapping = function(inbam, outbam, annofn,
     }
     rcpp_sc_exon_mapping(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
                          barcode_vector, UMI_len, stnd, fix_chr, nthreads)
-  } else if (is(annofn, "GenoimcRanges")) {
-    rcpp_sc_exon_mapping(inbam, outbam, anno_to_saf(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
+  } else if (is(annofn, "GRanges")) {
+    rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_to_saf(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
                          barcode_vector, UMI_len, stnd, fix_chr, nthreads)
   }
 }
