@@ -394,6 +394,63 @@ void GeneAnnotation::parse_bed_annotation(string bed_fn, bool fix_chrname)
     }
 }
 
+void GeneAnnotation::parse_saf_dataframe(DataFrame anno_df, bool fix_chrname)
+{
+    CharacterVector gene_ids = anno_df["GeneID"];
+    CharacterVector chrs = anno_df["Chr"];
+    NumericVector starts = anno_df["Start"];
+    NumericVector ends = anno_df["End"];
+    CharacterVector strands = anno_df["Strand"];
+
+    int n_entries = gene_ids.size();
+
+    using Chr = std::string;
+    using GeneID = std::string;
+    unordered_map<Chr, unordered_map<GeneID, Gene>> tmp_gene_dict;
+    for (int i = 0; i < n_entries; i++)
+    {
+        std::string const &gene_id = as<std::string>(gene_ids[i]);
+        std::string const &chr = as<std::string>(chrs[i]);
+        int start = starts[i];
+        int end = ends[i];
+        int const &strand = strands[i] == "+" ? 1 :
+                            strands[i] == "-" ? -1 : 0;
+
+        if (fix_chrname)
+        {
+            tmp_gene_dict[fix_name(chr)][gene_id].add_exon(Interval(start, end, strand));
+            tmp_gene_dict[fix_name(chr)][gene_id].set_ID(chr);
+        }
+        else
+        {
+            tmp_gene_dict[chr][gene_id].add_exon(Interval(start, end, strand));
+            tmp_gene_dict[chr][gene_id].set_ID(gene_id);
+        }
+
+    }
+
+    for (auto iter : tmp_gene_dict)
+    {
+        for (auto sub_iter : iter.second)
+        {
+            if (sub_iter.second.exon_vec.size()>1)
+            {
+                sub_iter.second.sort_exon();
+                sub_iter.second.flatten_exon();
+            }
+            gene_dict[iter.first].push_back(sub_iter.second);
+        }
+        if (gene_dict[iter.first].size()>1)
+        {
+            sort(gene_dict[iter.first].begin(), gene_dict[iter.first].end(),
+                [] (const Gene &g1, const Gene &g2) { return g1.st < g2.st; }
+            );
+        }
+
+        // create bins of genes
+        bins_dict[iter.first].make_bins(gene_dict[iter.first]);
+    }
+}
 
 int GeneAnnotation::ngenes()
 {
