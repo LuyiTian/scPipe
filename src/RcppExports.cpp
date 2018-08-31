@@ -50,6 +50,28 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// rcpp_sc_exon_mapping_df_anno
+void rcpp_sc_exon_mapping_df_anno(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outbam, Rcpp::DataFrame anno, Rcpp::CharacterVector am, Rcpp::CharacterVector ge, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::NumericVector bc_len, Rcpp::CharacterVector bc_vector, Rcpp::NumericVector UMI_len, Rcpp::NumericVector stnd, Rcpp::NumericVector fix_chr, Rcpp::NumericVector nthreads);
+RcppExport SEXP _scPipe_rcpp_sc_exon_mapping_df_anno(SEXP inbamSEXP, SEXP outbamSEXP, SEXP annoSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP bc_lenSEXP, SEXP bc_vectorSEXP, SEXP UMI_lenSEXP, SEXP stndSEXP, SEXP fix_chrSEXP, SEXP nthreadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type inbam(inbamSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outbam(outbamSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type anno(annoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type am(amSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type ge(geSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type bc(bcSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type mb(mbSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type bc_len(bc_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type bc_vector(bc_vectorSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type UMI_len(UMI_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type stnd(stndSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type fix_chr(fix_chrSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type nthreads(nthreadsSEXP);
+    rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno, am, ge, bc, mb, bc_len, bc_vector, UMI_len, stnd, fix_chr, nthreads);
+    return R_NilValue;
+END_RCPP
+}
 // rcpp_sc_demultiplex
 void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outdir, Rcpp::CharacterVector bc_anno, Rcpp::NumericVector max_mis, Rcpp::CharacterVector am, Rcpp::CharacterVector ge, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::CharacterVector mito, Rcpp::LogicalVector has_UMI, Rcpp::NumericVector nthreads);
 RcppExport SEXP _scPipe_rcpp_sc_demultiplex(SEXP inbamSEXP, SEXP outdirSEXP, SEXP bc_annoSEXP, SEXP max_misSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP mitoSEXP, SEXP has_UMISEXP, SEXP nthreadsSEXP) {
@@ -107,10 +129,11 @@ RcppExport SEXP run_testthat_tests();
 static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 14},
     {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 13},
+    {"_scPipe_rcpp_sc_exon_mapping_df_anno", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping_df_anno, 13},
     {"_scPipe_rcpp_sc_demultiplex", (DL_FUNC) &_scPipe_rcpp_sc_demultiplex, 11},
     {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
     {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 9},
-    {"run_testthat_tests",                  (DL_FUNC) &run_testthat_tests,                   0},
+    {"run_testthat_tests",                   (DL_FUNC) &run_testthat_tests,                    0},
     {NULL, NULL, 0}
 };
 

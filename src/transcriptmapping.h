@@ -188,6 +188,7 @@ class Mapping
 public:
     GeneAnnotation Anno;
     void add_annotation(std::string gff3_fn, bool fix_chrname);
+    void add_annotation(Rcpp::DataFrame anno, bool fix_chrname);
     // return:
     //  <=0 - unique map to exon, number indicate the distance to transcript end pos
     //  1 - ambiguous map to multiple exon

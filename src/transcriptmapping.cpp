@@ -512,7 +512,11 @@ void Mapping::add_annotation(string gff3_fn, bool fix_chrname)
         Anno.parse_bed_annotation(gff3_fn, fix_chrname);
         Rcout << "adding bed annotation: " << gff3_fn << "\n";
     }
+}
 
+void Mapping::add_annotation(DataFrame anno, bool fix_chrname)
+{
+    Anno.parse_saf_dataframe(anno, fix_chrname);
 }
 
 int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_strand)

@@ -45,11 +45,43 @@ anno_import <- function(filename) {
     return(anno_to_saf(anno))
 }
 
-# convert annotation from GenomicRanges to Simple Annotation Format(SAF)
-# http://bioinf.wehi.edu.au/featureCounts/ for details on SAF
-anno_to_saf <- function(full_anno) {
-    full_anno %>%
-        as.data.frame() %>%
+#' Convert annotation from GenomicRanges to Simple Annotation Format (SAF)
+#'
+#' Convert a GRanges object containing type and gene_id information into a SAF
+#' format data.frame. SAF described at http://bioinf.wehi.edu.au/featureCounts/.
+#' SAF contains positions for exons, strand and the GeneID they are associated
+#' with.
+#'
+#' @param anno The GRanges object containing exon information
+#'
+#' @return data.frame containing exon information in SAF format
+#' @export
+#'
+#' @examples
+#' anno <- system.file("extdata", "ensembl_hg38_chrY.gtf.gz", package = "scPipe")
+#' saf_chrY <- anno_to_saf(anno)
+#'
+anno_to_saf <- function(anno) {
+
+    required_cols <- c("type", "gene_id")
+    meta_cols <- colnames(mcols(anno))
+    if (!all(required_cols %in% meta_cols)) {
+        missing_cols <- required_cols[!required_cols %in% meta_cols]
+
+        stop("columns missing from GRanges metadata: ", paste(missing_cols, collapse = ", "))
+    }
+
+    anno_df <- as.data.frame(anno)
+
+    n_exons <- anno_df %>%
+        dplyr::filter(type == "exons") %>%
+        nrow()
+
+    if (n_exons == 0) {
+        stop("no exons found in annotation, must be labelled 'exon' under 'type' column")
+    }
+
+    anno_df %>%
         dplyr::filter(type == "exon") %>%
         dplyr::select(gene_id, seqnames, start, end, strand) %>%
         dplyr::rename(
