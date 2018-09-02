@@ -23,26 +23,9 @@
 anno_import <- function(filename) {
     anno <- rtracklayer::import(filename)
 
-    # check if gene_id column is present, this is missing from RefSeq annotataions
-    no_gene_ids <- is.null(anno$gene_id)
-    has_dbx <- !is.null(anno$Dbxref)
-
-    if (no_gene_ids && has_dbx) {
-        anno <- infer_gene_id_from_dbx(anno)
-        return(anno_to_saf(anno))
-    }
-
-    # check if every entry has a gene_id value, this is not true for ENSEMBL gff3
-    incomplete_gene_ids <- anyNA(anno$gene_id[anno$type == "exon"])
-
-    if (incomplete_gene_ids) {
-        anno <- infer_gene_id_from_parent(anno)
-        return(anno_to_saf(anno))
-    }
-
     # gene_id column is present and contains necessary information
     # return SAF converted data.frame
-    return(anno_to_saf(anno))
+    return(anno_to_saf(infer_gene_id(anno)))
 }
 
 #' Convert annotation from GenomicRanges to Simple Annotation Format (SAF)
@@ -62,7 +45,6 @@ anno_import <- function(filename) {
 #' saf_chrY <- anno_to_saf(anno)
 #'
 anno_to_saf <- function(anno) {
-
     required_cols <- c("type", "gene_id")
     meta_cols <- colnames(mcols(anno))
     if (!all(required_cols %in% meta_cols)) {
@@ -71,6 +53,7 @@ anno_to_saf <- function(anno) {
         stop("columns missing from GRanges metadata: ", paste(missing_cols, collapse = ", "))
     }
 
+    anno <- infer_gene_ids(anno)
     anno_df <- as.data.frame(anno)
 
     n_exons <- anno_df %>%
@@ -94,6 +77,27 @@ anno_to_saf <- function(anno) {
         dplyr::select(GeneID, dplyr::everything())
 }
 
+infer_gene_ids <- function(anno) {
+    # check if gene_id column is present, this is missing from RefSeq annotataions
+    no_gene_ids <- is.null(anno$gene_id)
+    has_dbx <- !is.null(anno$Dbxref)
+
+    if (no_gene_ids && has_dbx) {
+        anno <- infer_gene_id_from_dbx(anno)
+        return(anno)
+    }
+
+    # check if every entry has a gene_id value, this is not true for ENSEMBL gff3
+    incomplete_gene_ids <- anyNA(anno$gene_id[anno$type == "exon"])
+
+    if (incomplete_gene_ids) {
+        anno <- infer_gene_id_from_parent(anno)
+        return(anno)
+    }
+
+    return(anno)
+}
+
 # shorthand for stringr string interpolation
 fmt_str <- stringr::str_interp
 
@@ -115,9 +119,9 @@ infer_gene_id_from_parent <- function(anno) {
     transcript_hash <- local({
         transcripts <- anno %>%
             as.data.frame() %>%
-            filter(!is.na(transcript_id)) %>%
-            select(transcript_id, Parent) %>%
-            mutate(
+            dplyr::filter(!is.na(transcript_id)) %>%
+            dplyr::select(transcript_id, Parent) %>%
+            dplyr::mutate(
                 transcript_id = paste0("transcript:", transcript_id),
                 Parent = stringr::str_remove(Parent, "gene:")
             )
