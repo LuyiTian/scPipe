@@ -11,7 +11,7 @@ test_that("ENSEMBL gtf annotation can be imported", {
         stringsAsFactors = FALSE
     )
 
-    # expect_identical(anno_import(anno_path), expected)
+    expect_identical(anno_import(anno_path), expected)
 
     expect_silent(anno_import(system.file("extdata", "ens_tiny_anno.gff3.gz", package = "scPipe")))
     expect_silent(anno_import(system.file("extdata", "ens_tiny_anno.gtf.gz", package = "scPipe")))
