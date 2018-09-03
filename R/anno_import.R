@@ -25,7 +25,7 @@ anno_import <- function(filename) {
 
     # gene_id column is present and contains necessary information
     # return SAF converted data.frame
-    return(anno_to_saf(infer_gene_id(anno)))
+    return(anno_to_saf(infer_gene_ids(anno)))
 }
 
 #' Convert annotation from GenomicRanges to Simple Annotation Format (SAF)
