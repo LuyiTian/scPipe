@@ -77,7 +77,7 @@ anno_to_saf <- function(anno) {
         stop("no exons found in annotation, must be labelled 'exon' under 'type' column")
     }
 
-    anno_df %>%
+    saf <- anno_df %>%
         dplyr::filter(type == "exon") %>%
         dplyr::select(gene_id, seqnames, start, end, strand) %>%
         dplyr::rename(
@@ -86,8 +86,13 @@ anno_to_saf <- function(anno) {
             Start = start,
             End = end,
             Strand = strand
-        ) %>%
-        dplyr::select(GeneID, dplyr::everything())
+        )
+
+    if (anyNA(saf$GeneID)) {
+        warning("GeneID column of contains NA")
+    }
+
+    saf %>% dplyr::select(GeneID, dplyr::everything())
 }
 
 infer_gene_ids <- function(anno) {
@@ -102,10 +107,15 @@ infer_gene_ids <- function(anno) {
 
     # check if every entry has a gene_id value, this is not true for ENSEMBL gff3
     incomplete_gene_ids <- anyNA(anno$gene_id[anno$type == "exon"])
+    has_parent <- !is.null(anno$Parent)
 
-    if (incomplete_gene_ids) {
+    if (incomplete_gene_ids && has_parent) {
         anno <- infer_gene_id_from_parent(anno)
         return(anno)
+    }
+
+    if (incomplete_gene_ids) {
+        stop("some exons have missing gene_id, and gene_id could not be inferred")
     }
 
     return(anno)
