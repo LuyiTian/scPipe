@@ -133,9 +133,9 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #'
 #'
 #' @name sc_exon_mapping
-#' @param inbam input aligned bam file.
+#' @param inbam input aligned bam file. can have multiple files as input
 #' @param outbam output bam filename
-#' @param annofn single string or vector of gff3 annotation filenames
+#' @param annofn single string or vector of gff3 annotation filenames, or GRanges object containing complete gene_id metadata column.
 #' @param bam_tags list defining BAM tags where mapping information is
 #'   stored.
 #'   \itemize{
@@ -191,9 +191,9 @@ sc_exon_mapping = function(inbam, outbam, annofn,
     inbam = path.expand(inbam)
   }
 
-  if (length(inbam) > 1) {
-    stop("Only one bam file can be used as input")
-  }
+  # if (length(inbam) > 1) {
+  #   stop("Only one bam file can be used as input")
+  # }
 
   if (is(annofn, "character")) {
     if (any(!file.exists(annofn))) {

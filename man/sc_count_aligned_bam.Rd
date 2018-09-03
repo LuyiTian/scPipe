@@ -11,11 +11,11 @@ sc_count_aligned_bam(inbam, outbam, annofn, bam_tags = list(am = "YE", ge
   keep_mapped_bam = TRUE, nthreads = 1)
 }
 \arguments{
-\item{inbam}{input aligned bam file.}
+\item{inbam}{input aligned bam file. can have multiple files as input}
 
 \item{outbam}{output bam filename}
 
-\item{annofn}{single string or vector of gff3 annotation filenames}
+\item{annofn}{single string or vector of gff3 annotation filenames, or GRanges object containing complete gene_id metadata column.}
 
 \item{bam_tags}{list defining BAM tags where mapping information is
 stored.
