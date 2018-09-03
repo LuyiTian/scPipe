@@ -32,7 +32,7 @@ number will be considered as sequence error and merged. (default: 1)}
 
 \item{white_list_file}{a file that list all the possible barcodes
 each row is a barcode sequence. the list for 10x can be found at:
-https://community.10xgenomics.com/t5/Data-Sharing/List-of-valid-cellular-barcodes/td-p/527 
+https://community.10xgenomics.com/t5/Data-Sharing/List-of-valid-cellular-barcodes/td-p/527
 (default: NULL)}
 }
 \value{

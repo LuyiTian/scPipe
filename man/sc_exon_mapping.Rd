@@ -26,7 +26,7 @@ stored.
 
 \item{bc_len}{total barcode length}
 
-\item{barcode_vector}{a list of barcode if each individual bam is a single 
+\item{barcode_vector}{a list of barcode if each individual bam is a single
 cell. (default: NULL). The barcode should be of the same length for each
 cell.}
 
@@ -48,12 +48,12 @@ tags. Following this link for more information regarding to bam file format:
 http://samtools.github.io/hts-specs
 
 The function can accept multiple bam file as input, if multiple bam file is
-provided and the `bc_len` is zero, then the function will use the barcode in 
-the `barcode_vector` to insert into the `bc` bam tag. So the length of 
+provided and the `bc_len` is zero, then the function will use the barcode in
+the `barcode_vector` to insert into the `bc` bam tag. So the length of
 `barcode_vector` and the length of `inbam` should be the same
 If this is the case then the `max_mis` argument in `sc_demultiplex`
-should be zero. If `be_len` is larger than zero, then the function will 
-still seek for barcode in fastq headers with given length. In this case 
+should be zero. If `be_len` is larger than zero, then the function will
+still seek for barcode in fastq headers with given length. In this case
 each bam file is not treated as from a single cell.
 }
 \examples{
