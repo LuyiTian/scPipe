@@ -21,6 +21,14 @@
 #' ens_chrY <- anno_import(system.file("extdata", "ensembl_hg38_chrY.gtf.gz", package = "scPipe"))
 #'
 anno_import <- function(filename) {
+    accepted_formats <- c("gff", "gff3", "gtf")
+    file_format <- tools::file_ext(stringr::str_remove(filename, ".gz$"))
+    valid_format <- any(file_format %in% accepted_formats)
+
+    if (!valid_format) {
+        stop("only files the following annotation formats are accepted: ", paste(accepted_formats, collapse = ", "))
+    }
+
     anno <- rtracklayer::import(filename)
 
     # gene_id column is present and contains necessary information
@@ -58,7 +66,7 @@ anno_import <- function(filename) {
 #' saf_chrY <- anno_to_saf(anno)
 #'
 anno_to_saf <- function(anno) {
-    required_cols <- c("type", "gene_id")
+    required_cols <- c("type")
     meta_cols <- colnames(mcols(anno))
     if (!all(required_cols %in% meta_cols)) {
         missing_cols <- required_cols[!required_cols %in% meta_cols]
@@ -109,7 +117,7 @@ infer_gene_ids <- function(anno) {
     incomplete_gene_ids <- anyNA(anno$gene_id[anno$type == "exon"])
     has_parent <- !is.null(anno$Parent)
 
-    if (incomplete_gene_ids && has_parent) {
+    if ((no_gene_ids || incomplete_gene_ids) && has_parent) {
         anno <- infer_gene_id_from_parent(anno)
         return(anno)
     }
