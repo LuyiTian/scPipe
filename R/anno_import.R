@@ -23,17 +23,19 @@
 anno_import <- function(filename) {
     accepted_formats <- c("gff", "gff3", "gtf")
     file_format <- tools::file_ext(stringr::str_remove(filename, ".gz$"))
-    valid_format <- any(file_format %in% accepted_formats)
+    all_valid_format <- any(file_format %in% accepted_formats)
 
-    if (!valid_format) {
-        stop("only files the following annotation formats are accepted: ", paste(accepted_formats, collapse = ", "))
+    if (!all_valid_format) {
+        stop("only files the following annotation formats are accepted: ", paste(accepted_formats, collapse = ", "), " and their gzipped variants")
     }
 
-    anno <- rtracklayer::import(filename)
+    anno <- lapply(filename, rtracklayer::import)
+    anno <- lapply(anno, infer_gene_ids)
+    anno <- lapply(anno, anno_to_saf)
 
     # gene_id column is present and contains necessary information
     # return SAF converted data.frame
-    return(anno_to_saf(infer_gene_ids(anno)))
+    return(do.call(rbind, anno))
 }
 
 #' Convert annotation from GenomicRanges to Simple Annotation Format (SAF)
