@@ -130,6 +130,51 @@ void rcpp_sc_exon_mapping(Rcpp::CharacterVector inbam,
   Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
 }
 
+// [[Rcpp::export]]
+void rcpp_sc_exon_mapping_df_anno(
+  Rcpp::CharacterVector inbam,
+  Rcpp::CharacterVector outbam,
+  Rcpp::DataFrame anno,
+  Rcpp::CharacterVector am,
+  Rcpp::CharacterVector ge,
+  Rcpp::CharacterVector bc,
+  Rcpp::CharacterVector mb,
+  Rcpp::NumericVector bc_len,
+  Rcpp::CharacterVector bc_vector,
+  Rcpp::NumericVector UMI_len,
+  Rcpp::NumericVector stnd,
+  Rcpp::NumericVector fix_chr,
+  Rcpp::NumericVector nthreads)
+{
+  //std::string c_inbam = Rcpp::as<std::string>(inbam);
+  std::string c_outbam = Rcpp::as<std::string>(outbam);
+
+  std::string c_am = Rcpp::as<std::string>(am);
+  std::string c_ge = Rcpp::as<std::string>(ge);
+  std::string c_bc = Rcpp::as<std::string>(bc);
+  std::string c_mb = Rcpp::as<std::string>(mb);
+
+  int c_bc_len = Rcpp::as<int>(bc_len);
+  int c_UMI_len = Rcpp::as<int>(UMI_len);
+  bool c_stnd = Rcpp::as<int>(stnd)==1?true:false;
+  bool c_fix_chr = Rcpp::as<int>(fix_chr)==1?true:false;
+  std::vector<std::string> c_inbam_vec = Rcpp::as<std::vector<std::string>>(inbam);
+  std::vector<std::string> c_bc_vec = Rcpp::as<std::vector<std::string>>(bc_vector);
+  int c_nthreads = Rcpp::as<int>(nthreads);
+
+  Mapping a = Mapping();
+  Rcpp::Rcout << "adding annotation files..." << "\n";
+
+  Timer timer;
+  timer.start();
+  a.add_annotation(anno, c_fix_chr);
+  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
+
+  Rcpp::Rcout << "annotating exon features..." << "\n";
+
+  a.parse_align_warpper(c_inbam_vec, c_bc_vec, c_outbam, c_stnd, c_am, c_ge, c_bc, c_mb, c_bc_len, c_UMI_len, c_nthreads);
+}
+
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
 

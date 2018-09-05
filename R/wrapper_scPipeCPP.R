@@ -121,21 +121,23 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' The result will be written into optional fields in bam file with different
 #' tags. Following this link for more information regarding to bam file format:
 #' http://samtools.github.io/hts-specs
-#' 
+#'
 #' The function can accept multiple bam file as input, if multiple bam file is
-#' provided and the `bc_len` is zero, then the function will use the barcode in 
-#' the `barcode_vector` to insert into the `bc` bam tag. So the length of 
+#' provided and the `bc_len` is zero, then the function will use the barcode in
+#' the `barcode_vector` to insert into the `bc` bam tag. So the length of
 #' `barcode_vector` and the length of `inbam` should be the same
 #' If this is the case then the `max_mis` argument in `sc_demultiplex`
-#' should be zero. If `be_len` is larger than zero, then the function will 
-#' still seek for barcode in fastq headers with given length. In this case 
+#' should be zero. If `be_len` is larger than zero, then the function will
+#' still seek for barcode in fastq headers with given length. In this case
 #' each bam file is not treated as from a single cell.
-#' 
+#'
 #'
 #' @name sc_exon_mapping
 #' @param inbam input aligned bam file. can have multiple files as input
 #' @param outbam output bam filename
-#' @param annofn single string or vector of gff3 annotation filenames
+#' @param annofn single string or vector of gff3 annotation filenames,
+#'   data.frame in SAF format or GRanges object containing complete gene_id
+#'   metadata column.
 #' @param bam_tags list defining BAM tags where mapping information is
 #'   stored.
 #'   \itemize{
@@ -145,7 +147,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #'     \item "mb": molecular barcode tag
 #'   }
 #' @param bc_len total barcode length
-#' @param barcode_vector a list of barcode if each individual bam is a single 
+#' @param barcode_vector a list of barcode if each individual bam is a single
 #' cell. (default: NULL). The barcode should be of the same length for each
 #' cell.
 #' @param UMI_len UMI length
@@ -191,15 +193,32 @@ sc_exon_mapping = function(inbam, outbam, annofn,
     inbam = path.expand(inbam)
   }
 
-  if (any(!file.exists(annofn))) {
-    stop("At least one genome annotation file does not exist")
-  } else {
-    annofn = path.expand(annofn)
-  }
-  
+  # if (length(inbam) > 1) {
+  #   stop("Only one bam file can be used as input")
+  # }
 
-  rcpp_sc_exon_mapping(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len, 
-                       barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+  if (!is(annofn, "character") &&
+      !is(annofn, "GRanges") &&
+      !is(annofn, "data.frame")) {
+    stop("'annofn' must be either character vector, GRanges, or data.frame object")
+  }
+
+  if (is(annofn, "character")) {
+    if (any(!file.exists(annofn))) {
+      stop("At least one genome annotation file does not exist")
+    } else {
+      annofn = path.expand(annofn)
+    }
+    rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_import(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
+                                 barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+  } else if (is(annofn, "GRanges")) {
+    rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_to_saf(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
+                                 barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+  } else if (is(annofn, "data.frame")) {
+    validate_saf(annofn)
+    rcpp_sc_exon_mapping_df_anno(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
+                                  barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+  }
 }
 
 
@@ -346,7 +365,7 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=2, gene_fl=FALSE) {
 #' number will be considered as sequence error and merged. (default: 1)
 #' @param white_list_file a file that list all the possible barcodes
 #' each row is a barcode sequence. the list for 10x can be found at:
-#' https://community.10xgenomics.com/t5/Data-Sharing/List-of-valid-cellular-barcodes/td-p/527 
+#' https://community.10xgenomics.com/t5/Data-Sharing/List-of-valid-cellular-barcodes/td-p/527
 #' (default: NULL)
 #' @export
 #' @return no return
@@ -376,7 +395,7 @@ sc_detect_bc = function(infq, outcsv, prefix="CELL_", bc_len,
   }
   if (max_reads=="all") {m_r = -1}
   else {m_r=max_reads}
-  rcpp_sc_detect_bc(infq, outcsv, prefix, bc_len, m_r, number_of_cells, 
+  rcpp_sc_detect_bc(infq, outcsv, prefix, bc_len, m_r, number_of_cells,
     min_count, max_mismatch, white_list_file)
 }
 

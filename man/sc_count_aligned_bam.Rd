@@ -4,18 +4,20 @@
 \alias{sc_count_aligned_bam}
 \title{sc_count_aligned_bam}
 \usage{
-sc_count_aligned_bam(inbam, outbam, annofn, bam_tags = list(am = "YE", ge =
-  "GE", bc = "BC", mb = "OX"), bc_len = 8, UMI_len = 6, stnd = TRUE,
-  fix_chr = FALSE, outdir, bc_anno, max_mis = 1, mito = "MT",
-  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE, keep_mapped_bam = TRUE,
-  nthreads = 1)
+sc_count_aligned_bam(inbam, outbam, annofn, bam_tags = list(am = "YE", ge
+  = "GE", bc = "BC", mb = "OX"), bc_len = 8, UMI_len = 6,
+  stnd = TRUE, fix_chr = FALSE, outdir, bc_anno, max_mis = 1,
+  mito = "MT", has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
+  keep_mapped_bam = TRUE, nthreads = 1)
 }
 \arguments{
 \item{inbam}{input aligned bam file. can have multiple files as input}
 
 \item{outbam}{output bam filename}
 
-\item{annofn}{single string or vector of gff3 annotation filenames}
+\item{annofn}{single string or vector of gff3 annotation filenames,
+data.frame in SAF format or GRanges object containing complete gene_id
+metadata column.}
 
 \item{bam_tags}{list defining BAM tags where mapping information is
 stored.

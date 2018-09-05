@@ -1,5 +1,5 @@
 // transcriptmapping.h
-// 
+//
 
 #include <algorithm>
 #include <atomic>
@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <Rcpp.h>
+#include <regex>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -113,6 +114,7 @@ public:
     std::vector<std::string> get_genelist();
 
     void parse_gff3_annotation(std::string gff3_fn, bool fix_chrname);
+    void parse_saf_dataframe(Rcpp::DataFrame anno_df, bool fix_chrname);
 
     // https://genome.ucsc.edu/FAQ/FAQformat.html#format1
     // bed file specification:
@@ -130,8 +132,8 @@ public:
     // 12. blockStarts - A comma-separated list of block starts. All of the blockStart positions should be calculated relative to chromStart. The number of items in this list should correspond to blockCount.
     void parse_bed_annotation(std::string bed_fn, bool fix_chrname);
 
-    friend std::ostream& operator<< (std::ostream& out, const GeneAnnotation& obj); 
-    
+    friend std::ostream& operator<< (std::ostream& out, const GeneAnnotation& obj);
+
 private:
     // index variables for gff3 fields
     const int SEQID      = 0;
@@ -149,7 +151,7 @@ private:
     // convert strand from +- symbols to -1 or 1
     int get_strand(char st);
 
-    const std::string get_parent(const std::vector<std::string> &attributes);    
+    const std::string get_parent(const std::vector<std::string> &attributes);
     std::string get_ID(const std::vector<std::string> &attributes);
 
     // add chr to molecule names if requested
@@ -165,7 +167,7 @@ private:
 
     // generic gene_id getter for gff3 entries
     std::string get_gene_id(const std::vector<std::string> &attributes);
-    
+
     // specific gene_id getter for gff3 entries
     std::string get_gencode_gene_id(const std::vector<std::string> &attributes);
     std::string get_refseq_gene_id(const std::vector<std::string> &attributes);
@@ -186,6 +188,7 @@ class Mapping
 public:
     GeneAnnotation Anno;
     void add_annotation(std::string gff3_fn, bool fix_chrname);
+    void add_annotation(Rcpp::DataFrame anno, bool fix_chrname);
     // return:
     //  <=0 - unique map to exon, number indicate the distance to transcript end pos
     //  1 - ambiguous map to multiple exon

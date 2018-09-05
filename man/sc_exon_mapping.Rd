@@ -4,16 +4,18 @@
 \alias{sc_exon_mapping}
 \title{sc_exon_mapping}
 \usage{
-sc_exon_mapping(inbam, outbam, annofn, bam_tags = list(am = "YE", ge = "GE",
-  bc = "BC", mb = "OX"), bc_len = 8, barcode_vector = "", UMI_len = 6,
-  stnd = TRUE, fix_chr = FALSE, nthreads = 1)
+sc_exon_mapping(inbam, outbam, annofn, bam_tags = list(am = "YE", ge =
+  "GE", bc = "BC", mb = "OX"), bc_len = 8, barcode_vector = "",
+  UMI_len = 6, stnd = TRUE, fix_chr = FALSE, nthreads = 1)
 }
 \arguments{
 \item{inbam}{input aligned bam file. can have multiple files as input}
 
 \item{outbam}{output bam filename}
 
-\item{annofn}{single string or vector of gff3 annotation filenames}
+\item{annofn}{single string or vector of gff3 annotation filenames,
+data.frame in SAF format or GRanges object containing complete gene_id
+metadata column.}
 
 \item{bam_tags}{list defining BAM tags where mapping information is
 stored.
@@ -26,7 +28,7 @@ stored.
 
 \item{bc_len}{total barcode length}
 
-\item{barcode_vector}{a list of barcode if each individual bam is a single 
+\item{barcode_vector}{a list of barcode if each individual bam is a single
 cell. (default: NULL). The barcode should be of the same length for each
 cell.}
 
@@ -47,13 +49,13 @@ The result will be written into optional fields in bam file with different
 tags. Following this link for more information regarding to bam file format:
 http://samtools.github.io/hts-specs
 
-The function can accpet multiple bam file as input, if multiple bam file is
-provided and the `bc_len` is zero, then the function will use the barcode in 
-the `barcode_vector` to insert into the `bc` bam tag. So the length of 
+The function can accept multiple bam file as input, if multiple bam file is
+provided and the `bc_len` is zero, then the function will use the barcode in
+the `barcode_vector` to insert into the `bc` bam tag. So the length of
 `barcode_vector` and the length of `inbam` should be the same
 If this is the case then the `max_mis` argument in `sc_demultiplex`
-should be zero. If `be_len` is larger than zero, then the function will 
-still seek for barcode in fastq headers with given length. In this case 
+should be zero. If `be_len` is larger than zero, then the function will
+still seek for barcode in fastq headers with given length. In this case
 each bam file is not treated as from a single cell.
 }
 \examples{

@@ -3,13 +3,10 @@
 \docType{methods}
 \name{demultiplex_info}
 \alias{demultiplex_info}
-\alias{demultiplex_info}
 \alias{demultiplex_info<-}
 \alias{demultiplex_info.sce}
 \alias{demultiplex_info,SingleCellExperiment-method}
-\alias{demultiplex_info}
 \alias{demultiplex_info<-,SingleCellExperiment-method}
-\alias{demultiplex_info}
 \title{demultiplex_info}
 \usage{
 demultiplex_info(object)

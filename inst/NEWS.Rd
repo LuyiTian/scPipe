@@ -124,3 +124,11 @@
     \item corrected `suffix` argument in `sc_detect_bc` to `prefix`
   }
 }
+
+\section{Changes in version 1.3.10 (2018-8-29)}{
+  \itemize{
+    \item added option to use GRanges objects as annotation
+    \item added option to use SAF formatted data.frame objects as annotation
+    \item added support for gzipped annotation files
+  }
+}

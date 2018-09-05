@@ -144,7 +144,7 @@ string GeneAnnotation::get_refseq_gene_id(const vector<string> &attributes)
     {
         return "";
     }
-    
+
     auto start = dbxref.find("GeneID") + 7; // start after "GeneID:"
     auto end = dbxref.find(",", start);
     auto id_length = end - start;
@@ -315,7 +315,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
         if (line[0] == '#')
         {
             continue;
-        } 
+        }
 
         parse_anno_entry(fix_chrname, line, chr_to_genes_dict, transcript_to_gene_dict);
     }
@@ -339,7 +339,7 @@ void GeneAnnotation::parse_gff3_annotation(string gff3_fn, bool fix_chrname)
             [] (const Gene &g1, const Gene &g2) { return g1.st < g2.st; }
         );
 
-        // create bins of genes		
+        // create bins of genes
         bins_dict[chr_name].make_bins(current_genes);
     }
 }
@@ -389,11 +389,68 @@ void GeneAnnotation::parse_bed_annotation(string bed_fn, bool fix_chrname)
             );
         }
 
-        // create bins of genes		
+        // create bins of genes
         bins_dict[iter.first].make_bins(gene_dict[iter.first]);
     }
 }
 
+void GeneAnnotation::parse_saf_dataframe(DataFrame anno_df, bool fix_chrname)
+{
+    CharacterVector gene_ids = anno_df["GeneID"];
+    CharacterVector chrs = anno_df["Chr"];
+    NumericVector starts = anno_df["Start"];
+    NumericVector ends = anno_df["End"];
+    CharacterVector strands = anno_df["Strand"];
+
+    int n_entries = gene_ids.size();
+
+    using Chr = std::string;
+    using GeneID = std::string;
+    unordered_map<Chr, unordered_map<GeneID, Gene>> tmp_gene_dict;
+    for (int i = 0; i < n_entries; i++)
+    {
+        std::string const &gene_id = as<std::string>(gene_ids[i]);
+        std::string const &chr = as<std::string>(chrs[i]);
+        int start = starts[i];
+        int end = ends[i];
+        int const &strand = strands[i] == "+" ? 1 :
+                            strands[i] == "-" ? -1 : 0;
+
+        if (fix_chrname)
+        {
+            tmp_gene_dict[fix_name(chr)][gene_id].add_exon(Interval(start, end, strand));
+            tmp_gene_dict[fix_name(chr)][gene_id].set_ID(chr);
+        }
+        else
+        {
+            tmp_gene_dict[chr][gene_id].add_exon(Interval(start, end, strand));
+            tmp_gene_dict[chr][gene_id].set_ID(gene_id);
+        }
+
+    }
+
+    for (auto iter : tmp_gene_dict)
+    {
+        for (auto sub_iter : iter.second)
+        {
+            if (sub_iter.second.exon_vec.size()>1)
+            {
+                sub_iter.second.sort_exon();
+                sub_iter.second.flatten_exon();
+            }
+            gene_dict[iter.first].push_back(sub_iter.second);
+        }
+        if (gene_dict[iter.first].size()>1)
+        {
+            sort(gene_dict[iter.first].begin(), gene_dict[iter.first].end(),
+                [] (const Gene &g1, const Gene &g2) { return g1.st < g2.st; }
+            );
+        }
+
+        // create bins of genes
+        bins_dict[iter.first].make_bins(gene_dict[iter.first]);
+    }
+}
 
 int GeneAnnotation::ngenes()
 {
@@ -455,7 +512,11 @@ void Mapping::add_annotation(string gff3_fn, bool fix_chrname)
         Anno.parse_bed_annotation(gff3_fn, fix_chrname);
         Rcout << "adding bed annotation: " << gff3_fn << "\n";
     }
+}
 
+void Mapping::add_annotation(DataFrame anno, bool fix_chrname)
+{
+    Anno.parse_saf_dataframe(anno, fix_chrname);
 }
 
 int Mapping::map_exon(bam_hdr_t *header, bam1_t *b, string& gene_id, bool m_strand)
@@ -634,17 +695,55 @@ void Mapping::parse_align_warpper(vector<string> fn_vec, vector<string> cell_id_
   }
 }
 
-void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_tag, string gene_tag, string cellular_tag, string molecular_tag, int bc_len, string write_mode, string cell_id, int UMI_len, int nthreads)
+namespace {
+    std::pair<int, int> get_bc_umi_lengths(string bam_fn) {
+        BGZF *fp = bgzf_open(bam_fn.c_str(), "r"); // input file
+        bam_hdr_t *bam_hdr = bam_hdr_read(fp);
+
+        bam1_t *bam_record = bam_init1();
+
+        if (bam_read1(fp, bam_record) >= 0) {
+            string read_header = bam_get_qname(bam_record);
+            int break_pos = read_header.find("#");
+            // start from 1 to exclude @
+            string first_section = read_header.substr(1, break_pos);
+            bool valid_pattern = std::regex_search(first_section, std::regex("[ACTGN]+_[ACRGN]+"));
+            if (!valid_pattern) {
+                throw std::runtime_error("Read header does not contain valid barcode-umi data.");
+            }
+
+            // header has structure {BARCODE}_{UMI}
+            int bc_len = first_section.find("_") + 1;
+            int umi_len = first_section.length() - bc_len - 1;
+
+            std::cout << "detected barcode length: " << bc_len << "\n";
+            std::cout << "detected UMI length: " << umi_len << "\n";
+
+            return std::make_pair(bc_len, umi_len);
+        }
+        else
+        {
+            throw std::runtime_error("BAM file reading failed.");
+        }
+    }
+}
+
+void Mapping::parse_align(string bam_fn, string fn_out, bool m_strand, string map_tag, string gene_tag, string cellular_tag, string molecular_tag, int bc_len, string write_mode, string cell_id, int UMI_len, int nthreads)
 {
     int unaligned = 0;
     int ret;
 
-    check_file_exists(fn); // htslib does not check if file exist so we do it manually
+    check_file_exists(bam_fn); // htslib does not check if file exist so we do it manually
+
+    // FUTURE: guess BC and UMI lengths
+    // int bc_len;
+    // int UMI_len;
+    // std::tie(bc_len, UMI_len) = get_bc_umi_lengths(bam_fn);
 
     const char * c_write_mode = write_mode.c_str();
     // open files
     bam1_t *b = bam_init1();
-    BGZF *fp = bgzf_open(fn.c_str(), "r"); // input file
+    BGZF *fp = bgzf_open(bam_fn.c_str(), "r"); // input file
     samFile *of = sam_open(fn_out.c_str(), c_write_mode); // output file
 
     // set up htslib threadpool for output
@@ -801,7 +900,7 @@ void Mapping::parse_align(string fn, string fn_out, bool m_strand, string map_ta
 
     Rcout << "not mapped: " << tmp_c[3]
         << " ("  << fixed << setprecision(2) << 100. * tmp_c[3]/cnt << "%)" << "\n";
-        
+
     Rcout << "unaligned: " << unaligned
         << " (" << fixed << setprecision(2) << 100. * unaligned/cnt << "%)" << "\n";
     sam_close(of);
