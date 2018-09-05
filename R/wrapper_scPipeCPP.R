@@ -195,13 +195,17 @@ sc_exon_mapping = function(inbam, outbam, annofn,
   #   stop("Only one bam file can be used as input")
   # }
 
+  if (!is(annofn, "character") && !is(annofn, "GRanges")) {
+    stop("'annofn' must be either character vector or GRanges object")
+  }
+
   if (is(annofn, "character")) {
     if (any(!file.exists(annofn))) {
       stop("At least one genome annotation file does not exist")
     } else {
       annofn = path.expand(annofn)
     }
-    rcpp_sc_exon_mapping(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
+    rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_import(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
                          barcode_vector, UMI_len, stnd, fix_chr, nthreads)
   } else if (is(annofn, "GRanges")) {
     rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_to_saf(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
