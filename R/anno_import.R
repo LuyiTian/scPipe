@@ -179,3 +179,18 @@ infer_gene_id_from_parent <- function(anno) {
 
     anno
 }
+
+validate_saf <- function(saf_df) {
+    if (!is(saf_df, "data.frame")) {
+        stop("annotation must object of class data.frame")
+    }
+
+    expected_colnames <- c("GeneID", "Chr", "Start", "End", "Strand")
+    if (!identical(colnames(saf_df), expected_colnames)) {
+        stop("columns of SAF data.frame must be: ", paste(expected_colnames, collapse = ", "))
+    }
+
+    if (anyNA(saf_df)) {
+        stop("SAF data.frame must not contain any NA")
+    }
+}

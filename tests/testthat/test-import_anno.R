@@ -12,7 +12,9 @@ test_that("ENSEMBL gtf annotation can be imported", {
     )
 
     expect_identical(anno_import(anno_path), expected)
+})
 
+test_that("Common annotation sources can be imported", {
     expect_silent(anno_import(system.file("extdata", "ens_tiny_anno.gff3.gz", package = "scPipe")))
     expect_silent(anno_import(system.file("extdata", "ens_tiny_anno.gtf.gz", package = "scPipe")))
     expect_silent(anno_import(system.file("extdata", "gen_tiny_anno.gff3.gz", package = "scPipe")))
@@ -24,6 +26,17 @@ test_that("Errors are properly reported", {
     anno <- rtracklayer::import(system.file("extdata", "ensembl_y_tiny.gtf.gz", package = "scPipe"))
 
     anno_missing_gene_id <- anno
-    mcols(anno_missing_gene_id) <- subset(mcols(anno_missing_gene_id), select = -gene_id)
+    mcols(anno_missing_gene_id) <- subset(mcols(anno_missing_gene_id), select = -gene_id) # delete gene_id column
     expect_error(anno_to_saf(anno_missing_gene_id), "'gene_id' column missing from GRanges metadata and could not be inferred")
+})
+
+test_that("SAF validation works", {
+    expect_error(validate_saf(1), "annotation must object of class data.frame")
+
+    anno <- anno_import(system.file("extdata", "ens_tiny_anno.gff3.gz", package = "scPipe"))
+    expect_error(validate_saf(anno[, 5:1]), "columns of SAF data.frame must be: GeneID, Chr, Start, End, Strand")
+
+    anno_na <- anno
+    anno_na[4, 1] <- NA
+    expect_error(validate_saf(anno_na), "SAF data.frame must not contain any NA")
 })

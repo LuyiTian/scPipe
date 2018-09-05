@@ -195,8 +195,10 @@ sc_exon_mapping = function(inbam, outbam, annofn,
   #   stop("Only one bam file can be used as input")
   # }
 
-  if (!is(annofn, "character") && !is(annofn, "GRanges")) {
-    stop("'annofn' must be either character vector or GRanges object")
+  if (!is(annofn, "character") &&
+      !is(annofn, "GRanges") &&
+      !is(annofn, "data.frame")) {
+    stop("'annofn' must be either character vector, GRanges, or data.frame object")
   }
 
   if (is(annofn, "character")) {
@@ -210,6 +212,10 @@ sc_exon_mapping = function(inbam, outbam, annofn,
   } else if (is(annofn, "GRanges")) {
     rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_to_saf(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
                          barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+  } else if (is(annofn, "data.frame")) {
+      validate_saf(annofn)
+      rcpp_sc_exon_mapping_df_anno(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
+                                   barcode_vector, UMI_len, stnd, fix_chr, nthreads)
   }
 }
 
