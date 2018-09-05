@@ -25,5 +25,5 @@ test_that("Errors are properly reported", {
 
     anno_missing_gene_id <- anno
     mcols(anno_missing_gene_id) <- subset(mcols(anno_missing_gene_id), select = -gene_id)
-    expect_error(anno_to_saf(anno_missing_gene_id), "columns missing from GRanges metadata: gene_id")
+    expect_error(anno_to_saf(anno_missing_gene_id), "'gene_id' column missing from GRanges metadata and could not be inferred")
 })
