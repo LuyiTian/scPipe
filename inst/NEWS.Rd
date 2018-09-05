@@ -129,5 +129,6 @@
   \itemize{
     \item added option to use GRanges objects as annotation
     \item added option to use SAF formatted data.frame objects as annotation
+    \item added support for gzipped annotation files
   }
 }
