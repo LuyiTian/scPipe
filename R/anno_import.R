@@ -68,15 +68,17 @@ anno_import <- function(filename) {
 #' saf_chrY <- anno_to_saf(anno)
 #'
 anno_to_saf <- function(anno) {
-    required_cols <- c("type")
     meta_cols <- colnames(mcols(anno))
-    if (!all(required_cols %in% meta_cols)) {
-        missing_cols <- required_cols[!required_cols %in% meta_cols]
-
-        stop("columns missing from GRanges metadata: ", paste(missing_cols, collapse = ", "))
+    if (!"type" %in% meta_cols) {
+        stop("'type' column missing from GRanges metadata")
     }
 
     anno <- infer_gene_ids(anno)
+
+    if (!"gene_id" %in% meta_cols) {
+        stop("'gene_id' column missing from GRanges metadata and could not be inferred")
+    }
+
     anno_df <- as.data.frame(anno)
 
     n_exons <- anno_df %>%
