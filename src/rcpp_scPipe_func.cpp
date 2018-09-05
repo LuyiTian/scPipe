@@ -172,11 +172,7 @@ void rcpp_sc_exon_mapping_df_anno(
 
   Rcpp::Rcout << "annotating exon features..." << "\n";
 
-  timer.start();
   a.parse_align_warpper(c_inbam_vec, c_bc_vec, c_outbam, c_stnd, c_am, c_ge, c_bc, c_mb, c_bc_len, c_UMI_len, c_nthreads);
-  //a.parse_align(c_inbam, c_outbam, c_stnd, c_am, c_ge, c_bc, c_mb, c_bc_len, c_UMI_len);
-
-  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
 }
 
 // [[Rcpp::plugins(cpp11)]]
