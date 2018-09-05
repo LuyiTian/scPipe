@@ -135,7 +135,9 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' @name sc_exon_mapping
 #' @param inbam input aligned bam file. can have multiple files as input
 #' @param outbam output bam filename
-#' @param annofn single string or vector of gff3 annotation filenames, or GRanges object containing complete gene_id metadata column.
+#' @param annofn single string or vector of gff3 annotation filenames,
+#'   data.frame in SAF format or GRanges object containing complete gene_id
+#'   metadata column.
 #' @param bam_tags list defining BAM tags where mapping information is
 #'   stored.
 #'   \itemize{
@@ -208,14 +210,14 @@ sc_exon_mapping = function(inbam, outbam, annofn,
       annofn = path.expand(annofn)
     }
     rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_import(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
-                         barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+                                 barcode_vector, UMI_len, stnd, fix_chr, nthreads)
   } else if (is(annofn, "GRanges")) {
     rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_to_saf(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
-                         barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+                                 barcode_vector, UMI_len, stnd, fix_chr, nthreads)
   } else if (is(annofn, "data.frame")) {
-      validate_saf(annofn)
-      rcpp_sc_exon_mapping_df_anno(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
-                                   barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+    validate_saf(annofn)
+    rcpp_sc_exon_mapping_df_anno(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
+                                  barcode_vector, UMI_len, stnd, fix_chr, nthreads)
   }
 }
 

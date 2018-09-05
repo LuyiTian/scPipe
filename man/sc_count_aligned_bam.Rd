@@ -15,7 +15,9 @@ sc_count_aligned_bam(inbam, outbam, annofn, bam_tags = list(am = "YE", ge
 
 \item{outbam}{output bam filename}
 
-\item{annofn}{single string or vector of gff3 annotation filenames, or GRanges object containing complete gene_id metadata column.}
+\item{annofn}{single string or vector of gff3 annotation filenames,
+data.frame in SAF format or GRanges object containing complete gene_id
+metadata column.}
 
 \item{bam_tags}{list defining BAM tags where mapping information is
 stored.
