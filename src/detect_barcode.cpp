@@ -162,29 +162,39 @@ std::unordered_map<std::string, int> summarize_barcode(std::string fn, int bc_le
 
 void write_barcode_summary(std::string outfn, std::string prefix, std::unordered_map<std::string, int> counter, int number_of_cells)
 {
-    std::ofstream o_file(outfn);  // output file
-    int cnt = 0;
-    int dig = std::to_string(counter.size()).length()+1;
-    // add header
+    // open output file and write header
+    std::ofstream o_file(outfn);
     o_file << "cell_name" << "," << "barcode_sequence" << "," << "count" << "\n";
+
+    // if no cells requested, write file with empty rows
+    if (number_of_cells <= 0) {
+        return;
+    }
 
     std::vector<std::pair<int, std::string>> items;
     for (auto const& bc: counter)
     {
-        items.push_back(std::make_pair(bc.second, bc.first));
+        auto const &barcode = bc.first;
+        auto const &bc_count = bc.second;
+        items.push_back(std::make_pair(bc_count, barcode));
     }
+
+    // sort barcodes by descending count, breaking ties lexically
+    // the standard comparator for std::pair would be enough, as it compares first then second member
     std::sort(items.begin(), items.end()); 
-    //the standard comparer for std::pair would be enough, as it compares first then second
-    std::reverse(items.begin(),items.end()); // highest -> lowest
+    std::reverse(items.begin(), items.end()); // highest -> lowest
+
+    // digits for padding cell number with 0s
+    const int digits = std::to_string(counter.size()).length() + 1;
+    int cell_ind = 1;
     for (auto const& bc: items)
     {
-        o_file << prefix << padding(cnt, dig) << "," << bc.second << "," << bc.first << "\n";
-        cnt++;
-        if(number_of_cells > 0 && cnt > number_of_cells)
+        o_file << prefix << padding(cell_ind, digits) << "," << bc.second << "," << bc.first << "\n";
+        cell_ind++;
+        if (cell_ind > number_of_cells)
         {
             break;
         }
     }
     o_file.close();
 }
-    
