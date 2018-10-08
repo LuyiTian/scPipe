@@ -82,10 +82,12 @@ detect_outlier <- function(sce,
                  "non_mt_percent", "non_ERCC_percent")
   }
   if (!all(sel_col %in% colnames(QC_metrics(sce)))) {
-    tmp <- sel_col[!(sel_col %in% colnames(QC_metrics(sce)))]
-    message("the following QC metrics not found in colData from sce:")
-    message(tmp)
-    if (any(c("number_of_genes", "total_count_per_cell") %in% tmp)) {
+    missing <- sel_col[!(sel_col %in% colnames(QC_metrics(sce)))]
+
+    missing_vars <- glue_collapse(glue("'{missing}'"), sep = ",", last = " and ")
+    message(glue("the following QC metrics not found in colData from sce: {missing_vars}"))
+
+    if (any(c("number_of_genes", "total_count_per_cell") %in% missing_vars)) {
       stop("the quality control metrics should at least contain the number of
            genes(`number_of_genes`) and counts per cell(`total_count_per_cell`)!")
     }
