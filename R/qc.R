@@ -82,10 +82,12 @@ detect_outlier <- function(sce,
                  "non_mt_percent", "non_ERCC_percent")
   }
   if (!all(sel_col %in% colnames(QC_metrics(sce)))) {
-    tmp <- sel_col[!(sel_col %in% colnames(QC_metrics(sce)))]
-    message("the following QC metrics not found in colData from sce:")
-    message(tmp)
-    if (any(c("number_of_genes", "total_count_per_cell") %in% tmp)) {
+    missing <- sel_col[!(sel_col %in% colnames(QC_metrics(sce)))]
+
+    missing_vars <- glue_collapse(glue("'{missing}'"), sep = ",", last = " and ")
+    message(glue("the following QC metrics not found in colData from sce: {missing_vars}"))
+
+    if (any(c("number_of_genes", "total_count_per_cell") %in% missing_vars)) {
       stop("the quality control metrics should at least contain the number of
            genes(`number_of_genes`) and counts per cell(`total_count_per_cell`)!")
     }
@@ -255,10 +257,10 @@ calculate_QC_metrics <- function(sce) {
       ERCC_count = colSums(assay(sce,"counts")[isSpike(sce,"ERCC"),])
       QC_metrics(sce)$non_ERCC_percent = exon_count/(ERCC_count+exon_count+1e-5)
     }else{
-      print("no ERCC spike-in. Skip `non_ERCC_percent`")
+      message("no ERCC spike-in. Skip `non_ERCC_percent`")
     }
   }else{
-    print("spikeNames(sce)==NULL, no spike-in information.")
+    message("spikeNames(sce)==NULL, no spike-in information.")
   }
 
   # get mt percentage
@@ -276,7 +278,7 @@ calculate_QC_metrics <- function(sce) {
     }
   }
   else {
-    print("no gene_id_type, skip `non_mt_percent`")
+    message("no gene_id_type, skip `non_mt_percent`")
   }
 
   # get ribosomal percentage
@@ -293,7 +295,7 @@ calculate_QC_metrics <- function(sce) {
     }
   }
   else {
-    print("no gene_id_type, skip `non_ribo_percent`")
+    message("no gene_id_type, skip `non_ribo_percent`")
   }
   return(sce)
 }
@@ -523,7 +525,7 @@ plot_UMI_dup = function(sce, log10_x = TRUE){
   }else if ("duplication.number" %in% colnames(tmp)){
     dup_col = "duplication.number"
   }else{
-    print("cannot find column containing UMI duplication number.")
+    message("cannot find column containing UMI duplication number.")
     return(NULL)
   }
   p = ggplot(data=tmp, aes(x=tmp[, dup_col], y=tmp[,"count"])) +
