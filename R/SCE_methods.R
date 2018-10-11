@@ -38,7 +38,7 @@ validObject = function(object){
     if((!is.na(tmp_res$organism)) & (!is.na(tmp_res$gene_id_type))){
       gene_id_type(object) = tmp_res$gene_id_type
       organism(object) = tmp_res$organism
-      print(paste("organism/gene_id_type not provided. Make a guess:", 
+      message(paste("organism/gene_id_type not provided. Make a guess:", 
                   tmp_res$organism,
                   "/",
                   tmp_res$gene_id_type))

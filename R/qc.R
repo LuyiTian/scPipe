@@ -257,10 +257,10 @@ calculate_QC_metrics <- function(sce) {
       ERCC_count = colSums(assay(sce,"counts")[isSpike(sce,"ERCC"),])
       QC_metrics(sce)$non_ERCC_percent = exon_count/(ERCC_count+exon_count+1e-5)
     }else{
-      print("no ERCC spike-in. Skip `non_ERCC_percent`")
+      message("no ERCC spike-in. Skip `non_ERCC_percent`")
     }
   }else{
-    print("spikeNames(sce)==NULL, no spike-in information.")
+    message("spikeNames(sce)==NULL, no spike-in information.")
   }
 
   # get mt percentage
@@ -278,7 +278,7 @@ calculate_QC_metrics <- function(sce) {
     }
   }
   else {
-    print("no gene_id_type, skip `non_mt_percent`")
+    message("no gene_id_type, skip `non_mt_percent`")
   }
 
   # get ribosomal percentage
@@ -295,7 +295,7 @@ calculate_QC_metrics <- function(sce) {
     }
   }
   else {
-    print("no gene_id_type, skip `non_ribo_percent`")
+    message("no gene_id_type, skip `non_ribo_percent`")
   }
   return(sce)
 }
@@ -525,7 +525,7 @@ plot_UMI_dup = function(sce, log10_x = TRUE){
   }else if ("duplication.number" %in% colnames(tmp)){
     dup_col = "duplication.number"
   }else{
-    print("cannot find column containing UMI duplication number.")
+    message("cannot find column containing UMI duplication number.")
     return(NULL)
   }
   p = ggplot(data=tmp, aes(x=tmp[, dup_col], y=tmp[,"count"])) +
