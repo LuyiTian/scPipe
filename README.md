@@ -13,7 +13,7 @@ The package is under active development. Feel free to ask any questions or submi
 ### From Bioconductor
 
 ```
-if (!require("BiocManager"))
+if (!requireNamespace("BiocManager", quietly=TRUE))
     install.packages("BiocManager")
 BiocManager::install("scPipe")
 ```
