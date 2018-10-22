@@ -139,3 +139,9 @@
     \item fixed `sc_detect_bc()` returning one more cell than requested
   }
 }
+
+\section{Changes in version 1.3.13 (2018-10-22)} {
+  \itemize{
+    \item fixed bug in `create_report()` due to `changes` in scater parameters
+  }
+}

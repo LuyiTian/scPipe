@@ -167,11 +167,11 @@ ggplotly(ggplot(as.data.frame(QC_metrics(sce)), aes(x=mapped_to_exon, y=number_o
 A robustified Mahalanobis Distance is calculated for each cell then outliers are detected based on the distance.
 However, due to the complex nature of single cell transcriptomes and protocol used, such a method can only be used to
 assist the quality control process. Visual inspection of the quality control metrics is still required. By default we
-use `comp = 1` and the algorithm will try to separate the quality control metrics into two gaussian clusters.
+use `comp = 2` and the algorithm will try to separate the quality control metrics into two gaussian clusters.
 
 The number of outliers:
 ```{r}
-sce_qc = detect_outlier(sce, type="low", comp = 1)
+sce_qc = detect_outlier(sce, type="low", comp = 2)
 table(QC_metrics(sce_qc)$outliers)
 ```
 
@@ -203,8 +203,8 @@ hist(log10(ave.counts), breaks=100, main="", col="grey80",
 As a loose filter we keep genes that are expressed in at least two cells and for cells that express that gene, the average count larger than two. However this is not the gold standard and the filter may variy depending on the data.
 
 ```{r}
-keep1 = (apply(counts(sce_qc), 1, function(x) mean(x[x>0])) > 1)  # average count larger than one
-keep2 = (rowSums(counts(sce_qc)>0) > 2)  # expressed in at least three cells
+keep1 = (apply(counts(sce_qc), 1, function(x) mean(x[x>0])) > 1.1)  # average count larger than 1.1
+keep2 = (rowSums(counts(sce_qc)>0) > 5)  # expressed in at least 5 cells
 
 sce_qc = sce_qc[(keep1 & keep2), ]
 dim(sce_qc)
@@ -240,7 +240,7 @@ PCA plot using gene expressions as input, colored by the number of genes.
 
 ```{r}
 cpm(sce_qc) = calculateCPM(sce_qc, use_size_factors=FALSE)
-plotPCA(sce_qc, exprs_values="cpm", colour_by="total_features")
+plotPCA(sce_qc, run_args = list(exprs_values="cpm"), colour_by="total_features")
 ```
 
 ### Normalize the data using size factor and get high variable genes
@@ -252,13 +252,13 @@ biological variation. If the number is larger than 500 we will only keep top 500
 ```{r, warning=FALSE, message=FALSE}
 sce_qc <- normalize(sce_qc)
 
-var.fit <- trendVar(sce_qc, method="loess", use.spikes=FALSE, span=0.2)
+var.fit <- trendVar(sce_qc, method="loess", use.spikes=FALSE)
 var.out <- decomposeVar(sce_qc, var.fit)
 
-if (length(which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)) < 100){
-  hvg.out <- var.out[order(var.out$bio, decreasing=TRUE)[1:100], ]
-}else if(length(which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)) > 500){
+if (length(which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)) < 500){
   hvg.out <- var.out[order(var.out$bio, decreasing=TRUE)[1:500], ]
+}else if(length(which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)) > 1000){
+  hvg.out <- var.out[order(var.out$bio, decreasing=TRUE)[1:1000], ]
 }else{
   hvg.out <- var.out[which(var.out$FDR <= 0.05 & var.out$bio >= 0.5), ]
   hvg.out <- hvg.out[order(hvg.out$bio, decreasing=TRUE), ]
@@ -271,12 +271,12 @@ lines(var.out$mean[o], var.out$tech[o], col="dodgerblue", lwd=2)
 points(var.out$mean[rownames(var.out) %in% rownames(hvg.out)], var.out$total[rownames(var.out) %in% rownames(hvg.out)], col="red", pch=16)
 ```
 
-## Heatmap of high variable genes
+## Heatmap of top100 high variable genes
 
 ```{r}
 gene_exp = exprs(sce_qc)
 
-gene_exp = gene_exp[rownames(hvg.out), ]
+gene_exp = gene_exp[rownames(hvg.out)[1:100], ]
 
 hc.rows <- hclust(dist(gene_exp))
 hc.cols <- hclust(dist(t(gene_exp)))
@@ -302,7 +302,7 @@ layout(autosize = F, margin = m)
 ## Dimensionality reduction by PCA
 
 ```{r}
-plotPCA(sce_qc, exprs_values="logcounts", colour_by="total_features")
+plotPCA(sce_qc, run_args = list(exprs_values="logcounts"), colour_by="total_features")
 ```
 
 ## Dimensionality reduction by t-SNE
@@ -312,11 +312,10 @@ set.seed(100)
 if (any(duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ])))) {
   sce_qc = sce_qc[, !duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ]))]
 }
-out5 <- plotTSNE(sce_qc, exprs_values="logcounts", perplexity=5, colour_by="total_features",
-     feature_set=rownames(hvg.out)) + ggtitle("Perplexity = 5")
-out10 <- plotTSNE(sce_qc, exprs_values="logcounts", perplexity=10, colour_by="total_features",
-     feature_set=rownames(hvg.out))  + ggtitle("Perplexity = 10")
-out20 <- plotTSNE(sce_qc, exprs_values="logcounts", perplexity=20, colour_by="total_features",
+out5 <- plotTSNE(sce_qc, run_args = list(exprs_values="logcounts", perplexity=10,feature_set=rownames(hvg.out)), colour_by="total_features") + ggtitle("Perplexity = 10")
+out10 <- plotTSNE(sce_qc, run_args = list(exprs_values="logcounts", perplexity=20,feature_set=rownames(hvg.out)), colour_by="total_features",
      feature_set=rownames(hvg.out))  + ggtitle("Perplexity = 20")
+out20 <- plotTSNE(sce_qc, run_args = list(exprs_values="logcounts", perplexity=30,feature_set=rownames(hvg.out)), colour_by="total_features",
+     feature_set=rownames(hvg.out))  + ggtitle("Perplexity = 30")
 multiplot(out5, out10, out20, cols=3)
 ```
