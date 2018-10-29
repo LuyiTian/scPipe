@@ -133,7 +133,7 @@
   }
 }
 
-\section{Changes in version 1.3.11 (2018-9-20)} {
+\section{Changes in version 1.3.11 (2018-9-20)}{
   \itemize{
     \item added `get_ercc_anno()` function to retrieve ERCC annotation as data.frame
     \item fixed `sc_detect_bc()` returning one more cell than requested
