@@ -15,6 +15,10 @@
 #'   please submit an issue at www.github.com/LuyiTian/scPipe with details.
 #'
 #' @return data.frame containing exon information in SAF format
+#'
+#' @importFrom tools file_ext
+#' @importFrom stringr str_remove
+#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -61,14 +65,19 @@ anno_import <- function(filename) {
 #'   introns but rather the annotation features.
 #'
 #' @return data.frame containing exon information in SAF format
+#'
+#' @importFrom GenomicRanges mcols
+#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
 #' anno <- system.file("extdata", "ensembl_hg38_chrY.gtf.gz", package = "scPipe")
-#' saf_chrY <- anno_to_saf(anno)
+#' saf_chrY <- anno_to_saf(rtracklayer::import(anno))
 #'
 anno_to_saf <- function(anno) {
-    meta_cols <- colnames(mcols(anno))
+    stopifnot(is(anno, "GRanges"))
+
+    meta_cols <- colnames(GenomicRanges::mcols(anno))
     if (!"type" %in% meta_cols) {
         stop("'type' column missing from GRanges metadata")
     }
