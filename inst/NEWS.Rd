@@ -140,7 +140,7 @@
   }
 }
 
-\section{Changes in version 1.3.13 (2018-10-22)} {
+\section{Changes in version 1.3.13 (2018-10-22)}{
   \itemize{
     \item fixed bug in `create_report()` due to `changes` in scater parameters
   }
