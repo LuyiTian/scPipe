@@ -52,6 +52,7 @@
 #' @importFrom stats cov pchisq mahalanobis complete.cases qchisq
 #' @importFrom robustbase covMcd
 #' @importFrom mclust Mclust mclustBIC
+#' @importFrom glue glue glue_collapse
 #'
 #' @export
 #' @examples

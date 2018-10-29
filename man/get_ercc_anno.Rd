@@ -12,3 +12,7 @@ data.frame containing ERCC annotation
 \description{
 Helper function to retrieve ERCC annotation as a dataframe in SAF format
 }
+\examples{
+ercc_anno <- get_ercc_anno()
+
+}

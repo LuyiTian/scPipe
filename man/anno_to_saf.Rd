@@ -34,6 +34,6 @@ with.
 }
 \examples{
 anno <- system.file("extdata", "ensembl_hg38_chrY.gtf.gz", package = "scPipe")
-saf_chrY <- anno_to_saf(anno)
+saf_chrY <- anno_to_saf(rtracklayer::import(anno))
 
 }
