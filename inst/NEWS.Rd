@@ -145,3 +145,10 @@
     \item fixed bug in `create_report()` due to `changes` in scater parameters
   }
 }
+
+\section{Changes in version 1.3.16 (2018-10-31)}{
+  \itemize{
+    \item add travis integration and codecov report.
+    \item fixed broken examples
+  }
+}
