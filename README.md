@@ -1,6 +1,8 @@
 # scPipe
 
-[![Travis build status](https://travis-ci.org/PeteHaitch/scPipe.svg?branch=master)](https://travis-ci.org/PeteHaitch/scPipe)
+[![Travis build status](https://travis-ci.org/LuyiTian/scPipe.svg?branch=master)](https://travis-ci.org/LuyiTian/scPipe)
+[![Coverage
+Status](https://codecov.io/gh/LuyiTian/scPipe/branch/master/graph/badge.svg)](https://codecov.io/gh/LuyiTian/scPipe)
 
 <img src=inst/scPipe.png height="200">
 
