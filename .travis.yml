@@ -2,9 +2,11 @@
 
 language: R
 r: bioc-devel
+r_packages:
+  - covr
+  - devtools
 sudo: false
 cache: packages
 after_success:
   - Rscript -e 'covr::codecov()'
-env:
-  - CODECOV_TOKEN="67fb1294-9046-4b4c-ad04-4a648a12f1a3"
+env: CODECOV_TOKEN="67fb1294-9046-4b4c-ad04-4a648a12f1a3"
