@@ -1,0 +1,11 @@
+citEntry(
+    entry = "article",
+    title="scPipe: A flexible R/Bioconductor preprocessing pipeline for single-cell RNA-sequencing data",
+    author="Tian, Luyi and Su, Shian and Dong, Xueyi and Amann-Zalcenstein, Daniela and Biben, Christine and Seidi, Azadeh and Hilton, Douglas J and Naik, Shalin H and Ritchie, Matthew E",
+    journal="PLoS computational biology",
+    volume="14",
+    number="8",
+    pages="e1006361",
+    year="2018",
+    publisher="Public Library of Science"
+)
