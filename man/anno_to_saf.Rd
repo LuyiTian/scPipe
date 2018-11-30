@@ -33,7 +33,9 @@ SAF contains positions for exons, strand and the GeneID they are associated
 with.
 }
 \examples{
+\dontrun{
 anno <- system.file("extdata", "ensembl_hg38_chrY.gtf.gz", package = "scPipe")
 saf_chrY <- anno_to_saf(rtracklayer::import(anno))
+}
 
 }

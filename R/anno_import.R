@@ -71,8 +71,10 @@ anno_import <- function(filename) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' anno <- system.file("extdata", "ensembl_hg38_chrY.gtf.gz", package = "scPipe")
 #' saf_chrY <- anno_to_saf(rtracklayer::import(anno))
+#' }
 #'
 anno_to_saf <- function(anno) {
     stopifnot(is(anno, "GRanges"))

@@ -12,8 +12,6 @@ test_that("ENSEMBL gtf annotation can be imported", {
     )
 
     expect_identical(anno_import(anno_path), expected)
-    # for Travis-CI as rtracklayer (1.42.1) import does not close connections properly
-    closeAllConnections()
 })
 
 test_that("Common annotation sources can be imported", {
@@ -22,9 +20,6 @@ test_that("Common annotation sources can be imported", {
     expect_silent(anno_import(system.file("extdata", "gen_tiny_anno.gff3.gz", package = "scPipe")))
     expect_silent(anno_import(system.file("extdata", "gen_tiny_anno.gtf.gz", package = "scPipe")))
     expect_silent(anno_import(system.file("extdata", "ref_tiny_anno.gff3.gz", package = "scPipe")))
-
-    # for Travis-CI as rtracklayer (1.42.1) import does not close connections properly
-    closeAllConnections()
 })
 
 test_that("Errors are properly reported", {
@@ -33,9 +28,6 @@ test_that("Errors are properly reported", {
     anno_missing_gene_id <- anno
     mcols(anno_missing_gene_id) <- subset(mcols(anno_missing_gene_id), select = -gene_id) # delete gene_id column
     expect_error(anno_to_saf(anno_missing_gene_id), "'gene_id' column missing from GRanges metadata and could not be inferred")
-
-    # for Travis-CI as rtracklayer (1.42.1) import does not close connections properly
-    closeAllConnections()
 })
 
 test_that("SAF validation works", {
@@ -47,7 +39,4 @@ test_that("SAF validation works", {
     anno_na <- anno
     anno_na[4, 1] <- NA
     expect_error(validate_saf(anno_na), "SAF data.frame must not contain any NA")
-
-    # for Travis-CI as rtracklayer (1.42.1) import does not close connections properly
-    closeAllConnections()
 })
