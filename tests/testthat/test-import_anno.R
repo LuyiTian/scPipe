@@ -40,3 +40,6 @@ test_that("SAF validation works", {
     anno_na[4, 1] <- NA
     expect_error(validate_saf(anno_na), "SAF data.frame must not contain any NA")
 })
+
+# for Travis-CI as rtracklayer (1.42.1) import does not close connections properly
+closeAllConnections()
