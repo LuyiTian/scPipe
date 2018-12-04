@@ -360,7 +360,8 @@ plot_QC_pairs = function(sce, sel_col=NULL) {
 #' @param percentage TRUE to convert the number of reads to percentage
 #' @param dataname the name of this dataset, used as plot title
 #'
-#' @import scales reshape ggplot2
+#' @import scales ggplot2
+#' @importFrom reshape melt
 #' @importFrom stats prcomp reorder
 #' @return a ggplot2 object
 #' @export

@@ -5,7 +5,9 @@
 #' @return data.frame containing ERCC annotation
 #'
 #' @examples
+#' \dontrun{
 #' ercc_anno <- get_ercc_anno()
+#' }
 #'
 #' @export
 #'

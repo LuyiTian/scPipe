@@ -13,6 +13,8 @@ data.frame containing ERCC annotation
 Helper function to retrieve ERCC annotation as a dataframe in SAF format
 }
 \examples{
+\dontrun{
 ercc_anno <- get_ercc_anno()
+}
 
 }
