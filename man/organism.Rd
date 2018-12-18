@@ -6,6 +6,7 @@
 \alias{organism,SingleCellExperiment-method}
 \alias{organism}
 \alias{organism<-,SingleCellExperiment-method}
+\alias{organism}
 \title{Get or set \code{organism} from a SingleCellExperiment object}
 \usage{
 organism.sce(object)

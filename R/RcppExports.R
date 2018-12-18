@@ -17,6 +17,10 @@ rcpp_sc_demultiplex <- function(inbam, outdir, bc_anno, max_mis, am, ge, bc, mb,
     invisible(.Call(`_scPipe_rcpp_sc_demultiplex`, inbam, outdir, bc_anno, max_mis, am, ge, bc, mb, mito, has_UMI, nthreads))
 }
 
+rcpp_sc_clean_bam <- function(inbam, outbam, bc_anno, max_mis, am, ge, bc, mb, mito, nthreads) {
+    invisible(.Call(`_scPipe_rcpp_sc_clean_bam`, inbam, outbam, bc_anno, max_mis, am, ge, bc, mb, mito, nthreads))
+}
+
 rcpp_sc_gene_counting <- function(outdir, bc_anno, UMI_cor, gene_fl) {
     invisible(.Call(`_scPipe_rcpp_sc_gene_counting`, outdir, bc_anno, UMI_cor, gene_fl))
 }

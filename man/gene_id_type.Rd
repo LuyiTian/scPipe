@@ -3,10 +3,13 @@
 \docType{methods}
 \name{gene_id_type}
 \alias{gene_id_type}
+\alias{gene_id_type}
 \alias{gene_id_type<-}
 \alias{gene_id_type.sce}
 \alias{gene_id_type,SingleCellExperiment-method}
+\alias{gene_id_type}
 \alias{gene_id_type<-,SingleCellExperiment-method}
+\alias{gene_id_type}
 \title{Get or set \code{gene_id_type} from a SingleCellExperiment object}
 \usage{
 gene_id_type(object)

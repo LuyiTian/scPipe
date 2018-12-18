@@ -68,6 +68,74 @@ void Bamdemultiplex::write_statistics(string overall_stat_f, string chr_stat_f, 
     }
 }
 
+int Bamdemultiplex::clean_bam_barcode(string bam_path, string out_bam, int max_mismatch, int nthreads)
+{
+    check_file_exists(bam_path); // htslib does not check if file exist so we do it manually
+    bam1_t *b = bam_init1();
+    BGZF *fp = bgzf_open(bam_path.c_str(), "r");
+    bam_hdr_t *header = bam_hdr_read(fp);
+
+    samFile *of = sam_open(out_bam.c_str(), "wb"); // output file
+    sam_hdr_write(of, header);
+
+    // Early benchmarking shows BAM reading doesn't saturate even 2 cores
+    // so capped reading threads to 2
+    int out_threads = std::min(nthreads - 1, 2);
+    // make sure we're not using 0 or negative cores
+    out_threads = std::max(nthreads, 1);
+
+    hts_tpool *p;
+    const int queue_size = 64;
+
+    if (out_threads > 1) {
+        p = hts_tpool_init(out_threads);
+        bgzf_thread_pool(fp, p, queue_size);
+    }
+
+    int mt_idx = -1;
+    for (int i = 0; i < header->n_targets; ++i)
+    {
+        chr_aligned_stat[header->target_name[i]] = 0;
+        if (strcmp(header->target_name[i], mt_tag.c_str()) == 0)
+        {
+            mt_idx = i;
+        }
+    }
+
+    if (mt_idx == -1)
+    {
+        Rcpp::Rcout << "Warning: mitochondrial chromosome not found using chromosome name `"<< mt_tag << "`.\n";
+    }
+
+    const char * c_ptr = c_tag.c_str();
+
+    string bc_seq;
+    string match_res;
+    int map_status;
+
+    size_t _interrupt_ind = 0;
+
+    while (bam_read1(fp, b) >= 0)
+    {
+        if (++_interrupt_ind % 1024 == 0) checkUserInterrupt();
+        //match barcode
+        bc_seq = (char*)(bam_aux_get(b, c_ptr) + 1); // +1 to skip `Z`
+        match_res = bar.get_closest_match(bc_seq, max_mismatch);
+
+        bool is_unmapped = (b->core.flag & BAM_FUNMAP) > 0;
+        // if the read is aligned and with matched barcode.
+        if ((!is_unmapped) & (!match_res.empty())) 
+        {
+            bam_aux_update_str(b, c_ptr, match_res.length(), match_res.c_str());
+            sam_write1(of, header, b);
+        }
+    }
+
+    sam_close(of);
+    bgzf_close(fp);
+    return 0;
+}
+
 int Bamdemultiplex::barcode_demultiplex(string bam_path, int max_mismatch, bool has_UMI, int nthreads)
 {
     check_file_exists(bam_path); // htslib does not check if file exist so we do it manually

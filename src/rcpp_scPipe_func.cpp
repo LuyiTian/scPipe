@@ -222,6 +222,46 @@ void rcpp_sc_demultiplex(Rcpp::CharacterVector inbam,
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
 
+void rcpp_sc_clean_bam(Rcpp::CharacterVector inbam,
+                    Rcpp::CharacterVector outbam,
+                    Rcpp::CharacterVector bc_anno,
+                    Rcpp::NumericVector max_mis,
+                    Rcpp::CharacterVector am,
+                    Rcpp::CharacterVector ge,
+                    Rcpp::CharacterVector bc,
+                    Rcpp::CharacterVector mb,
+                    Rcpp::CharacterVector mito,
+                    Rcpp::NumericVector nthreads)
+{
+  std::string c_inbam = Rcpp::as<std::string>(inbam);
+  std::string c_outbam = Rcpp::as<std::string>(outbam);
+  std::string c_bc_anno = Rcpp::as<std::string>(bc_anno);
+  std::string c_mito = Rcpp::as<std::string>(mito);
+
+  std::string c_am = Rcpp::as<std::string>(am);
+  std::string c_ge = Rcpp::as<std::string>(ge);
+  std::string c_bc = Rcpp::as<std::string>(bc);
+  std::string c_mb = Rcpp::as<std::string>(mb);
+
+  int c_max_mis = Rcpp::as<int>(max_mis);
+  int c_nthreads = Rcpp::as<int>(nthreads);
+
+  Barcode bar;
+  bar.read_anno(c_bc_anno);
+
+  Rcpp::Rcout << "update bam file with corrected barcode..." << "\n";
+
+  Timer timer;
+  timer.start();
+
+  Bamdemultiplex bam_de = Bamdemultiplex("", bar, c_bc, c_mb, c_ge, c_am, c_mito);
+  bam_de.clean_bam_barcode(c_inbam, c_outbam, c_max_mis, c_nthreads);
+  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
+}
+
+// [[Rcpp::plugins(cpp11)]]
+// [[Rcpp::export]]
+
 void rcpp_sc_gene_counting(Rcpp::CharacterVector outdir,
                       Rcpp::CharacterVector bc_anno,
                       Rcpp::NumericVector UMI_cor,

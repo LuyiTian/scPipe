@@ -55,7 +55,7 @@ public:
         std::string MT_tag
     );
     int barcode_demultiplex(std::string bam_path, int max_mismatch, bool has_UMI, int nthreads);
-
+    int clean_bam_barcode(std::string bam_path, std::string out_bam, int max_mismatch, int nthreads);
     void write_statistics(
         std::string overall_stat_f,
         std::string chr_stat_f,

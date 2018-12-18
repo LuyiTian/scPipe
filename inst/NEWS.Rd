@@ -152,3 +152,10 @@
     \item fixed broken examples
   }
 }
+
+\section{Changes in version 1.5.2 (2018-12-18)}{
+  \itemize{
+    \item add new function `sc_correct_bam_bc`, which will update the cell barcode tag 
+    in bam file with corrected barcode, using existing cell barcode annotation.
+  }
+}

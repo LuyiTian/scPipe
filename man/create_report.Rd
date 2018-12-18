@@ -4,13 +4,12 @@
 \alias{create_report}
 \title{create_report}
 \usage{
-create_report(sample_name, outdir, r1 = "NA", r2 = "NA",
-  outfq = "NA", read_structure = list(bs1 = 0, bl1 = 0, bs2 = 0, bl2 =
-  0, us = 0, ul = 0), filter_settings = list(rmlow = TRUE, rmN = TRUE,
-  minq = 20, numbq = 2), align_bam = "NA", genome_index = "NA",
-  map_bam = "NA", exon_anno = "NA", stnd = TRUE, fix_chr = FALSE,
-  barcode_anno = "NA", max_mis = 1, UMI_cor = 1, gene_fl = FALSE,
-  organism, gene_id_type)
+create_report(sample_name, outdir, r1 = "NA", r2 = "NA", outfq = "NA",
+  read_structure = list(bs1 = 0, bl1 = 0, bs2 = 0, bl2 = 0, us = 0, ul = 0),
+  filter_settings = list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
+  align_bam = "NA", genome_index = "NA", map_bam = "NA",
+  exon_anno = "NA", stnd = TRUE, fix_chr = FALSE, barcode_anno = "NA",
+  max_mis = 1, UMI_cor = 1, gene_fl = FALSE, organism, gene_id_type)
 }
 \arguments{
 \item{sample_name}{sample name}

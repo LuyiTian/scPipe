@@ -92,6 +92,25 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// rcpp_sc_clean_bam
+void rcpp_sc_clean_bam(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outbam, Rcpp::CharacterVector bc_anno, Rcpp::NumericVector max_mis, Rcpp::CharacterVector am, Rcpp::CharacterVector ge, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::CharacterVector mito, Rcpp::NumericVector nthreads);
+RcppExport SEXP _scPipe_rcpp_sc_clean_bam(SEXP inbamSEXP, SEXP outbamSEXP, SEXP bc_annoSEXP, SEXP max_misSEXP, SEXP amSEXP, SEXP geSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP mitoSEXP, SEXP nthreadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type inbam(inbamSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outbam(outbamSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type bc_anno(bc_annoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type max_mis(max_misSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type am(amSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type ge(geSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type bc(bcSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type mb(mbSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type mito(mitoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type nthreads(nthreadsSEXP);
+    rcpp_sc_clean_bam(inbam, outbam, bc_anno, max_mis, am, ge, bc, mb, mito, nthreads);
+    return R_NilValue;
+END_RCPP
+}
 // rcpp_sc_gene_counting
 void rcpp_sc_gene_counting(Rcpp::CharacterVector outdir, Rcpp::CharacterVector bc_anno, Rcpp::NumericVector UMI_cor, Rcpp::NumericVector gene_fl);
 RcppExport SEXP _scPipe_rcpp_sc_gene_counting(SEXP outdirSEXP, SEXP bc_annoSEXP, SEXP UMI_corSEXP, SEXP gene_flSEXP) {
@@ -131,6 +150,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 13},
     {"_scPipe_rcpp_sc_exon_mapping_df_anno", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping_df_anno, 13},
     {"_scPipe_rcpp_sc_demultiplex", (DL_FUNC) &_scPipe_rcpp_sc_demultiplex, 11},
+    {"_scPipe_rcpp_sc_clean_bam", (DL_FUNC) &_scPipe_rcpp_sc_clean_bam, 10},
     {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
     {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 9},
     {"run_testthat_tests",                   (DL_FUNC) &run_testthat_tests,                    0},

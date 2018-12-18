@@ -3,10 +3,13 @@
 \docType{methods}
 \name{UMI_dup_info}
 \alias{UMI_dup_info}
+\alias{UMI_dup_info}
 \alias{UMI_dup_info<-}
 \alias{UMI_dup_info.sce}
 \alias{UMI_dup_info,SingleCellExperiment-method}
+\alias{UMI_dup_info}
 \alias{UMI_dup_info<-,SingleCellExperiment-method}
+\alias{UMI_dup_info}
 \title{Get or set UMI duplication results in a SingleCellExperiment object}
 \usage{
 UMI_dup_info(object)

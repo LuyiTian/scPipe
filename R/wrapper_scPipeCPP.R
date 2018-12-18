@@ -294,6 +294,68 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 }
 
 
+#' sc_correct_bam_bc
+#'
+#' @description update the cell barcode tag in bam file with corrected barcode
+#' output to a new bam file. the function will be useful for methods 
+#' that use the cell barcode information from bam file, such as `Demuxlet`
+#'
+#' @param inbam input bam file. This should be the output of
+#' \code{sc_exon_mapping}
+#' @param outbam output bam file with updated cell barcode
+#' @param bc_anno barcode annotation, first column is cell id, second column
+#' is cell barcode sequence
+#' @param max_mis maximum mismatch allowed in barcode. (default: 1)
+#' @param bam_tags list defining BAM tags where mapping information is
+#'   stored.
+#'   \itemize{
+#'     \item "am": mapping status tag
+#'     \item "ge": gene id
+#'     \item "bc": cell barcode tag
+#'     \item "mb": molecular barcode tag
+#'   }
+#' @param mito mitochondrial chromosome name.
+#' This should be consistant with the chromosome names in the bam file.
+#' @param nthreads number of threads to use. (default: 1)
+#'
+#' @export
+#' @return no return
+#' @examples
+#' data_dir="celseq2_demo"
+#' barcode_annotation_fn = system.file("extdata", "barcode_anno.csv",
+#'     package = "scPipe")
+#' \dontrun{
+#' # refer to the vignettes for the complete workflow
+#' ...
+#' sc_correct_bam_bc(file.path(data_dir, "out.map.bam"),
+#'     file.path(data_dir, "out.map.clean.bam"),
+#'     barcode_annotation_fn)
+#' ...
+#' }
+#'
+sc_correct_bam_bc = function(inbam, outbam, bc_anno,
+                          max_mis=1,
+                          bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
+                          mito="MT",
+                          nthreads = 1) {
+
+  if (!file.exists(inbam)) {
+    stop("input bam file does not exists.")
+  } else {
+    inbam = path.expand(inbam)
+  }
+
+  if (!file.exists(bc_anno)) {
+    stop("barcode annotation file does not exists.")
+  } else {
+    bc_anno = path.expand(bc_anno)
+  }
+  rcpp_sc_clean_bam(inbam, outbam, bc_anno, max_mis,
+                      bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
+                      mito, nthreads)
+}
+
+
 #' sc_gene_counting
 #'
 #' @description Generate gene counts matrix with UMI deduplication
