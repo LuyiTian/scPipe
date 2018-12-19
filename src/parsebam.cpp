@@ -126,7 +126,7 @@ int Bamdemultiplex::clean_bam_barcode(string bam_path, string out_bam, int max_m
         // if the read is aligned and with matched barcode.
         if ((!is_unmapped) & (!match_res.empty())) 
         {
-            bam_aux_update_str(b, c_ptr, match_res.length(), match_res.c_str());
+            bam_aux_update_str(b, c_ptr, match_res.length()+1, match_res.c_str());
             sam_write1(of, header, b);
         }
     }
