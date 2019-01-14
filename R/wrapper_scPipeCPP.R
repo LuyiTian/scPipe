@@ -65,7 +65,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
                              rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)) {
 
   outdir <- regmatches(outfq, regexpr(".*/", outfq))
-  if (!dir.exists(outdir))
+  if (outdir != character(0) && !dir.exists(outdir))
     dir.create(outdir, recursive = TRUE)
 
   if (filter_settings$rmlow) {
@@ -297,7 +297,7 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 #' sc_correct_bam_bc
 #'
 #' @description update the cell barcode tag in bam file with corrected barcode
-#' output to a new bam file. the function will be useful for methods 
+#' output to a new bam file. the function will be useful for methods
 #' that use the cell barcode information from bam file, such as `Demuxlet`
 #'
 #' @param inbam input bam file. This should be the output of
