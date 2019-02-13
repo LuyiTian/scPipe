@@ -68,6 +68,7 @@ anno_import <- function(filename) {
 #'
 #' @importFrom GenomicRanges mcols
 #' @importFrom magrittr %>%
+#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -93,7 +94,7 @@ anno_to_saf <- function(anno) {
     anno_df <- as.data.frame(anno)
 
     n_exons <- anno_df %>%
-        dplyr::filter(type == "exon") %>%
+        dplyr::filter(.data$type == "exon") %>%
         nrow()
 
     if (n_exons == 0) {
@@ -101,21 +102,21 @@ anno_to_saf <- function(anno) {
     }
 
     saf <- anno_df %>%
-        dplyr::filter(type == "exon") %>%
-        dplyr::select(gene_id, seqnames, start, end, strand) %>%
+        dplyr::filter(.data$type == "exon") %>%
+        dplyr::select("gene_id", "seqnames", "start", "end", "strand") %>%
         dplyr::rename(
-            GeneID = gene_id,
-            Chr = seqnames,
-            Start = start,
-            End = end,
-            Strand = strand
+            GeneID = .data$gene_id,
+            Chr = .data$seqnames,
+            Start = .data$start,
+            End = .data$end,
+            Strand = .data$strand
         )
 
     if (anyNA(saf$GeneID)) {
         warning("GeneID column of contains NA")
     }
 
-    saf %>% dplyr::select(GeneID, dplyr::everything())
+    saf %>% dplyr::select(.data$GeneID, dplyr::everything())
 }
 
 infer_gene_ids <- function(anno) {
@@ -163,14 +164,26 @@ infer_gene_id_from_dbx <- function(anno) {
 
 infer_gene_id_from_parent <- function(anno) {
     transcript_hash <- local({
-        transcripts <- anno %>%
-            as.data.frame() %>%
-            dplyr::filter(!is.na(transcript_id)) %>%
-            dplyr::select(transcript_id, Parent) %>%
-            dplyr::mutate(
-                transcript_id = paste0("transcript:", transcript_id),
-                Parent = stringr::str_remove(Parent, "gene:")
-            )
+        if (!is.null(.data$transcript_id)) {
+            transcripts <- anno %>%
+                as.data.frame() %>%
+                dplyr::filter(!is.na(.data$transcript_id)) %>%
+                dplyr::select("transcript_id", "Parent") %>%
+                dplyr::mutate(
+                    transcript_id = paste0("transcript:", .data$transcript_id),
+                    Parent = stringr::str_remove(.data$Parent, "gene:")
+                )
+        } else {
+            # special case for internal ERCC gff3 file
+            transcripts <- anno %>%
+                as.data.frame() %>%
+                dplyr::filter(stringr::str_detect(.data$ID, "transcript")) %>%
+                dplyr::select("ID", "Parent") %>%
+                dplyr::transmute(
+                    transcript_id = ID,
+                    Parent = stringr::str_remove(.data$Parent, "gene:")
+                )
+        }
 
         if (any(is.na(transcripts$Parent))) {
             warning("there are entries in annotation with transcript_id but no parent")
@@ -182,9 +195,9 @@ infer_gene_id_from_parent <- function(anno) {
     gene_ids <- anno %>%
         as.data.frame() %>%
         dplyr::filter(type == "exon") %>%
-        dplyr::select(Parent) %>%
-        dplyr::mutate(gene_id = transcript_hash[[unlist(Parent)]]) %>%
-        dplyr::pull(gene_id)
+        dplyr::select("Parent") %>%
+        dplyr::mutate(gene_id = transcript_hash[[unlist(.data$Parent)]]) %>%
+        dplyr::pull("gene_id")
 
     anno$gene_id[anno$type == "exon"] <- gene_ids
 
