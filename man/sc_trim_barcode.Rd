@@ -50,7 +50,7 @@ Reformat fastq files so barcode and UMI sequences are moved from
 Positions used in this function are 0-indexed, so they start from 0
  rather than 1. The default read structure in this function represents
  CEL-seq paired-ended reads. This contains a transcript in the first read, a
- UMI in the first 8bp of the second read followed by a 6bp barcode. So the
+ UMI in the first 6bp of the second read followed by a 8bp barcode. So the
  read structure will be : \code{list(bs1=-1, bl1=0, bs2=6, bl2=8, us=0,
  ul=6)}. \code{bs1=-1, bl1=0} indicates negative start position and zero
  length for the barcode on read one, this is used to denote "no barcode" on
@@ -60,7 +60,7 @@ Positions used in this function are 0-indexed, so they start from 0
 
  For a typical Drop-seq experiment the read structure will be
  \code{list(bs1=-1, bl1=0, bs2=0, bl2=12, us=12, ul=8)}, which means the read
- one only contains transcript, the first 12bp in read two are index, followed
+ one only contains transcript, the first 12bp in read two are cell barcode, followed
  by a 8bp UMI.
 }
 \examples{

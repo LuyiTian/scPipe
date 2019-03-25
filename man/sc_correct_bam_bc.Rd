@@ -37,7 +37,7 @@ no return
 }
 \description{
 update the cell barcode tag in bam file with corrected barcode
-output to a new bam file. the function will be useful for methods 
+output to a new bam file. the function will be useful for methods
 that use the cell barcode information from bam file, such as `Demuxlet`
 }
 \examples{
