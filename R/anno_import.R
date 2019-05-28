@@ -34,7 +34,6 @@ anno_import <- function(filename) {
     }
 
     anno <- lapply(filename, rtracklayer::import)
-    anno <- lapply(anno, infer_gene_ids)
     anno <- lapply(anno, anno_to_saf)
 
     # gene_id column is present and contains necessary information
@@ -85,7 +84,11 @@ anno_to_saf <- function(anno) {
         stop("'type' column missing from GRanges metadata")
     }
 
-    anno <- infer_gene_ids(anno)
+    missing_gene_id <- is.null(anno$gene_id)
+    if (missing_gene_id) {
+        anno <- infer_gene_ids(anno)
+        meta_cols <- colnames(GenomicRanges::mcols(anno))
+    }
 
     if (!"gene_id" %in% meta_cols) {
         stop("'gene_id' column missing from GRanges metadata and could not be inferred")
@@ -113,16 +116,36 @@ anno_to_saf <- function(anno) {
         )
 
     if (anyNA(saf$GeneID)) {
-        warning("GeneID column of contains NA")
+        orig_rows <- nrow(saf)
+        saf <- saf %>%
+            dplyr::filter(!is.na(GeneID))
+        filt_rows <- nrow(saf)
+        warning(glue::glue("NA found in GeneID of {orig_rows - filt_rows} of {orig_rows} entries, automatically removing these entries"))
     }
 
     saf %>% dplyr::select(.data$GeneID, dplyr::everything())
 }
 
 infer_gene_ids <- function(anno) {
-    # check if gene_id column is present, this is missing from RefSeq annotataions
+    # check if gene_id column is present, this is missing from RefSeq annotations
     no_gene_ids <- is.null(anno$gene_id)
     has_dbx <- !is.null(anno$Dbxref)
+
+    if (!no_gene_ids) {
+        exons_missing_gene_ids <- anno %>%
+            as.data.frame() %>%
+            dplyr::filter(.data$type == "exon") %>%
+            dplyr::pull("gene_id") %>%
+            is.na() %>%
+            any()
+
+        if (!exons_missing_gene_ids) {
+            return(anno)
+        }
+    }
+    if (!no_gene_ids && all(!is.na(anno$gene_id))) {
+        return(anno)
+    }
 
     if (no_gene_ids && has_dbx) {
         anno <- infer_gene_id_from_dbx(anno)
@@ -150,7 +173,7 @@ fmt_str <- stringr::str_interp
 
 infer_gene_id_from_dbx <- function(anno) {
     extract_gene_id <- function(x) {
-        sapply(x, function(x) x[1]) %>%
+        sapply(x, function(x) x[stringr::str_detect(x, "GeneID")][1]) %>%
             stringr::str_extract("GeneID:[^,]+") %>%
             stringr::str_remove("GeneID:")
     }
@@ -164,26 +187,14 @@ infer_gene_id_from_dbx <- function(anno) {
 
 infer_gene_id_from_parent <- function(anno) {
     transcript_hash <- local({
-        if (!is.null(.data$transcript_id)) {
-            transcripts <- anno %>%
-                as.data.frame() %>%
-                dplyr::filter(!is.na(.data$transcript_id)) %>%
-                dplyr::select("transcript_id", "Parent") %>%
-                dplyr::mutate(
-                    transcript_id = paste0("transcript:", .data$transcript_id),
-                    Parent = stringr::str_remove(.data$Parent, "gene:")
-                )
-        } else {
-            # special case for internal ERCC gff3 file
-            transcripts <- anno %>%
-                as.data.frame() %>%
-                dplyr::filter(stringr::str_detect(.data$ID, "transcript")) %>%
-                dplyr::select("ID", "Parent") %>%
-                dplyr::transmute(
-                    transcript_id = ID,
-                    Parent = stringr::str_remove(.data$Parent, "gene:")
-                )
-        }
+        transcripts <- anno %>%
+            as.data.frame() %>%
+            dplyr::filter(!is.na(.data$transcript_id)) %>%
+            dplyr::select(t"ranscript_id", "Parent") %>%
+            dplyr::mutate(
+                transcript_id = paste0("transcript:", .data$transcript_id),
+                Parent = stringr::str_remove(.data$Parent, "gene:")
+            )
 
         if (any(is.na(transcripts$Parent))) {
             warning("there are entries in annotation with transcript_id but no parent")
