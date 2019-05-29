@@ -34,9 +34,7 @@ anno_import <- function(filename) {
     }
 
     anno <- lapply(filename, rtracklayer::import)
-    for (i in seq_along(anno)) {
-        anno[[i]] <- anno_to_saf(anno[[i]])
-    }
+    anno <- lapply(anno, anno_to_saf)
 
     # gene_id column is present and contains necessary information
     # return SAF converted data.frame
@@ -119,7 +117,7 @@ anno_to_saf <- function(anno) {
         saf <- saf %>%
             dplyr::filter(!is.na(GeneID))
         filt_rows <- nrow(saf)
-        warning(glue::glue("NA found in GeneID of {orig_rows - filt_rows} of {orig_rows} entries, automatically removing these entries"))
+        message(glue::glue("NA found in GeneID of {orig_rows - filt_rows} of {orig_rows} entries, automatically removing these entries"))
     }
 
     saf %>% dplyr::select(.data$GeneID, dplyr::everything())
@@ -171,8 +169,8 @@ infer_gene_ids <- function(anno) {
 fmt_str <- stringr::str_interp
 
 infer_gene_id_from_dbx <- function(anno) {
-    extract_gene_id <- function(x) {
-        sapply(x, function(x) x[stringr::str_detect(x, "GeneID")][1]) %>%
+    extract_gene_id <- function(anno) {
+        sapply(anno, function(x) x[stringr::str_detect(x, "GeneID")][1]) %>%
             stringr::str_extract("GeneID:[^,]+") %>%
             stringr::str_remove("GeneID:")
     }
