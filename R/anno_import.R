@@ -34,7 +34,9 @@ anno_import <- function(filename) {
     }
 
     anno <- lapply(filename, rtracklayer::import)
-    anno <- lapply(anno, anno_to_saf)
+    for (i in seq_along(anno)) {
+        anno[[i]] <- anno_to_saf(anno[[i]])
+    }
 
     # gene_id column is present and contains necessary information
     # return SAF converted data.frame
@@ -84,11 +86,8 @@ anno_to_saf <- function(anno) {
         stop("'type' column missing from GRanges metadata")
     }
 
-    missing_gene_id <- is.null(anno$gene_id)
-    if (missing_gene_id) {
-        anno <- infer_gene_ids(anno)
-        meta_cols <- colnames(GenomicRanges::mcols(anno))
-    }
+    anno <- infer_gene_ids(anno)
+    meta_cols <- colnames(GenomicRanges::mcols(anno))
 
     if (!"gene_id" %in% meta_cols) {
         stop("'gene_id' column missing from GRanges metadata and could not be inferred")
