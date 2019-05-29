@@ -190,7 +190,7 @@ infer_gene_id_from_parent <- function(anno) {
         transcripts <- anno %>%
             as.data.frame() %>%
             dplyr::filter(!is.na(.data$transcript_id)) %>%
-            dplyr::select(t"ranscript_id", "Parent") %>%
+            dplyr::select("transcript_id", "Parent") %>%
             dplyr::mutate(
                 transcript_id = paste0("transcript:", .data$transcript_id),
                 Parent = stringr::str_remove(.data$Parent, "gene:")
