@@ -1,6 +1,11 @@
 RHTSLIB_LIBS=$(shell echo 'Rhtslib::pkgconfig("PKG_LIBS")'|\
-	"${R_HOME}/bin/R" --vanilla --slave)
+    "${R_HOME}/bin/R" --vanilla --slave)
+RHTSLIB_CPPFLAGS=$(shell echo 'Rhtslib::pkgconfig("PKG_CPPFLAGS")'|\
+    "${R_HOME}/bin/R" --vanilla --slave)
+
 PKG_LIBS=$(RHTSLIB_LIBS)
+PKG_CPPFLAGS=$(RHTSLIB_CPPFLAGS)
+
 CXX_STD = CXX11
 
 ZLIB_CFLAGS+=$(shell echo 'zlibbioc::pkgconfig("PKG_CFLAGS")'|\
