@@ -117,7 +117,7 @@ Remove low quality cells and plot highest expression genes.
 sce_qc <- remove_outliers(sce_qc)
 sce_qc <- convert_geneid(sce_qc, returns="external_gene_name")
 sce_qc <- calculateQCMetrics(sce_qc)
-plotQC(sce_qc, type = "highest-expression", n=20)
+plotHighestExprs(sce_qc, type = "highest-expression", n=20)
 ```
 
 ## Remove low abundance genes

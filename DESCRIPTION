@@ -48,7 +48,8 @@ Imports:
     GenomicRanges,
     magrittr,
     glue (>= 1.3.0),
-    rlang
+    rlang,
+    scater (>= 1.11.0)
 License: GPL (>= 2)
 Encoding: UTF-8
 RoxygenNote: 6.1.1
