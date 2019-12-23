@@ -159,3 +159,9 @@
     in bam file with corrected barcode, using existing cell barcode annotation.
   }
 }
+
+\section{Changes in version 1.9.1 (2019-12-23)}{
+  \itemize{
+    \item Changed instances of deprecated `plotQC()` to `plotHighestExprs()`
+  }
+}
