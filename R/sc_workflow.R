@@ -210,17 +210,20 @@ create_report = function(sample_name,
     tx = gsub(pattern = "UMI_COR__", replacement = "unknown", x = tx)
   }
 
+  # If organism and gene id type are not provided, delete them from param list
+  # of rmd. param$organism and param$gene_id_type will then return NULL when
+  # when used in code.
   tx = gsub(pattern = "GENE_FL__", replacement = as.character(gene_fl), x = tx)
-  if(!missing(organism)){
-    if(!is.null(organism)){
+  if(!missing(organism) && !is.null(organism)){
       tx = gsub(pattern = "ORGANISM__", replacement = organism, x = tx)
-    }
+  }else{
+    tx = tx[!grepl(pattern = "ORGANISM__", x = tx)]
   }
-  if(!missing(gene_id_type)){
-    if(!is.null(gene_id_type)){
-      tx = gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
-    }
 
+  if(!missing(gene_id_type) && !is.null(gene_id_type)){
+      tx = gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
+  }else{
+    tx = tx[!grepl(pattern = "GENE_ID_TYPE__", x = tx)]
   }
 
   writeLines(tx, con=file.path(outdir, "report.Rmd"))
@@ -280,6 +283,7 @@ create_processed_report <- function(
   }
 
   report_path <- file.path(outdir, paste0(report_name, ".Rmd"))
+  tx <- tx[!is.na(tx)]
   writeLines(tx, con = report_path)
   rmarkdown::render(
       input = report_path,
