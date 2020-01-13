@@ -9,9 +9,15 @@ output:
 
 params:
   outdir: "."
-  organism: "mmusculus_gene_ensembl"
-  gene_id_type: "ensembl_gene_id"
+  organism: "ORGANISM__"
+  gene_id_type: "GENE_ID_TYPE__"
 ---
+```{r, include=FALSE}
+getVal <- function(x, default = NULL) {
+  ifelse(is.null(x), default, x)
+}
+```
+
 ```{r, warning=FALSE, echo=FALSE, message=FALSE}
 library(scales)
 library(readr)
@@ -27,7 +33,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 # Data summary
 
-The organism is ``r params$organism``, and gene id type is ``r params$gene_id_type``.
+The organism is `r getVal(params$organism, "unknown")`, and gene id type is "`r getVal(params$organism, "unknown")`".
 
 ## Cell barcode statistics
 
@@ -117,7 +123,7 @@ Remove low quality cells and plot highest expression genes.
 sce_qc <- remove_outliers(sce_qc)
 sce_qc <- convert_geneid(sce_qc, returns="external_gene_name")
 sce_qc <- calculateQCMetrics(sce_qc)
-plotHighestExprs(sce_qc, type = "highest-expression", n=20)
+plotHighestExprs(sce_qc, n=20)
 ```
 
 ## Remove low abundance genes
