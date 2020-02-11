@@ -28,6 +28,37 @@ int hamming_distance(const string &A, const string &B)
     return dist;
 }
 
+// not a fast implementation.
+int edit_distance(const string& A, const string& B)
+{
+    int NA = A.size();
+    int NB = B.size();
+    double x, y, z;
+    
+    vector<vector<int>> M(NA + 1, vector<int>(NB + 1));
+    
+    for (int i = 0; i <= NA; ++i)
+        M[i][0] = i;
+    
+    for (int i = 0; i <= NB; ++i)
+        M[0][i] = i;
+    
+    for (int a = 1; a <= NA; ++a)
+    {
+        for (int b = 1; b <= NB; ++b)
+        {
+            x = M[a - 1][b] + 1;
+            y = M[a][b - 1] + 1;
+            z = M[a - 1][b - 1] + (A[a - 1] == B[b - 1] ? 0 : 1);
+            
+            M[a][b] = std::min(std::min(x, y), z);
+        }
+    }
+    
+    
+    return M[A.size()][B.size()];
+}
+
 void check_file_exists(string fn)
 {
     ifstream f(fn.c_str());

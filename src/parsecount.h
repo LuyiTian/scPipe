@@ -30,6 +30,7 @@ std::unordered_map<std::string, std::vector<umi_pos_pair>> read_count(std::strin
 
 int UMI_correct1(std::unordered_map<umi_pos_pair, int>& UMI_count); // sequence
 int UMI_correct2(std::unordered_map<umi_pos_pair, int>& UMI_count); // sequence + position
+int UMI_correct3(std::unordered_map<umi_pos_pair, int>& UMI_count); // sequence (2 edit distance)
 
 std::unordered_map<std::string, int> UMI_dedup(
     std::unordered_map<std::string, std::vector<umi_pos_pair>> gene_read,

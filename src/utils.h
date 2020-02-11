@@ -22,6 +22,9 @@ std::string join_path(const std::string p1, const std::string p2);
 // two strings should have equal length
 int hamming_distance(const std::string &A, const std::string &B);
 
+// calculate edit distance of two strings A and B (allow indel)
+int edit_distance(const std::string& A, const std::string& B);
+
 // since htslib does not validate file status we 
 // need to check ourself
 // if file not exist throw an exception
