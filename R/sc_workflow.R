@@ -69,9 +69,9 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
 
   demultiplex_info(sce) = demultiplex_stat
   UMI_dup_info(sce) = UMI_dup_stat
-  if(any(grepl("^ERCC-", rownames(sce)))){
-    isSpike(sce, "ERCC") <- grepl("^ERCC-", rownames(sce))
-  }
+  #if(any(grepl("^ERCC-", rownames(sce)))){
+  #  isSpike(sce, "ERCC") <- grepl("^ERCC-", rownames(sce))
+  #}
 
 
   if(report){
