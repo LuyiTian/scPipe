@@ -21,7 +21,7 @@ string join_path(const string p1, const string p2)
 int hamming_distance(const string &A, const string &B)
 {
     int dist = 0;
-    for (int i = 0; i < A.length(); ++i)
+    for (unsigned int i = 0; i < A.length(); ++i)
     {
         dist += (A[i] != B[i]);
     }

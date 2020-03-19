@@ -259,9 +259,6 @@ calculate_QC_metrics <- function(sce) {
   }else{
       message("no ERCC spike-in. Skip `non_ERCC_percent`")
     }
-  }else{
-    message("spikeNames(sce)==NULL, no spike-in information.")
-  }
 
   # get mt percentage
   if (!is.na(gene_id_type(sce))) {
