@@ -153,7 +153,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_clean_bam", (DL_FUNC) &_scPipe_rcpp_sc_clean_bam, 10},
     {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
     {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 9},
-    {"run_testthat_tests",                   (DL_FUNC) &run_testthat_tests,                    0},
+    {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 0},
     {NULL, NULL, 0}
 };
 

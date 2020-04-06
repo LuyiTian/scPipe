@@ -183,6 +183,7 @@ infer_gene_id_from_dbx <- function(anno) {
 }
 
 infer_gene_id_from_parent <- function(anno) {
+    # create hash map from transcript id to parent gene id
     transcript_hash <- local({
         transcripts <- anno %>%
             as.data.frame() %>%
@@ -197,15 +198,21 @@ infer_gene_id_from_parent <- function(anno) {
             warning("there are entries in annotation with transcript_id but no parent")
         }
 
-        with(transcripts, hashmap::hashmap(transcript_id, Parent))
+        hash::hash(transcripts$transcript_id, transcripts$Parent)
     })
 
-    gene_ids <- anno %>%
+    # get parent ids of all exons
+    parents <- anno %>%
         as.data.frame() %>%
         dplyr::filter(type == "exon") %>%
-        dplyr::select("Parent") %>%
-        dplyr::mutate(gene_id = transcript_hash[[unlist(.data$Parent)]]) %>%
-        dplyr::pull("gene_id")
+        dplyr::pull("Parent") %>%
+        unlist()
+    
+    gene_ids <- character(length(parents))
+    
+    for (i in seq_along(parents)) {
+        gene_ids[i] <- transcript_hash[[parents[i]]]
+    }
 
     anno$gene_id[anno$type == "exon"] <- gene_ids
 
