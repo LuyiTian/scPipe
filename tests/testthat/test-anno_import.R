@@ -17,8 +17,16 @@ test_that("ENSEMBL gtf annotation can be imported", {
 test_that("Common annotation sources can be imported", {
     expect_silent(anno_import(system.file("extdata", "ens_tiny_anno.gff3.gz", package = "scPipe")))
     expect_silent(anno_import(system.file("extdata", "ens_tiny_anno.gtf.gz", package = "scPipe")))
+    expect_equal(
+        anno_import(system.file("extdata", "ens_tiny_anno.gff3.gz", package = "scPipe")),
+        anno_import(system.file("extdata", "ens_tiny_anno.gtf.gz", package = "scPipe"))
+    )
     expect_silent(anno_import(system.file("extdata", "gen_tiny_anno.gff3.gz", package = "scPipe")))
     expect_silent(anno_import(system.file("extdata", "gen_tiny_anno.gtf.gz", package = "scPipe")))
+    expect_equal(
+        anno_import(system.file("extdata", "gen_tiny_anno.gff3.gz", package = "scPipe")),
+        anno_import(system.file("extdata", "gen_tiny_anno.gtf.gz", package = "scPipe"))
+    )
     expect_silent(anno_import(system.file("extdata", "ref_tiny_anno.gff3.gz", package = "scPipe")))
 })
 

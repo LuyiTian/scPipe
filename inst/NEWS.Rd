@@ -165,3 +165,9 @@
     \item Changed instances of deprecated `plotQC()` to `plotHighestExprs()`
   }
 }
+
+\section{Changes in version 1.9.4 (2020-04-06)}{
+  \itemize{
+    \item Changed hashmap package calls to hash package as hashmap is no longer on CRAN.
+  }
+}
