@@ -752,8 +752,10 @@ void Mapping::parse_align(string bam_fn, string fn_out, bool m_strand, string ma
     p.pool = hts_tpool_init(out_threads);
     hts_set_opt(of, HTS_OPT_THREAD_POOL, &p);
 
+    int hts_retcode;
+
     bam_hdr_t *header = bam_hdr_read(fp);
-    sam_hdr_write(of, header);
+    hts_retcode = sam_hdr_write(of, header);
 
     int tmp_c[4] = {0,0,0,0};
 

@@ -89,7 +89,8 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
     hdr->l_text = strlen(empty_header);
     hdr->text = strdup(empty_header);
     hdr->n_targets = 0;
-    sam_hdr_write(fp, hdr);
+    int hts_retcode;
+    hts_retcode = sam_hdr_write(fp, hdr);
 
     // get settings
     int id1_st = read_structure.id1_st;
