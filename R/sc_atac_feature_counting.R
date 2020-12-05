@@ -171,7 +171,7 @@ sc_atac_feature_counting <- function(
   
   ############################### end fix_chr
   
-  # ______________ need to add the blacklist filtering here , relevent param has been added to the function i.e. blacklist.
+  # ______________ need to add the blacklist filtering here , relevant param has been added to the function i.e. blacklist.
   # this param should take either a tab delimited file in the format of feature_input or keywords "hs", "mm" which would load a stored GAlignment file related to them
   
   number_of_lines_to_remove    <- 0
@@ -208,7 +208,7 @@ sc_atac_feature_counting <- function(
                                                             subject       = yld.gr, # yld.gr, #
                                                             type          = "equal", 
                                                             maxgap        = maxgap, 
-                                                            #minoverlap    = minoverlap, 
+                                                            #minoverlap   = minoverlap, 
                                                             ignore.strand = TRUE)
   
   # generate the matrix using this overlap results above.
@@ -217,26 +217,52 @@ sc_atac_feature_counting <- function(
   #feature.gr[-queryHits(findOverlaps(feature.gr, yld.gr, type="any", ignore.strand = TRUE)),] 
   # mergeByOverlaps(feature.gr, yld.gr)
   
-  mcols(yld.gr)[queryHits(overlaps), "peakStart"] <- start(ranges(feature.gr)[subjectHits(overlaps)])
-  mcols(yld.gr)[queryHits(overlaps), "peakEnd"]   <- end(ranges(feature.gr)[subjectHits(overlaps)])
+  #mcols(yld.gr)[queryHits(overlaps), "peakStart"] <- start(ranges(feature.gr)[subjectHits(overlaps)])
+  #mcols(yld.gr)[queryHits(overlaps), "peakEnd"]   <- end(ranges(feature.gr)[subjectHits(overlaps)])
+  
+  mcols(yld.gr)[subjectHits(overlaps), "peakStart"] <- start(ranges(feature.gr)[queryHits(overlaps)])
+  mcols(yld.gr)[subjectHits(overlaps), "peakEnd"]   <- end(ranges(feature.gr)[queryHits(overlaps)])
+  
+  #mcols(feature.gr)[queryHits(overlaps), "peakStart"] <- start(ranges(yld.gr)[subjectHits(overlaps)])
+  #mcols(yld.gr)[queryHits(overlaps), "peakEnd"]       <- end(ranges(feature.gr)[subjectHits(overlaps)])
   
   
-  overlap.df <- data.frame(yld.gr) %>% dplyr::select(seqnames, peakStart, peakEnd, CB)
+  overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% dplyr::select(seqnames, peakStart, peakEnd, CB)
   
-  matrixData <- overlap.df %>% 
+  overlap.df <- overlap.df %>% 
     dplyr::group_by(seqnames, peakStart, peakEnd, CB) %>% 
     dplyr::summarise(count = n()) %>% 
     purrr::set_names(c("chromosome","start","end","barcode","count")) %>% 
     unite("chrS", chromosome:start, sep=":") %>%
-    unite("feature", chrS:end, sep="-") %>% 
+    unite("feature", chrS:end, sep="-")
+   
+  matrixData <- overlap.df %>%
     dplyr::group_by(feature,barcode) %>% 
-    dplyr::mutate(grouped_id = row_number()) %>% 
-    tidyr::spread(barcode, count) %>% 
-    dplyr::select(-grouped_id) %>% 
+    #dplyr::mutate(grouped_id = row_number()) %>% 
+    tidyr::spread(barcode, count)
+    
+    #dplyr::select(-grouped_id) %>% 
     # TODO: sanity check to see if all features are unique here
     #if(!unique(matrixData$feature)) {stop("There are duplicate values in the feature input. Please check and rerun this step again")}
-    as_tibble(rownames = "feature") %>% 
-    dplyr::select(-1)
+  
+  matrixData           <- as.data.frame(matrixData)
+  rownames(matrixData) <- matrixData$feature
+  
+  matrixData.old       <- matrixData
+  matrixData           <- matrixData %>%
+    dplyr::select(-1) %>%
+    data.table::as.data.table() %>%
+    as.matrix()
+    
+    # as_tibble(rownames = "feature") %>% 
+    # dplyr::select(-1) %>%
+    # data.table::as.data.table() %>%
+    # as.matrix()
+  
+  # it still bugs me how there are no dimnames in the Matrix. Trying to add them manually here
+  dimnames(matrixData)  <-  list(matrixData.old[1] %>% rownames(), matrixData.old %>% dplyr::select(-1) %>% colnames())
+  #testsparse <- Matrix(matrixData, sparse = TRUE)
+  # so it works (try str(matrixData))
   
   # matrixData <- overlap.df %>% dplyr::group_by(seqnames, peakStart, peakEnd, CB) %>% dplyr::summarise(count = n())
   # 
@@ -266,23 +292,43 @@ sc_atac_feature_counting <- function(
   #matrixData <- matrix(matrixData, dimnames = list(matrixData$feature, colnames(matrixData)))
   
   # call sc_atac_cell_callling.R here ... still ongoing
-  sc_atac_cell_calling(mat = as.matrix(matrixData), cell_calling = cell_calling, output_folder = output_folder)
+  sc_atac_cell_calling(mat = matrixData, cell_calling = cell_calling, output_folder = output_folder)
   
   saveRDS(matrixData, file = paste(output_folder,"/feature_matrix.rds",sep = ""))
   cat("Feature matrix generated: ", paste(output_folder,"/feature_matrix.rds",sep = "") , "\n")
   
-  sparseM <- Matrix(matrixData,sparse=TRUE)
-  cat("Sparse matrix generated: ", "\n")
+  # here you need to convert the NAs to 0s if the sparse option to create the sparse Matrix properly
+  sparseM <- Matrix(matrixData%>%replace(is.na(.), 0), sparse=TRUE)
+  cat("Sparse matrix generated", "\n")
+  writeMM(obj = sparseM, file=paste(output_folder,"/sparse_matrix.mtx", sep =""))
+  cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
+  #saveRDS(, file = paste(output_folder,"/sparse_matrix.rds",sep = ""))
   
   jaccardM <- jaccardMatrix(sparseM)
-  cat("Jaccard matrix generated: ", "\n")
+  cat("Jaccard matrix generated", "\n")
   
   saveRDS(jaccardM, file = paste(output_folder,"/jaccard_matrix.rds",sep = ""))
-  cat("Jaccard matrix generated: ", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")
+  cat("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")
   
-  matrixData[matrixData>0] = 1
+  matrixData[matrixData>0] <- 1
   saveRDS(matrixData, file = paste(output_folder,"/binary_matrix.rds",sep = ""))
-  cat("Binary matrix generated: ", paste(output_folder,"/binary_matrix.rds",sep = "") , "\n")
+  cat("Binary matrix is saved in:\n", paste(output_folder,"/binary_matrix.rds",sep = "") , "\n")
   
+  # following can be used to plot the stas and load it into sce object 
+  # (from https://broadinstitute.github.io/2020_scWorkshop/data-wrangling-scrnaseq.html)
+  counts_per_cell    <- Matrix::colSums(sparseM)
+  counts_per_feature <- Matrix::rowSums(sparseM)
+  features_per_cell  <- Matrix::colSums(sparseM>0)
+  cells_per_feature  <- Matrix::rowSums(sparseM>0)
+  
+  # plots
+  #hist(log10(counts_per_cell+1),main='counts per cell',col='wheat')
+  #hist(log10(features_per_cell+1), main='features per cell', col='wheat')
+  #hist(log10(counts_per_feature+1), main='counts per feature', col='wheat')
+  
+  #plot(counts_per_cell, features_per_cell, log='xy', col='wheat')
+  #title('counts vs features per cell')
+  
+  # plot(sort(features_per_cell), xlab='cell', log='y', main='features per cell (ordered)')
 }
 

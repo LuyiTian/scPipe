@@ -49,36 +49,53 @@ sc_atac_trim_barcode (r1 = r1, r2 =  r2, bc_file =  barcode_fastq, output_folder
 ```
 ### if using a barcode .csv file -----------------
 
-program expects thebarcode to be on the second column of the .csv file
+program expects the barcode to be on the second column of the .csv file
 
 ```r
-sc_atac_trim_barcode( r1 = r1_barcode, r2 = r2_barcode, bc_file = barcode_csv_small, bc_start = 3, bc_length = 16, output_folder = "", rmN = FALSE)
+sc_atac_trim_barcode(r1 = r1_barcode, r2 = r2_barcode, bc_file = barcode_csv_small, bc_start = 3, bc_length = 16, output_folder = "", rmN = FALSE)
 ```
 # Aligning to reference -----------------
 
 ## define inputs
 
 ```r
-reference <- system.file("data", "genome.fa")
-r1        <- system.file("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001.fastq.gz")
-r2        <- system.file("scPipe-atac-output", "demux_testfastq_S1_L001_R3_001.fastq.gz")
+reference       <- here("data", "genome.fa")
+demux_r1        <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001.fastq.gz")
+demux_r2        <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R3_001.fastq.gz")
 ```
 ## run function
 
 ```r
-sc_atac_aligning(ref = "data/genome.fa", readFile1 = r1, readFile2=r2)
+sc_atac_aligning(ref = reference, readFile1 = demux_r1, readFile2 = demux_r2)
 ```
 # Tagging the aligned BAM file -----------------
 
 ```r
-bam <- system.file("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001_aligned.bam")
-sc_atac_bam_tagging(inbam = bam, outbam="", bam_tags = list(bc="CB", mb="OX"), nthreads=1)
+bam_to_tag  <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001_aligned_sorted.bam")
+
+sc_atac_bam_tagging(inbam = bam_to_tag, outfolder="", bam_tags = list(bc="CB", mb="OX"), nthreads=6)
 ```
-# Feature counting -----------------
+# Feature counting (currently being actively developed, so beware when trying)-----------------
 
 ```r
-sorted_bam <- system.file("scPipe-atac-output", "testfastq_S1_L001_R1_001_tagged_sorted.BAM") # here is the issue the BAM file extension should be .bam and not .BAM
-features   <- system.file("scPipe-atac-output", "NA_peaks.narrowPeak")
-sc_atac_feature_counting(insortedbam = sorted_bam, feature_input = features, bam_tags = list(bc="CB", mb="OX"),approach = "peak")
+sorted_tagged_bam <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001_aligned_sorted_tagged_sorted.bam")
+features          <- here("data", "extdata", "NA_peaks.narrowPeak")
+
+sc_atac_feature_counting (insortedbam      = sorted_tagged_bam,
+                          feature_input    = features, 
+                          bam_tags         = list(bc="CB", mb="OX"), 
+                          feature_type     = "peak", 
+                          organism         = NULL,
+                          cell_calling     = "emptydrops",
+                          genome_size      = NULL,
+                          bin_size         = NULL, 
+                          qc_per_bc_file   = NULL,
+                          yieldsize        = 1000000,
+                          mapq             = 20,
+                          exclude_regions  = NULL,
+                          output_folder    = "",
+                          fix_chr          = "none" # should be either one of these: c("none", "blacklist", "feature", "both")
+                          )
+
 ```
 # Currently ends here...

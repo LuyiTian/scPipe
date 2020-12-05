@@ -72,13 +72,14 @@ sc_atac_cell_calling = function (mat, cell_calling, output_folder, genome_size =
 testEmptyDrops2 = function (m, lower = 100, niters = 10000, test.ambient = FALSE, 
                             ignore = NULL, alpha = NULL, BPPARAM = SerialParam()) 
 {
-  discard <- rowSums(m) == 0
-  m <- m[!discard, , drop = FALSE]
-  ncells <- ncol(m)
-  umi.sum <- as.integer(round(colSums(m)))
-  ambient <- umi.sum <= lower
-  ambient.cells <- m[, ambient, drop = F]
+  discard      <- rowSums(m) == 0
+  m            <- m[!discard, , drop = FALSE]
+  ncells       <- ncol(m)
+  umi.sum      <- as.integer(round(colSums(m)))
+  ambient      <- umi.sum <= lower
+  ambient.cells<- m[, ambient, drop = FALSE]
   ambient.prof <- rowSums(ambient.cells)
+  
   if (sum(ambient.prof) == 0) {
     stop("no counts available to estimate the ambient profile")
   }
