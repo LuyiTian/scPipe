@@ -4,8 +4,15 @@
 \alias{sc_correct_bam_bc}
 \title{sc_correct_bam_bc}
 \usage{
-sc_correct_bam_bc(inbam, outbam, bc_anno, max_mis = 1, bam_tags = list(am =
-  "YE", ge = "GE", bc = "BC", mb = "OX"), mito = "MT", nthreads = 1)
+sc_correct_bam_bc(
+  inbam,
+  outbam,
+  bc_anno,
+  max_mis = 1,
+  bam_tags = list(am = "YE", ge = "GE", bc = "BC", mb = "OX"),
+  mito = "MT",
+  nthreads = 1
+)
 }
 \arguments{
 \item{inbam}{input bam file. This should be the output of

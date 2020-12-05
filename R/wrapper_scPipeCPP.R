@@ -193,6 +193,8 @@ sc_exon_mapping = function(inbam, outbam, annofn,
     inbam = path.expand(inbam)
   }
 
+  outbam = path.expand(outbam)
+
   # if (length(inbam) > 1) {
   #   stop("Only one bam file can be used as input")
   # }
@@ -345,6 +347,8 @@ sc_correct_bam_bc = function(inbam, outbam, bc_anno,
     inbam = path.expand(inbam)
   }
 
+  outbam = path.expand(outbam)
+
   if (!file.exists(bc_anno)) {
     stop("barcode annotation file does not exists.")
   } else {
@@ -448,6 +452,7 @@ sc_detect_bc = function(infq, outcsv, prefix="CELL_", bc_len,
   } else {
     infq = path.expand(infq)
   }
+  outcsv = path.expand(outcsv)
   if(!is.null(white_list_file)){
     if(!file.exists(white_list_file)){
       stop("input whitelist file does not exists.")

@@ -21,11 +21,42 @@ string join_path(const string p1, const string p2)
 int hamming_distance(const string &A, const string &B)
 {
     int dist = 0;
-    for (int i = 0; i < A.length(); ++i)
+    for (unsigned int i = 0; i < A.length(); ++i)
     {
         dist += (A[i] != B[i]);
     }
     return dist;
+}
+
+// not a fast implementation.
+int edit_distance(const string& A, const string& B)
+{
+    int NA = A.size();
+    int NB = B.size();
+    double x, y, z;
+    
+    vector<vector<int>> M(NA + 1, vector<int>(NB + 1));
+    
+    for (int i = 0; i <= NA; ++i)
+        M[i][0] = i;
+    
+    for (int i = 0; i <= NB; ++i)
+        M[0][i] = i;
+    
+    for (int a = 1; a <= NA; ++a)
+    {
+        for (int b = 1; b <= NB; ++b)
+        {
+            x = M[a - 1][b] + 1;
+            y = M[a][b - 1] + 1;
+            z = M[a - 1][b - 1] + (A[a - 1] == B[b - 1] ? 0 : 1);
+            
+            M[a][b] = std::min(std::min(x, y), z);
+        }
+    }
+    
+    
+    return M[A.size()][B.size()];
 }
 
 void check_file_exists(string fn)
@@ -88,4 +119,43 @@ void file_error(char *filename) {
     stringstream err_msg;
     err_msg << "Can't open file: " << filename << "\n";
     Rcpp::stop(err_msg.str());
+}
+
+
+
+char* getFileName(char* path, char* seperator)
+{
+    char *ssc;
+    int l = 0;
+    ssc = std::strstr(path, seperator);
+    do{
+        l = strlen(ssc) + 1;
+        path = &path[strlen(path)-l+2];
+        ssc = strstr(path, seperator);
+    }while(ssc);
+    return path;
+}
+
+char* createFileWithAppend(char* fq_out, const char* appendR1, char* fq1_fn){
+    char* fqoutR1 = (char*)malloc(strlen(fq_out) + strlen(appendR1) + strlen(getFileName(fq1_fn)) + 1);
+    strcpy(fqoutR1, fq_out);
+    strcat(fqoutR1,appendR1);
+    strcat(fqoutR1,getFileName(fq1_fn));
+    return fqoutR1;
+}
+
+void openFile(gzFile &o_stream_gz_R1,std::ofstream &o_stream_R1,char* fqoutR1, bool write_gz){
+    
+    if (write_gz) {
+        o_stream_gz_R1 = gzopen(fqoutR1, "wb2"); // open gz file
+        if (!o_stream_gz_R1) {
+            file_error(fqoutR1);
+        }
+        
+    } else {
+        o_stream_R1.open(fqoutR1); // output file
+        if (!o_stream_R1.is_open()) {
+            file_error(fqoutR1);
+        }
+    }
 }

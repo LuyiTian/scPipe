@@ -90,7 +90,7 @@ Next we use the `sc_demultiplex` function to split the reads into separate `.csv
 
 ```{r,eval=TRUE}
 if(.Platform$OS.type != "windows"){
-  sc_demultiplex(file.path(data_dir, "out.map.bam"), data_dir, barcode_annotation_fn,has_UMI=FALSE)
+  sc_demultiplex(file.path(data_dir, "out.map.bam"), data_dir, barcode_annotation_fn, has_UMI=FALSE)
 
   sc_gene_counting(data_dir, barcode_annotation_fn)
 }

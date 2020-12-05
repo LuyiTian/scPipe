@@ -47,7 +47,7 @@ int UMI_correct1(map<umi_pos_pair, int>& UMI_count)
         {
             if (hamming_distance(UMI1->first.first, UMI2.first.first) == 1) // sequencing errors
             {
-                if (UMI1->second == 1 || UMI1->second < UMI2.second*0.1)
+                if (UMI1->second == 1 || UMI1->second < UMI2.second)
                 {
                     found = true;
                     // merge two UMIs
@@ -57,7 +57,7 @@ int UMI_correct1(map<umi_pos_pair, int>& UMI_count)
                 }
             } else if (UMI1->first.first == UMI2.first.first) // possiblely same sequence in different position
             {
-                if ((UMI1->first.second != UMI2.first.second) && (UMI1->second == 1 || UMI1->second < UMI2.second*0.5))
+                if ((UMI1->first.second != UMI2.first.second) && (UMI1->second == 1 || UMI1->second < UMI2.second))
                 {
                     found = true;
                     // merge two UMIs
@@ -134,6 +134,52 @@ int UMI_correct2(map<umi_pos_pair, int>& UMI_count)
 }
 
 
+int UMI_correct3(map<umi_pos_pair, int>& UMI_count)
+{
+    bool found = false;
+    int corrected_UMI = 0;
+    for (auto UMI1 = UMI_count.begin(); UMI1 != UMI_count.end();) // use normal iterator in order to use `erase`
+    {
+        found = false;
+        for (auto const& UMI2: UMI_count) // use range based
+        {
+            if (UMI1->first.first == UMI2.first.first) // possiblely same sequence in different position
+            {
+                if ((UMI1->first.second != UMI2.first.second) && (UMI1->second == 1 || UMI1->second <= UMI2.second))
+                {
+                    found = true;
+                    // merge two UMIs
+                    UMI_count[UMI2.first] += UMI_count[UMI1->first];
+                    if (__DEBUG){Rcout << "merge: " <<  "<"<< UMI1->first.first << ", " << UMI1->first.second << ">" << "::" << "<"<< UMI2.first.first << ", " << UMI2.first.second << ">" << "\t" << UMI1->second << "::" << UMI2.second << "\n";}
+                    break;
+                }
+            } else if (edit_distance(UMI1->first.first, UMI2.first.first) <= 2) // nanopore sequencing errors
+             {
+                 if (UMI1->second == 1 || UMI1->second <= UMI2.second)
+                 {
+                     found = true;
+                     // merge two UMIs
+                     UMI_count[UMI2.first] += UMI_count[UMI1->first];
+                     if (__DEBUG){Rcout << "merge: " <<  "<"<< UMI1->first.first << ", " << UMI1->first.second << ">" << "::" << "<"<< UMI2.first.first << ", " << UMI2.first.second << ">" << "\t" << UMI1->second << "::" << UMI2.second << "\n";}
+                     break;
+                 }
+             } 
+        }
+        if (found)
+        {
+            // delete UMI1
+            corrected_UMI++;
+            UMI1 = UMI_count.erase(UMI1);
+        }
+        else
+        {
+            UMI1++;
+        }
+    }
+    return corrected_UMI;
+}
+
+
 unordered_map<string, int> UMI_dedup(
     unordered_map<string, vector<umi_pos_pair>> gene_read,
     vector<int>& UMI_dup_count,
@@ -160,6 +206,10 @@ unordered_map<string, int> UMI_dedup(
         else if (UMI_correct == 2)
         {
             dedup_stat.corrected_UMI += UMI_correct2(UMI_count);
+        }
+        else if (UMI_correct == 3)
+        {
+            dedup_stat.corrected_UMI += UMI_correct3(UMI_count);
         }
         else
         {

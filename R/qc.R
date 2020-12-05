@@ -252,17 +252,13 @@ calculate_QC_metrics <- function(sce) {
   QC_metrics(sce)$total_count_per_cell = colSums(assay(sce,"counts"))
 
   # get ERCC ratio
-  if (!is.null(spikeNames(sce))){
-    if (any(isSpike(sce,"ERCC"))){
-      exon_count = colSums(assay(sce,"counts")[!isSpike(sce,"ERCC"),])
-      ERCC_count = colSums(assay(sce,"counts")[isSpike(sce,"ERCC"),])
-      QC_metrics(sce)$non_ERCC_percent = exon_count/(ERCC_count+exon_count+1e-5)
-    }else{
+  if(any(grepl("^ERCC-", rownames(sce)))){
+    exon_count = colSums(assay(sce,"counts")[!grepl("^ERCC-", rownames(sce)),])
+    ERCC_count = colSums(assay(sce,"counts")[grepl("^ERCC-", rownames(sce)),])
+    QC_metrics(sce)$non_ERCC_percent = exon_count/(ERCC_count+exon_count+1e-5)
+  }else{
       message("no ERCC spike-in. Skip `non_ERCC_percent`")
     }
-  }else{
-    message("spikeNames(sce)==NULL, no spike-in information.")
-  }
 
   # get mt percentage
   if (!is.na(gene_id_type(sce))) {

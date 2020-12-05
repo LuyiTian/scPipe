@@ -142,6 +142,94 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// rcpp_sc_atac_trim_barcode
+void rcpp_sc_atac_trim_barcode(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::CharacterVector r3, Rcpp::StringVector barcode_file, Rcpp::NumericVector start, Rcpp::NumericVector len, Rcpp::NumericVector umi_start, Rcpp::NumericVector umi_len, Rcpp::CharacterVector umi_in, Rcpp::LogicalVector write_gz, Rcpp::LogicalVector rmN, Rcpp::LogicalVector rmlow, Rcpp::IntegerVector min_qual, Rcpp::IntegerVector num_below_min, Rcpp::IntegerVector id1_st, Rcpp::IntegerVector id1_len, Rcpp::IntegerVector id2_st, Rcpp::IntegerVector id2_len);
+RcppExport SEXP _scPipe_rcpp_sc_atac_trim_barcode(SEXP outfqSEXP, SEXP r1SEXP, SEXP r3SEXP, SEXP barcode_fileSEXP, SEXP startSEXP, SEXP lenSEXP, SEXP umi_startSEXP, SEXP umi_lenSEXP, SEXP umi_inSEXP, SEXP write_gzSEXP, SEXP rmNSEXP, SEXP rmlowSEXP, SEXP min_qualSEXP, SEXP num_below_minSEXP, SEXP id1_stSEXP, SEXP id1_lenSEXP, SEXP id2_stSEXP, SEXP id2_lenSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outfq(outfqSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r1(r1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r3(r3SEXP);
+    Rcpp::traits::input_parameter< Rcpp::StringVector >::type barcode_file(barcode_fileSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type start(startSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type len(lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type umi_start(umi_startSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type umi_len(umi_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type umi_in(umi_inSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type write_gz(write_gzSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type rmN(rmNSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type rmlow(rmlowSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type min_qual(min_qualSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type num_below_min(num_below_minSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id1_st(id1_stSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id1_len(id1_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_st(id2_stSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_len(id2_lenSEXP);
+    rcpp_sc_atac_trim_barcode(outfq, r1, r3, barcode_file, start, len, umi_start, umi_len, umi_in, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_sc_atac_trim_barcode_paired
+void rcpp_sc_atac_trim_barcode_paired(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::StringVector r2_list, Rcpp::CharacterVector r3, Rcpp::LogicalVector write_gz, Rcpp::LogicalVector rmN, Rcpp::LogicalVector rmlow, Rcpp::IntegerVector min_qual, Rcpp::IntegerVector num_below_min, Rcpp::IntegerVector id1_st, Rcpp::IntegerVector id1_len, Rcpp::IntegerVector id2_st, Rcpp::IntegerVector id2_len, Rcpp::NumericVector umi_start, Rcpp::NumericVector umi_len);
+RcppExport SEXP _scPipe_rcpp_sc_atac_trim_barcode_paired(SEXP outfqSEXP, SEXP r1SEXP, SEXP r2_listSEXP, SEXP r3SEXP, SEXP write_gzSEXP, SEXP rmNSEXP, SEXP rmlowSEXP, SEXP min_qualSEXP, SEXP num_below_minSEXP, SEXP id1_stSEXP, SEXP id1_lenSEXP, SEXP id2_stSEXP, SEXP id2_lenSEXP, SEXP umi_startSEXP, SEXP umi_lenSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outfq(outfqSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r1(r1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::StringVector >::type r2_list(r2_listSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r3(r3SEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type write_gz(write_gzSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type rmN(rmNSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type rmlow(rmlowSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type min_qual(min_qualSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type num_below_min(num_below_minSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id1_st(id1_stSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id1_len(id1_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_st(id2_stSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_len(id2_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type umi_start(umi_startSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type umi_len(umi_lenSEXP);
+    rcpp_sc_atac_trim_barcode_paired(outfq, r1, r2_list, r3, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len, umi_start, umi_len);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_sc_atac_bam_tagging
+void rcpp_sc_atac_bam_tagging(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outbam, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::NumericVector nthreads);
+RcppExport SEXP _scPipe_rcpp_sc_atac_bam_tagging(SEXP inbamSEXP, SEXP outbamSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP nthreadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type inbam(inbamSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outbam(outbamSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type bc(bcSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type mb(mbSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type nthreads(nthreadsSEXP);
+    rcpp_sc_atac_bam_tagging(inbam, outbam, bc, mb, nthreads);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_fasta_bin_bed_file
+void rcpp_fasta_bin_bed_file(std::string in_filename, std::string out_filename, int bin_size);
+RcppExport SEXP _scPipe_rcpp_fasta_bin_bed_file(SEXP in_filenameSEXP, SEXP out_filenameSEXP, SEXP bin_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type in_filename(in_filenameSEXP);
+    Rcpp::traits::input_parameter< std::string >::type out_filename(out_filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type bin_size(bin_sizeSEXP);
+    rcpp_fasta_bin_bed_file(in_filename, out_filename, bin_size);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_append_chr_to_bed_file
+void rcpp_append_chr_to_bed_file(std::string in_filename, std::string out_filename);
+RcppExport SEXP _scPipe_rcpp_append_chr_to_bed_file(SEXP in_filenameSEXP, SEXP out_filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type in_filename(in_filenameSEXP);
+    Rcpp::traits::input_parameter< std::string >::type out_filename(out_filenameSEXP);
+    rcpp_append_chr_to_bed_file(in_filename, out_filename);
+    return R_NilValue;
+END_RCPP
+}
 
 RcppExport SEXP run_testthat_tests();
 
@@ -153,7 +241,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_clean_bam", (DL_FUNC) &_scPipe_rcpp_sc_clean_bam, 10},
     {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
     {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 9},
-    {"run_testthat_tests",                   (DL_FUNC) &run_testthat_tests,                    0},
+    {"_scPipe_rcpp_sc_atac_trim_barcode", (DL_FUNC) &_scPipe_rcpp_sc_atac_trim_barcode, 18},
+    {"_scPipe_rcpp_sc_atac_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_atac_trim_barcode_paired, 15},
+    {"_scPipe_rcpp_sc_atac_bam_tagging", (DL_FUNC) &_scPipe_rcpp_sc_atac_bam_tagging, 5},
+    {"_scPipe_rcpp_fasta_bin_bed_file", (DL_FUNC) &_scPipe_rcpp_fasta_bin_bed_file, 3},
+    {"_scPipe_rcpp_append_chr_to_bed_file", (DL_FUNC) &_scPipe_rcpp_append_chr_to_bed_file, 2},
+    {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 0},
     {NULL, NULL, 0}
 };
 

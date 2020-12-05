@@ -204,6 +204,9 @@ public:
     // @param: cell_id, to provide the cell barcode, if not in the header of fastq file.
     void parse_align(std::string fn, std::string fn_out, bool m_strand, std::string map_tag, std::string gene_tag, std::string cellular_tag, std::string molecular_tag, int bc_len, std::string write_mode, std::string cell_id, int UMI_len, int nthreads);
 
+    void sc_atac_parse_align_warpper(std::vector<std::string> fn_vec, std::string fn_out,  std::string cellular_tag, std::string molecular_tag, int nthreads);
+    void sc_atac_parse_align(std::string fn, std::string fn_out, std::string cellular_tag, std::string molecular_tag, int nthreads);
+    
     /* data */
 };
 

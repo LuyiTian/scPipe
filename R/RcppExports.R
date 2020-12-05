@@ -29,3 +29,23 @@ rcpp_sc_detect_bc <- function(infq, outcsv, prefix, bc_len, max_reads, number_of
     invisible(.Call(`_scPipe_rcpp_sc_detect_bc`, infq, outcsv, prefix, bc_len, max_reads, number_of_cells, min_count, max_mismatch, white_list))
 }
 
+rcpp_sc_atac_trim_barcode <- function(outfq, r1, r3, barcode_file, start, len, umi_start, umi_len, umi_in, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len) {
+    invisible(.Call(`_scPipe_rcpp_sc_atac_trim_barcode`, outfq, r1, r3, barcode_file, start, len, umi_start, umi_len, umi_in, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len))
+}
+
+rcpp_sc_atac_trim_barcode_paired <- function(outfq, r1, r2_list, r3, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len, umi_start, umi_len) {
+    invisible(.Call(`_scPipe_rcpp_sc_atac_trim_barcode_paired`, outfq, r1, r2_list, r3, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len, umi_start, umi_len))
+}
+
+rcpp_sc_atac_bam_tagging <- function(inbam, outbam, bc, mb, nthreads) {
+    invisible(.Call(`_scPipe_rcpp_sc_atac_bam_tagging`, inbam, outbam, bc, mb, nthreads))
+}
+
+rcpp_fasta_bin_bed_file <- function(in_filename, out_filename, bin_size) {
+    invisible(.Call(`_scPipe_rcpp_fasta_bin_bed_file`, in_filename, out_filename, bin_size))
+}
+
+rcpp_append_chr_to_bed_file <- function(in_filename, out_filename) {
+    invisible(.Call(`_scPipe_rcpp_append_chr_to_bed_file`, in_filename, out_filename))
+}
+

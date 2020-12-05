@@ -7,8 +7,10 @@
 #include <vector>
 #include <iomanip>
 #include <Rcpp.h>
+#include "config_hts.h"
 #include "Gene.h"
 #include "global_config.h"
+
 
 #ifndef UTILS_H
 #define UTILS_H
@@ -21,6 +23,9 @@ std::string join_path(const std::string p1, const std::string p2);
 // calculate hamming distance of two strings A and B
 // two strings should have equal length
 int hamming_distance(const std::string &A, const std::string &B);
+
+// calculate edit distance of two strings A and B (allow indel)
+int edit_distance(const std::string& A, const std::string& B);
 
 // since htslib does not validate file status we 
 // need to check ourself
@@ -40,4 +45,8 @@ std::string padding(int count, int zero_num);
 // stops program when file cannot be opened
 void file_error(char *filename);
 
+char* getFileName(char* path, char* seperator = "/");
+char* createFileWithAppend(char* fq_out, const char* appendR1, char* fq1_fn);
+void openFile(gzFile &o_stream_gz_R1,std::ofstream &o_stream_R1, char* fqoutR1, bool write_gz);
 #endif
+

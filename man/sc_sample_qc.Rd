@@ -5,7 +5,9 @@
 \alias{sc_sample_qc}
 \title{quality control information for a small sample scRNA-seq dataset to 
 demonstrate capabilities of scPipe.}
-\format{a data.frame instance, one row per cell.}
+\format{
+a data.frame instance, one row per cell.
+}
 \source{
 Christin Biben (WEHI). She FACS sorted cells from several immune
 cell types including B cells, granulocyte and some early progenitors.
