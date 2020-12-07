@@ -27,19 +27,21 @@ library(BiocGenerics)
 sc_atac_feature_counting <- function(
   insortedbam, 
   feature_input, 
-  bam_tags = list(bc="CB", mb="OX"), 
-  feature_type = "peak", 
-  organism = NULL,
-  cell_calling = "cellranger", # either c("cellranger", "emptydrops", "filter")
-  genome_size = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
+  bam_tags       = list(bc="CB", mb="OX"), 
+  feature_type   = "peak", 
+  organism       = NULL,
+  cell_calling   = "cellranger", # either c("cellranger", "emptydrops", "filter")
+  genome_size    = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
   qc_per_bc_file = NULL, # this is optional but needed if the cell_calling option is cellranger
-  bin_size = NULL, 
-  yieldsize = 1000000,
-  mapq = 0,
-  blacklist = NULL, # use a better term, e.g. excluded_regions
-  output_folder = "",
-  fix_chr = "none" # should be either one of these: c("none", "blacklist", "feature", "both")
+  bin_size       = NULL, 
+  yieldsize      = 1000000,
+  mapq           = 0,
+  blacklist      = NULL, # use a better term, e.g. excluded_regions
+  output_folder  = "",
+  fix_chr        = "none" # should be either one of these: c("none", "blacklist", "feature", "both")
 ){
+  
+  init_time = Sys.time()
   
   stopifnot(fix_chr %in% c("none", "blacklist", "feature", "both"))
   
@@ -49,27 +51,45 @@ sc_atac_feature_counting <- function(
   
   if (!dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
-    cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
+    cat("Output directory does not exist. Saving output in\n", output_folder, "\n")
   }
   
+  
+  # initate log file and location for stats in scPipe_atac_stats
+  log_and_stats_folder <- paste0(output_folder, "/scPipe_atac_stats/")
+  dir.create(log_and_stats_folder, showWarnings = F)
+  log_file             <- paste0(log_and_stats_folder, "log_file.txt")
+  stats_file           <- paste0(log_and_stats_folder, "stats_file_align.txt")
+  if(!file.exists(log_file)) file.create(log_file)
+  # file.create(stats_file)
+  
+  # timer
+  cat(
+    paste0(
+      "sc_atac_counting starts at ",
+      as.character(Sys.time()),
+      "\n"
+    ), 
+    file = log_file, append = T)
+  
+
   if(feature_type == 'genome_bin'){
     # TODO: test the format of the fasta file here and stop if not proper format
     cat("`genome bin` feature type is selected for feature input. reading the genome fasta file ...", "\n")
     
     # TODO: execute following if the index for fasta is not found...
     Rsamtools::indexFa(feature_input)
-    cat("Indes for ", feature_input, " not found. Creating one now... ", "\n")
-    
+    cat("Index for ", feature_input, " not found. Creating one now... ", "\n")
     
     if(is.null(bin_size)){
       bin_size <- 2000
       cat("Default bin size of 2000 is selected", "\n")
     }
     
-    out_bed_filename = paste0(output_folder, "/", sub('\\..[^\\.]*$', '', basename(feature_input)), ".bed") # remove extension and append output folder
+    out_bed_filename <- paste0(output_folder, "/", sub('\\..[^\\.]*$', '', basename(feature_input)), ".bed") # remove extension and append output folder
     
     if(file.exists(out_bed_filename)) {
-      warning(out_bed_filename, " file already exists. Replacing.")
+      warning(out_bed_filename, " file already exists. Replacing!")
       file.remove(out_bed_filename)
     }
     
@@ -77,7 +97,7 @@ sc_atac_feature_counting <- function(
     
     # Check if file was created
     if(file.exists(out_bed_filename)) {
-      cat("Generated the genome bin file:", out_bed_filename, "\n")
+      cat("Generated the genome bin file:\n", out_bed_filename, "\n")
     }
     else {
       stop("File ", out_bed_filename, "file was not created.")
@@ -85,7 +105,7 @@ sc_atac_feature_counting <- function(
     # feature_input <- genome_bin
     }
   
-  cat("Creating GAlignment object for the sorted BAM file...")
+  cat("Creating GAlignment object for the sorted BAM file...\n")
 
   param <- Rsamtools::ScanBamParam(tag = as.character(bam_tags),  mapqFilter=mapq)
   bamfl <- Rsamtools::BamFile(insortedbam, yieldSize = yieldsize)
@@ -97,7 +117,7 @@ sc_atac_feature_counting <- function(
   average_number_of_lines_per_CB <- length(yld.gr$CB)/length(unique(yld.gr$CB))
   
   saveRDS(yld.gr, file = paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = ""))
-  cat("Galignment object is created and saved in \n", paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = "") , "\n")
+  cat("GAlignment object is created and saved in \n", paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = "") , "\n")
   
   # generate the GAalignment file from the feature_input file
   cat("Creating Galignment object for the feature input...\n")
@@ -223,11 +243,34 @@ sc_atac_feature_counting <- function(
   mcols(yld.gr)[subjectHits(overlaps), "peakStart"] <- start(ranges(feature.gr)[queryHits(overlaps)])
   mcols(yld.gr)[subjectHits(overlaps), "peakEnd"]   <- end(ranges(feature.gr)[queryHits(overlaps)])
   
-  #mcols(feature.gr)[queryHits(overlaps), "peakStart"] <- start(ranges(yld.gr)[subjectHits(overlaps)])
-  #mcols(yld.gr)[queryHits(overlaps), "peakEnd"]       <- end(ranges(feature.gr)[subjectHits(overlaps)])
-  
-  
+  #is removing NAs here the right thing to do?
+  #overlap.df <- data.frame(yld.gr) %>% dplyr::select(seqnames, peakStart, peakEnd, CB)
   overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% dplyr::select(seqnames, peakStart, peakEnd, CB)
+  
+  # # this method still does nto assign the dims to the matrix properly, hence comented out.
+  # matrix_rownames = overlap.df %>% 
+  #   dplyr::select(1:3) %>% 
+  #   distinct() %>% 
+  #   mutate(name = paste0(seqnames, ":", peakStart, "-", peakEnd)) %>% 
+  #   pull(name)
+  # 
+  # matrixData <- overlap.df %>% 
+  #   dplyr::group_by(seqnames, peakStart, peakEnd, CB) %>% 
+  #   dplyr::summarise(count = n()) %>% 
+  #   purrr::set_names(c("chromosome","start","end","barcode","count")) %>% 
+  #   unite("chrS", chromosome:start, sep=":") %>%
+  #   unite("feature", chrS:end, sep="-") %>% 
+  #   dplyr::group_by(feature,barcode) %>% 
+  #   dplyr::mutate(grouped_id = row_number()) %>% 
+  #   tidyr::spread(barcode, count) %>% 
+  #   dplyr::select(-grouped_id) %>% 
+  #   # TODO: sanity check to see if all features are unique here
+  #   #if(!unique(matrixData$feature)) {stop("There are duplicate values in the feature input. Please check and rerun this step again")}
+  #   as_tibble(rownames = "feature") %>% 
+  #   dplyr::select(-1) %>% 
+  #   as.matrix(.)
+  # 
+  # row.names(matrixData) = matrix_rownames
   
   overlap.df <- overlap.df %>% 
     dplyr::group_by(seqnames, peakStart, peakEnd, CB) %>% 
@@ -235,15 +278,10 @@ sc_atac_feature_counting <- function(
     purrr::set_names(c("chromosome","start","end","barcode","count")) %>% 
     unite("chrS", chromosome:start, sep=":") %>%
     unite("feature", chrS:end, sep="-")
-   
+  
   matrixData <- overlap.df %>%
     dplyr::group_by(feature,barcode) %>% 
-    #dplyr::mutate(grouped_id = row_number()) %>% 
     tidyr::spread(barcode, count)
-    
-    #dplyr::select(-grouped_id) %>% 
-    # TODO: sanity check to see if all features are unique here
-    #if(!unique(matrixData$feature)) {stop("There are duplicate values in the feature input. Please check and rerun this step again")}
   
   matrixData           <- as.data.frame(matrixData)
   rownames(matrixData) <- matrixData$feature
@@ -253,44 +291,10 @@ sc_atac_feature_counting <- function(
     dplyr::select(-1) %>%
     data.table::as.data.table() %>%
     as.matrix()
-    
-    # as_tibble(rownames = "feature") %>% 
-    # dplyr::select(-1) %>%
-    # data.table::as.data.table() %>%
-    # as.matrix()
   
   # it still bugs me how there are no dimnames in the Matrix. Trying to add them manually here
   dimnames(matrixData)  <-  list(matrixData.old[1] %>% rownames(), matrixData.old %>% dplyr::select(-1) %>% colnames())
-  #testsparse <- Matrix(matrixData, sparse = TRUE)
-  # so it works (try str(matrixData))
-  
-  # matrixData <- overlap.df %>% dplyr::group_by(seqnames, peakStart, peakEnd, CB) %>% dplyr::summarise(count = n())
-  # 
-  # # generate the matrix format
-  # names(matrixData) <- c("chromosome","start","end","barcode","count")
-  # 
-  # matrixData <- matrixData %>%
-  #   unite("chrS", chromosome:start, sep=":") %>%
-  #   unite("feature", chrS:end, sep="-")
-  # 
-  # matrixData <- matrixData %>%
-  #   group_by(feature,barcode) %>%
-  #   mutate(grouped_id = row_number())
-  # 
-  # matrixData <- matrixData %>%
-  #   spread(barcode, count) %>%
-  #   dplyr::select(-grouped_id)
-  # 
-  # # TODO: sanity check to see if all features are unique here
-  # #if(!unique(matrixData$feature)) {stop("There are duplicate values in the feature input. Please check and rerun this step again")}
-  # 
-  # matrixData <- matrixData %>% as_tibble(rownames = "feature")
-  # matrixData <- matrixData[, -1]
-  
-  #TODO: Matrix format is not yet implemeted properly. Need to fix this
-  #matrixData <- as.matrix(matrixData)
-  #matrixData <- matrix(matrixData, dimnames = list(matrixData$feature, colnames(matrixData)))
-  
+
   # call sc_atac_cell_callling.R here ... still ongoing
   sc_atac_cell_calling(mat = matrixData, cell_calling = cell_calling, output_folder = output_folder)
   
@@ -306,7 +310,6 @@ sc_atac_feature_counting <- function(
   
   jaccardM <- jaccardMatrix(sparseM)
   cat("Jaccard matrix generated", "\n")
-  
   saveRDS(jaccardM, file = paste(output_folder,"/jaccard_matrix.rds",sep = ""))
   cat("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")
   
@@ -314,7 +317,7 @@ sc_atac_feature_counting <- function(
   saveRDS(matrixData, file = paste(output_folder,"/binary_matrix.rds",sep = ""))
   cat("Binary matrix is saved in:\n", paste(output_folder,"/binary_matrix.rds",sep = "") , "\n")
   
-  # following can be used to plot the stas and load it into sce object 
+  # following can be used to plot the stas and load it into sce object ########
   # (from https://broadinstitute.github.io/2020_scWorkshop/data-wrangling-scrnaseq.html)
   counts_per_cell    <- Matrix::colSums(sparseM)
   counts_per_feature <- Matrix::rowSums(sparseM)
@@ -330,5 +333,20 @@ sc_atac_feature_counting <- function(
   #title('counts vs features per cell')
   
   # plot(sort(features_per_cell), xlab='cell', log='y', main='features per cell (ordered)')
-}
+  
+  # plotting examples end here #############
+  
+  end_time = Sys.time()
+
+  print(end_time - init_time)
+  
+  cat(
+    paste0(
+      "sc_atac_counting finishes at ",
+      as.character(Sys.time()),
+      "\n\n"
+    ), 
+    file = log_file, append = T)
+  
+  }
 

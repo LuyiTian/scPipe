@@ -39,6 +39,25 @@ sc_atac_bam_tagging = function(inbam, outfolder = "",
     outsortedbam             <- paste(outfolder, "/", fileNameWithoutExtension, "_tagged_sorted", sep = "")
   }
   
+  
+  log_and_stats_folder = paste0(output_folder, "/log_and_stats/")
+  dir.create(log_and_stats_folder, showWarnings = F)
+  log_file = paste0(log_and_stats_folder, "log_file.txt")
+  stats_file = paste0(log_and_stats_folder, "stats_file_align.txt")
+  if(!file.exists(log_file)) file.create(log_file)
+  # file.create(stats_file)
+  
+  cat(
+    paste0(
+      "sc_atac_tagging starts at ",
+      as.character(Sys.time()),
+      "\n"
+    ), 
+    file = log_file, append = T)
+  
+  
+  
+  
   outbam <- path.expand(outbam)
   if(!file.exists(outbam)){
     file.create(outbam)
@@ -70,4 +89,13 @@ sc_atac_bam_tagging = function(inbam, outfolder = "",
   # generate the fragment file for the BAM file 
   # need bedtools v2.26.0 or later
   # system2("bedtools", c("bamToBed", "i", outsortedbam), "|", "awk", c(-F"#" '{print $1"\t"$2}'), stdout = paste(output_folder,"/fragments.bed",sep = ""))
-}
+
+  cat(
+    paste0(
+      "sc_atac_tagging finishes at ",
+      as.character(Sys.time()),
+      "\n\n"
+    ), 
+    file = log_file, append = T)
+  
+  }

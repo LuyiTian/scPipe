@@ -522,7 +522,7 @@ bool sc_atac_check_qual(char *qual_s, int trim_n, int thr, int below_thr){
 
 // sc_atac_paired_fastq_to_fastq ------------------
 
-void sc_atac_paired_fastq_to_fastq(
+std::vector<int> sc_atac_paired_fastq_to_fastq(
         char *fq1_fn,
         std::vector<std::string> fq2_fn_list,
         char *fq3_fn,
@@ -540,6 +540,7 @@ void sc_atac_paired_fastq_to_fastq(
         int umi_len
 ) {
     
+    std::vector<int> out_vect(3, 0);  // output vector of length 4 filled with zeroes
     
     // Input parameters when rmlow is true
     // int min_qual = 20; // minq: the minimum base pair quality that we allowed (from scPipe wrapper_scPipeCPP.R)
@@ -826,6 +827,13 @@ void sc_atac_paired_fastq_to_fastq(
     Rcpp::Rcout << "Total Reads: " << passed_reads << "\n";
     Rcpp::Rcout << "Total N's removed: " << removed_Ns << "\n";
     Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << "\n";
+    
+    
+    out_vect[0] = passed_reads;
+    out_vect[1] = removed_Ns;
+    out_vect[2] = removed_low_qual;
+    
+    return(out_vect);
 }
 
 
@@ -843,7 +851,7 @@ void sc_atac_paired_fastq_to_fastq(
 
 // sc_atac_paired_fastq_to_csv ------------------
 
-void sc_atac_paired_fastq_to_csv(
+std::vector<int> sc_atac_paired_fastq_to_csv(
         char *fq1_fn,
         char *fq3_fn,
         char *fq_out, 
@@ -864,6 +872,8 @@ void sc_atac_paired_fastq_to_csv(
         int id2_len
 )
 {
+    std::vector<int> out_vect(5, 0);  // output vector of length 4 filled with zeroes
+    
     int passed_reads = 0;
     int removed_Ns = 0;
     int removed_low_qual = 0;
@@ -1008,6 +1018,9 @@ void sc_atac_paired_fastq_to_csv(
     {
         if (++_interrupt_ind % 50 == 0) checkUserInterrupt();
         passed_reads++;
+        if(passed_reads % 10==0) {
+            Rcout << passed_reads << " lines have been read..." << std::endl; 
+        }
         
         
         char *seq1_name = seq1->name.s;
@@ -1344,11 +1357,20 @@ void sc_atac_paired_fastq_to_csv(
             
         }
     }
+    
+    out_vect[0] = passed_reads;
+    out_vect[1] = removed_Ns;
+    out_vect[2] = removed_low_qual;
+    out_vect[3] = exact_match;
+    out_vect[4] = approx_match;
+    
     Rcpp::Rcout << "Total Reads: " << passed_reads << "\n";
+    Rcpp::Rcout << "Total N's removed: " << removed_Ns << "\n";
+    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << "\n";
     Rcpp::Rcout << "Exact match Reads: " << exact_match << "\n";
     Rcpp::Rcout << "Approx Match Reads: " << approx_match << "\n";
-    Rcpp::Rcout << "Total N's removed: " << removed_Ns << "\n";
-    //Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << "\n";
+    
+    return(out_vect);
 }
 
 

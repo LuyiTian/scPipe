@@ -143,9 +143,10 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_sc_atac_trim_barcode
-void rcpp_sc_atac_trim_barcode(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::CharacterVector r3, Rcpp::StringVector barcode_file, Rcpp::NumericVector start, Rcpp::NumericVector len, Rcpp::NumericVector umi_start, Rcpp::NumericVector umi_len, Rcpp::CharacterVector umi_in, Rcpp::LogicalVector write_gz, Rcpp::LogicalVector rmN, Rcpp::LogicalVector rmlow, Rcpp::IntegerVector min_qual, Rcpp::IntegerVector num_below_min, Rcpp::IntegerVector id1_st, Rcpp::IntegerVector id1_len, Rcpp::IntegerVector id2_st, Rcpp::IntegerVector id2_len);
+std::vector<int> rcpp_sc_atac_trim_barcode(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::CharacterVector r3, Rcpp::StringVector barcode_file, Rcpp::NumericVector start, Rcpp::NumericVector len, Rcpp::NumericVector umi_start, Rcpp::NumericVector umi_len, Rcpp::CharacterVector umi_in, Rcpp::LogicalVector write_gz, Rcpp::LogicalVector rmN, Rcpp::LogicalVector rmlow, Rcpp::IntegerVector min_qual, Rcpp::IntegerVector num_below_min, Rcpp::IntegerVector id1_st, Rcpp::IntegerVector id1_len, Rcpp::IntegerVector id2_st, Rcpp::IntegerVector id2_len);
 RcppExport SEXP _scPipe_rcpp_sc_atac_trim_barcode(SEXP outfqSEXP, SEXP r1SEXP, SEXP r3SEXP, SEXP barcode_fileSEXP, SEXP startSEXP, SEXP lenSEXP, SEXP umi_startSEXP, SEXP umi_lenSEXP, SEXP umi_inSEXP, SEXP write_gzSEXP, SEXP rmNSEXP, SEXP rmlowSEXP, SEXP min_qualSEXP, SEXP num_below_minSEXP, SEXP id1_stSEXP, SEXP id1_lenSEXP, SEXP id2_stSEXP, SEXP id2_lenSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outfq(outfqSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r1(r1SEXP);
@@ -165,14 +166,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id1_len(id1_lenSEXP);
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_st(id2_stSEXP);
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_len(id2_lenSEXP);
-    rcpp_sc_atac_trim_barcode(outfq, r1, r3, barcode_file, start, len, umi_start, umi_len, umi_in, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len);
-    return R_NilValue;
+    rcpp_result_gen = Rcpp::wrap(rcpp_sc_atac_trim_barcode(outfq, r1, r3, barcode_file, start, len, umi_start, umi_len, umi_in, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len));
+    return rcpp_result_gen;
 END_RCPP
 }
 // rcpp_sc_atac_trim_barcode_paired
-void rcpp_sc_atac_trim_barcode_paired(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::StringVector r2_list, Rcpp::CharacterVector r3, Rcpp::LogicalVector write_gz, Rcpp::LogicalVector rmN, Rcpp::LogicalVector rmlow, Rcpp::IntegerVector min_qual, Rcpp::IntegerVector num_below_min, Rcpp::IntegerVector id1_st, Rcpp::IntegerVector id1_len, Rcpp::IntegerVector id2_st, Rcpp::IntegerVector id2_len, Rcpp::NumericVector umi_start, Rcpp::NumericVector umi_len);
+std::vector<int> rcpp_sc_atac_trim_barcode_paired(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::StringVector r2_list, Rcpp::CharacterVector r3, Rcpp::LogicalVector write_gz, Rcpp::LogicalVector rmN, Rcpp::LogicalVector rmlow, Rcpp::IntegerVector min_qual, Rcpp::IntegerVector num_below_min, Rcpp::IntegerVector id1_st, Rcpp::IntegerVector id1_len, Rcpp::IntegerVector id2_st, Rcpp::IntegerVector id2_len, Rcpp::NumericVector umi_start, Rcpp::NumericVector umi_len);
 RcppExport SEXP _scPipe_rcpp_sc_atac_trim_barcode_paired(SEXP outfqSEXP, SEXP r1SEXP, SEXP r2_listSEXP, SEXP r3SEXP, SEXP write_gzSEXP, SEXP rmNSEXP, SEXP rmlowSEXP, SEXP min_qualSEXP, SEXP num_below_minSEXP, SEXP id1_stSEXP, SEXP id1_lenSEXP, SEXP id2_stSEXP, SEXP id2_lenSEXP, SEXP umi_startSEXP, SEXP umi_lenSEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outfq(outfqSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r1(r1SEXP);
@@ -189,8 +191,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_len(id2_lenSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type umi_start(umi_startSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector >::type umi_len(umi_lenSEXP);
-    rcpp_sc_atac_trim_barcode_paired(outfq, r1, r2_list, r3, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len, umi_start, umi_len);
-    return R_NilValue;
+    rcpp_result_gen = Rcpp::wrap(rcpp_sc_atac_trim_barcode_paired(outfq, r1, r2_list, r3, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len, umi_start, umi_len));
+    return rcpp_result_gen;
 END_RCPP
 }
 // rcpp_sc_atac_bam_tagging

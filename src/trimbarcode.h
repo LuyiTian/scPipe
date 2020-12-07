@@ -43,7 +43,7 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
 void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_s read_structure, const filter_s filter_settings, const bool write_gz);
 void single_fastq_to_fastq(char *fq1_fn, char *fq_out, const read_s read_structure, const filter_s filter_settings);
 
-void sc_atac_paired_fastq_to_fastq(
+std::vector<int> sc_atac_paired_fastq_to_fastq(
         char *fq1_fn,
         std::vector<std::string> fq2_fn_list,
         char *fq3_fn,
@@ -60,7 +60,7 @@ void sc_atac_paired_fastq_to_fastq(
         int umi_st,
         int umi_len);
 
-void sc_atac_paired_fastq_to_csv(
+std::vector<int> sc_atac_paired_fastq_to_csv(
         char *fq1_fn,
         char *fq3_fn,
         char *fq_out, 

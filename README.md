@@ -44,7 +44,7 @@ The general workflow of RNA-Seq module of scPipe is illustrated in the following
 
 <img src=inst/workflow.png height="800">
 
-The general workflow of ATAC-Seq module of scPipe is illustrated in the following figure and a minimal example is available [here](minimal_atac_example.md):
+The general workflow of ATAC-Seq module of scPipe is illustrated in the following figure and a minimal example is available [here](minimal_atac_example.md).
 
 
 

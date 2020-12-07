@@ -37,6 +37,22 @@ sc_atac_trim_barcode = function(
     cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
   }
   
+  
+  log_and_stats_folder = paste0(output_folder, "/log_and_stats/")
+  dir.create(log_and_stats_folder, showWarnings = F)
+  log_file = paste0(log_and_stats_folder, "log_file.txt")
+  stats_file = paste0(log_and_stats_folder, "stats_file_trimbarcode.txt")
+  if(!file.exists(log_file)) file.create(log_file)
+  file.create(stats_file)
+  
+  cat(
+    paste0(
+      "trimbarcode starts at ",
+      as.character(Sys.time()),
+      "\n"
+    ), 
+    file = log_file, append = T)
+  
   if (substr(r1, nchar(r1) - 2, nchar(r1)) == ".gz") {
     write_gz = TRUE
   }
@@ -75,7 +91,7 @@ sc_atac_trim_barcode = function(
     cat("\n")
     
     if(file_ext(bc_file) != 'csv'){
-      rcpp_sc_atac_trim_barcode_paired(
+      out_vec = rcpp_sc_atac_trim_barcode_paired(
         output_folder, 
         r1, 
         bc_file,
@@ -90,13 +106,20 @@ sc_atac_trim_barcode = function(
         id2_len,
         umi_start, 
         umi_length)
+      
+      cat("Total Reads: ", out_vec[1], 
+          "\nTotal N's removed: ", out_vec[2], 
+          "\nremoved_low_qual: ", out_vec[3], 
+          "\n",
+          file = stats_file, append = T)
+      
     }
     else {
       cat("Using barcode CSV file, since barcode FastQ file is not passed \n")
       if(bc_start == -1 || bc_length == -1 ){
         stop("Please pass bc_start and bc_length values")
       }
-      rcpp_sc_atac_trim_barcode(
+      out_vec = rcpp_sc_atac_trim_barcode(
         output_folder, 
         r1, 
         r2, 
@@ -115,10 +138,30 @@ sc_atac_trim_barcode = function(
         id1_len,
         id2_st,
         id2_len)
+      
+      cat("Total Reads: ", out_vec[1], 
+          "\nTotal N's removed: ", out_vec[2], 
+          "\nremoved_low_qual: ", out_vec[3], 
+          "\nExact match Reads: ", out_vec[4], 
+          "\nApprox Match Reads: ", out_vec[5], 
+          "\n",
+          file = stats_file, append = T)
+      
     }
   }else{
     stop("Barcode file is mandatory")
   }
+  
+  
+  cat(
+    paste0(
+      "trimbarcode finishes at ",
+      as.character(Sys.time()),
+      "\n\n"
+    ), 
+    file = log_file, append = T)
+  
+  return(out_vec)
 }
 
 
