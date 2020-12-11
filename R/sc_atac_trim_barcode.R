@@ -119,6 +119,9 @@ sc_atac_trim_barcode = function(
       if(bc_start == -1 || bc_length == -1 ){
         stop("Please pass bc_start and bc_length values")
       }
+
+      # this should be where we do the subset check for correct bc_start positions.
+
       out_vec = rcpp_sc_atac_trim_barcode(
         output_folder, 
         r1, 

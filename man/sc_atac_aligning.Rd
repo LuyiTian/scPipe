@@ -9,7 +9,12 @@ sc_atac_aligning(
   readFile1,
   readFile2 = NULL,
   readDir = NULL,
-  output_folder = ""
+  output_folder = "",
+  output_file = "",
+  input_format = "FASTQ",
+  output_format = "BAM",
+  type = "dna",
+  nthreads = 1
 )
 }
 \value{

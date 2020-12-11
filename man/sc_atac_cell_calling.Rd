@@ -4,7 +4,13 @@
 \alias{sc_atac_cell_calling}
 \title{sc_atac_bam_tagging()}
 \usage{
-sc_atac_cell_calling(feature_matrix, call_method)
+sc_atac_cell_calling(
+  mat,
+  cell_calling,
+  output_folder,
+  genome_size = NULL,
+  qc_per_bc_file = NULL
+)
 }
 \value{
 

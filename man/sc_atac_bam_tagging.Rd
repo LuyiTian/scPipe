@@ -6,7 +6,7 @@
 \usage{
 sc_atac_bam_tagging(
   inbam,
-  outbam = "",
+  outfolder = "",
   bam_tags = list(bc = "CB", mb = "OX"),
   nthreads = 1
 )
