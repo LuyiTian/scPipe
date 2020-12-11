@@ -6,15 +6,15 @@
 using namespace Rcpp;
 
 // check_barcode_reads
-void check_barcode_reads(String fastq, String barcodeseqs, int barcodeStart, int barcodeLength);
-RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcodeStartSEXP, SEXP barcodeLengthSEXP) {
+void check_barcode_reads(String fastq, String barcodeseqs, int barcode_start, int barcode_length);
+RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcode_startSEXP, SEXP barcode_lengthSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< String >::type fastq(fastqSEXP);
     Rcpp::traits::input_parameter< String >::type barcodeseqs(barcodeseqsSEXP);
-    Rcpp::traits::input_parameter< int >::type barcodeStart(barcodeStartSEXP);
-    Rcpp::traits::input_parameter< int >::type barcodeLength(barcodeLengthSEXP);
-    check_barcode_reads(fastq, barcodeseqs, barcodeStart, barcodeLength);
+    Rcpp::traits::input_parameter< int >::type barcode_start(barcode_startSEXP);
+    Rcpp::traits::input_parameter< int >::type barcode_length(barcode_lengthSEXP);
+    check_barcode_reads(fastq, barcodeseqs, barcode_start, barcode_length);
     return R_NilValue;
 END_RCPP
 }
