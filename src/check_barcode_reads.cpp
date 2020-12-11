@@ -94,7 +94,6 @@ void Read_In_Barcodes(string filename, int num_barcode)
   return: void.
   post-condition: barcodes contains structs of all the barcodes in the given file.
   */
-    Rprintf("\tRead Function, file: %s\n", filename.c_str());
     fstream file;
     //size_t len = 1000;
     file.open(filename, ios::in);
@@ -111,38 +110,12 @@ void Read_In_Barcodes(string filename, int num_barcode)
         new_barcode = new a_barcode; // new makes a pointer
         new_barcode->sequence = line;
         new_barcode->original_pos = count;
-        /*
-        if (is_PairedReads > 0)
-        {
-            // strtok returns the first token from the string up to the first sep \t. Subsequent calls return the next token
-            token = strtok(line, "\t");
-            token = strtok(NULL, "\t");
-            new_barcode->sequenceRev = (char *)malloc(barcode_length_rev * sizeof(char));
-            strncpy(new_barcode->sequenceRev, token, barcode_length_rev);
-        }
-        else if (is_DualIndexingReads > 0)
-        {
-            token = strtok(line, "\t");
-            token = strtok(NULL, "\t");
-            new_barcode->sequence2 = (char *)malloc(barcode_length_rev * sizeof(char));
-            strncpy(new_barcode->sequence2, token, barcode2_length);
-        }
-        else
-        {
-        new_barcode->sequenceRev = NULL;
-        new_barcode->sequence2 = NULL;
-        };
-        */
         
         barcodes[count] = new_barcode;
         count++;
     }
     file.close();
-    //delete(line);
 
-    for (int i = 0; i < 2; i++) {
-        Rprintf("%s\n", barcodes[i]->sequence.c_str());
-    }
     Rprintf(" -- Number of Barcodes : %d\n", num_barcode);
 }
 
@@ -534,6 +507,46 @@ void Search_Barcodes_At_Index(string filename, int index, int barcode_length,
     *barcodes_not_found = not_found;
 }
 
+void Clear_Trie(trie_node *node)
+{
+    /* 
+  Recursive function to clear a trie. 
+  Calls this function on each linked node, then frees this node
+
+  node: a pointer to the current node to free
+  */
+    int i;
+    if (node->end != NULL)
+    {
+        delete node->end;
+    }
+    for (i = 0; i < 5; i++)
+    {
+        if (node->links[i] != NULL)
+        {
+            Clear_Trie(node->links[i]);
+        }
+    }
+    delete node;
+}
+
+void Clean_Up(int num_barcode)
+{
+    /*
+  Deallocate all space for arrays created
+  */
+    // free the barcode array
+    for (int i = 0; i < num_barcode; i++) {
+        delete barcodes[i];
+    }
+    delete [] barcodes;
+
+    //free the hairpin & barcode tries
+    Clear_Trie(barcode_single_trie_head);
+}
+
+
+
 // [[Rcpp::export]]
 void check_barcode_reads(String fastq, String barcodeseqs, 
                 int barcode_start, int barcode_length) {
@@ -548,20 +561,23 @@ void check_barcode_reads(String fastq, String barcodeseqs,
     // First we need to read in all the barcodes
     Read_In_Barcodes(barcode_file, num_barcode);
 
-    Print_Barcodes(num_barcode);
+    // test print barcodes
+    //Print_Barcodes(num_barcode);
     // then we need to sort the barcodes
     // IF BARCODE SORTING NEEDS REVERSE READS AND STUFF THEN WE SHOULD USE OLD SORTING METHOD. NOT COUNTING SORT
     // Sort_Barcodes(num_barcode, barcode_length); // THIS NEEDS TO BE PROPERLY FIGURED OUT. SHOULD BE ABLE TO USE COUNT SORT FROM HAIRPINR SORTING.
+    // ONLY NEED TO SORT IF ARE ALLOWING MISMATCHES?
     // and the build the barcode trie for searching (each barcode node contains the current position in the barcode array, as well as the original position in the barcode array,
     // which is why we need to sort them before building the trie, otherwise the current and original will be the same but the barcodes will be in a different position in the array)
     barcode_single_trie_head = Build_Trie_Barcodes(num_barcode, barcode_length); // are the barcodes going to be paired or not paired?? should I remove the dual indexed option?
 
-    int lines_to_search = 500;
+    int lines_to_search = 1000;
     int barcodes_found = 0;
     int barcodes_not_found = 0;
     string fastq_file = fastq.get_cstring();
     // then we need to actually search the file lines.
     // quick search of every read line (to a point)
+    Rprintf("Checking if given barcode start index is valid.\n");
     Search_Barcodes_At_Index(fastq_file, barcode_start, barcode_length, lines_to_search, &barcodes_found, &barcodes_not_found);
     // sample test search of a fake read.
     /*
@@ -574,8 +590,11 @@ void check_barcode_reads(String fastq, String barcodeseqs,
         Rprintf("search failed\n");
     }
     */
-    Rprintf("Number of Barcodes Found: %d\n", barcodes_found);
-    Rprintf("Number of reads with barcodes not found: %d\n", barcodes_not_found);
+    Rprintf("\tNumber of reads checked: %d\n", lines_to_search);
+    Rprintf("\tNumber of reads with barcodes found at index %d: %d\n", barcode_start, barcodes_found);
+    Rprintf("\tNumber of reads with barcodes not found: %d\n", barcodes_not_found);
+
+    Clean_Up(num_barcode);
 }
 
 //NumericVector timesTwo(NumericVector x) {
