@@ -10,7 +10,7 @@
 #'
 #' @export
 #'
-sc_atac_trim_barcode = function(
+sc_atac_trim_barcode <- function(
   r1, 
   r2, 
   bc_file, 
@@ -51,7 +51,7 @@ sc_atac_trim_barcode = function(
       as.character(Sys.time()),
       "\n"
     ), 
-    file = log_file, append = T)
+    file = log_file, append = TRUE)
   
   if (substr(r1, nchar(r1) - 2, nchar(r1)) == ".gz") {
     write_gz = TRUE
@@ -110,8 +110,9 @@ sc_atac_trim_barcode = function(
       cat("Total Reads: ", out_vec[1], 
           "\nTotal N's removed: ", out_vec[2], 
           "\nremoved_low_qual: ", out_vec[3], 
+          "\nUnique sequences read in barcode file: ", out_vec[4],
           "\n",
-          file = stats_file, append = T)
+          file = stats_file, append = TRUE)
       
     }
     else {
@@ -139,13 +140,16 @@ sc_atac_trim_barcode = function(
         id2_st,
         id2_len)
       
+      bc <- data.table::fread("../new_project_collab/seqATAC/data/barcode.csv", select = 2, col.names = "bc")
+      
       cat("Total Reads: ", out_vec[1], 
           "\nTotal N's removed: ", out_vec[2], 
           "\nremoved_low_qual: ", out_vec[3], 
           "\nExact match Reads: ", out_vec[4], 
           "\nApprox Match Reads: ", out_vec[5], 
+          "\nTotal barcodes: ", length(unique(bc$bc)),
           "\n",
-          file = stats_file, append = T)
+          file = stats_file, append = TRUE)
       
     }
   }else{
@@ -159,7 +163,7 @@ sc_atac_trim_barcode = function(
       as.character(Sys.time()),
       "\n\n"
     ), 
-    file = log_file, append = T)
+    file = log_file, append = TRUE)
   
   return(out_vec)
 }
