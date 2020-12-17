@@ -17,29 +17,72 @@ using namespace std;
 
 #define BLOCKSIZE 10000000
 #define TERMINATOR '@'
-// below here to // [[Rccp::export]] is C code, not C++. As it is converted and tested, move this down
-/*typedef struct
-{
-   char *sequence;
-    char *sequence2;   // dual indexed reads
-    char *sequenceRev; // paired reads
-    int original_pos;
-} a_barcode;
-typedef struct
-{
-    int original_seq_index;
-    int current_seq_index;
-} end_node;
-typedef struct trie_node trie_node;
-struct trie_node
-{
-    char base;
-    long count;
-    // links is [@, A, C, G, T]
-    trie_node *links[5];
-    end_node *end;
+
+class ResizeArray {
+        void Expand(void);
+        long *arr;
+        int size;
+    public:
+        ResizeArray (int);
+        int Increment(int);
+        int length(void);
+        long operator [] (int);
+        int Max(long *);
+        void Delete(void);
 };
-*/
+ResizeArray::ResizeArray(int len) {
+    size = len;
+    arr = new long[size];
+    for (int i = 0; i < size; i++) {
+        arr[i] = 0;
+    }
+}
+void ResizeArray::Expand(void) {
+    long *new_array = new long[size * 2];
+    for (int i = 0; i < (size * 2); i++) {
+        if (i < size) {
+            new_array[i] = arr[i];
+        } else {
+            new_array[i] = 0;
+        }
+    }
+    size = size * 2;
+    delete [] arr;
+    arr = new_array;
+}
+int ResizeArray::Increment(int position) {
+    while (position >= size) {
+        Expand();
+    }
+    arr[position]++;
+    //Rprintf("\tincrement %d, now %ld\n", position, arr[position]);
+    return size;
+}
+int ResizeArray::length(void) {
+    return size;
+}
+long ResizeArray::operator[] (int index) {
+    if (index >= 0 && index < size) {
+        return arr[index];
+    } else {
+        throw out_of_range("Index must be in range of resizable array size\n");
+    }
+}
+int ResizeArray::Max (long *max_value) {
+    long curr_max = 0;
+    int position = -1;
+    for (int i = 0; i < size; i++) {
+        if (arr[i] > curr_max) {
+            curr_max = arr[i];
+            position = i;
+        }
+    }
+    *max_value = curr_max;
+    return position;
+}
+void ResizeArray::Delete (void) {
+    delete [] arr;
+}
 
 struct a_barcode {
     string sequence;
@@ -60,7 +103,6 @@ struct trie_node {
 
 a_barcode **barcodes;
 trie_node *barcode_single_trie_head;
-trie_node *barcode_paired_trie_head;
 
 
 
@@ -119,7 +161,6 @@ void Read_In_Barcodes(string filename, int num_barcode)
     Rprintf(" -- Number of Barcodes : %d\n", num_barcode);
 }
 
-
 ///////////// Management functions for building and traversing a Trie.
 int Get_Links_Position(char base)
 {
@@ -142,8 +183,9 @@ int Get_Links_Position(char base)
     case 'T':
         return 4;
     case TERMINATOR:
-    default:
         return 0;
+    default:
+        return -1;
     }
 }
 
@@ -197,6 +239,9 @@ bool Base_In_Node(trie_node *node, char base)
   return: true if base exists in node->links
           false otherwise.
   */
+    if (Get_Links_Position(base) == -1) {
+        return false;
+    }
     if (node->links[Get_Links_Position(base)] != NULL)
     {
         return true;
@@ -313,11 +358,16 @@ int locate_sequence_at_position_trie(trie_node *trie_head, string read, int inde
     char base;
     trie_node *current_node;
     end_node *end;
-
     current_node = trie_head;
+    if (read.length() < index) {
+        Rprintf("Short read: %s. Index: %d\n", read.c_str(), index);
+        //exit(0);
+        return -1;
+    }
     // search from index until we find a TERMINATOR
     for (j = index; j < index + barcode_length; j++)
     {
+        if (j >= read.length()) break;
         base = read[j];
         if (Base_In_Node(current_node, TERMINATOR))
         {
@@ -334,7 +384,6 @@ int locate_sequence_at_position_trie(trie_node *trie_head, string read, int inde
         }
         else
         {
-            // else, we have to start searching from the next position in the read.
             break;
         }
     }
@@ -349,7 +398,59 @@ int locate_sequence_at_position_trie(trie_node *trie_head, string read, int inde
     return -1;
 }
 
+int locate_sequence_in_trie_subsection(trie_node *trie_head, string read, int section_start, int section_end, int *found_position)
+{
+    /*
+  Search through this read until we locate a known sequence in the given trie. Return that sequences' index.
+  Otherwise, if we reach the end of the read, return -1
+  trie_head: the head of the trie to search, can be either a barcode trie or a hairpin trie.
+  read: the fastq read to search through
+  found_position: a pointer to an int which will be used as an out parameter, to store the position in the read the sequence was found at
+  return: the original index of the read in the hairpins or barcode array, or -1 if not found
+  */
+    int i, j;
+    char base;
+    trie_node *current_node;
+    end_node *end;
+    for (i = section_start; i < section_end; i++)
+    {
+        current_node = trie_head;
+        // search from i until we find a TERMINATOR
+        for (j = i; j < read.length(); j++)
+        {
+            base = read[j];
+            if (Base_In_Node(current_node, TERMINATOR))
+            {
+                // IF the current node can be terminated, return the found hairpin.
+                current_node = current_node->links[Get_Links_Position(TERMINATOR)];
+                end = current_node->end;
+                *found_position = i;
+                return end->original_seq_index;
+            }
+            else if (Base_In_Node(current_node, base))
+            {
+                // If we can continue traversing the trie, move to the next node
+                current_node = current_node->links[Get_Links_Position(base)];
+            }
+            else
+            {
+                // else, we have to start searching from the next position in the read.
+                break;
+            }
+        }
+        // last check if we've reached the end of the read, and the TERMINATOR node exists
+        if (Base_In_Node(current_node, TERMINATOR))
+        {
+            current_node = current_node->links[Get_Links_Position(TERMINATOR)];
+            end = current_node->end;
+            *found_position = i;
 
+            return end->original_seq_index;
+        }
+    }
+    *found_position = -1;
+    return -1;
+}
 
 
 
@@ -470,7 +571,7 @@ void Print_Barcodes(int num_barcode) {
 
 
 void Search_Barcodes_At_Index(string filename, int index, int barcode_length, 
-                                int num_reads_search, int *barcodes_found, int *barcodes_not_found)
+                                int num_reads_search, long *barcodes_found, long *barcodes_not_found)
 {
     // this function will only check for barcodes at the given index
     // search each line of the file (up to a certain point) and record matches at the required position.
@@ -480,10 +581,7 @@ void Search_Barcodes_At_Index(string filename, int index, int barcode_length,
     string line;
     
     int barcode_index = -1;
-    long line_count = 0;
-
-    int found = 0;
-    int not_found = 0;
+    long line_count = 0, found = 0, not_found = 0;
 
     while (getline(file, line) && (line_count / 4 < num_reads_search))
     {
@@ -503,8 +601,42 @@ void Search_Barcodes_At_Index(string filename, int index, int barcode_length,
             not_found++;
         }
     }
+
     *barcodes_found = found;
     *barcodes_not_found = not_found;
+}
+
+ResizeArray *Search_Barcodes_Section_Read(string filename, int index, int barcode_length, long num_to_check,
+                                long *out_found, long *out_not_found) {
+    // should this function search through the entire read or only a small subset like the above function
+    fstream file;
+    file.open(filename, ios::in);
+
+    string line;
+    
+    int barcode_index = -1, found_position = -1;
+    long line_count = 0, found = 0, not_found = 0;
+
+    //barcodes_found b_found = {0, 0, 0, ResizeArray(100)};
+    ResizeArray *positions = new ResizeArray(100);
+    // search each line and record the position barcode was found in.
+    while (getline(file, line) && (line_count / 4 < num_to_check)) {
+        line_count++;
+        if (line_count % 4 != 2) {
+            continue;
+        }
+        // scan through the given section of the read and check for barcode matches
+        barcode_index = locate_sequence_in_trie_subsection(barcode_single_trie_head, line, 0, index+10, &found_position);
+
+        if (barcode_index != -1) {
+            positions->Increment(found_position);
+            found++;
+        } else not_found++;
+    }
+
+    *out_found = found;
+    *out_not_found = not_found; 
+    return positions;
 }
 
 void Clear_Trie(trie_node *node)
@@ -546,55 +678,98 @@ void Clean_Up(int num_barcode)
 }
 
 
+void Print_Positions(ResizeArray *positions) {
+    for (int i = 0; i < positions->length(); i++) {
+        Rprintf("Pos %d, val: %ld\t", i, positions[i]);
+        if (i % 5 == 0) {
+            Rprintf("\n");
+        }
+    }
+}
+// [[Rcpp::export]]
+void testing_resize_array(int size, IntegerVector values) {
+    ResizeArray ra (2);
+
+    for (int i = 0; i < values.length(); i++) {
+        ra.Increment(values[i]);
+    }
+
+    Rprintf("Array size: %d\n", ra.length());
+    for (int i = 0; i < ra.length(); i++) {
+        Rprintf("Resize value: %d at pos: %d\n", ra[i], i);
+    }
+
+}
 
 // [[Rcpp::export]]
-void check_barcode_reads(String fastq, String barcodeseqs, 
-                int barcode_start, int barcode_length) {
+bool check_barcode_reads(String fastq, String barcodeseqs, 
+                int barcode_start, int barcode_length, int lines_to_search) {
 
     int num_barcode;
-    long num_read;
-    Rprintf("Fastq given: %s\n", fastq.get_cstring());
-    Rprintf("Barcodes given: %s\n", barcodeseqs.get_cstring());
+    bool finish_program = false;
+    //long num_read;
+    //Rprintf("Fastq given: %s\n", fastq.get_cstring());
+    //Rprintf("Barcodes given: %s\n", barcodeseqs.get_cstring());
+    try {
+        string barcode_file = barcodeseqs.get_cstring();
+        num_barcode = Get_Lines_In_File(barcode_file);
+        // First we need to read in all the barcodes
+        Read_In_Barcodes(barcode_file, num_barcode);
 
-    string barcode_file = barcodeseqs.get_cstring();
-    num_barcode = Get_Lines_In_File(barcode_file);
-    // First we need to read in all the barcodes
-    Read_In_Barcodes(barcode_file, num_barcode);
+        // then we need to sort the barcodes
+        // IF BARCODE SORTING NEEDS REVERSE READS AND STUFF THEN WE SHOULD USE OLD SORTING METHOD. NOT COUNTING SORT
+        // Sort_Barcodes(num_barcode, barcode_length); // THIS NEEDS TO BE PROPERLY FIGURED OUT. SHOULD BE ABLE TO USE COUNT SORT FROM HAIRPINR SORTING.
+        // ONLY NEED TO SORT IF ARE ALLOWING MISMATCHES?
+        // and the build the barcode trie for searching (each barcode node contains the current position in the barcode array, as well as the original position in the barcode array,
+        // which is why we need to sort them before building the trie, otherwise the current and original will be the same but the barcodes will be in a different position in the array)
+        // should we dynamically determine barcode length?
+        barcode_single_trie_head = Build_Trie_Barcodes(num_barcode, barcode_length); // are the barcodes going to be paired or not paired?? should I remove the dual indexed option?
 
-    // test print barcodes
-    //Print_Barcodes(num_barcode);
-    // then we need to sort the barcodes
-    // IF BARCODE SORTING NEEDS REVERSE READS AND STUFF THEN WE SHOULD USE OLD SORTING METHOD. NOT COUNTING SORT
-    // Sort_Barcodes(num_barcode, barcode_length); // THIS NEEDS TO BE PROPERLY FIGURED OUT. SHOULD BE ABLE TO USE COUNT SORT FROM HAIRPINR SORTING.
-    // ONLY NEED TO SORT IF ARE ALLOWING MISMATCHES?
-    // and the build the barcode trie for searching (each barcode node contains the current position in the barcode array, as well as the original position in the barcode array,
-    // which is why we need to sort them before building the trie, otherwise the current and original will be the same but the barcodes will be in a different position in the array)
-    barcode_single_trie_head = Build_Trie_Barcodes(num_barcode, barcode_length); // are the barcodes going to be paired or not paired?? should I remove the dual indexed option?
+        //long lines_to_search = 100000; 
+        string fastq_file = fastq.get_cstring();
 
-    int lines_to_search = 1000;
-    int barcodes_found = 0;
-    int barcodes_not_found = 0;
-    string fastq_file = fastq.get_cstring();
-    // then we need to actually search the file lines.
-    // quick search of every read line (to a point)
-    Rprintf("Checking if given barcode start index is valid.\n");
-    Search_Barcodes_At_Index(fastq_file, barcode_start, barcode_length, lines_to_search, &barcodes_found, &barcodes_not_found);
-    // sample test search of a fake read.
-    /*
-    string *fake_read = new string("ACAAAACGCGGGGGGG");
-    int barcode_position = 
-        locate_sequence_at_position_trie(barcode_single_trie_head, *fake_read, 4, barcode_length);
-    if (barcode_position != -1) {
-        Rprintf("barcode sequence found: #%d, seq: %s\n", barcode_position, barcodes[barcode_position]->sequence.c_str());
-    } else {
-        Rprintf("search failed\n");
+        long found, not_found;
+        double search_result;
+        // then we need to actually search the file lines.
+        // quick search of every read line (to a point)
+        Rprintf("Checking if given barcode start index is valid.\n");
+        Search_Barcodes_At_Index(fastq_file, barcode_start, barcode_length, lines_to_search, &found, &not_found);
+        
+        // once we've check the given position for barcodes, if we have a certain hit amount, proceed with program
+        // if we don't reach the threshold, we should search the whole read for barcode locations and give a break down
+        // of the best spots
+        search_result = (double) found / (double) lines_to_search;
+        if (search_result >= 0.8) {
+            Rprintf("Check Successful, continuing with program.\n") ;
+            Rprintf("Number of barcodes found: %ld\n", found);
+            Rprintf("Number of reads with no barcodes: %ld\n", not_found);
+            finish_program = true;
+        } else {
+            Rprintf("Invalid barcode start index given, with only %f percent of reads containing a barcode match. Checking for a better barcode start index.\n", 
+                    search_result * 100);
+            // we now need to search through a subset of the read to locate a better position for the barcode start
+            ResizeArray *positions_found = 
+                Search_Barcodes_Section_Read(fastq_file, barcode_start, barcode_length, lines_to_search, &found, &not_found);
+            long max_value;
+            int max_position = positions_found->Max(&max_value);
+            search_result = (double) max_value / (double) lines_to_search;
+            if (search_result >= .5) {
+                Rprintf("Check Unsuccessful. However, A potential barcode start location is %d, where %ld barcodes were found.\n", 
+                            max_position, max_value);
+            } else {
+                Rprintf("Check Unsuccessful. No location was found with a high number of barcodes. Did both %s and %s come from the same provider?\n", 
+                        barcode_file.c_str(), fastq_file.c_str());
+            }
+            //Rprintf("Found: %ld. Not Found: %ld\n", found, not_found);
+            positions_found->Delete();
+        }
+
+        Clean_Up(num_barcode);
+    } catch (std::exception e) {
+        Rprintf("An error occured: %s\n", e.what());
+        exit(10);
     }
-    */
-    Rprintf("\tNumber of reads checked: %d\n", lines_to_search);
-    Rprintf("\tNumber of reads with barcodes found at index %d: %d\n", barcode_start, barcodes_found);
-    Rprintf("\tNumber of reads with barcodes not found: %d\n", barcodes_not_found);
-
-    Clean_Up(num_barcode);
+    return finish_program;
 }
 
 //NumericVector timesTwo(NumericVector x) {

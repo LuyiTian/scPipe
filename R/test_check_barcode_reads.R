@@ -1,13 +1,14 @@
 #' @export
-test_check <- function(fastq, barcodes, bstart, blength, tmp_text) {
-  # this function is a test at the moment, not real representation of how it will
-  # work. This is just to test the c code.
-  # write the barcodes as a text file
-  barcodes <- read.csv(barcodes, header=FALSE)
-  write(barcodes$V2, file=tmp_text, ncolumns=1, sep="\n")
+test_check <- function(fastq, barcodes, bstart, blength, search_lines) {
+  # valid code for running our C++ program
+  barcodes <- read.csv(barcodes, header=FALSE, strip.white=TRUE)
+  tmp_barcode_file = paste0(getwd(), "/tmp_barcodes.txt")
+  on.exit({if(file.exists(tmp_barcode_file)) file.remove(tmp_barcode_file)}, add=TRUE)
+
+  write(barcodes$V2, file=tmp_barcode_file, ncolumns=1, sep="\n")
 
 
-  check_barcode_reads(fastq, tmp_text, bstart, blength)
+  contin = check_barcode_reads(fastq, tmp_barcode_file, bstart, blength, search_lines)
 
-  invisible()
+  return (contin)
 }
