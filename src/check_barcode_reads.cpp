@@ -125,7 +125,7 @@ int Get_Lines_In_File(string filename)
     return N;
 }
 
-void Read_In_Barcodes(string filename, int num_barcode)
+int Read_In_Barcodes(string filename)
 {
     /*
   Read in the barcodes from a given textfile, which needs to contain newline char seperated barcode entries.
@@ -133,17 +133,19 @@ void Read_In_Barcodes(string filename, int num_barcode)
   Barcodes get read into an a_barcode struct, along with other information,
   and the struct is then stored in the barcodes array.
   filename: a string of the file name to read from
-  return: void.
+  return: the number of barcodes read in.
   post-condition: barcodes contains structs of all the barcodes in the given file.
   */
     fstream file;
     //size_t len = 1000;
     file.open(filename, ios::in);
 
+    int num_barcode = Get_Lines_In_File(filename);
     barcodes = new a_barcode *[num_barcode];
     string line; /// allocate space for the line
     a_barcode *new_barcode;                          /// create a new_barcode struct variable
     
+
     int count = 0;
     //char *token;
     while (getline(file, line))
@@ -158,7 +160,7 @@ void Read_In_Barcodes(string filename, int num_barcode)
     }
     file.close();
 
-    Rprintf(" -- Number of Barcodes : %d\n", num_barcode);
+    return num_barcode;
 }
 
 ///////////// Management functions for building and traversing a Trie.
@@ -712,24 +714,18 @@ bool check_barcode_reads(String fastq, String barcodeseqs,
     //Rprintf("Barcodes given: %s\n", barcodeseqs.get_cstring());
     try {
         string barcode_file = barcodeseqs.get_cstring();
-        num_barcode = Get_Lines_In_File(barcode_file);
         // First we need to read in all the barcodes
-        Read_In_Barcodes(barcode_file, num_barcode);
+        num_barcode = Read_In_Barcodes(barcode_file);
 
         // then we need to sort the barcodes
-        // IF BARCODE SORTING NEEDS REVERSE READS AND STUFF THEN WE SHOULD USE OLD SORTING METHOD. NOT COUNTING SORT
-        // Sort_Barcodes(num_barcode, barcode_length); // THIS NEEDS TO BE PROPERLY FIGURED OUT. SHOULD BE ABLE TO USE COUNT SORT FROM HAIRPINR SORTING.
-        // ONLY NEED TO SORT IF ARE ALLOWING MISMATCHES?
-        // and the build the barcode trie for searching (each barcode node contains the current position in the barcode array, as well as the original position in the barcode array,
-        // which is why we need to sort them before building the trie, otherwise the current and original will be the same but the barcodes will be in a different position in the array)
-        // should we dynamically determine barcode length?
+        // Sort_Barcodes(num_barcode, barcode_length); // only need to sort if we are allowing mismatches in the check
         barcode_single_trie_head = Build_Trie_Barcodes(num_barcode, barcode_length); // are the barcodes going to be paired or not paired?? should I remove the dual indexed option?
 
         //long lines_to_search = 100000; 
         string fastq_file = fastq.get_cstring();
 
         long found, not_found;
-        double search_result;
+        double search_result, new_search_result;
         // then we need to actually search the file lines.
         // quick search of every read line (to a point)
         Rprintf("Checking if given barcode start index is valid.\n");
@@ -740,28 +736,26 @@ bool check_barcode_reads(String fastq, String barcodeseqs,
         // of the best spots
         search_result = (double) found / (double) lines_to_search;
         if (search_result >= 0.8) {
-            Rprintf("Check Successful, continuing with program.\n") ;
-            Rprintf("Number of barcodes found: %ld\n", found);
-            Rprintf("Number of reads with no barcodes: %ld\n", not_found);
+            Rprintf("Successful; continuing with program.\n") ;
+            //Rprintf("Number of barcodes found: %ld\n", found);
+            //Rprintf("Number of reads with no barcodes: %ld\n", not_found);
             finish_program = true;
         } else {
-            Rprintf("Invalid barcode start index given, with only %f percent of reads containing a barcode match. Checking for a better barcode start index.\n", 
-                    search_result * 100);
             // we now need to search through a subset of the read to locate a better position for the barcode start
             ResizeArray *positions_found = 
                 Search_Barcodes_Section_Read(fastq_file, barcode_start, barcode_length, lines_to_search, &found, &not_found);
             long max_value;
             int max_position = positions_found->Max(&max_value);
-            search_result = (double) max_value / (double) lines_to_search;
-            if (search_result >= .5) {
-                Rprintf("Check Unsuccessful. However, A potential barcode start location is %d, where %ld barcodes were found.\n", 
-                            max_position, max_value);
+            new_search_result = (double) max_value / (double) lines_to_search;
+            if (new_search_result >= .5) {
+                Rprintf("Invalid barcode start index given, with only %f percent of reads containing a barcode match. However, a better barcode start location is %d, where %f percent of barcodes were found.\n", 
+                            search_result * 100, max_position, new_search_result * 100);
             } else {
-                Rprintf("Check Unsuccessful. No location was found with a high number of barcodes. Did both %s and %s come from the same provider?\n", 
+                Rprintf("Unsuccessful. No location was found with a high number of barcode matches. Did both %s and %s come from the same provider?\n", 
                         barcode_file.c_str(), fastq_file.c_str());
             }
-            //Rprintf("Found: %ld. Not Found: %ld\n", found, not_found);
             positions_found->Delete();
+            delete positions_found;
         }
 
         Clean_Up(num_barcode);

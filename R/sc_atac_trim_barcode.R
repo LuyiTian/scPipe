@@ -120,7 +120,11 @@ sc_atac_trim_barcode = function(
         stop("Please pass bc_start and bc_length values")
       }
 
+      # this only works for .fastq files, not .fastq.gz Should be fixed for .gz files.
       # this should be where we do the subset check for correct bc_start positions.
+      if (!check_barcode_start_position(r1, bc_file, bc_start, bc_length, 10000)) {
+          stop("Please change bc_start and try again")
+      }
 
       out_vec = rcpp_sc_atac_trim_barcode(
         output_folder, 
