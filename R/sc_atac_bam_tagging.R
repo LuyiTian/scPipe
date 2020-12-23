@@ -50,7 +50,7 @@ sc_atac_bam_tagging <- function(inbam, output_folder = "",
   }
   
   
-  log_and_stats_folder       <- paste0(output_folder, "/log_and_stats/")
+  log_and_stats_folder       <- paste0(output_folder, "/scPipe_atac_stats/")
   dir.create(log_and_stats_folder, showWarnings = FALSE)
   log_file                   <- paste0(log_and_stats_folder, "log_file.txt")
   stats_file                 <- paste0(log_and_stats_folder, "stats_file_bam_tagging.txt")

@@ -39,7 +39,7 @@ sc_atac_aligning <- function (ref,
     stop("Input File readFile2 does not exist")    
   }
   
-  log_and_stats_folder <- paste0(output_folder, "/log_and_stats/")
+  log_and_stats_folder <- paste0(output_folder, "/scPipe_atac_stats/")
   dir.create(log_and_stats_folder, showWarnings = FALSE)
   log_file             <- paste0(log_and_stats_folder, "log_file.txt")
   stats_file           <- paste0(log_and_stats_folder, "stats_file_align.txt")
@@ -75,12 +75,13 @@ sc_atac_aligning <- function (ref,
     index       = indexPath,
     readfile1   = readFile1,
     readfile2   = readFile2, 
+    sortReadsByCoordinates = TRUE,
     output_file = outbam)
   
   write.csv(align_output_df, file = stats_file, row.names = FALSE, quote = FALSE)
   
   #generating the bam index
-  Rsamtools::sortBam(outbam, paste0(fileNameWithoutExtension, "_aligned_sorted"))
+  #Rsamtools::sortBam(outbam, paste0(fileNameWithoutExtension, "_aligned_sorted"))
   #Rsamtools::indexBam(outbam)
   Rsamtools::indexBam(paste0(fileNameWithoutExtension, "_aligned_sorted.bam"))
   
