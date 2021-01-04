@@ -33,6 +33,12 @@ params:
   gene_id_type: "GENE_ID_TYPE__"
 
 ---
+```{r, include=FALSE}
+getVal <- function(x, default = NULL) {
+  ifelse(is.null(x), default, x)
+}
+```
+
 ```{r, warning=FALSE, echo=FALSE, message=FALSE}
 library(scales)
 library(readr)
@@ -99,7 +105,7 @@ assume read1 contains the transcript
 
 # Data summary
 
-The organism is "`r params$organism`", and gene id type is "`r params$gene_id_type`".
+The organism is "`r getVal(params$organism), "unknown")`", and gene id type is "`r getVal(params$gene_id_type, "unknown")`".
 
 ## Overall barcode statistics
 
