@@ -5,20 +5,9 @@
 
 using namespace Rcpp;
 
-// testing_resize_array
-void testing_resize_array(int size, IntegerVector values);
-RcppExport SEXP _scPipe_testing_resize_array(SEXP sizeSEXP, SEXP valuesSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type size(sizeSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type values(valuesSEXP);
-    testing_resize_array(size, values);
-    return R_NilValue;
-END_RCPP
-}
 // check_barcode_reads
-bool check_barcode_reads(String fastq, String barcodeseqs, int barcode_start, int barcode_length, int lines_to_search);
-RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcode_startSEXP, SEXP barcode_lengthSEXP, SEXP lines_to_searchSEXP) {
+bool check_barcode_reads(String fastq, String barcodeseqs, int barcode_start, int barcode_length, int lines_to_search, double threshold);
+RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcode_startSEXP, SEXP barcode_lengthSEXP, SEXP lines_to_searchSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -27,7 +16,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type barcode_start(barcode_startSEXP);
     Rcpp::traits::input_parameter< int >::type barcode_length(barcode_lengthSEXP);
     Rcpp::traits::input_parameter< int >::type lines_to_search(lines_to_searchSEXP);
-    rcpp_result_gen = Rcpp::wrap(check_barcode_reads(fastq, barcodeseqs, barcode_start, barcode_length, lines_to_search));
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_barcode_reads(fastq, barcodeseqs, barcode_start, barcode_length, lines_to_search, threshold));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -262,8 +252,7 @@ END_RCPP
 RcppExport SEXP run_testthat_tests();
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_scPipe_testing_resize_array", (DL_FUNC) &_scPipe_testing_resize_array, 2},
-    {"_scPipe_check_barcode_reads", (DL_FUNC) &_scPipe_check_barcode_reads, 5},
+    {"_scPipe_check_barcode_reads", (DL_FUNC) &_scPipe_check_barcode_reads, 6},
     {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 14},
     {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 13},
     {"_scPipe_rcpp_sc_exon_mapping_df_anno", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping_df_anno, 13},
