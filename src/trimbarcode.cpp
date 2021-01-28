@@ -1,6 +1,7 @@
 //trim_barcode
 #include "trimbarcode.h"
 #include <string.h>
+#include <set>
 
 using namespace Rcpp;
 
@@ -540,7 +541,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         int umi_len
 ) {
     
-    std::vector<int> out_vect(3, 0);  // output vector of length 4 filled with zeroes
+    std::vector<int> out_vect(4, 0);  // output vector of length 4 filled with zeroes
     
     // Input parameters when rmlow is true
     // int min_qual = 20; // minq: the minimum base pair quality that we allowed (from scPipe wrapper_scPipeCPP.R)
@@ -682,7 +683,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
     }
     
     
-    
+    std::set<std::string> seq_2_set; // Set that will include the unique barcode sequences
     
     size_t _interrupt_ind = 0;
     // Assuming R1, R2, R3 all are of equal lengths.
@@ -720,6 +721,10 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
                 char * const seq2_seq = seq2->seq.s;
                 int seq2_namelen = seq2->name.l;
                 int seq2_seqlen = seq2->seq.l;
+                
+                // Rcout << "seq2_seq: " << seq2_seq << std::endl << std::endl;
+                seq_2_set.insert(std::string{seq2_seq});
+                // Rcout << "seq_2_set size: " << seq_2_set.size() << std::endl << std::endl;
                 
                 const int new_name_length1 = seq1_namelen + seq2_seqlen+1;
                 seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1); // allocate additional memory
@@ -824,14 +829,16 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
             gzclose(o_stream_gz_R3);
         }
     }
-    Rcpp::Rcout << "Total Reads: " << passed_reads << "\n";
+    Rcpp::Rcout << "Total reads: " << passed_reads << "\n";
     Rcpp::Rcout << "Total N's removed: " << removed_Ns << "\n";
-    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << "\n";
+    Rcpp::Rcout << "Total low quality reads removed: " << removed_low_qual << "\n";
+    Rcpp::Rcout << "Total barcodes: " << seq_2_set.size() << "\n";
     
     
     out_vect[0] = passed_reads;
     out_vect[1] = removed_Ns;
     out_vect[2] = removed_low_qual;
+    out_vect[3] = seq_2_set.size();
     
     return(out_vect);
 }
@@ -1011,7 +1018,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         bc2_end = id2_st + id2_len;
     }
     
-    
+    std::set<std::string> seq_2_set; // Set that will include the unique barcode sequences
     size_t _interrupt_ind = 0;
     // Assuming R1, R2, R3 all are of equal lengths.
     while (((l1 = kseq_read(seq1)) >= 0))

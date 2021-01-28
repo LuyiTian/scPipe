@@ -10,7 +10,8 @@
 #'
 #' @export
 #'
-sc_atac_cell_calling = function (mat, cell_calling, output_folder, genome_size = NULL, qc_per_bc_file = NULL){
+sc_atac_cell_calling = function(
+  mat, cell_calling, output_folder, genome_size = NULL, qc_per_bc_file = NULL, lower = NULL){
   
   if(cell_calling == 'emptydrops'){
     
@@ -19,7 +20,10 @@ sc_atac_cell_calling = function (mat, cell_calling, output_folder, genome_size =
     library(Matrix)
     
     set.seed(2019)
-    cell.out <- emptyDrops2(mat)
+    if(is.null(lower)){
+      lower = floor(0.1*ncol(mat))
+    }
+    cell.out <- emptyDrops2(mat, lower = lower)
     
     filter.out <- cell.out[S4Vectors::complete.cases(cell.out), ]
     
@@ -86,8 +90,7 @@ testEmptyDrops2 = function (m, lower = 100, niters = 10000, test.ambient = FALSE
   ambient.prop <- edgeR::goodTuringProportions(ambient.prof)
   if (!test.ambient) {
     keep <- !ambient
-  }
-  else {
+  } else {
     keep <- umi.sum > 0L
   }
   if (!is.null(ignore)) {
