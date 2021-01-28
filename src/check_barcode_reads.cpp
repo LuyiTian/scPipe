@@ -76,7 +76,6 @@ int Read_In_Barcodes(string filename)
     //char *token;
     while (getline(file, line))
     {
-        Rprintf("%s\n", line.c_str());
         new_barcode = new a_barcode; // new makes a pointer
         new_barcode->sequence = line;
         new_barcode->original_pos = count;
@@ -283,7 +282,6 @@ ResizeArray *Search_Barcodes_Section_Read(Trie* this_trie, string filename, int 
 
     string line;
     */
-    Rprintf("\tEntering section read function\n");
     gzFile fq_gz;
     char c_line[MAX_LL];
 
