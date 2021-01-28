@@ -5,6 +5,22 @@
 
 using namespace Rcpp;
 
+// check_barcode_reads
+bool check_barcode_reads(String fastq, String barcodeseqs, int barcode_start, int barcode_length, int lines_to_search, double threshold);
+RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcode_startSEXP, SEXP barcode_lengthSEXP, SEXP lines_to_searchSEXP, SEXP thresholdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< String >::type fastq(fastqSEXP);
+    Rcpp::traits::input_parameter< String >::type barcodeseqs(barcodeseqsSEXP);
+    Rcpp::traits::input_parameter< int >::type barcode_start(barcode_startSEXP);
+    Rcpp::traits::input_parameter< int >::type barcode_length(barcode_lengthSEXP);
+    Rcpp::traits::input_parameter< int >::type lines_to_search(lines_to_searchSEXP);
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_barcode_reads(fastq, barcodeseqs, barcode_start, barcode_length, lines_to_search, threshold));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_sc_trim_barcode_paired
 void rcpp_sc_trim_barcode_paired(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::CharacterVector r2, Rcpp::NumericVector bs1, Rcpp::NumericVector bl1, Rcpp::NumericVector bs2, Rcpp::NumericVector bl2, Rcpp::NumericVector us, Rcpp::NumericVector ul, Rcpp::NumericVector rmlow, Rcpp::NumericVector rmN, Rcpp::NumericVector minq, Rcpp::NumericVector numbq, Rcpp::LogicalVector write_gz);
 RcppExport SEXP _scPipe_rcpp_sc_trim_barcode_paired(SEXP outfqSEXP, SEXP r1SEXP, SEXP r2SEXP, SEXP bs1SEXP, SEXP bl1SEXP, SEXP bs2SEXP, SEXP bl2SEXP, SEXP usSEXP, SEXP ulSEXP, SEXP rmlowSEXP, SEXP rmNSEXP, SEXP minqSEXP, SEXP numbqSEXP, SEXP write_gzSEXP) {
@@ -236,6 +252,7 @@ END_RCPP
 RcppExport SEXP run_testthat_tests();
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_scPipe_check_barcode_reads", (DL_FUNC) &_scPipe_check_barcode_reads, 6},
     {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 14},
     {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 13},
     {"_scPipe_rcpp_sc_exon_mapping_df_anno", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping_df_anno, 13},
