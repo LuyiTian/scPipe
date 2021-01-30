@@ -36,23 +36,18 @@ sc_atac_trim_barcode = function(
     dir.create(output_folder,recursive=TRUE)
     cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
   }
-
-
-  log_and_stats_folder = paste0(output_folder, "/log_and_stats/")
+ 
+  log_and_stats_folder <- paste0(output_folder, "/scPipe_atac_stats/")
   dir.create(log_and_stats_folder, showWarnings = F)
-  log_file = paste0(log_and_stats_folder, "log_file.txt")
-  stats_file = paste0(log_and_stats_folder, "stats_file_trimbarcode.txt")
+  
+  log_file             <- paste0(log_and_stats_folder, "log_file.txt")
+  stats_file           <- paste0(log_and_stats_folder, "stats_file_trimbarcode.txt")
   if(!file.exists(log_file)) file.create(log_file)
   file.create(stats_file)
 
   cat(
-    paste0(
-      "trimbarcode starts at ",
-      as.character(Sys.time()),
-      "\n"
-    ),
-    file = log_file, append = T)
-
+    paste0( "trimbarcode starts at ", as.character(Sys.time()),"\n"), file = log_file, append = TRUE)
+  
   if (substr(r1, nchar(r1) - 2, nchar(r1)) == ".gz") {
     write_gz = TRUE
   }
@@ -107,12 +102,13 @@ sc_atac_trim_barcode = function(
         umi_start,
         umi_length)
 
-      cat("Total Reads: ", out_vec[1],
-          "\nTotal N's removed: ", out_vec[2],
-          "\nremoved_low_qual: ", out_vec[3],
+      cat("Total Reads: ", out_vec[1], 
+          "\nTotal N's removed: ", out_vec[2], 
+          "\nremoved_low_qual: ", out_vec[3], 
+          "\nUnique sequences read in barcode file: ", out_vec[4],
           "\n",
-          file = stats_file, append = T)
-
+          file = stats_file, append = TRUE)
+      
     }
     else {
       cat("Using barcode CSV file, since barcode FastQ file is not passed \n")
@@ -145,14 +141,17 @@ sc_atac_trim_barcode = function(
         id2_st,
         id2_len)
 
-      cat("Total Reads: ", out_vec[1],
-          "\nTotal N's removed: ", out_vec[2],
-          "\nremoved_low_qual: ", out_vec[3],
-          "\nExact match Reads: ", out_vec[4],
-          "\nApprox Match Reads: ", out_vec[5],
+      bc <- data.table::fread("../new_project_collab/seqATAC/data/barcode.csv", select = 2, col.names = "bc")
+      
+      cat("Total Reads: ", out_vec[1], 
+          "\nTotal N's removed: ", out_vec[2], 
+          "\nremoved_low_qual: ", out_vec[3], 
+          "\nExact match Reads: ", out_vec[4], 
+          "\nApprox Match Reads: ", out_vec[5], 
+          "\nTotal barcodes: ", length(unique(bc$bc)),
           "\n",
-          file = stats_file, append = T)
-
+          file = stats_file, append = TRUE)
+      
     }
   }else{
     stop("Barcode file is mandatory")
@@ -164,10 +163,10 @@ sc_atac_trim_barcode = function(
       "trimbarcode finishes at ",
       as.character(Sys.time()),
       "\n\n"
-    ),
-    file = log_file, append = T)
-
-  return(out_vec)
+    ), 
+    file = log_file, append = TRUE)
+  
+  # return(out_vec)
 }
 
 

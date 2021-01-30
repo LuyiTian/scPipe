@@ -26,7 +26,7 @@ library(BiocGenerics)
 #' 
 sc_atac_feature_counting <- function(
   insortedbam, 
-  feature_input, 
+  feature_input  = NULL, 
   bam_tags       = list(bc="CB", mb="OX"), 
   feature_type   = "peak", 
   organism       = NULL,
@@ -36,14 +36,21 @@ sc_atac_feature_counting <- function(
   bin_size       = NULL, 
   yieldsize      = 1000000,
   mapq           = 0,
-  blacklist      = NULL, # use a better term, e.g. excluded_regions
+  exclude_regions= FALSE, 
+  excluded_regions_filename = NULL,
   output_folder  = "",
-  fix_chr        = "none" # should be either one of these: c("none", "blacklist", "feature", "both")
+  fix_chr        = "none" # should be either one of these: c("none", "excluded_regions", "feature", "both")
 ){
   
   init_time = Sys.time()
   
-  stopifnot(fix_chr %in% c("none", "blacklist", "feature", "both"))
+  available_organisms = c("hg19",
+                          "hg38",
+                          "mm10")
+  
+  if(!is.null(organism)) stopifnot(organism %in% available_organisms)
+  
+  stopifnot(fix_chr %in% c("none", "excluded_regions", "feature", "both"))
   
   if(output_folder == ''){
     output_folder <- file.path(getwd(), "scPipe-atac-output")
@@ -55,9 +62,9 @@ sc_atac_feature_counting <- function(
   }
   
   
-  # initate log file and location for stats in scPipe_atac_stats
+  # initiate log file and location for stats in scPipe_atac_stats
   log_and_stats_folder <- paste0(output_folder, "/scPipe_atac_stats/")
-  dir.create(log_and_stats_folder, showWarnings = F)
+  dir.create(log_and_stats_folder, showWarnings = FALSE)
   log_file             <- paste0(log_and_stats_folder, "log_file.txt")
   stats_file           <- paste0(log_and_stats_folder, "stats_file_align.txt")
   if(!file.exists(log_file)) file.create(log_file)
@@ -70,9 +77,9 @@ sc_atac_feature_counting <- function(
       as.character(Sys.time()),
       "\n"
     ), 
-    file = log_file, append = T)
+    file = log_file, append = TRUE)
   
-
+  
   if(feature_type == 'genome_bin'){
     # TODO: test the format of the fasta file here and stop if not proper format
     cat("`genome bin` feature type is selected for feature input. reading the genome fasta file ...", "\n")
@@ -93,20 +100,85 @@ sc_atac_feature_counting <- function(
       file.remove(out_bed_filename)
     }
     
-    rcpp_fasta_bin_bed_file(feature_input, out_bed_filename, bin_size)
-    
-    # Check if file was created
-    if(file.exists(out_bed_filename)) {
-      cat("Generated the genome bin file:\n", out_bed_filename, "\n")
-    }
-    else {
-      stop("File ", out_bed_filename, "file was not created.")
+    if(!is.null(feature_input)){
+      
+      rcpp_fasta_bin_bed_file(feature_input, out_bed_filename, bin_size)
+      
+      # Check if file was created
+      if(file.exists(out_bed_filename)) {
+        cat("Generated the genome bin file:\n", out_bed_filename, "\n")
       }
+      else {
+        stop("File ", out_bed_filename, "file was not created.")
+      }
+      
+      ## End if is.null
+    } else{
+      if(!is.null(organism)){
+        # Do something
+        # Use organism data sizes saved in repository
+        
+        organism_files     <- list.files(system.file("extdata/organism_data/", package = "scPipe", mustWork = TRUE))
+        sizes_filename_aux <- grep(pattern = organism, x = organism_files, value = TRUE) %>% 
+          grep(pattern     <- "size", x = ., value = TRUE)
+        
+        sizes_filename = system.file(paste0("extdata/organism_data/", sizes_filename_aux), package = "scPipe", mustWork = TRUE)
+        
+        sizes_df = read.table(sizes_filename, header = FALSE, col.names = c("V1", "V2"))
+        
+        sizes_df_aux = sizes_df %>% 
+          dplyr::group_by(V1) %>% 
+          dplyr::mutate(V3 = floor(V2/bin_size),
+                 V4 = bin_size*V3) %>% 
+          dplyr::ungroup()
+        
+        
+        
+        out_bed <- purrr::map_df(1:nrow(sizes_df_aux), function(i){
+          
+          aux_i        <- sizes_df_aux %>% dplyr::slice(i)
+          seq_aux_end  <- seq(from = bin_size, to = aux_i$V4, by = bin_size)
+          seq_aux_init <- seq_aux_end - bin_size + 1
+          
+          if(seq_aux_end[length(seq_aux_end)] == aux_i$V2){
+            last_row_init <- c()
+            last_row_end  <- c()
+          } else{
+            last_row_init <- seq_aux_end[length(seq_aux_end)] + 1
+            last_row_end  <- aux_i$V2
+          }
+          
+          options(scipen = 999) # To prevent scientific notation
+          out_df <- dplyr::tibble(init = c(seq_aux_init, last_row_init), 
+                                 end = c(seq_aux_end, last_row_end)
+                                 ) %>% 
+            dplyr::mutate(name = aux_i$V1, .before = init)
+          
+          return(out_df)
+        })
+        
+        write.table(out_bed, file = out_bed_filename, row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
+        
+        # Check if file was created
+        if(file.exists(out_bed_filename)) {
+          cat("Generated the genome bin file:\n", out_bed_filename, "\n")
+        }
+        else {
+          stop("File ", out_bed_filename, "file was not created.")
+        }
+        
+        
+        
+      } else{
+        stop("Either organism or feature_input should be provided.")
+      }
+    } # End else is.null(genome_size)
+    
     # feature_input <- genome_bin
-    }
+  }
   
   cat("Creating GAlignment object for the sorted BAM file...\n")
-
+  
   param <- Rsamtools::ScanBamParam(tag = as.character(bam_tags),  mapqFilter=mapq)
   bamfl <- Rsamtools::BamFile(insortedbam, yieldSize = yieldsize)
   open(bamfl)
@@ -134,10 +206,10 @@ sc_atac_feature_counting <- function(
                                          sub('\\..[^\\.]*$', 
                                              '', 
                                              basename(feature_input)
-                                             ), "_fixedchr.bed"
-                                         ) # remove extension and append output folder
+                                         ), "_fixedchr.bed"
+      ) # remove extension and append output folder
       
-      # Try to read first 5 rows of blacklist file to see if the format is correct
+      # Try to read first 5 rows of excluded_regions file to see if the format is correct
       feature_head <- read.table(feature_input, nrows = 5)
       if(ncol(feature_head) != 3){
         warning("Feature file provided does not contain 3 columns. Cannot append chr")
@@ -153,71 +225,91 @@ sc_atac_feature_counting <- function(
       }
       else {
         stop("File ", out_bed_filename_feature, "file was not created.")
-        }
-    
-  }
-  
-  
-  if(fix_chr %in% c("blacklist", "both")){
-    if(!is.null(blacklist)){
-      
-      out_bed_filename_blacklist <- paste0(output_folder, "/", 
-                                          sub('\\..[^\\.]*$', 
-                                              '', 
-                                              basename(blacklist)
-                                              ), "_fixedchr.bed"
-                                          ) # remove extension and append output folder
-     
-       # Try to read first 5 rows of blacklist file to see if the format is correct
-      blacklist_head <- read.table(blacklist, nrows = 5)
-      if(ncol(blacklist_head) != 3){
-        warning("Blacklist file provided does not contain 3 columns. Cannot append chr")
-        break
       }
       
-      rcpp_append_chr_to_bed_file(blacklist, out_bed_filename_blacklist)
-      
-      # Check if file was created
-      if(file.exists(out_bed_filename_blacklist)) {
-        cat("Appended 'chr' to blacklist file and output created in:", out_bed_filename_blacklist, "\n")
-      }
-      else {
-        stop("File ", out_bed_filename_blacklist, "file was not created.")
-        }
     }
     
-  } # end if blacklist
+    
+    if(fix_chr %in% c("excluded_regions", "both")){
+      if(!is.null(excluded_regions_filename)){
+        
+        out_bed_filename_excluded_regions <- paste0(output_folder, "/", 
+                                                    sub('\\..[^\\.]*$', 
+                                                        '', 
+                                                        basename(excluded_regions_filename)
+                                                    ), "_fixedchr.bed"
+        ) # remove extension and append output folder
+        
+        # Try to read first 5 rows of excluded_regions file to see if the format is correct
+        excluded_regions_head <- read.table(excluded_regions_filename, nrows = 5)
+        if(ncol(excluded_regions_head) != 3){
+          warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
+          break
+        }
+        
+        rcpp_append_chr_to_bed_file(excluded_regions_filename, out_bed_filename_excluded_regions)
+        
+        # Check if file was created
+        if(file.exists(out_bed_filename_excluded_regions)) {
+          cat("Appended 'chr' to excluded_regions file and output created in:", out_bed_filename_excluded_regions, "\n")
+        }
+        else {
+          stop("File ", out_bed_filename_excluded_regions, "file was not created.")
+        }
+      }
+      
+    } # end if excluded_regions
   }
   
   ############################### end fix_chr
   
-  # ______________ need to add the blacklist filtering here , relevant param has been added to the function i.e. blacklist.
+  # ______________ need to add the excluded_regions filtering here , relevant param has been added to the function i.e. excluded_regions.
   # this param should take either a tab delimited file in the format of feature_input or keywords "hs", "mm" which would load a stored GAlignment file related to them
   
-  number_of_lines_to_remove    <- 0
-  if(!is.null(blacklist)){
-    blacklist.gr               <- rtracklayer::import(blacklist)
+  number_of_lines_to_remove <- 0
+  
+  if(exclude_regions){
     
-    overlaps_blacklist_feature <- findOverlaps(blacklist.gr, feature.gr, maxgap = -1L, minoverlap = 0L) # Find overlaps
-    lines_to_remove            <- as.data.frame(overlaps_blacklist_feature)$subjectHits # Lines to remove in feature file
-    number_of_lines_to_remove  <- length(lines_to_remove)
+    if(is.null(excluded_regions_filename) & !is.null(organism)){
+      ## If excluded_regions_filename is null but organism is not, then read the file from system
+      
+      organism_files                <- list.files(system.file("data/extdata/annotations/", package = "scPipe", mustWork = TRUE))
+      excluded_regions_filename_aux <- grep(pattern = organism, x = organism_files, value = TRUE) %>% 
+        grep(pattern = "blacklist", x = ., value = TRUE)
+      excluded_regions_filename     <- system.file(paste0("data/extdata/annotations/", excluded_regions_filename_aux), package = "scPipe", mustWork = TRUE)
+    } 
     
-    if(number_of_lines_to_remove > 0){ # If there are lines to remove
-      feature.gr.df            <- as.data.frame(feature.gr)
-      lines_to_keep            <- setdiff(1:nrow(feature.gr.df), lines_to_remove)
-      feature.gr               <- feature.gr[lines_to_keep, ]
+    if(!is.null(excluded_regions_filename)){
+      excluded_regions.gr               <- rtracklayer::import(excluded_regions_filename)
+      overlaps_excluded_regions_feature <- findOverlaps(excluded_regions.gr, feature.gr, maxgap = -1L, minoverlap = 0L) # Find overlaps
+      lines_to_remove                   <- as.data.frame(overlaps_excluded_regions_feature)$subjectHits # Lines to remove in feature file
+      number_of_lines_to_remove         <- length(lines_to_remove)
+      
+      if(number_of_lines_to_remove > 0){ # If there are lines to remove
+        feature.gr.df            <- as.data.frame(feature.gr)
+        lines_to_keep            <- setdiff(1:nrow(feature.gr.df), lines_to_remove)
+        feature.gr               <- feature.gr[lines_to_keep, ]
+      } # End if(number_of_lines_to_remove > 0)
+      
+    } else{
+      warning("Parameter exclude_regions was TRUE but no known organism or excluded_regions_filename provided. Proceding without excluding regions.")
     }
-  }
+    
+    
+  } # End if(exclude_regions)
+  
   
   # Log file
-  log_file_name <- paste0(output_folder, "/log_file.txt")
-  file.create(log_file_name)
+  log_and_stats_folder       <- paste0(output_folder, "/log_and_stats/")
+  dir.create(log_and_stats_folder, showWarnings = FALSE)
+  log_file                   <- paste0(log_and_stats_folder, "log_file.txt")
+  if(!file.exists(log_file)) file.create(log_file)
   
   cat("Average number of reads per CB:", average_number_of_lines_per_CB, "\n", 
-      file = log_file_name, append = T)
+      file = log_file, append = TRUE)
   
   cat("Number of regions removed from feature_input:", number_of_lines_to_remove, "\n", 
-      file = log_file_name, append = T)
+      file = log_file, append = TRUE)
   
   # Overlaps
   median_feature_overlap <- median(ranges(feature.gr)@width)
@@ -290,19 +382,22 @@ sc_atac_feature_counting <- function(
   matrixData           <- matrixData %>%
     dplyr::select(-1) %>%
     data.table::as.data.table() %>%
-    as.matrix()
+    as.matrix() %>%
+    replace(is.na(.), 0)
   
   # it still bugs me how there are no dimnames in the Matrix. Trying to add them manually here
   dimnames(matrixData)  <-  list(matrixData.old[1] %>% rownames(), matrixData.old %>% dplyr::select(-1) %>% colnames())
-
+  
   # call sc_atac_cell_callling.R here ... still ongoing
-  sc_atac_cell_calling(mat = matrixData, cell_calling = cell_calling, output_folder = output_folder)
+  if(cell_calling){
+    sc_atac_cell_calling(mat = matrixData, cell_calling = cell_calling, output_folder = output_folder)
+  }
   
   saveRDS(matrixData, file = paste(output_folder,"/feature_matrix.rds",sep = ""))
   cat("Feature matrix generated: ", paste(output_folder,"/feature_matrix.rds",sep = "") , "\n")
   
   # here you need to convert the NAs to 0s if the sparse option to create the sparse Matrix properly
-  sparseM <- Matrix(matrixData%>%replace(is.na(.), 0), sparse=TRUE)
+  sparseM <- Matrix(matrixData, sparse=TRUE)
   cat("Sparse matrix generated", "\n")
   writeMM(obj = sparseM, file=paste(output_folder,"/sparse_matrix.mtx", sep =""))
   cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
@@ -324,6 +419,27 @@ sc_atac_feature_counting <- function(
   features_per_cell  <- Matrix::colSums(sparseM>0)
   cells_per_feature  <- Matrix::rowSums(sparseM>0)
   
+  # generating the data frames for downstream use 
+  info_per_cell <- data.frame(counts_per_cell = counts_per_cell) %>% 
+    tibble::rownames_to_column(var = "cell") %>% 
+    full_join(
+      data.frame(features_per_cell = features_per_cell) %>% 
+        tibble::rownames_to_column(var = "cell"),
+      by = "cell"
+    )
+  
+  info_per_feature = data.frame(counts_per_feature = counts_per_feature) %>% 
+    tibble::rownames_to_column(var = "feature") %>% 
+    full_join(
+      data.frame(cells_per_feature = cells_per_feature) %>% 
+        tibble::rownames_to_column(var = "feature"),
+      by = "feature"
+    )
+  
+
+  write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
+  write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
+
   # plots
   #hist(log10(counts_per_cell+1),main='counts per cell',col='wheat')
   #hist(log10(features_per_cell+1), main='features per cell', col='wheat')
@@ -337,7 +453,7 @@ sc_atac_feature_counting <- function(
   # plotting examples end here #############
   
   end_time = Sys.time()
-
+  
   print(end_time - init_time)
   
   cat(
@@ -346,7 +462,7 @@ sc_atac_feature_counting <- function(
       as.character(Sys.time()),
       "\n\n"
     ), 
-    file = log_file, append = T)
+    file = log_file, append = TRUE)
   
-  }
+}
 
