@@ -187,6 +187,14 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
     {
         // qual check before we do anything
         if (filter_settings.if_check_qual)
+
+        // check for validity of barcode and UMI positions
+        if (id2_st + id2_len > l2) continue;
+        // validity of barcode one, if required
+        if ((TWO_INDEX_NO_UMI || TWO_INDEX_WITH_UMI) && (id1_st + id2_len > l1)) continue;
+        // validity of UMI, if required
+        if ((TWO_INDEX_WITH_UMI || ONE_INDEX_WITH_UMI) && (umi_st + umi_len > l2)) continue;
+        
         { // Only check barcode/UMI quality
             if (!(check_qual(seq1->seq.s, bc1_end, filter_settings.min_qual, filter_settings.num_below_min) &&
                  check_qual(seq2->seq.s, bc2_end, filter_settings.min_qual, filter_settings.num_below_min)))
