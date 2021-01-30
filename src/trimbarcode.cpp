@@ -409,6 +409,13 @@ void paired_fastq_to_fastq(
     {
         if (++_interrupt_ind % 4096 == 0) checkUserInterrupt();
 
+        // validity of input parameters against length of read
+        if (id2_st + id2_len > l2) continue; // check for barcode in read 2
+        // check and test if barcode in read 1 is beyond read 1 length
+        if ((state == TWO_INDEX_NO_UMI || state == TWO_INDEX_WITH_UMI) && (id1_st + id1_len > l1)) continue; 
+        // check for a UMI if we have it
+        if (state == TWO_INDEX_WITH_UMI || state == ONE_INDEX_WITH_UMI) if (umi_st + umi_len > l2)) continue;
+
         // qual check before we do anything
         if (filter_settings.if_check_qual)
         {
