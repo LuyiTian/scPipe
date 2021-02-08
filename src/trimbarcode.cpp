@@ -410,6 +410,13 @@ void paired_fastq_to_fastq(
     {
         if (++_interrupt_ind % 4096 == 0) checkUserInterrupt();
 
+        // validity of input parameters against length of read
+        if (id2_st + id2_len > l2) continue; // check for barcode in read 2
+        // check and test if barcode in read 1 is beyond read 1 length
+        if ((state == TWO_INDEX_NO_UMI || state == TWO_INDEX_WITH_UMI) && (id1_st + id1_len > l1)) continue; 
+        // check for a UMI if we have it
+        if ((state == TWO_INDEX_WITH_UMI || state == ONE_INDEX_WITH_UMI) && (umi_st + umi_len > l2)) continue;
+
         // qual check before we do anything
         if (filter_settings.if_check_qual)
         {
@@ -509,7 +516,7 @@ bool find_N(kseq_t *seq)
 
 
 // Very similar to check_qual(). Should probably merge eventually.
-bool sc_atac_check_qual(char *qual_s, int trim_n, int thr, int below_thr){
+bool atac_check_qual(char *qual_s, int trim_n, int thr, int below_thr){
     int not_pass = 0;
     for (int i = 0; i < trim_n; i++){
         // https://support.illumina.com/help/BaseSpace_OLH_009008/Content/Source/Informatics/BS/QualityScoreEncoding_swBS.htm
@@ -692,6 +699,10 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         if (++_interrupt_ind % 4096 == 0) checkUserInterrupt();
         passed_reads++;
         
+        // check if barcode position is valid for this read
+        if (id1_st >= 0) {
+            if (id1_st + id_len >= l1) continue;
+        }
         
         char * const seq1_name = seq1->name.s;
         char * const seq1_seq = seq1->seq.s;
@@ -717,6 +728,15 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         for(int i=0;i<seq2_list.size();i++){
             kseq_t* seq2 = seq2_list[i];
             if (l2 = kseq_read(seq2) >= 0){
+
+                // check this read is long enough for id2 and umi positions
+                if (id2_st >= 0) {
+                    if (id2_st + id_len >= l2) continue;
+                }
+                if (umi_st >= 0) {
+                    if (umi_st + umi_len >= l2) continue;
+                }
+
                 char * const seq2_name = seq2->name.s;
                 char * const seq2_seq = seq2->seq.s;
                 int seq2_namelen = seq2->name.l;
