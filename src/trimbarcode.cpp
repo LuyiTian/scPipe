@@ -516,7 +516,7 @@ bool find_N(kseq_t *seq)
 
 
 // Very similar to check_qual(). Should probably merge eventually.
-bool atac_check_qual(char *qual_s, int trim_n, int thr, int below_thr){
+bool sc_atac_check_qual(char *qual_s, int trim_n, int thr, int below_thr){
     int not_pass = 0;
     for (int i = 0; i < trim_n; i++){
         // https://support.illumina.com/help/BaseSpace_OLH_009008/Content/Source/Informatics/BS/QualityScoreEncoding_swBS.htm
@@ -701,7 +701,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         
         // check if barcode position is valid for this read
         if (id1_st >= 0) {
-            if (id1_st + id_len >= l1) continue;
+            if (id1_st + id1_len >= l1) continue;
         }
         
         char * const seq1_name = seq1->name.s;
@@ -714,7 +714,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         int seq3_namelen;
         int seq3_seqlen;
         if (R3){
-            if(l3 = kseq_read(seq3) >= 0){
+            if((l3 = kseq_read(seq3)) >= 0){
                 seq3_name = seq3->name.s;
                 seq3_seq = seq3->seq.s;
                 seq3_namelen = seq3->name.l;
@@ -727,11 +727,11 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         
         for(int i=0;i<seq2_list.size();i++){
             kseq_t* seq2 = seq2_list[i];
-            if (l2 = kseq_read(seq2) >= 0){
+            if ((l2 = kseq_read(seq2)) >= 0){
 
                 // check this read is long enough for id2 and umi positions
                 if (id2_st >= 0) {
-                    if (id2_st + id_len >= l2) continue;
+                    if (id2_st + id2_len >= l2) continue;
                 }
                 if (umi_st >= 0) {
                     if (umi_st + umi_len >= l2) continue;
@@ -1060,7 +1060,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         int seq3_namelen;
         int seq3_seqlen;
         if (R3){
-            if(l3 = kseq_read(seq3) >= 0){
+            if((l3 = kseq_read(seq3)) >= 0){
                 seq3_name = seq3->name.s;
                 seq3_seq = seq3->seq.s;
                 seq3_namelen = seq3->name.l;
