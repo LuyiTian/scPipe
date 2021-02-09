@@ -11,7 +11,11 @@
 #' @export
 #'
 
-sc_atac_create_sce <- function(input_folder, organism=NULL, feature_type=NULL, pheno_data=NULL, report=FALSE) {
+sc_atac_create_sce <- function(input_folder, 
+                               organism     = NULL, 
+                               feature_type = NULL, 
+                               pheno_data   = NULL, 
+                               report       = FALSE) {
   
   if(input_folder == ''){
     input_folder <- file.path(getwd(), "scPipe-atac-output")
@@ -22,45 +26,49 @@ sc_atac_create_sce <- function(input_folder, organism=NULL, feature_type=NULL, p
     break;
   }
   
-  feature_cnt <- readMM(file.path(input_folder, "sparse_matrix.mtx"))
-  cell_stat   <- read.csv(file.path(input_folder, "scPipe_atac_stat", "filtered_stats_per_cell.csv"), row.names=1)
+  feature_cnt   <- readMM(file.path(input_folder, "sparse_matrix.mtx"))
+  cell_stats    <- read.csv(file.path(input_folder, "scPipe_atac_stat", "filtered_stats_per_cell.csv"), row.names=1)
+  feature_stats <- read.csv(file.path(input_folder, "scPipe_atac_stat", "filtered_stats_per_feature.csv"))
   
-  # need to change from here....
-  demultiplex_stat <- read.csv(file.path(input_folder, "stat", "overall_stat.csv"))
-  UMI_dup_stat <- read.csv(file.path(input_folder, "stat", "UMI_duplication_count.csv"))
+  # need to change from here.... (check whether I need to filter before saving to the SCE object)
   
-  gene_cnt = gene_cnt[, order(colnames(gene_cnt))]
-  cell_stat = cell_stat[order(rownames(cell_stat)), ]
+  # can I order a matrix like a csv file like below? test...
+  feature_cnt      <- feature_cnt[, order(colnames(feature_cnt))]
+  cell_stat        <- cell_stat[order(rownames(cell_stat)), ]
   
+  # generating the SCE object
+  sce                         <- SingleCellExperiment(assays = list(counts = as.matrix(feature_cnt)))
+  sce@metadata$scPipe$version <- packageVersion("scPipe")  # set version information
   
-  sce = SingleCellExperiment(assays = list(counts =as.matrix(gene_cnt)))
-  sce@metadata$scPipe$version = packageVersion("scPipe")  # set version information
   if(!is.null(organism)){
-    organism(sce) = organism
+    organism(sce) <- organism
   }
-  if(!is.null(gene_id_type)){
-    gene_id_type(sce) = gene_id_type
-  }
-  QC_metrics(sce) = cell_stat
-  if(!is.null(pheno_data)){
-    colData(sce) = cbind(colData(sce), pheno_data[order(rownames(pheno_data)),])
+  if(!is.null(feature_type)){
+    feature_type(sce) <- feature_type
   }
   
-  demultiplex_info(sce) = demultiplex_stat
-  UMI_dup_info(sce) = UMI_dup_stat
+  QC_metrics(sce) <- cell_stats
+  
+  if(!is.null(pheno_data)){
+    colData(sce) <- cbind(colData(sce), pheno_data[order(rownames(pheno_data)),])
+  }
+  
+  feature_info(sce) <- feature_stats
+  
   #if(any(grepl("^ERCC-", rownames(sce)))){
   #  isSpike(sce, "ERCC") <- grepl("^ERCC-", rownames(sce))
   #}
   
   
   if(report){
-    create_report(sample_name=basename(datadir),
-                  outdir=datadir,
-                  organism=organism,
-                  gene_id_type=gene_id_type)
+    sc_atac_create_report(input_folder = file.path(getwd(), "scPipe-atac-output/scPipe_atac_stats"),
+                          output_folder= input_folder,
+                          sample_name  = NULL,
+                          organism     = organism,
+                          feature_type = feature_type)
   }
   
   
   return(sce)
-
+  
 }

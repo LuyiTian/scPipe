@@ -1,5 +1,5 @@
 ---
-title: "sc_atac report"
+title: "scPipe_atac report"
 author: ""
 date: "`r Sys.Date()`"
 output: html_document
@@ -18,18 +18,30 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(readr)
 library(ggplot2)
+library(knitr)
 
 theme_set(theme_bw())
 
 ```
 
+## Global Information
 
+```{r}
+trimbarcode_stats_filename    <- paste0(params$log_and_stats_folder, "/stats_file_trimbarcode.txt")
+trimbarcode_stats             <- readr::read_csv(trimbarcode_stats_filename, col_names = FALSE) %>% as.data.frame()
+trimbarcode_stats             <- gsub(":", "\t", trimbarcode_stats[,1]) %>% as.data.frame()
+knitr::kable(trimbarcode_stats, 
+             col.names = c('We', 'Stat'), 
+             caption = "Global quality statistics", 
+             "simple")
+```
+ 
 ## Number of reads per barcode
 
 ```{r}
 
-n_reads_barcode_filename = paste0(params$log_and_stats_folder, "/number_of_reads_per_barcode.csv")
-number_of_reads_per_barcode = readr::read_csv(n_reads_barcode_filename)
+n_reads_barcode_filename    <- paste0(params$log_and_stats_folder, "/number_of_reads_per_barcode.csv")
+number_of_reads_per_barcode <- readr::read_csv(n_reads_barcode_filename)
 
 head(number_of_reads_per_barcode)
 

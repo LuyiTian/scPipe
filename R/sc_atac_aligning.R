@@ -61,12 +61,12 @@ sc_atac_aligning <- function (ref,
   buildindex (basename=indexPath, reference=ref)
   
   if (!is.null(output_file)) {
-    fileNameWithoutExtension <- strsplit(readFile1, "\\.")[[1]][1]
+    fileNameWithoutExtension <- strsplit(basename(readFile1), "\\.")[[1]][1]
     outbam                   <- paste(fileNameWithoutExtension, "_aligned.bam", sep = "")
     cat("Output file name is not provided. Aligned reads are saved in ", outbam, "\n")
   }
   else{
-    fileNameWithoutExtension <- strsplit(output_file, "\\.")[[1]][1]
+    fileNameWithoutExtension <- strsplit(basename(output_file), "\\.")[[1]][1]
     outbam                   <- paste(output_folder, "/", output_file, sep="")
   }
   

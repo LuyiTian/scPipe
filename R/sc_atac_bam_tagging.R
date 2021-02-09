@@ -26,16 +26,16 @@ sc_atac_bam_tagging <- function(inbam, output_folder = "",
   
   if(output_folder == ''){
     #output_folder <- file.path(getwd(), "scPipe-atac-output")
-    output_folder <- paste0(sub('[/][^/]+$', '', bam_to_tag))
+    output_folder <- paste0(sub('[/][^/]+$', '', inbam))
   }
   
   if (!dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
-    cat("Output drirectory does not exist. Created at: ", output_folder, "\n")
+    cat("Output directory does not exist. Created at: ", output_folder, "\n")
   }
   
   if(output_folder == ""){
-    fileNameWithoutExtension <- strsplit(inbam, "\\.")[[1]][1]
+    fileNameWithoutExtension <- strsplit(basename(inbam), "\\.")[[1]][1]
     outbam                   <- paste(fileNameWithoutExtension, "_tagged.bam", sep = "")
     outsortedbam             <- paste(fileNameWithoutExtension, "_tagged_sorted", sep = "")
   } else{
@@ -44,7 +44,7 @@ sc_atac_bam_tagging <- function(inbam, output_folder = "",
     #   dir.create(output_folder)
     #   cat("Created.\n")
     # }
-    fileNameWithoutExtension <- basename(strsplit(inbam, "\\.")[[1]][1])
+    fileNameWithoutExtension <- strsplit(basename(inbam), "\\.")[[1]][1]
     outbam                   <- paste(output_folder, "/", fileNameWithoutExtension, "_tagged.bam", sep = "")
     outsortedbam             <- paste(output_folder, "/", fileNameWithoutExtension, "_tagged_sorted", sep = "")
   }
