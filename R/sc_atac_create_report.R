@@ -12,8 +12,13 @@
 #'
 
 
-sc_atac_create_report <- function(input_folder, output_folder){
-  # log_and_stats_folder and output_folder must have a full path
+sc_atac_create_report <- function(input_folder, 
+                                  output_folder, 
+                                  sample_name  = NULL, 
+                                  organism     = NULL, 
+                                  feature_type = NULL){
+  
+  # log_and_stats_folder and output_folder must have a full path ? not really..
   
   if(input_folder == ''){
     input_folder <- file.path(getwd(), "scPipe-atac-output/scPipe_atac_stats")
@@ -34,11 +39,11 @@ sc_atac_create_report <- function(input_folder, output_folder){
   }
   
   rmarkdown::render(
-      input  <- "R/rmd_report_skeleton.Rmd",
-      params <- list(
-        log_and_stats_folder = input_folder
-      ),
-      output_file <- paste0(output_folder, "/sc_atac_report.html")
+    input  <- "R/rmd_report_skeleton.Rmd",
+    params <- list(
+      log_and_stats_folder = input_folder
+    ),
+    output_file <- paste0(output_folder, "/scPipe_atac_report.html")
   )
 }
 
