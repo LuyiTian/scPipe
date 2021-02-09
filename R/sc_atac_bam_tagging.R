@@ -11,10 +11,11 @@
 #' @export
 #'
 
-sc_atac_bam_tagging <- function(inbam, output_folder = "",
-                               bc_length = NULL,
-                               bam_tags = list(bc="CB", mb="OX"),
-                               nthreads = 1
+sc_atac_bam_tagging <- function(inbam, 
+                                output_folder = "",
+                                bc_length = NULL,
+                                bam_tags = list(bc="CB", mb="OX"),
+                                nthreads = 1
 ) {
   
   if (any(!file.exists(inbam))) {
@@ -34,11 +35,11 @@ sc_atac_bam_tagging <- function(inbam, output_folder = "",
     cat("Output directory does not exist. Created at: ", output_folder, "\n")
   }
   
-  if(output_folder == ""){
-    fileNameWithoutExtension <- strsplit(basename(inbam), "\\.")[[1]][1]
-    outbam                   <- paste(fileNameWithoutExtension, "_tagged.bam", sep = "")
-    outsortedbam             <- paste(fileNameWithoutExtension, "_tagged_sorted", sep = "")
-  } else{
+  #if(output_folder == ""){
+    # fileNameWithoutExtension <- strsplit(basename(inbam), "\\.")[[1]][1]
+    # outbam                   <- paste(fileNameWithoutExtension, "_tagged.bam", sep = "")
+    # outsortedbam             <- paste(fileNameWithoutExtension, "_tagged_sorted", sep = "")
+  #} else{
     # if(!dir.exists(output_folder)){
     #   cat(output_folder, "does not exist.\nCreating folder...")
     #   dir.create(output_folder)
@@ -47,7 +48,7 @@ sc_atac_bam_tagging <- function(inbam, output_folder = "",
     fileNameWithoutExtension <- strsplit(basename(inbam), "\\.")[[1]][1]
     outbam                   <- paste(output_folder, "/", fileNameWithoutExtension, "_tagged.bam", sep = "")
     outsortedbam             <- paste(output_folder, "/", fileNameWithoutExtension, "_tagged_sorted", sep = "")
-  }
+  #}
   
   
   log_and_stats_folder       <- paste0(output_folder, "/scPipe_atac_stats/")

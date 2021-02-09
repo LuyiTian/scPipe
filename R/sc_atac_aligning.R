@@ -55,14 +55,15 @@ sc_atac_aligning <- function (ref,
     file = log_file, append = TRUE)
   
   
-  
-  # creating an index
+  # creating an index if not avaialble
   indexPath <-  file.path(output_folder, "genome_index") 
-  buildindex (basename=indexPath, reference=ref)
+  if (!file.exists(paste0(indexPath, ".log"))) {
+    Rsubread::buildindex(basename=indexPath, reference=ref)
+  }
   
   if (!is.null(output_file)) {
     fileNameWithoutExtension <- strsplit(basename(readFile1), "\\.")[[1]][1]
-    outbam                   <- paste(fileNameWithoutExtension, "_aligned.bam", sep = "")
+    outbam                   <- paste(output_folder, "/", fileNameWithoutExtension, "_aligned.bam", sep = "")
     cat("Output file name is not provided. Aligned reads are saved in ", outbam, "\n")
   }
   else{
@@ -83,10 +84,10 @@ sc_atac_aligning <- function (ref,
   #generating the bam index
   #Rsamtools::sortBam(outbam, paste0(fileNameWithoutExtension, "_aligned_sorted"))
   #Rsamtools::indexBam(outbam)
-  Rsamtools::indexBam(paste0(fileNameWithoutExtension, "_aligned_sorted.bam"))
+  Rsamtools::indexBam(paste0(output_folder, "/", fileNameWithoutExtension, "_aligned.bam"))
   
   # get the unmapped mapped stats to be output and stored in a log file
-  bamstats <- Rsamtools::idxstatsBam(paste0(fileNameWithoutExtension, "_aligned_sorted.bam"))
+  bamstats <- Rsamtools::idxstatsBam(paste0(output_folder, "/",fileNameWithoutExtension, "_aligned.bam"))
   write.csv(bamstats, file = paste0(log_and_stats_folder, "stats_file_align_per_chrom.csv"), row.names = FALSE, quote = FALSE)
   
   cat(
