@@ -933,7 +933,8 @@ void Mapping::sc_atac_parse_align_warpper(vector<string> fn_vec, string fn_out, 
 namespace {
 std::pair<int, int> get_bc_umi_lengths(string bam_fn) {
   BGZF *fp = bgzf_open(bam_fn.c_str(), "r"); // input file
-  bam_hdr_t *bam_hdr = bam_hdr_read(fp);
+  //bam_hdr_t *bam_hdr = bam_hdr_read(fp);
+  bam_hdr_read(fp);
   
   bam1_t *bam_record = bam_init1();
   
