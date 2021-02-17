@@ -34,6 +34,3 @@ sc_atac_call_peaks = function(inbam, ref = NULL, output_folder = NULL, genome_si
   library(MACSr)
   MACSr::callpeak(inbam, nomodel = TRUE, shift = 100, extsize = 200, gsize=genome_size, outdir = output_folder)
 }
-
-sc_atac_call_peaks("/stornext/Home/data/allstaff/y/yang.p/repos/final_repos/scPipe/data/demux_testfastq_S1_L001_R1_001_aligned_sorted_tagged_sorted.bam",
-                   "/stornext/Home/data/allstaff/y/yang.p/repos/final_repos/scPipe/data/genome.fa")
