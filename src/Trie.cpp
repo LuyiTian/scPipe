@@ -20,10 +20,8 @@ int Trie::Get_Links_Position(char base)
     {
     case 'A':
         return 1;
-        break;
     case 'C':
         return 2;
-        break;
     case 'G':
         return 3;
     case 'T':

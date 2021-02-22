@@ -131,16 +131,12 @@ Base_to_Int(char* base) {
         case 'A':
           return 1;
           // positions[1]++ usingthis above returns the pre-incremented value of positions
-          break;
         case 'C':
           return 2;
-          break;
         case 'G':
           return 3;
-          break;
         case 'T':
           return 4;
-          break;
         case TERMINATOR:
         default:
           return 0;
