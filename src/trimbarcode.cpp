@@ -705,9 +705,9 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         }
         
         char * const seq1_name = seq1->name.s;
-        char * const seq1_seq = seq1->seq.s;
+        //char * const seq1_seq = seq1->seq.s;
         int seq1_namelen = seq1->name.l;
-        int seq1_seqlen = seq1->seq.l;
+        //int seq1_seqlen = seq1->seq.l;
         
         char * seq3_name;
         char * seq3_seq;
@@ -737,9 +737,9 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
                     if (umi_st + umi_len >= l2) continue;
                 }
 
-                char * const seq2_name = seq2->name.s;
+                //char * const seq2_name = seq2->name.s;
                 char * const seq2_seq = seq2->seq.s;
-                int seq2_namelen = seq2->name.l;
+                //int seq2_namelen = seq2->name.l;
                 int seq2_seqlen = seq2->seq.l;
                 
                 // Rcout << "seq2_seq: " << seq2_seq << std::endl << std::endl;
@@ -910,7 +910,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     bool R3 = false;
     bool isUMIR1 = (umi_length > 0 && (strcmp(umi_in,"both") == 0 || strcmp(umi_in,"R1") == 0));
     bool isUMIR2 = (umi_length > 0 && (strcmp(umi_in,"both") == 0 || strcmp(umi_in,"R2") == 0));
-    bool write_line;
+    //bool write_line;
     
     if(!strcmp(fq3_fn,"")){
         R3 = false;
@@ -919,7 +919,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     }
     
     int l1 = 0;
-    int l2 = 0;
+    //int l2 = 0;
     int l3 = 0;
     gzFile fq1 = gzopen(fq1_fn, "r"); // input fastq
     if (!fq1) {

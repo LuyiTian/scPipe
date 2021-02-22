@@ -118,7 +118,10 @@ sc_atac_trim_barcode = function(
 
       # Check if given barcode start position is valid
       if (!check_barcode_start_position(r1, bc_file, bc_start, bc_length, 10000, .8)) {
-          stop("Please change bc_start and try again")
+          if (tolower(readline(prompt="Continue anyway? (y/n) ")) != "y") {
+            stop("Please change bc_start and try again")
+          }
+          cat("Continuing...")
       }
 
       out_vec = rcpp_sc_atac_trim_barcode(
