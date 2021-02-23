@@ -19,6 +19,7 @@ sc_atac_aligning <- function (ref,
                               output_file   = '',
                               input_format  = "FASTQ",
                               output_format = "BAM",
+                              index_path    = NULL,
                               type          = "dna",
                               nthreads      = 1){
   
@@ -55,10 +56,21 @@ sc_atac_aligning <- function (ref,
     file = log_file, append = TRUE)
   
   
-  # creating an index if not avaialble
-  indexPath <-  file.path(output_folder, "genome_index") 
-  if (!file.exists(paste0(indexPath, ".log"))) {
-    Rsubread::buildindex(basename=indexPath, reference=ref)
+  # creating an index if not available
+  if (!is.null(index_path)) {
+    indexPath <- index_path
+    if (!file.exists(paste0(indexPath, ".log"))) {
+      stop("Genome index does not exist in the specificed location. Please check the full index path again.")   
+      }
+  } else {
+    cat("Genome index location not specified. Looking for the index in", output_folder, "\n")
+    indexPath <-  file.path(output_folder, "genome_index") 
+    if (file.exists(paste0(indexPath, ".log"))) {
+      cat("Genome index foound in ", output_folder, "...\n")
+    } else {
+      cat("Genome index not foound. Creating one in ", output_folder, ". This will take a while ...\n")
+      Rsubread::buildindex(basename=indexPath, reference=ref)
+    }
   }
   
   if (!is.null(output_file)) {

@@ -17,7 +17,7 @@ ATAC-Seq module also produces a feature-barcode count matrix that is essential f
 
 The package is under active development. Feel free to ask any questions or submit a pull request.
 
-* [12/12/2020] coplete 1st version of ATAC-Seq module for ScPipe
+* [12/12/2020] complete 1st version of ATAC-Seq module for ScPipe
 * [13/05/2020] initiate ATAC-Seq module for scPipe
 * [21/09/2017] scPipe now uses the *SingleCellExperiment* class.
 
@@ -35,7 +35,7 @@ BiocManager::install("scPipe")
 
 ```{r}
 install.packages("devtools")
-devtools::install_github("LuyiTian/scPipe")
+devtools::install_github("shaniAmare/scPipe")
 ```
 
 ## Getting started
@@ -47,17 +47,32 @@ The general workflow of RNA-Seq module of scPipe is illustrated in the following
 The general workflow of ATAC-Seq module of scPipe is illustrated in the following figure and a minimal example is available [here](minimal_atac_example.md).
 
 
-
-## Data Preprocessing Concept (add atac as well and get them into different sections)
+## Data Preprocessing Concept for scRNA-Seq preprocessing
 
 * The `sc_trim_barcode` function will reformat each read and put the cell barcode and UMI sequence into the fastq read names: `@ACGATCGA_TAGAGC#SIMULATE_SEQ::002::000::0000::0
 AAGACGTCTAAGGGCGGTGTACACCCTTTTGAGCAATGATTGCACAACCTGCGATCACCTTATACAGAATTAT+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
 
 * After alignment, the `sc_exon_mapping` function will put the cell barcode and UMI into the bam file with different tags, together with gene information: `AAAGTCAA_AACTCA#SIMULATE_SEQ::007::000::0013::10        0       ERCC-00171      142     40      73M     *       0       0       GCCTCGGGAATAAGCTGACGGTGACAAGGTTTCCCCCTAATCGAGACGCTGCAATAACACAGGGGCATACAGT AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA       HI:i:1  NH:i:1  NM:i:0  GE:Z:ERCC-00171 YC:Z:AAAGTCAA   YM:Z:AACTCA     YE:i:-364`. In this example the cell barcode is AAAGTCAA with tag `YC`, the UMI is AACTCA with tag `YM` and the gene that this read maps to is `ERCC-00171` with tag `GE`. This read is located 364 bp upstream of the transcription end site (TES), which is stored in the `YE` tag.
 
-* The `sc_demultiplex` function will look for the cell barcode in BAM file (by default in the `YC` tag) and compare it against the known cell barcode annotation file, which is a csv file consisting of two columns. The first column is the cell name and second column is the cell barcode. For Chromium 10x and Drop-seq data we can run `sc_detect_bc` to find the barcodes and generate the cell barcode annotation file before running `sc_demultiplex`. An example barcode annotation file is availab in the package from `system.file("extdata", "barcode_anno.csv", package = "scPipe")`. The output of `sc_demultiplex` will be multiple csv files corresponding to each cell. Each file has three columns, the first of which contains the gene id, the second column contains the UMI sequence and third column gives the relative location of the read to the TES. These files are used for `sc_gene_counting`.
+* The `sc_demultiplex` function will look for the cell barcode in BAM file (by default in the `YC` tag) and compare it against the known cell barcode annotation file, which is a csv file consisting of two columns. The first column is the cell name and second column is the cell barcode. For Chromium 10x and Drop-seq data we can run `sc_detect_bc` to find the barcodes and generate the cell barcode annotation file before running `sc_demultiplex`. An example barcode annotation file is available in the package from `system.file("extdata", "barcode_anno.csv", package = "scPipe")`. The output of `sc_demultiplex` will be multiple csv files corresponding to each cell. Each file has three columns, the first of which contains the gene id, the second column contains the UMI sequence and third column gives the relative location of the read to the TES. These files are used for `sc_gene_counting`.
 
 For further examples see the vignette.
+
+## Data Preprocessing Concept for scATAC-Seq preprocessing
+
+* The `sc_atac_trim_barcode` function will reformat each read and put the cell barcode and UMI sequence into the fastq read names: `@ACGATCGA_TAGAGC#SIMULATE_SEQ::002::000::0000::0
+AAGACGTCTAAGGGCGGTGTACACCCTTTTGAGCAATGATTGCACAACCTGCGATCACCTTATACAGAATTAT+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
+
+* The `sc_atac_aligning` function will align the reformatted fastq files and create bam files.
+
+* After alignment, the `sc_atac_bam_tagging` function will put the cell barcode (and UMI, if avaialble) into the bam file with different tags: `AAAGTCAA_AACTCA#SIMULATE_SEQ::007::000::0013::10        0       ERCC-00171      142     40      73M     *       0       0       GCCTCGGGAATAAGCTGACGGTGACAAGGTTTCCCCCTAATCGAGACGCTGCAATAACACAGGGGCATACAGT AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA       HI:i:1  NH:i:1  NM:i:0  GE:Z:ERCC-00171 YC:Z:AAAGTCAA   YM:Z:AACTCA     YE:i:-364`. In this example the cell barcode is AAAGTCAA with tag `YC`, the UMI is AACTCA with tag `YM` and the gene that this read maps to is `ERCC-00171` with tag `GE`. This read is located 364 bp upstream of the transcription end site (TES), which is stored in the `YE` tag.
+
+* The `sc_atac_peak_calling` function can be used to call peaks using macsr via Linux/Mac environemen t(). However, macsr is yet not compatible with Windows.
+
+* Lastly, `sc_atac_feature_counting` function will generate a feature-count matrix for the alignment and an input feature file (a genome, a bed file format of features, for example wone generated through `sc_atac_peak_calling` or MACS2/3). It would also generate a few  
+
+
+* The `sc_demultiplex` function will look for the cell barcode in BAM file (by default in the `YC` tag) and compare it against the known cell barcode annotation file, which is a csv file consisting of two columns. The first column is the cell name and second column is the cell barcode. For Chromium 10x and Drop-seq data we can run `sc_detect_bc` to find the barcodes and generate the cell barcode annotation file before running `sc_demultiplex`. An example barcode annotation file is availab in the package from `system.file("extdata", "barcode_anno.csv", package = "scPipe")`. The output of `sc_demultiplex` will be multiple csv files corresponding to each cell. Each file has three columns, the first of which contains the gene id, the second column contains the UMI sequence and third column gives the relative location of the read to the TES. These files are used for `sc_gene_counting`.
 
 ## Acknowledgments
 This package is inspired by the `scater`, `scran` and `scATAC=pro` packages. The idea to put cell barcode and UMI sequences into the BAM file is from [Drop-seq tools](http://mccarrolllab.com/dropseq/). We thank Dr Aaron Lun for suggestions on package development.
