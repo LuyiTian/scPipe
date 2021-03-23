@@ -11,13 +11,13 @@
 #' @export
 #'
 
-sc_atac_create_sce <- function(input_folder, 
+sc_atac_create_sce <- function(input_folder = NULL, 
                                organism     = NULL, 
                                feature_type = NULL, 
                                pheno_data   = NULL, 
                                report       = FALSE) {
   
-  if(input_folder == ''){
+  if(is.null(input_folder)){
     input_folder <- file.path(getwd(), "scPipe-atac-output")
   }
   
@@ -34,7 +34,7 @@ sc_atac_create_sce <- function(input_folder,
   
   # can I order a matrix like a csv file like below? test...
   feature_cnt      <- feature_cnt[, order(colnames(feature_cnt))]
-  cell_stat        <- cell_stat[order(rownames(cell_stat)), ]
+  cell_stats       <- cell_stats[order(rownames(cell_stats)), ]
   
   # generating the SCE object
   sce                         <- SingleCellExperiment(assays = list(counts = as.matrix(feature_cnt)))
@@ -54,11 +54,6 @@ sc_atac_create_sce <- function(input_folder,
   }
   
   feature_info(sce) <- feature_stats
-  
-  #if(any(grepl("^ERCC-", rownames(sce)))){
-  #  isSpike(sce, "ERCC") <- grepl("^ERCC-", rownames(sce))
-  #}
-  
   
   if(report){
     sc_atac_create_report(input_folder = file.path(getwd(), "scPipe-atac-output/scPipe_atac_stats"),

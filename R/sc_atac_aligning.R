@@ -1,5 +1,12 @@
 #' sc_atac_align()
 #'
+#' after we run the \code{sc_atac_trim_barcode} to demultiplex the fastq files, we are using this
+#' function to align those fastq files to a known reference. 
+#' 
+#' @param ref the reference genome file (.fasta, .fa format)
+#' @param readFile1 the first fastq file which is mandatory
+#' @param readFile2 the second fastq file, which is required if the data is paired-end
+#' @readDir 
 #' @return 
 #'
 #' @examples
@@ -14,7 +21,6 @@
 sc_atac_aligning <- function (ref, 
                               readFile1, 
                               readFile2     = NULL, 
-                              readDir       = NULL, 
                               output_folder = "", 
                               output_file   = '',
                               input_format  = "FASTQ",
@@ -91,7 +97,7 @@ sc_atac_aligning <- function (ref,
     sortReadsByCoordinates = TRUE,
     output_file = outbam)
   
-  write.csv(align_output_df, file = stats_file, row.names = FALSE, quote = FALSE)
+  write.csv(align_output_df, file = stats_file, row.names = TRUE, quote = FALSE)
   
   #generating the bam index
   #Rsamtools::sortBam(outbam, paste0(fileNameWithoutExtension, "_aligned_sorted"))
