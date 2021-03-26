@@ -1008,33 +1008,28 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     openFile(o_stream_gz_R1_No,o_stream_R1_No,fqoutR1No, write_gz);
     
     
-    // Define some variables. These are only used if rmlow = T
-    int bc1_end, bc2_end; // get total length of index + UMI for read1 and read2
+    // Define some variables.
+    int bc1_end, bc2_end; // get end position in the read of barcode and umi
     
-    if (id1_st >= 0) // if we have plate index
-    {
-        bc1_end = id1_st + id1_len;
-    }
-    else // if no plate information, use id1_len to trim the read 1
-    {
-        bc1_end = id1_len;
+    if (isUMIR1) {
+        // 
+        bc2_end = max(id1_st + id2_len, umi_start + umi_length)
+    } else {
+        if (id1_st >= 0) // if we have plate index
+        {
+            bc1_end = id1_st + id1_len;
+        }
+        else // if no plate information, use id1_len to trim the read 1
+        {
+            bc1_end = id1_len;
+        }
     }
     
-    // set barcode end index
-    if (umi_start >= 0)
-    {
+    if (isUMIR2) {
+        // set barcode end index
         // This is basically doing the following: bc2_end = max(id2_st + id2_len, umi_start + umi_length)
-        if (id2_st + id2_len > umi_start + umi_length)
-        {
-            bc2_end = id2_st + id2_len;
-        }
-        else
-        {
-            bc2_end = umi_start + umi_length;
-        }
-    }
-    else
-    {
+        bc2_end = max(id2_st + id2_len, umi_start + umi_length)
+    } else {
         bc2_end = id2_st + id2_len;
     }
     
@@ -1073,48 +1068,48 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             }
         } 
         
-        
+        // with all this setting of array[array_len] as '\0', is this safe? isn't it setting data outside the array domain?
+        // I belive this to be so, so increasing size of char arrays by 1 in order to add the zero terminator at the end
         char* subStr1;
         int bcUMIlen1 = 0;
-        if(umi_length > 0 ){
-            subStr1 = (char*)malloc(length+umi_length+1);
-            memcpy(subStr1, &seq1_seq[start], length );
-            subStr1 [length] = '_';
-            memcpy(subStr1+length+1, &seq1_seq[umi_start], umi_length);
-            subStr1[length + umi_length +1] = '\0';
-            bcUMIlen1 = length + umi_length +1;
-            
-        }else{
-            subStr1 = (char*)malloc(length);
-            memcpy( subStr1, &seq1_seq[start], length );
-            subStr1[length] = '\0';
-            bcUMIlen1 =length;
+        if(isUMIR1){
+            bcUMIlen1 = length + umi_length +1; // should length be id1_len in this case?
+            subStr1 = (char*)malloc(bcUMIlen1 + 1); // additional space for zero terminator
+            memcpy(subStr1, &seq1_seq[start], length ); // should start actually be id1_st, instead of barcode start?
+            subStr1 [length] = '_'; // again, should length be id1_len?
+            memcpy(subStr1+length+1, &seq1_seq[umi_start], umi_length); // again, should length be id1_len
+            subStr1[bcUMIlen1] = '\0';
+        } else{
+            bcUMIlen1 =length; // again, should length be id1_len?
+            subStr1 = (char*)malloc(bcUMIlen1 + 1); // additional space for zero terminator
+            memcpy( subStr1, &seq1_seq[start], length ); // should length and start be changed to id1_len and id1_st?
+            subStr1[bcUMIlen1] = '\0';
         }
         
-        char barcode[length];
-        memcpy( barcode, &seq1_seq[start], length );
-        barcode[length] = '\0';
-        
-        
+        char barcode[length]; // this is fine, as it's refering to the actual barcode length
+        memcpy( barcode, &seq1_seq[start], length + 1); // should start actually be id1_st??
+        barcode[length] = '\0'; 
         
         if ( barcode_map.find(barcode) == barcode_map.end() ) {
             for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
                 if(hamming_distance(it->first, barcode) <2){
                     approx_match++;
                     const int new_name_length1 = seq1_namelen + bcUMIlen1 + 1;
-                    seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1); // allocate additional memory
-                    memmove(seq1_name + bcUMIlen1+1, seq1_name, seq1_namelen );// move original read name
+                    seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1 + 1); // allocate additional memory
+                    memmove(seq1_name + bcUMIlen1 + 1, seq1_name, seq1_namelen );// move original read name from second arg to first arg
                     memcpy(seq1_name, subStr1, bcUMIlen1 * sizeof(char)); // copy index one
                     seq1_name[bcUMIlen1] = '#'; // add separator
                     seq1_name[new_name_length1] = '\0';
                     
-                    if ( (umi_start + umi_length) > (start + length) && umi_length > 0){
-                        memmove (seq1_seq, seq1_seq + umi_start + umi_length, seq1_seqlen-umi_start-umi_length+1); 
-                    }else{
-                        memmove (seq1_seq, seq1_seq + start + length, seq1_seqlen-start-length+1); 
-                    }
+                    // chop read to only be what has not been copied to header
+                    //if ( (umi_start + umi_length) > (start + length) && isUMIR1){
+                    memmove (seq1_seq, seq1_seq + bc1_end, seq1_seqlen-umi_start-umi_length+1); 
+                    //}else{
+                    //    memmove (seq1_seq, seq1_seq + start + length, seq1_seqlen-start-length+1); 
+                    //}
                     
-                    
+                    // really, this quality checks should be done before the time consuming copying??
+                    // no reason why this quality check needs to be run for every barcode, when the quality score isn't affected
                     // If rmlow parameter is TRUE:
                     if(rmlow) { // Only check barcode/UMI quality
                         // Check quality
@@ -1136,7 +1131,9 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                         }
                     } // end if(rmN)
                     
-                    
+                    // again, this should need to be written for every correct barcode we find
+                    // in fact, when we find a correct barcode we should break out of the for loop
+                    // and end by writing to the file
                     if (write_gz) {
                         fq_gz_write(o_stream_gz_R1_Partial, seq1, 0); // write to gzipped fastq file
                     } else {
@@ -1181,7 +1178,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             
             exact_match ++;   
             const int new_name_length1 = seq1_namelen + bcUMIlen1 + 1;
-            seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1); // allocate additional memory
+            seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1 + 1); // allocate additional memory
             memmove(seq1_name + bcUMIlen1+1, seq1_name, seq1_namelen );// move original read name
             memcpy(seq1_name, subStr1, bcUMIlen1 * sizeof(char)); // copy index one
             seq1_name[bcUMIlen1] = '#'; // add separator
@@ -1228,35 +1225,35 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         if(R3){
             char* subStr3;
             int bcUMIlen3 = 0;
-            if(umi_length > 0 ){
-                subStr3 = (char*)malloc(length+umi_length+1);
-                memcpy(subStr3, &seq3_seq[start], length );
+            if (isUMIR2) {
+                bcUMIlen3 = length + umi_length +1; // should length be id2_len???
+                subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
+                memcpy(subStr3, &seq3_seq[start], length ); // should start and length be id2_st and id2_len??
                 subStr3 [length] = '_';
-                memcpy(subStr3+length+1, &seq3_seq[umi_start], umi_length);
-                subStr3[length + umi_length +1] = '\0';
-                bcUMIlen3 = length + umi_length +1;
-                
-            }else{
-                subStr3 = (char*)malloc(length);
-                memcpy( subStr3, &seq3_seq[start], length );
-                subStr3[length] = '\0';
-                bcUMIlen3 =length;
+                memcpy(bcUMIlen3, &seq3_seq[umi_start], umi_length); // this is fine
+                subStr3[bcUMIlen3] = '\0';          
+            } else {
+                bcUMIlen3 =length; // should length be id2_len??
+                subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
+                memcpy( subStr3, &seq3_seq[start], length ); // again 
+                subStr3[bcUMIlen3] = '\0';
             }
             
             char barcode[length];
-            memcpy( barcode, &seq3_seq[start], length );
+            memcpy( barcode, &seq3_seq[start], length + 1); // should start be id2_st? length is fine
             barcode[length] = '\0';
             
             if ( barcode_map.find(subStr3) == barcode_map.end() ) {
                 for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
                     if(hamming_distance(it->first, barcode) < 2){
-                        const int new_name_length1 = seq3_namelen + bcUMIlen3+1;
-                        seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1); // allocate additional memory
+                        const int new_name_length1 = seq3_namelen + bcUMIlen3 + 1;
+                        seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1 + 1); // allocate additional memory
                         memmove(seq3_name + bcUMIlen3+1, seq3_name, seq3_namelen * sizeof(char) );// move original read name
                         memcpy(seq3_name, subStr3, bcUMIlen3 * sizeof(char)); // copy index one
                         seq3_name[bcUMIlen3] = '#'; // add separator
                         seq3_name[new_name_length1] = '\0';
                         
+                        // how is this going to work taking into account isUMIR2????? TODO
                         if ( (umi_start + umi_length) > (start + length) && umi_length > 0){
                             memmove (seq3_seq, seq3_seq + umi_start + umi_length, seq3_seqlen-umi_start-umi_length+1); 
                         }else{
@@ -1290,7 +1287,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                         } else {
                             fq_write(o_stream_R3_Partial, seq3, 0); // write to fastq file
                         }
-                    }else{
+                    } else {
                         
                         // If rmlow parameter is TRUE:
                         if(rmlow) { // Only check barcode/UMI quality
