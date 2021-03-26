@@ -1048,6 +1048,8 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         if(passed_reads % 10==0) {
             Rcout << passed_reads << " lines have been read..." << std::endl; 
         }
+
+        if (passed_reads > 100) break;
         
         
         char *seq1_name = seq1->name.s;
@@ -1121,8 +1123,6 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                             continue; // the rest of the lines in the while loop are ignored
                         } 
                     } 
-                    
-                    
                     
                     // If the rmN parameter is TRUE:
                     if(rmN){
