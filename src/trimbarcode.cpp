@@ -1120,7 +1120,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                         // Check quality
                         if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
                             removed_low_qual++;
-                            continue; // the rest of the lines in the while loop are ignored
+                            continue; // the rest of the lines in the for loop are ignored
                         } 
                     } 
                     
@@ -1132,7 +1132,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                             // we add 1 to the counter of reads deleted and
                             // skip the rest of the code in the loop.
                             removed_Ns++; // Add 1 to the counter of reads deleted
-                            continue; // the rest of the lines in the while loop are ignored
+                            continue; // the rest of the lines in the for loop are ignored
                         }
                     } // end if(rmN)
                     
