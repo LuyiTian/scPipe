@@ -40,14 +40,11 @@ devtools::install_github("shaniAmare/scPipe")
 
 ## Getting started
 
-The general workflow of RNA-Seq module of scPipe is illustrated in the following figure:
+The general workflow of scPipe is illustrated in the following figure:
 
-<img src=inst/workflow.png height="800">
+<img src=inst/workflow_combined.png height="800">
 
-The general workflow of ATAC-Seq module of scPipe is illustrated in the following figure and a minimal example is available [here](minimal_atac_example.md).
-
-
-## Data Preprocessing Concept for scRNA-Seq preprocessing
+## Concept for scRNA-Seq preprocessing
 
 * The `sc_trim_barcode` function will reformat each read and put the cell barcode and UMI sequence into the fastq read names: `@ACGATCGA_TAGAGC#SIMULATE_SEQ::002::000::0000::0
 AAGACGTCTAAGGGCGGTGTACACCCTTTTGAGCAATGATTGCACAACCTGCGATCACCTTATACAGAATTAT+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
@@ -58,7 +55,7 @@ AAGACGTCTAAGGGCGGTGTACACCCTTTTGAGCAATGATTGCACAACCTGCGATCACCTTATACAGAATTAT+AAAAAA
 
 For further examples see the vignette.
 
-## Data Preprocessing Concept for scATAC-Seq preprocessing
+## Concept for scATAC-Seq preprocessing
 
 * The `sc_atac_trim_barcode` function will reformat each read and put the cell barcode and UMI sequence into the fastq read names: `@ACGATCGA_TAGAGC#SIMULATE_SEQ::002::000::0000::0
 AAGACGTCTAAGGGCGGTGTACACCCTTTTGAGCAATGATTGCACAACCTGCGATCACCTTATACAGAATTAT+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`
@@ -73,7 +70,9 @@ AAGACGTCTAAGGGCGGTGTACACCCTTTTGAGCAATGATTGCACAACCTGCGATCACCTTATACAGAATTAT+AAAAAA
 
 * The function `sc_atac_create_sce` generates the `Single Cell Experiment` object from the feature-count matrix aand the quality scores acquired throughout the pipeline. It also aloows the user to generate a HTML report which can alternatively be created by the `sc_atac_create_report` function.
 
-For further examples see the relevant vignette.
+* The function `sc_atac_create_report` can be run within the `sc_atac_create_sce` or independently to create a report based on th quality statistics avaialble through the processed pipeline.
+
+A minimal example for scATAC-Seq module of scPipe is available [here](minimal_atac_example.md). For further examples see the relevant vignette.
 
 ## Acknowledgments
 This package is inspired by the `scater`, `scran` and `scATAC=pro` packages. The idea to put cell barcode and UMI sequences into the BAM file is from [Drop-seq tools](http://mccarrolllab.com/dropseq/). Also some features of the scPipe-ATAC module were inspired by the [scATAC-pro](https://github.com/wbaopaul/scATAC-pro) and [SnapTools](https://github.com/r3fang/SnapTools) packages. We thank Dr Aaron Lun for suggestions on package development.

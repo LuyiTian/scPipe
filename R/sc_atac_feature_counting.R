@@ -12,14 +12,6 @@ library(IRanges)
 library(S4Vectors)
 library(BiocGenerics)  
 
-
-
-
-
-
-
-
-
 #' TODO: documentation
 #'
 #' @export
@@ -439,18 +431,6 @@ sc_atac_feature_counting <- function(
 
   write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
   write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
-
-  # plots
-  #hist(log10(counts_per_cell+1),main='counts per cell',col='wheat')
-  #hist(log10(features_per_cell+1), main='features per cell', col='wheat')
-  #hist(log10(counts_per_feature+1), main='counts per feature', col='wheat')
-  
-  #plot(counts_per_cell, features_per_cell, log='xy', col='wheat')
-  #title('counts vs features per cell')
-  
-  # plot(sort(features_per_cell), xlab='cell', log='y', main='features per cell (ordered)')
-  
-  # plotting examples end here #############
   
   end_time = Sys.time()
   
