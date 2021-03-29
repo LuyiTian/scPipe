@@ -32,5 +32,15 @@ sc_atac_call_peaks = function(inbam, ref = NULL, output_folder = NULL, genome_si
   }
   
   library(MACSr)
-  MACSr::callpeak(inbam, nomodel = TRUE, shift = 100, extsize = 200, gsize=genome_size, outdir = output_folder)
+  MACSr::callpeak(inbam, 
+                  nomodel = TRUE, 
+                  shift = 100, 
+                  extsize = 200, 
+                  gsize=genome_size, 
+                  call-summits = TRUE, 
+                  store_bdg = TRUE,
+                  do_SPMR = TRUE,
+                  cutoff_analysis = TRUE,
+                  outdir = output_folder)
+
 }
