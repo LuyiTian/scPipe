@@ -42,7 +42,7 @@ devtools::install_github("shaniAmare/scPipe")
 
 The general workflow of scPipe is illustrated in the following figure:
 
-<img src=inst/workflow_combined.png height="800">
+<img src=inst/workflow_combined.png>
 
 ## Concept for scRNA-Seq preprocessing
 
