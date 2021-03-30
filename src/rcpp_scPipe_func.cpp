@@ -348,13 +348,13 @@ std::vector<int> rcpp_sc_atac_trim_barcode(
     Rcpp::LogicalVector write_gz,
     Rcpp::LogicalVector rmN,
     Rcpp::LogicalVector rmlow,
-    
     Rcpp::IntegerVector min_qual,
     Rcpp::IntegerVector num_below_min,
     Rcpp::IntegerVector id1_st,
     Rcpp::IntegerVector id1_len,
     Rcpp::IntegerVector id2_st,
-    Rcpp::IntegerVector id2_len) {
+    Rcpp::IntegerVector id2_len,
+    Rcpp::IntegerVector iterations = 1000) {
   
   std::string c_outfq = Rcpp::as<std::string>(outfq);
   std::string c_r1 = Rcpp::as<std::string>(r1);

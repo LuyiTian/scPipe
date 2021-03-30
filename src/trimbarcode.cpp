@@ -715,6 +715,14 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         int seq3_seqlen;
         if (R3){
             if((l3 = kseq_read(seq3)) >= 0){
+                // check this read is long enough for id2 and umi positions
+                if (id2_st >= 0) {
+                    if (id2_st + id2_len >= l3) continue;
+                }
+                if (umi_st >= 0) {
+                    if (umi_st + umi_len >= l3) continue;
+                }
+
                 seq3_name = seq3->name.s;
                 seq3_seq = seq3->seq.s;
                 seq3_namelen = seq3->name.l;
@@ -728,15 +736,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         for(int i=0;i<seq2_list.size();i++){
             kseq_t* seq2 = seq2_list[i];
             if ((l2 = kseq_read(seq2)) >= 0){
-
-                // check this read is long enough for id2 and umi positions
-                if (id2_st >= 0) {
-                    if (id2_st + id2_len >= l2) continue;
-                }
-                if (umi_st >= 0) {
-                    if (umi_st + umi_len >= l2) continue;
-                }
-
                 //char * const seq2_name = seq2->name.s;
                 char * const seq2_seq = seq2->seq.s;
                 //int seq2_namelen = seq2->name.l;
@@ -883,8 +882,8 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         char *fq3_fn,
         char *fq_out, 
         char *bc_fn, 
-        int start,
-        int length, 
+        int start, // get rid
+        int length, // get rid
         int umi_start,
         int umi_length,
         char *umi_in,
@@ -1013,14 +1012,12 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     
     if (isUMIR1) {
         // 
-        bc2_end = max(id1_st + id2_len, umi_start + umi_length)
+        bc2_end = std::max(id1_st + id2_len, umi_start + umi_length);
     } else {
-        if (id1_st >= 0) // if we have plate index
-        {
+        if (id1_st >= 0) { // if we have plate index
             bc1_end = id1_st + id1_len;
         }
-        else // if no plate information, use id1_len to trim the read 1
-        {
+        else { // if no plate information, use id1_len to trim the read 1
             bc1_end = id1_len;
         }
     }
@@ -1028,7 +1025,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     if (isUMIR2) {
         // set barcode end index
         // This is basically doing the following: bc2_end = max(id2_st + id2_len, umi_start + umi_length)
-        bc2_end = max(id2_st + id2_len, umi_start + umi_length)
+        bc2_end = std::max(id2_st + id2_len, umi_start + umi_length);
     } else {
         bc2_end = id2_st + id2_len;
     }
@@ -1044,9 +1041,9 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             Rcout << passed_reads << " lines have been read..." << std::endl; 
         }
 
-        if (passed_reads > 100) break;
+        if (passed_reads > 5000) break;
         
-        
+        // variables for copying sequences and for checking lengths
         char *seq1_name = seq1->name.s;
         char *seq1_seq = seq1->seq.s;
         int seq1_namelen = seq1->name.l;
@@ -1067,291 +1064,186 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                 Rcpp::Rcout << "R3 file is not of same length as R2: " << "\n";
             }
         } 
-        
-        // with all this setting of array[array_len] as '\0', is this safe? isn't it setting data outside the array domain?
-        // I belive this to be so, so increasing size of char arrays by 1 in order to add the zero terminator at the end
-        char* subStr1;
-        int bcUMIlen1 = 0;
-        if(isUMIR1){
-            bcUMIlen1 = length + umi_length +1; // should length be id1_len in this case?
-            subStr1 = (char*)malloc(bcUMIlen1 + 1); // additional space for zero terminator
-            memcpy(subStr1, &seq1_seq[start], length ); // should start actually be id1_st, instead of barcode start?
-            subStr1 [length] = '_'; // again, should length be id1_len?
-            memcpy(subStr1+length+1, &seq1_seq[umi_start], umi_length); // again, should length be id1_len
-            subStr1[bcUMIlen1] = '\0';
-        } else{
-            bcUMIlen1 =length; // again, should length be id1_len?
-            subStr1 = (char*)malloc(bcUMIlen1 + 1); // additional space for zero terminator
-            memcpy( subStr1, &seq1_seq[start], length ); // should length and start be changed to id1_len and id1_st?
-            subStr1[bcUMIlen1] = '\0';
-        }
-        
-        char barcode[length]; // this is fine, as it's refering to the actual barcode length
-        memcpy( barcode, &seq1_seq[start], length + 1); // should start actually be id1_st??
-        barcode[length] = '\0'; 
-        
-        if ( barcode_map.find(barcode) == barcode_map.end() ) {
-            for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
-                if(hamming_distance(it->first, barcode) <2){
-                    approx_match++;
-                    const int new_name_length1 = seq1_namelen + bcUMIlen1 + 1;
-                    seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1 + 1); // allocate additional memory
-                    memmove(seq1_name + bcUMIlen1 + 1, seq1_name, seq1_namelen );// move original read name from second arg to first arg
-                    memcpy(seq1_name, subStr1, bcUMIlen1 * sizeof(char)); // copy index one
-                    seq1_name[bcUMIlen1] = '#'; // add separator
-                    seq1_name[new_name_length1] = '\0';
-                    
-                    // chop read to only be what has not been copied to header
-                    //if ( (umi_start + umi_length) > (start + length) && isUMIR1){
-                    memmove (seq1_seq, seq1_seq + bc1_end, seq1_seqlen-umi_start-umi_length+1); 
-                    //}else{
-                    //    memmove (seq1_seq, seq1_seq + start + length, seq1_seqlen-start-length+1); 
-                    //}
-                    
-                    // really, this quality checks should be done before the time consuming copying??
-                    // no reason why this quality check needs to be run for every barcode, when the quality score isn't affected
-                    // If rmlow parameter is TRUE:
-                    if(rmlow) { // Only check barcode/UMI quality
-                        // Check quality
-                        if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
-                            removed_low_qual++;
-                            continue; // the rest of the lines in the for loop are ignored
-                        } 
-                    } 
-                    
-                    // If the rmN parameter is TRUE:
-                    if(rmN){
-                        // If find_N is TRUE, then there is an N in the sequence
-                        if(find_N(seq1)){
-                            // If there was an N in the sequence, then
-                            // we add 1 to the counter of reads deleted and
-                            // skip the rest of the code in the loop.
-                            removed_Ns++; // Add 1 to the counter of reads deleted
-                            continue; // the rest of the lines in the for loop are ignored
-                        }
-                    } // end if(rmN)
-                    
-                    // again, this should need to be written for every correct barcode we find
-                    // in fact, when we find a correct barcode we should break out of the for loop
-                    // and end by writing to the file
-                    if (write_gz) {
-                        fq_gz_write(o_stream_gz_R1_Partial, seq1, 0); // write to gzipped fastq file
-                    } else {
-                        fq_write(o_stream_R1_Partial, seq1, 0); // write to fastq file
-                    }
-                    
-                    
-                }else{
-                    
-                    // If rmlow parameter is TRUE:
-                    if(rmlow) { // Only check barcode/UMI quality
-                        // Check quality
-                        if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
-                            removed_low_qual++;
-                            continue; // the rest of the lines in the while loop are ignored
-                        } 
-                    } 
-                    
-                    // If the rmN parameter is TRUE:
-                    if(rmN){
-                        // If find_N is TRUE, then there is an N in the sequence
-                        if(find_N(seq1)){
-                            // If there was an N in the sequence, then
-                            // we add 1 to the counter of reads deleted and
-                            // skip the rest of the code in the loop.
-                            removed_Ns++; // Add 1 to the counter of reads deleted
-                            continue; // the rest of the lines in the while loop are ignored
-                        }
-                    } // end if(rmN)
-                    
-                    
-                    
-                    if (write_gz) {
-                        fq_gz_write(o_stream_gz_R1_No, seq1, 0); // write to gzipped fastq file
-                    } else {
-                        fq_write(o_stream_R1_No, seq1, 0); // write to fastq file
-                    }
-                    
-                }
-            }
-        } else {
-            
-            exact_match ++;   
-            const int new_name_length1 = seq1_namelen + bcUMIlen1 + 1;
-            seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1 + 1); // allocate additional memory
-            memmove(seq1_name + bcUMIlen1+1, seq1_name, seq1_namelen );// move original read name
-            memcpy(seq1_name, subStr1, bcUMIlen1 * sizeof(char)); // copy index one
-            seq1_name[bcUMIlen1] = '#'; // add separator
-            seq1_name[new_name_length1] = '\0';
-            
-            if ( (umi_start + umi_length) > (start + length) && umi_length > 0){
-                memmove (seq1_seq, seq1_seq + umi_start + umi_length, seq1_seqlen-umi_start-umi_length+1); 
-            }else{
-                memmove (seq1_seq, seq1_seq + start + length, seq1_seqlen-start-length+1); 
-            }
-            
-            // If rmlow parameter is TRUE:
-            if(rmlow) { // Only check barcode/UMI quality
+
+        // quality control checks for this read 1 and read 2 (if R3)
+        if(rmlow) { // Only check barcode/UMI quality
+            // Check quality
+            if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
+                removed_low_qual++;
+                continue; // the rest of the lines in the while loop are ignored
+            } 
+
+            if (R3) {
                 // Check quality
-                if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
+                if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
                     removed_low_qual++;
                     continue; // the rest of the lines in the while loop are ignored
                 } 
-            } 
-            
-            
-            // If the rmN parameter is TRUE:
-            if(rmN){
-                // If find_N is TRUE, then there is an N in the sequence
-                if(find_N(seq1)){
+            }
+        } 
+                    
+        if(rmN){
+            // If find_N is TRUE, then there is an N in the sequence
+            if(find_N(seq1)){
+                // If there was an N in the sequence, then
+                // we add 1 to the counter of reads deleted and
+                // skip the rest of the code in the loop.
+                removed_Ns++; // Add 1 to the counter of reads deleted
+                continue; // the rest of the lines in the while loop are ignored
+            }
+
+            if (R3) {
+                if(find_N(seq3)){
                     // If there was an N in the sequence, then
                     // we add 1 to the counter of reads deleted and
                     // skip the rest of the code in the loop.
                     removed_Ns++; // Add 1 to the counter of reads deleted
                     continue; // the rest of the lines in the while loop are ignored
                 }
-            } // end if(rmN)
-            
-            
-            if (write_gz) {
-                fq_gz_write(o_stream_gz_R1, seq1, 0); // write to gzipped fastq file
-            } else {
-                fq_write(o_stream_R1, seq1, 0); // write to fastq file
             }
-            
+        } // end if(rmN)
+  
+        // allocate space and copy the sequence from the read containing the barcode and UMI (if applicable)
+        char* subStr1;
+        int bcUMIlen1 = 0;
+        if(isUMIR1){ // create subStr1 of barcode concatenated with UMI, seperated by '_'
+            bcUMIlen1 = id1_len + umi_length + 1;
+            subStr1 = (char *)malloc(bcUMIlen1 + 1); // additional space for zero terminator
+            memcpy(subStr1, &seq1_seq[id1_st], id1_len);
+            subStr1[id1_len] = '_'; 
+            memcpy(subStr1 + id1_len + 1, &seq1_seq[umi_start], umi_length); 
+            subStr1[bcUMIlen1] = '\0';
+        } else { // create subStr1 of barcode sequence
+            bcUMIlen1 = id1_len;
+            subStr1 = (char *)malloc(bcUMIlen1 + 1); // additional space for zero terminator
+            memcpy(subStr1, &seq1_seq[id1_st], id1_len); 
+            subStr1[bcUMIlen1] = '\0';
         }
         
+        // allocate and copy just the barcode, to check against the barcodes in the barcode map
+        char barcode[id1_len + 1];
+        memcpy( barcode, &seq1_seq[id1_st], id1_len + 1); 
+        barcode[id1_len] = '\0'; 
+        
+        int match_type = 2; // 0 for exact, 1 for partial, 2 for no
+        // we want to check for an exact match first
+        if (barcode_map.find(barcode) != barcode_map.end()) {
+            // exact match
+            exact_match ++;   
+            match_type = 0;
+        } else {
+            // inexact match, we need to iterate over all barcodes
+            match_type = 2; // if we never find a barcode, no match
+            for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
+                if(hamming_distance(it->first, barcode) <2){
+                    approx_match++;
+                    match_type = 1;
+                    break;
+                } 
+            }
+        }
+        // if the barcode matches exactly or inexactly, write the modifiyed sequence lines to the output file
+        const int new_name_length1 = seq1_namelen + bcUMIlen1 + 1;
+        seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1 + 1); // allocate additional memory
+        memmove(seq1_name + bcUMIlen1 + 1, seq1_name, seq1_namelen );// move original read name from second arg to first arg
+        memcpy(seq1_name, subStr1, bcUMIlen1 * sizeof(char)); // copy index one
+        seq1_name[bcUMIlen1] = '#'; // add separator
+        seq1_name[new_name_length1] = '\0';
+        
+        // chop read to only be what has not been copied to header
+        memmove(seq1_seq, seq1_seq + bc1_end, seq1_seqlen - bc1_end + 1);
+        
+        gzFile *R1_gz_outfile;
+        std::ofstream *R1_outfile;
+        switch (match_type) {
+            case 0:
+                R1_outfile = &o_stream_R1;
+                R1_gz_outfile = &o_stream_gz_R1;
+                break;
+            case 1:
+                R1_outfile = &o_stream_R1_Partial;
+                R1_gz_outfile = &o_stream_gz_R1_Partial;
+                break;
+            case 2:
+            default:
+                R1_outfile = &o_stream_R1_No;
+                R1_gz_outfile = &o_stream_gz_R1_No;
+                break;
+        }
+
+        if (write_gz) {
+            fq_gz_write(*R1_gz_outfile, seq1, 0); // write to gzipped fastq file
+        } else {
+            fq_write(*R1_outfile, seq1, 0); // write to fastq file
+        }
+         
         
         if(R3){
+            // allocate and copy second barcode and umi (if applicable) to subStr3, to copy to header
             char* subStr3;
             int bcUMIlen3 = 0;
             if (isUMIR2) {
-                bcUMIlen3 = length + umi_length +1; // should length be id2_len???
+                bcUMIlen3 = id2_len + umi_length +1;
                 subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
-                memcpy(subStr3, &seq3_seq[start], length ); // should start and length be id2_st and id2_len??
-                subStr3 [length] = '_';
-                memcpy(bcUMIlen3, &seq3_seq[umi_start], umi_length); // this is fine
+                memcpy(subStr3, &seq3_seq[id2_st], id2_len );
+                subStr3 [id2_len] = '_';
+                memcpy(subStr3 + id2_len + 1, &seq3_seq[umi_start], umi_length);
                 subStr3[bcUMIlen3] = '\0';          
             } else {
-                bcUMIlen3 =length; // should length be id2_len??
+                bcUMIlen3 = id2_len;
                 subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
-                memcpy( subStr3, &seq3_seq[start], length ); // again 
+                memcpy( subStr3, &seq3_seq[id2_st], id2_len );
                 subStr3[bcUMIlen3] = '\0';
             }
             
-            char barcode[length];
-            memcpy( barcode, &seq3_seq[start], length + 1); // should start be id2_st? length is fine
-            barcode[length] = '\0';
+            char barcode[id2_len];
+            memcpy( barcode, &seq3_seq[id2_st], id2_len + 1);
+            barcode[id2_len] = '\0';
+            int match_type = 0; // 0 for exact, 1 for partial, 2 for no
             
-            if ( barcode_map.find(subStr3) == barcode_map.end() ) {
+            if (barcode_map.find(subStr3) != barcode_map.end()) {
+                match_type = 0;
+            } else {
+                match_type = 2; // assume there is no match
                 for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
                     if(hamming_distance(it->first, barcode) < 2){
-                        const int new_name_length1 = seq3_namelen + bcUMIlen3 + 1;
-                        seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1 + 1); // allocate additional memory
-                        memmove(seq3_name + bcUMIlen3+1, seq3_name, seq3_namelen * sizeof(char) );// move original read name
-                        memcpy(seq3_name, subStr3, bcUMIlen3 * sizeof(char)); // copy index one
-                        seq3_name[bcUMIlen3] = '#'; // add separator
-                        seq3_name[new_name_length1] = '\0';
-                        
-                        // how is this going to work taking into account isUMIR2????? TODO
-                        if ( (umi_start + umi_length) > (start + length) && umi_length > 0){
-                            memmove (seq3_seq, seq3_seq + umi_start + umi_length, seq3_seqlen-umi_start-umi_length+1); 
-                        }else{
-                            memmove (seq3_seq, seq3_seq + start + length, seq3_seqlen-start-length+1); 
-                        }
-                        
-                        // If rmlow parameter is TRUE:
-                        if(rmlow) { // Only check barcode/UMI quality
-                            // Check quality
-                            if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
-                                removed_low_qual++;
-                                continue; // the rest of the lines in the while loop are ignored
-                            } 
-                        } 
-                        
-                        // If the rmN parameter is TRUE:
-                        if(rmN){
-                            // If find_N is TRUE, then there is an N in the sequence
-                            if(find_N(seq3)){
-                                // If there was an N in the sequence, then
-                                // we add 1 to the counter of reads deleted and
-                                // skip the rest of the code in the loop.
-                                removed_Ns++; // Add 1 to the counter of reads deleted
-                                continue; // the rest of the lines in the while loop are ignored
-                            }
-                        } // end if(rmN)
-                        
-                        
-                        if (write_gz) {
-                            fq_gz_write(o_stream_gz_R3_Partial, seq3, 0); // write to gzipped fastq file
-                        } else {
-                            fq_write(o_stream_R3_Partial, seq3, 0); // write to fastq file
-                        }
-                    } else {
-                        
-                        // If rmlow parameter is TRUE:
-                        if(rmlow) { // Only check barcode/UMI quality
-                            // Check quality
-                            if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
-                                removed_low_qual++;
-                                continue; // the rest of the lines in the while loop are ignored
-                            } 
-                        }
-                        
-                        // If the rmN parameter is TRUE:
-                        if(rmN){
-                            // If find_N is TRUE, then there is an N in the sequence
-                            if(find_N(seq3)){
-                                // If there was an N in the sequence, then
-                                // we add 1 to the counter of reads deleted and
-                                // skip the rest of the code in the loop.
-                                removed_Ns++; // Add 1 to the counter of reads deleted
-                                continue; // the rest of the lines in the while loop are ignored
-                            }
-                        } // end if(rmN)
-                        
-                        
-                        if (write_gz) {
-                            fq_gz_write(o_stream_gz_R3_No, seq3, 0); // write to gzipped fastq file
-                        } else {
-                            fq_write(o_stream_R3_No, seq3, 0); // write to fastq file
-                        }
+                        match_type = 1;
+                        break;
                     }
                 }
+            }
+
+            const int new_name_length1 = seq3_namelen + bcUMIlen3 + 1;
+            seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1); // allocate additional memory
+            memmove(seq3_name + bcUMIlen3+1, seq3_name, seq3_namelen * sizeof(char) );// move original read name
+            memcpy(seq3_name, subStr3, bcUMIlen3 * sizeof(char)); // copy index one
+            seq3_name[bcUMIlen3] = '#'; // add separator
+            seq3_name[new_name_length1] = '\0';
+            
+            memmove(seq3_seq, seq3_seq + bc2_end, seq3_seqlen - bc2_end + 1);           
+            
+            gzFile *R3_gz_outfile;
+            std::ofstream *R3_outfile;
+            switch (match_type) {
+                case 0:
+                    R3_outfile = &o_stream_R3;
+                    R3_gz_outfile = &o_stream_gz_R3;
+                    break;
+                case 3:
+                    R3_outfile = &o_stream_R3_Partial;
+                    R3_gz_outfile = &o_stream_gz_R3_Partial;
+                    break;
+                case 2:
+                default:
+                    R3_outfile = &o_stream_R3_No;
+                    R3_gz_outfile = &o_stream_gz_R3_No;
+                    break;
+            }
+
+            if (write_gz) {
+                fq_gz_write(*R3_gz_outfile, seq3, 0); // write to gzipped fastq file
             } else {
-                const int new_name_length1 = seq3_namelen + bcUMIlen3+1;
-                seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1); // allocate additional memory
-                memmove(seq3_name + bcUMIlen3+1, seq3_name, seq3_namelen * sizeof(char) );// move original read name
-                memcpy(seq3_name, subStr3, bcUMIlen3 * sizeof(char)); // copy index one
-                seq3_name[bcUMIlen3] = '#'; // add separator
-                seq3_name[new_name_length1] = '\0';
-                
-                if ( (umi_start + umi_length) > (start + length) && umi_length > 0){
-                    memmove (seq3_seq, seq3_seq + umi_start + umi_length, seq3_seqlen-umi_start-umi_length+1); 
-                }else{
-                    memmove (seq3_seq, seq3_seq + start + length, seq3_seqlen-start-length+1); 
-                }
-                
-                // If the rmN parameter is TRUE:
-                if(rmN){
-                    // If find_N is TRUE, then there is an N in the sequence
-                    if(find_N(seq3)){
-                        // If there was an N in the sequence, then
-                        // we add 1 to the counter of reads deleted and
-                        // skip the rest of the code in the loop.
-                        removed_Ns++; // Add 1 to the counter of reads deleted
-                        continue; // the rest of the lines in the while loop are ignored
-                    }
-                } // end if(rmN)
-                
-                
-                if (write_gz) {
-                    fq_gz_write(o_stream_gz_R3, seq3, 0); // write to gzipped fastq file
-                } else {
-                    fq_write(o_stream_R3, seq3, 0); // write to fastq file
-                }
-                
-                
+                fq_write(*R3_outfile, seq3, 0); // write to fastq file
             }
             
             free(subStr3);
@@ -1369,7 +1261,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         kseq_destroy(seq3);
         gzclose(fq3);
     }
-    if (write_gz){
+    if (write_gz){ // why do we only close the file if writing gz? shouldn't we still close if it's not writing gz?
         gzclose(o_stream_gz_R1);
         gzclose(o_stream_gz_R1_Partial);
         gzclose(o_stream_gz_R1_No);

@@ -10,3 +10,4 @@ src/*.o
 src/*.so
 sample_data/
 Rplots.pdf
+.DS_Store
