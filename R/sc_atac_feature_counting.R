@@ -1,28 +1,24 @@
-library(rtracklayer)
-library(GenomicAlignments)
-library(Rsamtools)
-library(SummarizedExperiment) 
-library(DelayedArray)
-library(BiocParallel)
-library(matrixStats)
-library(Biobase)
-library(GenomicRanges)
-library(GenomeInfoDb)
-library(IRanges)            
-library(S4Vectors)
-library(BiocGenerics)  
 
-#' TODO: documentation
+#########################################################################
+# Generating the Feature Matrix from a Given BAM file and a Feature FIle
+#########################################################################
+
+#' @name sc_atac_feature_counting
+#' @title generating the feature by cell matrix 
+#' @description feature matrix is created using a given demultiplexed BAM file and 
+#' a selected feature type
+#' @param 
 #'
 #' @export
 #' 
+
 sc_atac_feature_counting <- function(
   insortedbam, 
   feature_input  = NULL, 
   bam_tags       = list(bc="CB", mb="OX"), 
   feature_type   = "peak", 
   organism       = NULL,
-  cell_calling   = "cellranger", # either c("cellranger", "emptydrops", "filter")
+  cell_calling   = "emptydops", # either c("cellranger", "emptydrops", "filter")
   genome_size    = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
   qc_per_bc_file = NULL, # this is optional but needed if the cell_calling option is cellranger
   bin_size       = NULL, 
@@ -46,11 +42,12 @@ sc_atac_feature_counting <- function(
   
   if(output_folder == ''){
     output_folder <- file.path(getwd(), "scPipe-atac-output")
+    cat("Output directory has not been provided. Saving output in\n", output_folder, "\n")
   }
   
   if (!dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
-    cat("Output directory does not exist. Saving output in\n", output_folder, "\n")
+    cat("Output directory does not exist. Creating...", output_folder, "\n")
   }
   
   
@@ -76,9 +73,11 @@ sc_atac_feature_counting <- function(
     # TODO: test the format of the fasta file here and stop if not proper format
     cat("`genome bin` feature type is selected for feature input. reading the genome fasta file ...", "\n")
     
-    # TODO: execute following if the index for fasta is not found...
-    Rsamtools::indexFa(feature_input)
-    cat("Index for ", feature_input, " not found. Creating one now... ", "\n")
+    # index for feature_input is created if not found in the same directory as the feature_input
+    if(!file.exists(paste0(feature_input,".fai"))){
+      Rsamtools::indexFa(feature_input)
+      cat("Index for ", feature_input, " is being created... ", "\n")
+    }
     
     if(is.null(bin_size)){
       bin_size <- 2000
@@ -88,7 +87,7 @@ sc_atac_feature_counting <- function(
     out_bed_filename <- paste0(output_folder, "/", sub('\\..[^\\.]*$', '', basename(feature_input)), ".bed") # remove extension and append output folder
     
     if(file.exists(out_bed_filename)) {
-      warning(out_bed_filename, " file already exists. Replacing!")
+      message(out_bed_filename, " file already exists. Replacing!")
       file.remove(out_bed_filename)
     }
     
@@ -114,11 +113,11 @@ sc_atac_feature_counting <- function(
         sizes_filename_aux <- grep(pattern = organism, x = organism_files, value = TRUE) %>% 
           grep(pattern     <- "size", x = ., value = TRUE)
         
-        sizes_filename = system.file(paste0("extdata/organism_data/", sizes_filename_aux), package = "scPipe", mustWork = TRUE)
+        sizes_filename <- system.file(paste0("extdata/organism_data/", sizes_filename_aux), package = "scPipe", mustWork = TRUE)
         
-        sizes_df = read.table(sizes_filename, header = FALSE, col.names = c("V1", "V2"))
+        sizes_df <- read.table(sizes_filename, header = FALSE, col.names = c("V1", "V2"))
         
-        sizes_df_aux = sizes_df %>% 
+        sizes_df_aux <- sizes_df %>% 
           dplyr::group_by(V1) %>% 
           dplyr::mutate(V3 = floor(V2/bin_size),
                  V4 = bin_size*V3) %>% 
@@ -169,6 +168,8 @@ sc_atac_feature_counting <- function(
     # feature_input <- genome_bin
   }
   
+  # read in the aligned and demltiplexed BAM file
+  
   cat("Creating GAlignment object for the sorted BAM file...\n")
   
   param <- Rsamtools::ScanBamParam(tag = as.character(bam_tags),  mapqFilter=mapq)
@@ -177,15 +178,21 @@ sc_atac_feature_counting <- function(
   
   yld                            <- GenomicAlignments::readGAlignments(bamfl,use.names = TRUE, param = param)
   yld.gr                         <- makeGRangesFromDataFrame(yld,keep.extra.columns=TRUE) 
-  #yld.gr                        <- as(GRanges(yld), "GAlignments")
   average_number_of_lines_per_CB <- length(yld.gr$CB)/length(unique(yld.gr$CB))
+  
+  cat("Adjusting for the Tn5 cut site...\n")
+  # to do
   
   saveRDS(yld.gr, file = paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = ""))
   cat("GAlignment object is created and saved in \n", paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = "") , "\n")
   
   # generate the GAalignment file from the feature_input file
   cat("Creating Galignment object for the feature input...\n")
+  if(feature_type != 'genome_bin'){
   feature.gr <- rtracklayer::import(feature_input)
+  } else {
+    feature.gr <- rtracklayer::import(out_bed_filename)
+  }
   
   ############################### fix_chr
   
@@ -205,7 +212,7 @@ sc_atac_feature_counting <- function(
       feature_head <- read.table(feature_input, nrows = 5)
       if(ncol(feature_head) != 3){
         warning("Feature file provided does not contain 3 columns. Cannot append chr")
-        break
+        break;
       }
       
       
@@ -255,9 +262,6 @@ sc_atac_feature_counting <- function(
   
   ############################### end fix_chr
   
-  # ______________ need to add the excluded_regions filtering here , relevant param has been added to the function i.e. excluded_regions.
-  # this param should take either a tab delimited file in the format of feature_input or keywords "hs", "mm" which would load a stored GAlignment file related to them
-  
   number_of_lines_to_remove <- 0
   
   if(exclude_regions){
@@ -292,7 +296,7 @@ sc_atac_feature_counting <- function(
   
   
   # Log file
-  log_and_stats_folder       <- paste0(output_folder, "/log_and_stats/")
+  log_and_stats_folder       <- paste0(output_folder, "/scPipe_atac_stats/")
   dir.create(log_and_stats_folder, showWarnings = FALSE)
   log_file                   <- paste0(log_and_stats_folder, "log_file.txt")
   if(!file.exists(log_file)) file.create(log_file)
@@ -317,44 +321,11 @@ sc_atac_feature_counting <- function(
   
   # generate the matrix using this overlap results above.
   
-  #yld.gr[-queryHits(findOverlaps(yld.gr, feature.gr, type="any", ignore.strand = TRUE)),] 
-  #feature.gr[-queryHits(findOverlaps(feature.gr, yld.gr, type="any", ignore.strand = TRUE)),] 
-  # mergeByOverlaps(feature.gr, yld.gr)
-  
-  #mcols(yld.gr)[queryHits(overlaps), "peakStart"] <- start(ranges(feature.gr)[subjectHits(overlaps)])
-  #mcols(yld.gr)[queryHits(overlaps), "peakEnd"]   <- end(ranges(feature.gr)[subjectHits(overlaps)])
-  
   mcols(yld.gr)[subjectHits(overlaps), "peakStart"] <- start(ranges(feature.gr)[queryHits(overlaps)])
   mcols(yld.gr)[subjectHits(overlaps), "peakEnd"]   <- end(ranges(feature.gr)[queryHits(overlaps)])
   
   #is removing NAs here the right thing to do?
-  #overlap.df <- data.frame(yld.gr) %>% dplyr::select(seqnames, peakStart, peakEnd, CB)
   overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% dplyr::select(seqnames, peakStart, peakEnd, CB)
-  
-  # # this method still does nto assign the dims to the matrix properly, hence comented out.
-  # matrix_rownames = overlap.df %>% 
-  #   dplyr::select(1:3) %>% 
-  #   distinct() %>% 
-  #   mutate(name = paste0(seqnames, ":", peakStart, "-", peakEnd)) %>% 
-  #   pull(name)
-  # 
-  # matrixData <- overlap.df %>% 
-  #   dplyr::group_by(seqnames, peakStart, peakEnd, CB) %>% 
-  #   dplyr::summarise(count = n()) %>% 
-  #   purrr::set_names(c("chromosome","start","end","barcode","count")) %>% 
-  #   unite("chrS", chromosome:start, sep=":") %>%
-  #   unite("feature", chrS:end, sep="-") %>% 
-  #   dplyr::group_by(feature,barcode) %>% 
-  #   dplyr::mutate(grouped_id = row_number()) %>% 
-  #   tidyr::spread(barcode, count) %>% 
-  #   dplyr::select(-grouped_id) %>% 
-  #   # TODO: sanity check to see if all features are unique here
-  #   #if(!unique(matrixData$feature)) {stop("There are duplicate values in the feature input. Please check and rerun this step again")}
-  #   as_tibble(rownames = "feature") %>% 
-  #   dplyr::select(-1) %>% 
-  #   as.matrix(.)
-  # 
-  # row.names(matrixData) = matrix_rownames
   
   overlap.df <- overlap.df %>% 
     dplyr::group_by(seqnames, peakStart, peakEnd, CB) %>% 
@@ -377,10 +348,10 @@ sc_atac_feature_counting <- function(
     as.matrix() %>%
     replace(is.na(.), 0)
   
-  # it still bugs me how there are no dimnames in the Matrix. Trying to add them manually here
+  # add dimensions of the matrix
   dimnames(matrixData)  <-  list(matrixData.old[1] %>% rownames(), matrixData.old %>% dplyr::select(-1) %>% colnames())
   
-  # call sc_atac_cell_callling.R here ... still ongoing
+  # call sc_atac_cell_callling.R here : emptyDrops() function implemented
   if(cell_calling){
     sc_atac_cell_calling(mat = matrixData, cell_calling = cell_calling, output_folder = output_folder)
   }
@@ -388,23 +359,24 @@ sc_atac_feature_counting <- function(
   saveRDS(matrixData, file = paste(output_folder,"/feature_matrix.rds",sep = ""))
   cat("Feature matrix generated: ", paste(output_folder,"/feature_matrix.rds",sep = "") , "\n")
   
-  # here you need to convert the NAs to 0s if the sparse option to create the sparse Matrix properly
+  # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
   sparseM <- Matrix(matrixData, sparse=TRUE)
   cat("Sparse matrix generated", "\n")
   writeMM(obj = sparseM, file=paste(output_folder,"/sparse_matrix.mtx", sep =""))
   cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
-  #saveRDS(, file = paste(output_folder,"/sparse_matrix.rds",sep = ""))
-  
+
+  # generate and save jaccard matrix
   jaccardM <- jaccardMatrix(sparseM)
   cat("Jaccard matrix generated", "\n")
   saveRDS(jaccardM, file = paste(output_folder,"/jaccard_matrix.rds",sep = ""))
   cat("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")
   
+  # generate and save the binary matrix
   matrixData[matrixData>0] <- 1
   saveRDS(matrixData, file = paste(output_folder,"/binary_matrix.rds",sep = ""))
   cat("Binary matrix is saved in:\n", paste(output_folder,"/binary_matrix.rds",sep = "") , "\n")
   
-  # following can be used to plot the stas and load it into sce object ########
+  # following can be used to plot the stats and load it into sce object ########
   # (from https://broadinstitute.github.io/2020_scWorkshop/data-wrangling-scrnaseq.html)
   counts_per_cell    <- Matrix::colSums(sparseM)
   counts_per_feature <- Matrix::rowSums(sparseM)

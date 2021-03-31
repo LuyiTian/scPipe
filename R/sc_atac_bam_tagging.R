@@ -1,3 +1,7 @@
+#############################
+# Demultiplxing FASTQ Reads
+#############################
+
 #' sc_atac_bam_tagging()
 #'
 #' @return 
@@ -90,7 +94,7 @@ sc_atac_bam_tagging <- function(inbam,
   cat(outbam)
   cat("\n")
   
-  Rsamtools::sortBam(outbam, outsortedbam,indexDestination = TRUE)
+  Rsamtools::sortBam(outbam, outsortedbam, indexDestination = TRUE)
   Rsamtools::indexBam(paste0(outsortedbam, ".bam"))
   
   cat("Sorted & indexed tagged BAM file is located in: \n")
@@ -100,7 +104,7 @@ sc_atac_bam_tagging <- function(inbam,
   
   if(is.null(bc_length)){
     cat("Using default value for barcode length (bc_length = 16) \n")
-    bc_length = 16
+    bc_length <- 16
   }
   
   
