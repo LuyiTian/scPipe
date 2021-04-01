@@ -18,7 +18,7 @@ sc_atac_feature_counting <- function(
   bam_tags       = list(bc="CB", mb="OX"), 
   feature_type   = "peak", 
   organism       = NULL,
-  cell_calling   = "emptydops", # either c("cellranger", "emptydrops", "filter")
+  cell_calling   = FALSE, # either c("cellranger", "emptydrops", "filter")
   genome_size    = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
   qc_per_bc_file = NULL, # this is optional but needed if the cell_calling option is cellranger
   bin_size       = NULL, 
@@ -351,9 +351,10 @@ sc_atac_feature_counting <- function(
   # add dimensions of the matrix
   dimnames(matrixData)  <-  list(matrixData.old[1] %>% rownames(), matrixData.old %>% dplyr::select(-1) %>% colnames())
   
-  # call sc_atac_cell_callling.R here : emptyDrops() function implemented
-  if(cell_calling){
-    sc_atac_cell_calling(mat = matrixData, cell_calling = cell_calling, output_folder = output_folder)
+  # call sc_atac_cell_callling.R here : emptyDrops() function currently implemented
+  if(cell_calling =="emptydrops" || cell_calling =="cellranger" || cell_calling =="filter"){
+    cat("calling `EmptyDrops` function for cell calling ... \n")
+    sc_atac_cell_calling(mat = matrixData, cell_calling = 'emptydrops', output_folder = output_folder)
   }
   
   saveRDS(matrixData, file = paste(output_folder,"/feature_matrix.rds",sep = ""))

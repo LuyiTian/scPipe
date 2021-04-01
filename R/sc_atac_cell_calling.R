@@ -10,10 +10,10 @@
 #'
 #' @export
 #'
-sc_atac_cell_calling = function(
+sc_atac_cell_calling <- function(
   mat, cell_calling, output_folder, genome_size = NULL, qc_per_bc_file = NULL, lower = NULL){
   
-  if(cell_calling == 'emptydrops'){
+  if(cell_calling == "emptydrops"){
     
     library(DropletUtils)
     library(data.table)
@@ -23,26 +23,30 @@ sc_atac_cell_calling = function(
     if(is.null(lower)){
       lower = floor(0.1*ncol(mat))
     }
-    cell.out <- emptyDrops2(mat, lower = lower)
+    cell.out <- testEmptyDrops2(mat, lower = lower)
     
     filter.out <- cell.out[S4Vectors::complete.cases(cell.out), ]
     
-    saveRDS(filter.out, file = paste0(output_folder, '/EmptyDrop_obj.rds'))
+    #saveRDS(filter.out, file = paste0(output_folder, '/EmptyDrop_obj.rds'))
+    #cat("Empty cases are removed and saved in ", output_folder, "\n")
     
     if(length(filter.out$FDR) > 0){
       cat("Empty filter.out\n")
-      filter.out = filter.out[filter.out$FDR <= fdr, ]
+      filter.out <- filter.out[filter.out$FDR <= fdr, ]
+    } else{
+      cat("EmptyDrops returned 0 true cells ... use the output matrices with caution!")
     }
     
-    select.cells = rownames(filter.out)
+    select.cells <- rownames(filter.out)
     
-    out_mat = mat[, colnames(mat) %in% select.cells]
+    out_mat      <- mat[, colnames(mat) %in% select.cells]
     barcodes     <- colnames(out_mat)
     features     <- rownames(out_mat)
     
     if(length(filter.out$FDR) > 0){
       cat("Empty filter.out\n")
       writeMM(out_mat, file = paste0(output_folder, '/matrix.mtx'))
+      cat("cell called and stored in ", output_folder, "\n")
       write.table(barcodes, file = paste0(output_folder, '/non_empty_barcodes.txt'), sep = '\t',
                   row.names = FALSE, quote = FALSE, col.names = FALSE)
       write.table(features, file = paste0(output_folder, '/non_empty_features.txt'), sep = '\t',
@@ -73,7 +77,7 @@ sc_atac_cell_calling = function(
 
 
 
-testEmptyDrops2 = function (m, lower = 100, niters = 10000, test.ambient = FALSE, 
+testEmptyDrops2 <- function (m, lower = 100, niters = 10000, test.ambient = FALSE, 
                             ignore = NULL, alpha = NULL, BPPARAM = SerialParam()) 
 {
   discard      <- rowSums(m) == 0
@@ -125,7 +129,7 @@ testEmptyDrops2 = function (m, lower = 100, niters = 10000, test.ambient = FALSE
 
 
 
-emptyDrops2 = function (m, lower = 100, retain = NULL, barcode.args = list(), 
+emptyDrops2 <- function (m, lower = 100, retain = NULL, barcode.args = list(), 
                         ...) 
 {
   m <- DropletUtils:::.rounded_to_integer(m)
@@ -158,7 +162,7 @@ emptyDrops2 = function (m, lower = 100, retain = NULL, barcode.args = list(),
 
 
 
-cellranger_cell_caller = function(mat, output_folder, genome_size, qc_per_bc_file){
+cellranger_cell_caller  <- function(mat, output_folder, genome_size, qc_per_bc_file){
   # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/cellranger_cell_caller.R
   
   library(data.table)
@@ -235,7 +239,7 @@ cellranger_cell_caller = function(mat, output_folder, genome_size, qc_per_bc_fil
 
 
 
-filter_barcodes = function(
+filter_barcodes <- function(
   mtx, 
   output_folder,
   bc_stat_file = NULL,
