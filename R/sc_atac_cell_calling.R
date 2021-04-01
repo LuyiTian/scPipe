@@ -34,7 +34,7 @@ sc_atac_cell_calling <- function(
       cat("Empty filter.out\n")
       filter.out <- filter.out[filter.out$FDR <= fdr, ]
     } else{
-      cat("EmptyDrops returned 0 true cells ... use the output matrices with caution!")
+      message("EmptyDrops returned 0 true cells ... use the output matrices with caution! \n")
     }
     
     select.cells <- rownames(filter.out)
