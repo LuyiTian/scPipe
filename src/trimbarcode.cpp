@@ -881,7 +881,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         char *fq1_fn,
         char *fq3_fn,
         char *fq_out, 
-        char *bc_fn, 
+        char *bc_fn, // barcode file must be a file where each line is a barcode (not comma separated)
         int start, // get rid
         int length, // get rid
         int umi_start,
@@ -898,13 +898,14 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         int id2_len
 )
 {
-    std::vector<int> out_vect(5, 0);  // output vector of length 4 filled with zeroes
+    std::vector<int> out_vect(6, 0);  // output vector of length 6 filled with zeroes
     
     int passed_reads = 0;
     int removed_Ns = 0;
     int removed_low_qual = 0;
     int exact_match = 0;
     int approx_match = 0;
+    int total_barcodes = 0;
     
     bool R3 = false;
     bool isUMIR1 = (umi_length > 0 && (strcmp(umi_in,"both") == 0 || strcmp(umi_in,"R1") == 0));
@@ -925,30 +926,23 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         file_error(fq1_fn);
     }
     
-    
     std::map<std::string, int> barcode_map; 
     std::ifstream bc(bc_fn);
     std::string line;
     if(!bc.is_open()) throw std::runtime_error("Could not open file");
     while(std::getline(bc, line))
     {
-        std::stringstream s_stream(line);
-        std::string bcode;
-        if(s_stream.good()) {
-            getline(s_stream, bcode, ','); //get first string delimited by comma
+        total_barcodes++;
+        std::string substr = line.substr(0,std::min(id1_len, id2_len));
+        barcode_map.insert(std::pair<std::string, int>(substr, 1)); 
+        if (barcode_map.count(substr) > 1) {
+            total_barcodes--; // if there is already a barcode at this position, remove 1 from total barcode count
         }
-        
-        if(s_stream.good()) {
-            getline(s_stream, bcode, ','); //get second string delimited by comma
-            std::string substr = bcode.substr(0,length);
-            barcode_map.insert(std::pair<std::string, int>(substr, 1)); 
-        }
-        
     }
     
     if(barcode_map.empty()){
         std::stringstream err_msg;
-        err_msg << "Error in retrieving barcodes from the barcode File. Please check the barcode file format. " << bc_fn << "\n";
+        err_msg << "Error in retrieving barcodes from the barcode File. Please check the barcode file format. " << bc_fn << std::endl;
         Rcpp::stop(err_msg.str());
     }
     
@@ -1036,12 +1030,14 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     while (((l1 = kseq_read(seq1)) >= 0))
     {
         if (++_interrupt_ind % 50 == 0) checkUserInterrupt();
+        //if (passed_reads > 500) break; // testing line
         passed_reads++;
-        if(passed_reads % 10==0) {
+
+        if(passed_reads % 1000==0) {
             Rcout << passed_reads << " lines have been read..." << std::endl; 
         }
 
-        if (passed_reads > 5000) break;
+        
         
         // variables for copying sequences and for checking lengths
         char *seq1_name = seq1->name.s;
@@ -1061,7 +1057,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                 seq3_seqlen = seq3->seq.l;
             }
             else{
-                Rcpp::Rcout << "R3 file is not of same length as R2: " << "\n";
+                Rcpp::Rcout << "R3 file is not of same length as R2: " << std::endl;
             }
         } 
 
@@ -1109,9 +1105,9 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         if(isUMIR1){ // create subStr1 of barcode concatenated with UMI, seperated by '_'
             bcUMIlen1 = id1_len + umi_length + 1;
             subStr1 = (char *)malloc(bcUMIlen1 + 1); // additional space for zero terminator
-            memcpy(subStr1, &seq1_seq[id1_st], id1_len);
+            memcpy(subStr1, seq1_seq + id1_st, id1_len);
             subStr1[id1_len] = '_'; 
-            memcpy(subStr1 + id1_len + 1, &seq1_seq[umi_start], umi_length); 
+            memcpy(subStr1 + id1_len + 1, seq1_seq + umi_start, umi_length); 
             subStr1[bcUMIlen1] = '\0';
         } else { // create subStr1 of barcode sequence
             bcUMIlen1 = id1_len;
@@ -1122,7 +1118,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         
         // allocate and copy just the barcode, to check against the barcodes in the barcode map
         char barcode[id1_len + 1];
-        memcpy( barcode, &seq1_seq[id1_st], id1_len + 1); 
+        memcpy( barcode, seq1_seq + id1_st, id1_len); 
         barcode[id1_len] = '\0'; 
         
         int match_type = 2; // 0 for exact, 1 for partial, 2 for no
@@ -1185,9 +1181,9 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             if (isUMIR2) {
                 bcUMIlen3 = id2_len + umi_length +1;
                 subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
-                memcpy(subStr3, &seq3_seq[id2_st], id2_len );
+                memcpy(subStr3, seq3_seq + id2_st, id2_len);
                 subStr3 [id2_len] = '_';
-                memcpy(subStr3 + id2_len + 1, &seq3_seq[umi_start], umi_length);
+                memcpy(subStr3 + id2_len + 1, seq3_seq + umi_start, umi_length);
                 subStr3[bcUMIlen3] = '\0';          
             } else {
                 bcUMIlen3 = id2_len;
@@ -1196,8 +1192,8 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                 subStr3[bcUMIlen3] = '\0';
             }
             
-            char barcode[id2_len];
-            memcpy( barcode, &seq3_seq[id2_st], id2_len + 1);
+            char barcode[id2_len + 1];
+            memcpy( barcode, seq3_seq + id2_st, id2_len);
             barcode[id2_len] = '\0';
             int match_type = 0; // 0 for exact, 1 for partial, 2 for no
             
@@ -1279,12 +1275,14 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     out_vect[2] = removed_low_qual;
     out_vect[3] = exact_match;
     out_vect[4] = approx_match;
+    out_vect[5] = total_barcodes;
     
-    Rcpp::Rcout << "Total Reads: " << passed_reads << "\n";
-    Rcpp::Rcout << "Total N's removed: " << removed_Ns << "\n";
-    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << "\n";
-    Rcpp::Rcout << "Exact match Reads: " << exact_match << "\n";
-    Rcpp::Rcout << "Approx Match Reads: " << approx_match << "\n";
+    Rcpp::Rcout << "Total Reads: " << passed_reads << std::endl;
+    Rcpp::Rcout << "Total N's removed: " << removed_Ns << std::endl;
+    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
+    Rcpp::Rcout << "Exact match Reads: " << exact_match << std::endl;
+    Rcpp::Rcout << "Approx Match Reads: " << approx_match << std::endl;
+    Rcpp::Rcout << "Total barcodes: " << total_barcodes << std::endl;
     
     return(out_vect);
 }
