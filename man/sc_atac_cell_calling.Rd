@@ -9,7 +9,8 @@ sc_atac_cell_calling(
   cell_calling,
   output_folder,
   genome_size = NULL,
-  qc_per_bc_file = NULL
+  qc_per_bc_file = NULL,
+  lower = NULL
 )
 }
 \value{

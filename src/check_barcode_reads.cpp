@@ -351,7 +351,6 @@ bool check_barcode_reads(String fastq, String barcodeseqs,
         double search_result, new_search_result;
         // then we need to actually search the file lines.
         // quick search of every read line (to a point)
-        Rprintf("Checking if given barcode start index is valid.\n");
         Search_Barcodes_At_Index(barcodes_trie, fastq_file, barcode_start, barcode_length, lines_to_search, &found, &not_found);
 
         // once we've check the given position for barcodes, if we have a certain hit amount, proceed with program
