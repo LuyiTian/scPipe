@@ -17,7 +17,7 @@ ATAC-Seq module also produces a feature-barcode count matrix that is essential f
 
 The scATAC-Seq preprocessing module of the package is under active development. Feel free to ask any questions or submit a pull request.
 
-* [01/04/2021] scPipe now uses *samtools* to remove duplcates from scATAC-Seq data
+* [01/04/2021] scPipe now uses *samtools* to remove duplicates from scATAC-Seq data
 * [01/04/2021] scPipe now uses *MACS3* for scATAC-Seq peak calling
 * [01/04/2021] scPipe now uses *sinto* for scATAC-seq fragment file generation
 * [15/02/2021] scPipe scATAC-Seq module also now uses the *SingleCellExperiment* class.
