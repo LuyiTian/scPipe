@@ -11,3 +11,4 @@ src/*.so
 sample_data/
 scPipe-atac-output/
 Rplots.pdf
+.DS_Store

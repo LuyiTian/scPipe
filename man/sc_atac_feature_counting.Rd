@@ -6,7 +6,7 @@
 \usage{
 sc_atac_feature_counting(
   insortedbam,
-  feature_input,
+  feature_input = NULL,
   bam_tags = list(bc = "CB", mb = "OX"),
   feature_type = "peak",
   organism = NULL,
@@ -16,7 +16,8 @@ sc_atac_feature_counting(
   bin_size = NULL,
   yieldsize = 1e+06,
   mapq = 0,
-  blacklist = NULL,
+  exclude_regions = FALSE,
+  excluded_regions_filename = NULL,
   output_folder = "",
   fix_chr = "none"
 )

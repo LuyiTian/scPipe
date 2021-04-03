@@ -131,16 +131,12 @@ Base_to_Int(char* base) {
         case 'A':
           return 1;
           // positions[1]++ usingthis above returns the pre-incremented value of positions
-          break;
         case 'C':
           return 2;
-          break;
         case 'G':
           return 3;
-          break;
         case 'T':
           return 4;
-          break;
         case TERMINATOR:
         default:
           return 0;
@@ -355,7 +351,6 @@ bool check_barcode_reads(String fastq, String barcodeseqs,
         double search_result, new_search_result;
         // then we need to actually search the file lines.
         // quick search of every read line (to a point)
-        Rprintf("Checking if given barcode start index is valid.\n");
         Search_Barcodes_At_Index(barcodes_trie, fastq_file, barcode_start, barcode_length, lines_to_search, &found, &not_found);
 
         // once we've check the given position for barcodes, if we have a certain hit amount, proceed with program

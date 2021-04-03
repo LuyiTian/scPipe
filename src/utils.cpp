@@ -123,7 +123,7 @@ void file_error(char *filename) {
 
 
 
-char* getFileName(char* path, char* seperator)
+char* getFileName(char* path, const char* seperator)
 {
     char *ssc;
     int l = 0;

@@ -75,10 +75,10 @@ sc_atac_trim_barcode = function(
     dir.create(output_folder,recursive=TRUE)
     cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
   }
- 
+
   log_and_stats_folder <- paste0(output_folder, "/scPipe_atac_stats/")
   dir.create(log_and_stats_folder, showWarnings = F)
-  
+
   log_file             <- paste0(log_and_stats_folder, "log_file.txt")
   stats_file           <- paste0(log_and_stats_folder, "stats_file_trimbarcode.txt")
   if(!file.exists(log_file)) file.create(log_file)
@@ -86,7 +86,7 @@ sc_atac_trim_barcode = function(
 
   cat(
     paste0( "trimbarcode starts at ", as.character(Sys.time()),"\n"), file = log_file, append = TRUE)
-  
+
   if (substr(r1, nchar(r1) - 2, nchar(r1)) == ".gz") {
     write_gz = TRUE
   }
@@ -141,30 +141,51 @@ sc_atac_trim_barcode = function(
         umi_start,
         umi_length)
 
-      cat("Total Reads: ", out_vec[1], 
-          "\nTotal N's removed: ", out_vec[2], 
-          "\nremoved_low_qual: ", out_vec[3], 
+      cat("Total Reads: ", out_vec[1],
+          "\nTotal N's removed: ", out_vec[2],
+          "\nremoved_low_qual: ", out_vec[3],
           "\nUnique sequences read in barcode file: ", out_vec[4],
           "\n",
           file = stats_file, append = TRUE)
-      
-    }
-    else {
+
+    } else {
       cat("Using barcode CSV file, since barcode FastQ file is not passed \n")
       if(bc_start == -1 || bc_length == -1 ){
         stop("Please pass bc_start and bc_length values")
       }
 
+
+      # trim the barcode csv file (which contains the actual barcodes in the second column)
+      # into a file with barcodes on each line and no whitespace
+      temp_barcode_file <- paste0(output_folder, "/tempbarcode.csv")
+      on.exit(if(file.exists(temp_barcode_file)) {file.remove(temp_barcode_file)})
+
+      # change this to handle multiple barcode files!! TODO
+      barcodes <- read.csv(bc_file, header=FALSE, strip.white=TRUE)
+      write(barcodes$V2, temp_barcode_file)
+
       # Check if given barcode start position is valid
-      if (!check_barcode_start_position(r1, bc_file, bc_start, bc_length, 10000, .8)) {
-          stop("Please change bc_start and try again")
+      # check_barcode_start_position is expecting a single barcode, of only the barcode sequences, no commas
+      cat("Checking if id2_st is valid\n")
+      if (!check_barcode_start_position(r1, temp_barcode_file, id1_st, id1_len, 10000, .8)) {
+          if (tolower(readline(prompt="Continue anyway? (y/n) ")) != "y") {
+            stop("Please change id1_st and try again")
+          }
+          cat("Continuing...")
+      }
+      cat("Checking if id2_st is valid\n")
+      if (!check_barcode_start_position(r2, temp_barcode_file, id2_st, id2_len, 10000, .8)) {
+         if (tolower(readline(prompt="Continue anyway? (y/n) ")) != "y") {
+            stop("Please change id2_st and try again")
+          }
+          cat("Continuing...")
       }
 
       out_vec = rcpp_sc_atac_trim_barcode(
         output_folder,
         r1,
         r2,
-        bc_file,
+        temp_barcode_file,
         bc_start,
         bc_length,
         umi_start,
@@ -180,17 +201,17 @@ sc_atac_trim_barcode = function(
         id2_st,
         id2_len)
 
-      bc <- data.table::fread("../new_project_collab/seqATAC/data/barcode.csv", select = 2, col.names = "bc")
-      
-      cat("Total Reads: ", out_vec[1], 
-          "\nTotal N's removed: ", out_vec[2], 
-          "\nremoved_low_qual: ", out_vec[3], 
-          "\nExact match Reads: ", out_vec[4], 
-          "\nApprox Match Reads: ", out_vec[5], 
-          "\nTotal barcodes: ", length(unique(bc$bc)),
+      #bc <- data.table::fread("../new_project_collab/seqATAC/data/barcode.csv", select = 2, col.names = "bc")
+      # concatenate results to stats_file
+      cat("Total Reads: ", out_vec[1],
+          "\nTotal N's removed: ", out_vec[2],
+          "\nremoved_low_qual: ", out_vec[3],
+          "\nExact match Reads: ", out_vec[4],
+          "\nApprox Match Reads: ", out_vec[5],
+          "\nTotal barcodes: ", out_vec[6],
           "\n",
           file = stats_file, append = TRUE)
-      
+
     }
   }else{
     stop("Barcode file is mandatory")
@@ -202,10 +223,12 @@ sc_atac_trim_barcode = function(
       "trimbarcode finishes at ",
       as.character(Sys.time()),
       "\n\n"
-    ), 
+    ),
     file = log_file, append = TRUE)
-  
+
   # return(out_vec)
+
+
 }
 
 

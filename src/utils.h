@@ -45,7 +45,7 @@ std::string padding(int count, int zero_num);
 // stops program when file cannot be opened
 void file_error(char *filename);
 
-char* getFileName(char* path, char* seperator = "/");
+char* getFileName(char* path, const char* seperator = "/");
 char* createFileWithAppend(char* fq_out, const char* appendR1, char* fq1_fn);
 void openFile(gzFile &o_stream_gz_R1,std::ofstream &o_stream_R1, char* fqoutR1, bool write_gz);
 #endif

@@ -113,7 +113,7 @@ int Bamdemultiplex::clean_bam_barcode(string bam_path, string out_bam, int max_m
 
     string bc_seq;
     string match_res;
-    int map_status;
+    //int map_status;
 
     size_t _interrupt_ind = 0;
 
