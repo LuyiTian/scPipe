@@ -1,4 +1,8 @@
-#' sc_atac_bam_tagging()
+#######################################
+# Cell Calling on a matrix (scATAC-Seq)
+#######################################
+
+#' sc_atac_cell_calling()
 #'
 #' @return 
 #'
@@ -10,46 +14,71 @@
 #'
 #' @export
 #'
-sc_atac_cell_calling = function(
+sc_atac_cell_calling <- function(
   mat, cell_calling, output_folder, genome_size = NULL, qc_per_bc_file = NULL, lower = NULL){
   
-  if(cell_calling == 'emptydrops'){
+  if(cell_calling == "emptydrops"){
     
     library(DropletUtils)
     library(data.table)
     library(Matrix)
     
     set.seed(2019)
+    
+    # generating the knee plot
+    my_counts <- Matrix(mat)
+    br.out    <- DropletUtils::barcodeRanks(my.counts)
+    
+    # Making a plot
+    dev.off()
+    png(file=paste0(output_folder, "/scPipe_atac_stats/knee_plot.png"))
+        plot(br.out$rank, br.out$total, log="xy", xlab="Rank", ylab="Total")
+        o <- order(br.out$rank)
+        lines(br.out$rank[o], br.out$fitted[o], col="red")
+        
+        abline(h=metadata(br.out)$knee, col="dodgerblue", lty=2)
+        abline(h=metadata(br.out)$inflection, col="forestgreen", lty=2)
+        legend("bottomleft", lty=2, col=c("dodgerblue", "forestgreen"), 
+               legend=c("knee", "inflection"))
+    dev.off()
+    
     if(is.null(lower)){
-      lower = floor(0.1*ncol(mat))
+      #lower <- floor(0.1*ncol(mat))
+      lower <- 1
     }
-    cell.out <- emptyDrops2(mat, lower = lower)
+    cell.out <- DropletUtils::emptyDrops(mat, lower = lower)
+    # cell.out <- emptyDrops2(mat, lower = lower)
     
     filter.out <- cell.out[S4Vectors::complete.cases(cell.out), ]
     
-    saveRDS(filter.out, file = paste0(output_folder, '/EmptyDrop_obj.rds'))
+    #saveRDS(filter.out, file = paste0(output_folder, '/EmptyDrop_obj.rds'))
+    #cat("Empty cases are removed and saved in ", output_folder, "\n")
     
     if(length(filter.out$FDR) > 0){
-      cat("Empty filter.out\n")
-      filter.out = filter.out[filter.out$FDR <= fdr, ]
+      fdr <- 0.01
+      cat("FDR of 0.01 is assigned... \n")
+      filter.out <- filter.out[filter.out$FDR <= fdr, ]
+    } else{
+      message("insufficient unique points for computing knee/inflection points ... Use the output matrices with caution! \n")
     }
     
-    select.cells = rownames(filter.out)
+    select.cells <- rownames(filter.out)
     
-    out_mat = mat[, colnames(mat) %in% select.cells]
+    out_mat      <- mat[, colnames(mat) %in% select.cells]
     barcodes     <- colnames(out_mat)
     features     <- rownames(out_mat)
     
-    if(length(filter.out$FDR) > 0){
-      cat("Empty filter.out\n")
-      writeMM(out_mat, file = paste0(output_folder, '/matrix.mtx'))
+    #if(length(filter.out$FDR) > 0){
+    #  cat("Empty filter.out\n")
+      Matrix::writeMM(Matrix::Matrix(out_mat), file = paste0(output_folder, '/cell_called_matrix.mtx'))
+      cat("cell called and stored in ", output_folder, "\n")
       write.table(barcodes, file = paste0(output_folder, '/non_empty_barcodes.txt'), sep = '\t',
                   row.names = FALSE, quote = FALSE, col.names = FALSE)
       write.table(features, file = paste0(output_folder, '/non_empty_features.txt'), sep = '\t',
                   row.names = FALSE, quote = FALSE, col.names = FALSE)
-    }
+    #}
     
-    
+    return(out_mat)
   } # end emptydrops
   
   
@@ -67,98 +96,84 @@ sc_atac_cell_calling = function(
 }
 
 
+# ############## Modified testEmptyDrops function ######################
+# testEmptyDrops2 <- function (m, lower = 100, niters = 10000, test.ambient = FALSE, 
+#                             ignore = NULL, alpha = NULL, BPPARAM = SerialParam()) 
+# {
+#   discard      <- rowSums(m) == 0
+#   m            <- m[!discard, , drop = FALSE]
+#   ncells       <- ncol(m)
+#   umi.sum      <- as.integer(round(colSums(m)))
+#   ambient      <- umi.sum <= lower
+#   ambient.cells<- m[, ambient, drop = FALSE]
+#   ambient.prof <- rowSums(ambient.cells)
+#   
+#   if (sum(ambient.prof) == 0) {
+#     stop("no counts available to estimate the ambient profile")
+#   }
+#   ambient.prop <- edgeR::goodTuringProportions(ambient.prof)
+#   if (!test.ambient) {
+#     keep <- !ambient
+#   } else {
+#     keep <- umi.sum > 0L
+#   }
+#   if (!is.null(ignore)) {
+#     keep <- keep & umi.sum > ignore
+#   }
+#   obs <- m[, keep, drop = FALSE]
+#   obs.totals <- umi.sum[keep]
+#   if (is.null(alpha)) {
+#     alpha <- DropletUtils:::.estimate_alpha(m[, ambient, drop = FALSE], 
+#                                             ambient.prop, umi.sum[ambient])
+#   }
+#   obs.P <-DropletUtils:::.compute_multinom_prob_data(obs, ambient.prop, alpha = alpha)
+#   rest.P <-DropletUtils:::.compute_multinom_prob_rest(obs.totals, alpha = alpha)
+#   n.above <-DropletUtils:::.permute_counter(totals = obs.totals, probs = obs.P, 
+#                                             ambient = ambient.prop, iter = niters, BPPARAM = BPPARAM, 
+#                                             alpha = alpha)
+#   limited <- n.above == 0L
+#   pval <- (n.above + 1)/(niters + 1)
+#   all.p <- all.lr <- all.exp <- rep(NA_real_, ncells)
+#   all.lim <- rep(NA, ncells)
+#   all.p[keep] <- pval
+#   all.lr[keep] <- obs.P + rest.P
+#   all.lim[keep] <- limited
+#   output <- DataFrame(Total = umi.sum, LogProb = all.lr, PValue = all.p, 
+#                       Limited = all.lim, row.names = colnames(m))
+#   metadata(output) <- list(lower = lower, niters = niters, 
+#                            ambient = ambient.prop, alpha = alpha)
+#   output
+# }
+# 
+# ############## Rounded to integer function #####################
+# .rounded_to_integer <- function(m, round=TRUE) {
+#   if (round) {
+#     m <- round(m)
+#   }
+#   m
+# }
+# 
+# ############## Modified emptyDrops function ######################
+# emptyDrops2 <- function (m, lower = 100, retain = -1, barcode.args = list(), 
+#                         ...) 
+# {
+#   m <- .rounded_to_integer(m)
+#   stats <- testEmptyDrops2(m, lower = lower, ...)
+#   tmp <- stats$PValue
+#   if (is.null(retain)) {
+#     br.out <- do.call(barcodeRanks, c(list(m, lower = lower), 
+#                                       barcode.args))
+#     retain <- metadata(br.out)$knee
+#   }
+#   always <- stats$Total >= retain
+#   tmp[always] <- 0
+#   metadata(stats)$retain <- retain
+#   stats$FDR <- p.adjust(tmp, method = "BH")
+#   return(stats)
+# }
 
 
-
-
-
-
-testEmptyDrops2 = function (m, lower = 100, niters = 10000, test.ambient = FALSE, 
-                            ignore = NULL, alpha = NULL, BPPARAM = SerialParam()) 
-{
-  discard      <- rowSums(m) == 0
-  m            <- m[!discard, , drop = FALSE]
-  ncells       <- ncol(m)
-  umi.sum      <- as.integer(round(colSums(m)))
-  ambient      <- umi.sum <= lower
-  ambient.cells<- m[, ambient, drop = FALSE]
-  ambient.prof <- rowSums(ambient.cells)
-  
-  if (sum(ambient.prof) == 0) {
-    stop("no counts available to estimate the ambient profile")
-  }
-  ambient.prop <- edgeR::goodTuringProportions(ambient.prof)
-  if (!test.ambient) {
-    keep <- !ambient
-  } else {
-    keep <- umi.sum > 0L
-  }
-  if (!is.null(ignore)) {
-    keep <- keep & umi.sum > ignore
-  }
-  obs <- m[, keep, drop = FALSE]
-  obs.totals <- umi.sum[keep]
-  if (is.null(alpha)) {
-    alpha <- DropletUtils:::.estimate_alpha(m[, ambient, drop = FALSE], 
-                                            ambient.prop, umi.sum[ambient])
-  }
-  obs.P <-DropletUtils:::.compute_multinom_prob_data(obs, ambient.prop, alpha = alpha)
-  rest.P <-DropletUtils:::.compute_multinom_prob_rest(obs.totals, alpha = alpha)
-  n.above <-DropletUtils:::.permute_counter(totals = obs.totals, probs = obs.P, 
-                                            ambient = ambient.prop, iter = niters, BPPARAM = BPPARAM, 
-                                            alpha = alpha)
-  limited <- n.above == 0L
-  pval <- (n.above + 1)/(niters + 1)
-  all.p <- all.lr <- all.exp <- rep(NA_real_, ncells)
-  all.lim <- rep(NA, ncells)
-  all.p[keep] <- pval
-  all.lr[keep] <- obs.P + rest.P
-  all.lim[keep] <- limited
-  output <- DataFrame(Total = umi.sum, LogProb = all.lr, PValue = all.p, 
-                      Limited = all.lim, row.names = colnames(m))
-  metadata(output) <- list(lower = lower, niters = niters, 
-                           ambient = ambient.prop, alpha = alpha)
-  output
-}
-
-
-
-
-
-emptyDrops2 = function (m, lower = 100, retain = NULL, barcode.args = list(), 
-                        ...) 
-{
-  m <- DropletUtils:::.rounded_to_integer(m)
-  stats <- testEmptyDrops2(m, lower = lower, ...)
-  tmp <- stats$PValue
-  if (is.null(retain)) {
-    br.out <- do.call(barcodeRanks, c(list(m, lower = lower), 
-                                      barcode.args))
-    retain <- metadata(br.out)$knee
-  }
-  always <- stats$Total >= retain
-  tmp[always] <- 0
-  metadata(stats)$retain <- retain
-  stats$FDR <- p.adjust(tmp, method = "BH")
-  return(stats)
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-cellranger_cell_caller = function(mat, output_folder, genome_size, qc_per_bc_file){
+cellranger_cell_caller  <- function(mat, output_folder, genome_size, qc_per_bc_file){
   # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/cellranger_cell_caller.R
   
   library(data.table)
@@ -235,7 +250,7 @@ cellranger_cell_caller = function(mat, output_folder, genome_size, qc_per_bc_fil
 
 
 
-filter_barcodes = function(
+filter_barcodes <- function(
   mtx, 
   output_folder,
   bc_stat_file = NULL,

@@ -1,15 +1,54 @@
-#' sc_atac_trim_barcode()
-#'
-#' @return
-#'
+###############################
+# Demultiplexing FASTQ Reads
+###############################
+
+#' @name sc_atac_trim_barcode
+#' @title demultiplex raw single-cell ATAC-Seq fastq reads
+#' @description  single-cell data need to be demultiplexed in order to retain the information of the cell barcodes
+#' the data belong to. Here we reformat fastq files so barcode/s (and if available the UMI sequences) are moved from
+#' the sequence into the read name. Since scATAC-Seq data are mostly paired-end, both `r1` and `r2` are demultiplexed in this function.
+#' @param r1 read one for pair-end reads.
+#' @param r2 read two for pair-end reads, NULL if single read.
+#' @param bc_file the barcode information, can be either in a \code{fastq} format (e.g. from 10x-ATAC) or
+#' from a \core{.csv} file (here the barcode is expected to be on the second column). 
+#' Currently, for the fastq approach, this can be a list of barcode files.
+#' @param output_folder the output dir for the demultiplexed fastq file, which will contain 
+#' fastq files with reformatted barcode and UMI into the read name. 
+#' Files ending in \code{.gz} will be automatically compressed.
+#' @param bc_start barcode start position (0-indexed), which is an extra parameter that is needed if the
+#' \code{bc_file} is in a \code{.csv} format.
+#' @param bc_length barcode length, which is an extra parameter that is needed if the
+#' \code{bc_file} is in a \code{.csv} format.
+#' @param umi_start if available, the start position of the molecular identifier.
+#' @param umi_length if available, the start position of the molecular identifier.  
+#' @param rmN logical, whether to remove reads that contains N in UMI or cell barcode.
+#' @param rmlow logical, whether to remove the low quality reads.
+#' @param min_qual the minimum base pair quality that is allowed.
+#' @param num_below_min the maximum number of base pairs below the quality threshold.
 #' @examples
 #' \dontrun{
-#'
-#'
+#' using a barcode fastq file
+#' sc_atac_trim_barcode (
+#' r1            = r1, 
+#' r2            = r2, 
+#' bc_file       = barcode_fastq,
+#' rmN           = TRUE,
+#' rmlow         = TRUE,
+#' output_folder = "")
+#' 
+#' using a barcode csv file
+#' sc_atac_trim_barcode (
+#' r1            = r1, 
+#' r2            = r2, 
+#' bc_file       = barcode_1000, 
+#' bc_start      = 3, 
+#' bc_length     = 16, 
+#' rmN           = TRUE,
+#' rmlow         = TRUE,
+#' output_folder = "")
 #' }
-#'
-#' @export
-#'
+#'@export
+
 sc_atac_trim_barcode = function(
   r1,
   r2,

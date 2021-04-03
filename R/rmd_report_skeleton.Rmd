@@ -19,24 +19,46 @@ library(dplyr)
 library(readr)
 library(ggplot2)
 library(knitr)
-
+library(stringr)
 theme_set(theme_bw())
 
 ```
 
-## Global Information
+## Global quality statistics
 
 ```{r}
 trimbarcode_stats_filename    <- paste0(params$log_and_stats_folder, "/stats_file_trimbarcode.txt")
-trimbarcode_stats             <- readr::read_csv(trimbarcode_stats_filename, col_names = FALSE) %>% as.data.frame()
-trimbarcode_stats             <- gsub(":", "\t", trimbarcode_stats[,1]) %>% as.data.frame()
+trimbarcode_stats             <- readr::read_csv(trimbarcode_stats_filename, col_names = FALSE) %>% as.data.frame() 
+trimbarcode_stats             <- stringr::str_replace_all(trimbarcode_stats[,1], "\\: +", "\\,") %>% as.data.frame()
+trimbarcode_stats             <- stringr::str_split_fixed(trimbarcode_stats[,1], ",", n=2) %>%
+  as.data.frame()
+
 knitr::kable(trimbarcode_stats, 
-             col.names = c('We', 'Stat'), 
-             caption = "Global quality statistics", 
-             "simple")
+             col.names = c('Statistic', 'Value'), 
+             caption = "Global quality statistics")
 ```
- 
-## Number of reads per barcode
+
+## Alignment statistics
+
+```{r}
+alignment_stats_filename <- paste0(params$log_and_stats_folder, "/stats_file_align.txt")
+alignment_stats          <- readr::read_csv(alignment_stats_filename)
+knitr::kable(alignment_stats, 
+             col.names = c('Statistic', 'Value'), 
+             caption = "Global alignment statistics")
+```
+
+## Alignment statistics per chromosome
+
+```{r}
+alignment_stats_chrom_filename <- paste0(params$log_and_stats_folder, "/stats_file_align_per_chrom.csv")
+alignment_stats_chrom          <- readr::read_csv(alignment_stats_chrom_filename)
+knitr::kable(alignment_stats_chrom, 
+             col.names = c('Chromosome', 'Chrom_length', 'Mapped_reads', "Unmapped_reads"), 
+             caption = "Chromosome level alignment statistics")
+```
+
+## Read count distribution across barcodes
 
 ```{r}
 
@@ -50,6 +72,130 @@ head(number_of_reads_per_barcode)
 ```{r}
 number_of_reads_per_barcode %>% 
   ggplot() +
-  geom_histogram(aes(Freq))
+  geom_histogram(aes(log2(number_of_reads))) + theme_bw()
+```
+
+## Per cell statistics
+
+```{r}
+cell_stats    <- readr::read_csv(paste0(params$log_and_stats_folder, "/filtered_stats_per_cell.csv"))
+```
+
+Figures \@ref(fig:percell-counts) and \@ref(fig:percell-features) 
+
+```{r percell-counts, fig.wide = TRUE, fig.cap = sprintf("Counts per cell", chosen), fig.asp = 0.9}
+cell_stats$log_counts_per_cell <- log(cell_stats$counts_per_cell+1)
+
+ggpubr::gghistogram(cell_stats,
+                    x = "log_counts_per_cell",
+                    y = "..count..",
+                    title = "Counts per cell",
+                    color = "#00AFBB", 
+                    fill = "#00AFBB",
+                    bins = 10,
+                    rug = TRUE,
+                    add = "mean",
+                    add_density = TRUE
+                    )
+# plot_grid( ,ncol = 2, align = "v")
+# hist(log(cell_stats$counts_per_cell+1),main='Counts per cell',col='black')
+```
+
+```{r percell-features, fig.wide = TRUE, fig.cap = sprintf("Features per cell", chosen), fig.asp = 0.9}
+
+cell_stats$log_features_per_cell <- log(cell_stats$features_per_cell+1)
+
+ggpubr::gghistogram(cell_stats,
+                    x = "log_features_per_cell",
+                    y = "..count..",
+                    title = "Features per cell",
+                    color = "#00AFBB", 
+                    fill = "#00AFBB",
+                    bins = 10,
+                    rug = TRUE,
+                    add = "mean",
+                    add_density = TRUE
+                    )
+
+#hist(log(cell_stats$features_per_cell+1), main='Features per cell', col='black')
+```
+
+# Per feature statistics
+
+```{r}
+feature_stats <- readr::read_csv(paste0(params$log_and_stats_folder, "/filtered_stats_per_feature.csv"))
+```
+
+```{r perfeature-counts, fig.wide = TRUE, fig.cap = sprintf("Counts per feature", chosen), fig.asp = 0.9}
+
+feature_stats$log_counts_per_feature <- log(feature_stats$counts_per_feature+1)
+
+ggpubr::gghistogram(feature_stats,
+                    x = "log_counts_per_feature",
+                    y = "..count..",
+                    title = "Counts per feature",
+                    color = "#E7B800", 
+                    fill = "#E7B800",
+                    bins = 10,
+                    rug = TRUE,
+                    add = "mean",
+                    add_density = TRUE
+                    )
+
+#hist(log(feature_stats$counts_per_feature+1), main='counts per feature', col='black')
+```
+
+```{r perfeature-cells, fig.wide = TRUE, fig.cap = sprintf("Cells per feature", chosen), fig.asp = 0.9}
+
+feature_stats$log_cells_per_feature <- log(feature_stats$cells_per_feature+1)
+
+ggpubr::gghistogram(feature_stats,
+                    x = "log_cells_per_feature",
+                    y = "..count..",
+                    title = "Cells per feature",
+                    color = "#E7B800", 
+                    fill = "#E7B800",
+                    bins = 10,
+                    rug = TRUE,
+                    add = "mean",
+                    add_density = TRUE
+                    )
+
+#hist(log(feature_stats$cells_per_feature+1), main='counts per feature', col='black')
+```
+
+```{r corr-cells, fig.wide = TRUE, fig.cap = sprintf("Counts vs features per cell", chosen), fig.asp = 0.9}
+ggpubr::ggscatter(cell_stats,
+                  x = "log_counts_per_cell",
+                  y = "log_features_per_cell",
+                  title = "Relationship between counts and features per cell",
+                  color = "#00AFBB", 
+                  fill = "#00AFBB", 
+                  add = "reg.line",
+                  conf.int = TRUE, # Add confidence interval
+                  cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
+                  cor.coeff.args = list(method = "spearman", label.x = 1, label.sep = "\n"),
+                  rug = TRUE)
+
+# plot(cell_stats$counts_per_cell, cell_stats$features_per_cell, log='xy', col='black')
+# title('counts vs features per cell')
+```
+
+```{r corr-features, fig.wide = TRUE, fig.cap = sprintf("Counts vs cells per feature", chosen), fig.asp = 0.9}
+ggpubr::ggscatter(feature_stats,
+                  x = "log_counts_per_feature",
+                  y = "log_cells_per_feature",
+                  title = "Relationship between counts and cells per feature",
+                  color = "#E7B800", 
+                  fill = "#E7B800", 
+                  add = "reg.line",
+                  conf.int = TRUE, # Add confidence interval
+                  cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
+                  cor.coeff.args = list(method = "spearman", label.x = 1, label.sep = "\n"),
+                  rug = TRUE)
+```
+
+```{r}
+plot(sort(cell_stats$features_per_cell), xlab='cell', log='y', ylab ="features", main='features per cell (ordered)')
 ```
 

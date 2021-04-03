@@ -1,3 +1,7 @@
+#############################
+# Demultiplxing FASTQ Reads
+#############################
+
 #' sc_atac_bam_tagging()
 #'
 #' @return 
@@ -21,7 +25,6 @@ sc_atac_bam_tagging <- function(inbam,
   if (any(!file.exists(inbam))) {
     stop("At least one input bam file should be present")
   } else {
-    cat("sc_atac_bam_tagging1\n")
     inbam = path.expand(inbam)
   }
   
@@ -32,31 +35,18 @@ sc_atac_bam_tagging <- function(inbam,
   
   if (!dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
-    cat("Output directory does not exist. Created at: ", output_folder, "\n")
+    cat("Output directory does not exist. Creating ", output_folder, "\n")
   }
   
-  #if(output_folder == ""){
-    # fileNameWithoutExtension <- strsplit(basename(inbam), "\\.")[[1]][1]
-    # outbam                   <- paste(fileNameWithoutExtension, "_tagged.bam", sep = "")
-    # outsortedbam             <- paste(fileNameWithoutExtension, "_tagged_sorted", sep = "")
-  #} else{
-    # if(!dir.exists(output_folder)){
-    #   cat(output_folder, "does not exist.\nCreating folder...")
-    #   dir.create(output_folder)
-    #   cat("Created.\n")
-    # }
-    fileNameWithoutExtension <- strsplit(basename(inbam), "\\.")[[1]][1]
-    outbam                   <- paste(output_folder, "/", fileNameWithoutExtension, "_tagged.bam", sep = "")
-    outsortedbam             <- paste(output_folder, "/", fileNameWithoutExtension, "_tagged_sorted", sep = "")
-  #}
-  
-  
+  fileNameWithoutExtension <- strsplit(basename(inbam), "\\.")[[1]][1]
+  outbam                   <- paste(output_folder, "/", fileNameWithoutExtension, "_tagged.bam", sep = "")
+  outsortedbam             <- paste(output_folder, "/", fileNameWithoutExtension, "_tagged_sorted", sep = "")
+
   log_and_stats_folder       <- paste0(output_folder, "/scPipe_atac_stats/")
   dir.create(log_and_stats_folder, showWarnings = FALSE)
   log_file                   <- paste0(log_and_stats_folder, "log_file.txt")
   stats_file                 <- paste0(log_and_stats_folder, "stats_file_bam_tagging.txt")
   if(!file.exists(log_file)) file.create(log_file)
-  # file.create(stats_file)
   
   cat(
     paste0(
@@ -65,24 +55,11 @@ sc_atac_bam_tagging <- function(inbam,
       "\n"
     ), 
     file = log_file, append = TRUE)
-  
-  
-  
-  
+
   outbam <- path.expand(outbam)
   if(!file.exists(outbam)){
     file.create(outbam)
   }
-  
-  # if(output_folder == ''){
-  #   output_folder <- file.path(getwd(), "scPipe-atac-output")
-  # }
-  # 
-  # if (!dir.exists(output_folder)){
-  #   dir.create(output_folder,recursive=TRUE)
-  #   cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
-  # }
-  
   
   rcpp_sc_atac_bam_tagging(inbam, outbam, bam_tags$bc, bam_tags$mb,nthreads)
   
@@ -90,7 +67,7 @@ sc_atac_bam_tagging <- function(inbam,
   cat(outbam)
   cat("\n")
   
-  Rsamtools::sortBam(outbam, outsortedbam,indexDestination = TRUE)
+  Rsamtools::sortBam(outbam, outsortedbam, indexDestination = TRUE)
   Rsamtools::indexBam(paste0(outsortedbam, ".bam"))
   
   cat("Sorted & indexed tagged BAM file is located in: \n")
@@ -100,7 +77,7 @@ sc_atac_bam_tagging <- function(inbam,
   
   if(is.null(bc_length)){
     cat("Using default value for barcode length (bc_length = 16) \n")
-    bc_length = 16
+    bc_length <- 16
   }
   
   
