@@ -181,16 +181,16 @@ sc_atac_feature_counting <- function(
   average_number_of_lines_per_CB <- length(yld.gr$CB)/length(unique(yld.gr$CB))
   
   ######## Adjusting for the Tn5 cut site
-  cat("Adjusting for the Tn5 cut site...\n")
+  cat("Adjusting for the 9bp Tn5 cut site...\n")
   
   isMinus <- BiocGenerics::which(strand(yld.gr) == "-")
   isOther <- BiocGenerics::which(strand(yld.gr) != "-")
   #Forward
-  start(yld.gr)[isOther] <- start(yld.gr)[isOther] - 0
+  start(yld.gr)[isOther] <- start(yld.gr)[isOther] - 5
   end(yld.gr)[isOther] <- end(yld.gr)[isOther] + 4
   #Reverse
   end(yld.gr)[isMinus] <- end(yld.gr)[isMinus] + 5
-  start(yld.gr)[isMinus] <- start(yld.gr)[isMinus] - 0
+  start(yld.gr)[isMinus] <- start(yld.gr)[isMinus] - 4
   
   saveRDS(yld.gr, file = paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = ""))
   cat("GAlignment object is created and saved in \n", paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = "") , "\n")
