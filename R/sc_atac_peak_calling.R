@@ -1,3 +1,7 @@
+###############################
+# Peak calling Using MACS3
+###############################
+
 #' sc_atac_peak_calling()
 #'
 #' @return 

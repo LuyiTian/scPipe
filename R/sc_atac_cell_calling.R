@@ -1,4 +1,8 @@
-#' sc_atac_bam_tagging()
+#######################################
+# Cell Calling on a matrix (scATAC-Seq)
+#######################################
+
+#' sc_atac_cell_calling()
 #'
 #' @return 
 #'
@@ -92,95 +96,81 @@ sc_atac_cell_calling <- function(
 }
 
 
-############## Modified testEmptyDrops function ######################
-testEmptyDrops2 <- function (m, lower = 100, niters = 10000, test.ambient = FALSE, 
-                            ignore = NULL, alpha = NULL, BPPARAM = SerialParam()) 
-{
-  discard      <- rowSums(m) == 0
-  m            <- m[!discard, , drop = FALSE]
-  ncells       <- ncol(m)
-  umi.sum      <- as.integer(round(colSums(m)))
-  ambient      <- umi.sum <= lower
-  ambient.cells<- m[, ambient, drop = FALSE]
-  ambient.prof <- rowSums(ambient.cells)
-  
-  if (sum(ambient.prof) == 0) {
-    stop("no counts available to estimate the ambient profile")
-  }
-  ambient.prop <- edgeR::goodTuringProportions(ambient.prof)
-  if (!test.ambient) {
-    keep <- !ambient
-  } else {
-    keep <- umi.sum > 0L
-  }
-  if (!is.null(ignore)) {
-    keep <- keep & umi.sum > ignore
-  }
-  obs <- m[, keep, drop = FALSE]
-  obs.totals <- umi.sum[keep]
-  if (is.null(alpha)) {
-    alpha <- DropletUtils:::.estimate_alpha(m[, ambient, drop = FALSE], 
-                                            ambient.prop, umi.sum[ambient])
-  }
-  obs.P <-DropletUtils:::.compute_multinom_prob_data(obs, ambient.prop, alpha = alpha)
-  rest.P <-DropletUtils:::.compute_multinom_prob_rest(obs.totals, alpha = alpha)
-  n.above <-DropletUtils:::.permute_counter(totals = obs.totals, probs = obs.P, 
-                                            ambient = ambient.prop, iter = niters, BPPARAM = BPPARAM, 
-                                            alpha = alpha)
-  limited <- n.above == 0L
-  pval <- (n.above + 1)/(niters + 1)
-  all.p <- all.lr <- all.exp <- rep(NA_real_, ncells)
-  all.lim <- rep(NA, ncells)
-  all.p[keep] <- pval
-  all.lr[keep] <- obs.P + rest.P
-  all.lim[keep] <- limited
-  output <- DataFrame(Total = umi.sum, LogProb = all.lr, PValue = all.p, 
-                      Limited = all.lim, row.names = colnames(m))
-  metadata(output) <- list(lower = lower, niters = niters, 
-                           ambient = ambient.prop, alpha = alpha)
-  output
-}
-
-############## Rounded to integer function #####################
-.rounded_to_integer <- function(m, round=TRUE) {
-  if (round) {
-    m <- round(m)
-  }
-  m
-}
-
-############## Modified emptyDrops function ######################
-emptyDrops2 <- function (m, lower = 100, retain = -1, barcode.args = list(), 
-                        ...) 
-{
-  m <- .rounded_to_integer(m)
-  stats <- testEmptyDrops2(m, lower = lower, ...)
-  tmp <- stats$PValue
-  if (is.null(retain)) {
-    br.out <- do.call(barcodeRanks, c(list(m, lower = lower), 
-                                      barcode.args))
-    retain <- metadata(br.out)$knee
-  }
-  always <- stats$Total >= retain
-  tmp[always] <- 0
-  metadata(stats)$retain <- retain
-  stats$FDR <- p.adjust(tmp, method = "BH")
-  return(stats)
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# ############## Modified testEmptyDrops function ######################
+# testEmptyDrops2 <- function (m, lower = 100, niters = 10000, test.ambient = FALSE, 
+#                             ignore = NULL, alpha = NULL, BPPARAM = SerialParam()) 
+# {
+#   discard      <- rowSums(m) == 0
+#   m            <- m[!discard, , drop = FALSE]
+#   ncells       <- ncol(m)
+#   umi.sum      <- as.integer(round(colSums(m)))
+#   ambient      <- umi.sum <= lower
+#   ambient.cells<- m[, ambient, drop = FALSE]
+#   ambient.prof <- rowSums(ambient.cells)
+#   
+#   if (sum(ambient.prof) == 0) {
+#     stop("no counts available to estimate the ambient profile")
+#   }
+#   ambient.prop <- edgeR::goodTuringProportions(ambient.prof)
+#   if (!test.ambient) {
+#     keep <- !ambient
+#   } else {
+#     keep <- umi.sum > 0L
+#   }
+#   if (!is.null(ignore)) {
+#     keep <- keep & umi.sum > ignore
+#   }
+#   obs <- m[, keep, drop = FALSE]
+#   obs.totals <- umi.sum[keep]
+#   if (is.null(alpha)) {
+#     alpha <- DropletUtils:::.estimate_alpha(m[, ambient, drop = FALSE], 
+#                                             ambient.prop, umi.sum[ambient])
+#   }
+#   obs.P <-DropletUtils:::.compute_multinom_prob_data(obs, ambient.prop, alpha = alpha)
+#   rest.P <-DropletUtils:::.compute_multinom_prob_rest(obs.totals, alpha = alpha)
+#   n.above <-DropletUtils:::.permute_counter(totals = obs.totals, probs = obs.P, 
+#                                             ambient = ambient.prop, iter = niters, BPPARAM = BPPARAM, 
+#                                             alpha = alpha)
+#   limited <- n.above == 0L
+#   pval <- (n.above + 1)/(niters + 1)
+#   all.p <- all.lr <- all.exp <- rep(NA_real_, ncells)
+#   all.lim <- rep(NA, ncells)
+#   all.p[keep] <- pval
+#   all.lr[keep] <- obs.P + rest.P
+#   all.lim[keep] <- limited
+#   output <- DataFrame(Total = umi.sum, LogProb = all.lr, PValue = all.p, 
+#                       Limited = all.lim, row.names = colnames(m))
+#   metadata(output) <- list(lower = lower, niters = niters, 
+#                            ambient = ambient.prop, alpha = alpha)
+#   output
+# }
+# 
+# ############## Rounded to integer function #####################
+# .rounded_to_integer <- function(m, round=TRUE) {
+#   if (round) {
+#     m <- round(m)
+#   }
+#   m
+# }
+# 
+# ############## Modified emptyDrops function ######################
+# emptyDrops2 <- function (m, lower = 100, retain = -1, barcode.args = list(), 
+#                         ...) 
+# {
+#   m <- .rounded_to_integer(m)
+#   stats <- testEmptyDrops2(m, lower = lower, ...)
+#   tmp <- stats$PValue
+#   if (is.null(retain)) {
+#     br.out <- do.call(barcodeRanks, c(list(m, lower = lower), 
+#                                       barcode.args))
+#     retain <- metadata(br.out)$knee
+#   }
+#   always <- stats$Total >= retain
+#   tmp[always] <- 0
+#   metadata(stats)$retain <- retain
+#   stats$FDR <- p.adjust(tmp, method = "BH")
+#   return(stats)
+# }
 
 
 cellranger_cell_caller  <- function(mat, output_folder, genome_size, qc_per_bc_file){

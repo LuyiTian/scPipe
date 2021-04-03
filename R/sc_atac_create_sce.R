@@ -1,3 +1,7 @@
+###########################################################
+# Create a SingleCell Experiment Object for scATAC-Seq data
+###########################################################
+
 #' sc_atac_create_sce()
 #'
 #' @return 
