@@ -49,7 +49,7 @@
 #' }
 #'@export
 
-sc_atac_trim_barcode = function(
+sc_atac_trim_barcode <- function(
   r1,
   r2,
   bc_file,
@@ -69,7 +69,7 @@ sc_atac_trim_barcode = function(
   id2_len = -10) {
 
   if(output_folder == ''){
-    output_folder = file.path(getwd(), "scPipe-atac-output")
+    output_folder <- file.path(getwd(), "scPipe-atac-output")
   }
   if (!dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
@@ -88,10 +88,10 @@ sc_atac_trim_barcode = function(
     paste0( "trimbarcode starts at ", as.character(Sys.time()),"\n"), file = log_file, append = TRUE)
 
   if (substr(r1, nchar(r1) - 2, nchar(r1)) == ".gz") {
-    write_gz = TRUE
+    write_gz <- TRUE
   }
   else {
-    write_gz = FALSE
+    write_gz <- FALSE
   }
 
   if (!is.null(bc_file)) {
@@ -99,8 +99,8 @@ sc_atac_trim_barcode = function(
     i=1;
     for (bc in bc_file) {
       if (!file.exists(bc)) {stop("Barcode file does not exist.")}
-      bc_file[i] = path.expand(bc)
-      i = i+1;
+      bc_file[i] <- path.expand(bc)
+      i          <- i+1;
     }
 
     if(umi_start != 0){
@@ -112,20 +112,20 @@ sc_atac_trim_barcode = function(
     }
 
     # expand tilde to home path for downstream gzopen() call
-    r1 = path.expand(r1)
+    r1 <- path.expand(r1)
 
     if(!is.null(r2)){
       if (!file.exists(r2)) {stop("read2 file does not exist.")}
-      r2 = path.expand(r2)
+      r2 <- path.expand(r2)
     }else{
-      r2=""
+      r2 <- ""
     }
     cat("Saving the output at location: ")
     cat(output_folder)
     cat("\n")
 
     if(file_ext(bc_file) != 'csv'){
-      out_vec = rcpp_sc_atac_trim_barcode_paired(
+      out_vec <- rcpp_sc_atac_trim_barcode_paired(
         output_folder,
         r1,
         bc_file,
@@ -166,7 +166,7 @@ sc_atac_trim_barcode = function(
 
       # Check if given barcode start position is valid
       # check_barcode_start_position is expecting a single barcode, of only the barcode sequences, no commas
-      cat("Checking if id2_st is valid\n")
+      cat("Checking if id1_st is valid\n")
       if (!check_barcode_start_position(r1, temp_barcode_file, id1_st, id1_len, 10000, .8)) {
           if (tolower(readline(prompt="Continue anyway? (y/n) ")) != "y") {
             stop("Please change id1_st and try again")
@@ -181,7 +181,7 @@ sc_atac_trim_barcode = function(
           cat("Continuing...")
       }
 
-      out_vec = rcpp_sc_atac_trim_barcode(
+      out_vec <- rcpp_sc_atac_trim_barcode(
         output_folder,
         r1,
         r2,
@@ -201,7 +201,6 @@ sc_atac_trim_barcode = function(
         id2_st,
         id2_len)
 
-      #bc <- data.table::fread("../new_project_collab/seqATAC/data/barcode.csv", select = 2, col.names = "bc")
       # concatenate results to stats_file
       cat("Total Reads: ", out_vec[1],
           "\nTotal N's removed: ", out_vec[2],
@@ -230,6 +229,3 @@ sc_atac_trim_barcode = function(
 
 
 }
-
-
-
