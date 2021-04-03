@@ -180,8 +180,17 @@ sc_atac_feature_counting <- function(
   yld.gr                         <- makeGRangesFromDataFrame(yld,keep.extra.columns=TRUE) 
   average_number_of_lines_per_CB <- length(yld.gr$CB)/length(unique(yld.gr$CB))
   
+  ######## Adjusting for the Tn5 cut site
   cat("Adjusting for the Tn5 cut site...\n")
-  # to do
+  
+  isMinus <- BiocGenerics::which(strand(yld.gr) == "-")
+  isOther <- BiocGenerics::which(strand(yld.gr) != "-")
+  #Forward
+  start(yld.gr)[isOther] <- start(yld.gr)[isOther] - 0
+  end(yld.gr)[isOther] <- end(yld.gr)[isOther] + 4
+  #Reverse
+  end(yld.gr)[isMinus] <- end(yld.gr)[isMinus] + 5
+  start(yld.gr)[isMinus] <- start(yld.gr)[isMinus] - 0
   
   saveRDS(yld.gr, file = paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = ""))
   cat("GAlignment object is created and saved in \n", paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = "") , "\n")
@@ -351,14 +360,15 @@ sc_atac_feature_counting <- function(
   # add dimensions of the matrix
   dimnames(matrixData)  <-  list(matrixData.old[1] %>% rownames(), matrixData.old %>% dplyr::select(-1) %>% colnames())
   
+  saveRDS(matrixData, file = paste(output_folder,"/unfiltered_feature_matrix.rds",sep = ""))
+  cat("Raw feature matrix generated: ", paste(output_folder,"/unfiltered_feature_matrix.rds",sep = "") , "\n")
+  Matrix::writeMM(Matrix::Matrix(matrixData), file = paste(output_folder,"/unfiltered_feature_matrix.mtx",sep = ""))
+  
   # call sc_atac_cell_callling.R here : emptyDrops() function currently implemented
   if(cell_calling =="emptydrops" || cell_calling =="cellranger" || cell_calling =="filter"){
     cat("calling `EmptyDrops` function for cell calling ... \n")
-    sc_atac_cell_calling(mat = matrixData, cell_calling = 'emptydrops', output_folder = output_folder)
+    matrixData <- sc_atac_cell_calling(mat = matrixData, cell_calling = 'emptydrops', output_folder = output_folder)
   }
-  
-  saveRDS(matrixData, file = paste(output_folder,"/feature_matrix.rds",sep = ""))
-  cat("Feature matrix generated: ", paste(output_folder,"/feature_matrix.rds",sep = "") , "\n")
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
   sparseM <- Matrix(matrixData, sparse=TRUE)

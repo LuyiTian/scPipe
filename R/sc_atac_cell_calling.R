@@ -20,10 +20,30 @@ sc_atac_cell_calling <- function(
     library(Matrix)
     
     set.seed(2019)
+    
+    # generating the knee plot
+    my_counts <- Matrix(mat)
+    br.out    <- DropletUtils::barcodeRanks(my.counts)
+    
+    # Making a plot
+    dev.off()
+    png(file=paste0(output_folder, "/scPipe_atac_stats/knee_plot.png"))
+        plot(br.out$rank, br.out$total, log="xy", xlab="Rank", ylab="Total")
+        o <- order(br.out$rank)
+        lines(br.out$rank[o], br.out$fitted[o], col="red")
+        
+        abline(h=metadata(br.out)$knee, col="dodgerblue", lty=2)
+        abline(h=metadata(br.out)$inflection, col="forestgreen", lty=2)
+        legend("bottomleft", lty=2, col=c("dodgerblue", "forestgreen"), 
+               legend=c("knee", "inflection"))
+    dev.off()
+    
     if(is.null(lower)){
-      lower = floor(0.1*ncol(mat))
+      #lower <- floor(0.1*ncol(mat))
+      lower <- 1
     }
-    cell.out <- testEmptyDrops2(mat, lower = lower)
+    cell.out <- DropletUtils::emptyDrops(mat, lower = lower)
+    # cell.out <- emptyDrops2(mat, lower = lower)
     
     filter.out <- cell.out[S4Vectors::complete.cases(cell.out), ]
     
@@ -31,10 +51,11 @@ sc_atac_cell_calling <- function(
     #cat("Empty cases are removed and saved in ", output_folder, "\n")
     
     if(length(filter.out$FDR) > 0){
-      cat("Empty filter.out\n")
+      fdr <- 0.01
+      cat("FDR of 0.01 is assigned... \n")
       filter.out <- filter.out[filter.out$FDR <= fdr, ]
     } else{
-      message("EmptyDrops returned 0 true cells ... use the output matrices with caution! \n")
+      message("insufficient unique points for computing knee/inflection points ... Use the output matrices with caution! \n")
     }
     
     select.cells <- rownames(filter.out)
@@ -43,17 +64,17 @@ sc_atac_cell_calling <- function(
     barcodes     <- colnames(out_mat)
     features     <- rownames(out_mat)
     
-    if(length(filter.out$FDR) > 0){
-      cat("Empty filter.out\n")
-      writeMM(out_mat, file = paste0(output_folder, '/matrix.mtx'))
+    #if(length(filter.out$FDR) > 0){
+    #  cat("Empty filter.out\n")
+      Matrix::writeMM(Matrix::Matrix(out_mat), file = paste0(output_folder, '/cell_called_matrix.mtx'))
       cat("cell called and stored in ", output_folder, "\n")
       write.table(barcodes, file = paste0(output_folder, '/non_empty_barcodes.txt'), sep = '\t',
                   row.names = FALSE, quote = FALSE, col.names = FALSE)
       write.table(features, file = paste0(output_folder, '/non_empty_features.txt'), sep = '\t',
                   row.names = FALSE, quote = FALSE, col.names = FALSE)
-    }
+    #}
     
-    
+    return(out_mat)
   } # end emptydrops
   
   
@@ -71,12 +92,7 @@ sc_atac_cell_calling <- function(
 }
 
 
-
-
-
-
-
-
+############## Modified testEmptyDrops function ######################
 testEmptyDrops2 <- function (m, lower = 100, niters = 10000, test.ambient = FALSE, 
                             ignore = NULL, alpha = NULL, BPPARAM = SerialParam()) 
 {
@@ -125,14 +141,19 @@ testEmptyDrops2 <- function (m, lower = 100, niters = 10000, test.ambient = FALS
   output
 }
 
+############## Rounded to integer function #####################
+.rounded_to_integer <- function(m, round=TRUE) {
+  if (round) {
+    m <- round(m)
+  }
+  m
+}
 
-
-
-
-emptyDrops2 <- function (m, lower = 100, retain = NULL, barcode.args = list(), 
+############## Modified emptyDrops function ######################
+emptyDrops2 <- function (m, lower = 100, retain = -1, barcode.args = list(), 
                         ...) 
 {
-  m <- DropletUtils:::.rounded_to_integer(m)
+  m <- .rounded_to_integer(m)
   stats <- testEmptyDrops2(m, lower = lower, ...)
   tmp <- stats$PValue
   if (is.null(retain)) {
