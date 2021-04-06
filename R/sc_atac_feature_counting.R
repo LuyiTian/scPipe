@@ -372,7 +372,15 @@ sc_atac_feature_counting <- function(
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
   sparseM <- Matrix(matrixData, sparse=TRUE)
+  # add dimensions of the sparse matrix if available
+  if(cell_calling != FALSE){
+    barcodes <- file.path(paste0(output_folder, '/non_empty_barcodes.txt'))
+    features <- read.table(paste0(output_folder, '/non_empty_features.txt'))
+    dimnames(sparseM)  <-  list(features, barcodes)
+  }
+  
   cat("Sparse matrix generated", "\n")
+  saveRDS(sparseM, file = paste(output_folder,"/sparse_matrix.rds",sep = ""))
   writeMM(obj = sparseM, file=paste(output_folder,"/sparse_matrix.mtx", sep =""))
   cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
 
