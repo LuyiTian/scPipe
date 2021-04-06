@@ -383,7 +383,7 @@ bool check_barcode_reads(String fastq, String barcodeseqs,
         Clean_Up(num_barcode);
         barcodes_trie->Clear_Trie();
         delete barcodes_trie;
-    } catch (std::exception e) {
+    } catch (std::exception &e) {
         Rprintf("An error occured: %s\n", e.what());
         exit(10);
     }

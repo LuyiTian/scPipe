@@ -136,7 +136,7 @@ void Trie::Add_String(string sequence, int original_seq_index, int current_seq_i
 
 
     // loop through each character in the barcode to insert it into the trie
-    for (int insert_i = 0; insert_i < sequence.length(); insert_i++)
+    for (int insert_i = 0; insert_i < (int)sequence.length(); insert_i++)
     {
         insert_base = sequence[insert_i];
 
@@ -174,7 +174,7 @@ int Trie::Locate_Seq_At_Pos(string read, int index, int barcode_length)
     trie_node *current_node;
     end_node *end;
     current_node = head;
-    if (read.length() < index) {
+    if ((int)read.length() < index) {
         Rprintf("Short read: %s. Index: %d\n", read.c_str(), index);
         //exit(0);
         return -1;
@@ -182,7 +182,7 @@ int Trie::Locate_Seq_At_Pos(string read, int index, int barcode_length)
     // search from index until we find a TERMINATOR
     for (j = index; j < index + barcode_length; j++)
     {
-        if (j >= read.length()) break;
+        if (j >= (int)read.length()) break;
         base = read[j];
         if (Trie::Base_In_Node(current_node, TERMINATOR))
         {
@@ -231,7 +231,7 @@ int Trie::Locate_Seq_Subsection(string read, int section_start, int section_end,
     {
         current_node = head;
         // search from i until we find a TERMINATOR
-        for (j = i; j < read.length(); j++)
+        for (j = i; j < (int)read.length(); j++)
         {
             base = read[j];
             if (Trie::Base_In_Node(current_node, TERMINATOR))
