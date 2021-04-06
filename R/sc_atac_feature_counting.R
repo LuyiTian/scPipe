@@ -62,13 +62,13 @@ sc_atac_feature_counting <- function(
   # timer
   cat(
     paste0(
-      "sc_atac_counting starts at ",
+      "sc_atac_feature_counting starts at ",
       as.character(Sys.time()),
       "\n"
     ), 
     file = log_file, append = TRUE)
   
-  ############# feature type os genome_bin ####################
+  ############# feature type is genome_bin ####################
   
   if(feature_type == 'genome_bin'){
     # TODO: test the format of the fasta file here and stop if not proper format
@@ -307,7 +307,7 @@ sc_atac_feature_counting <- function(
   }
   
   
-  ################# Innitiate log file
+  ################# Initiate log file
   log_and_stats_folder       <- paste0(output_folder, "/scPipe_atac_stats/")
   dir.create(log_and_stats_folder, showWarnings = FALSE)
   log_file                   <- paste0(log_and_stats_folder, "log_file.txt")
