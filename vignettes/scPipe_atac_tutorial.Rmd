@@ -131,10 +131,6 @@ After the read alignment and BAM file demultiplexing, a feature set can be used 
 
 Accepted format of the `feature_input` should be either a BED format (i.e. format should have three main columns; chromosome, feature start and feature end, extension of the file is not considered) or a `genome.fasta` file. If using a BED format as the 'feature_input`, the `feature_type` should be either "peak" or "tss". If using a `.fasta` for the `feature_input`, the `feature_type` needs to be defined as `genome_bin`. This `genome.fasta` file will be used within the function to generate a `genome_bin` that defines the array of features. The size of the bins can be set using the `bin_size` parameter (default: 2000). 
 
-Call calling is performed on the data prior to finding overlaps. Currently the `emptyDrops` method from \code{DropletUtils} is implemented. Additionally, regions that are considered anomalous, unstructured, or high signal in next-generation sequencing experiments are excluded using an inbuilt `excluded_regions` file (available are for `organism` `hg19`, `hg38`, and `mm10`) or a user provided `excluded_regions_filename` file in BED format.
-
-The discrepancy of `chr` between the alignment file and the feature file/excluded regions file can also be fixed (using `fix_char` parameter) if needed. Options for `fix_char`are "none", "excluded_regions", "feature", "both".
-
 ```{r,eval=TRUE}
 sorted_tagged_bam <- here::here("scPipe-atac-output","demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam")
 features          <- here::here("data", "extdata", "NA_peaks.narrowPeak")
@@ -155,6 +151,52 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           fix_chr       = "none"
                           )
 ```
+
+If genome_bin approach is selected, following can be used:
+
+```{r}
+reference <- here::here("data", "genome.fa")
+  
+sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
+                          feature_input = reference, 
+                          bam_tags      = list(bc="CB", mb="OX"), 
+                          feature_type  = "genome_bin", 
+                          organism      = "hg38",
+                          cell_calling  = FALSE,
+                          genome_size   = NULL,
+                          bin_size      = NULL, 
+                          qc_per_bc_file= NULL,
+                          yieldsize     = 1000000,
+                          mapq          = 20,
+                          exclude_regions = TRUE,
+                          output_folder = "",
+                          fix_chr       = "none"
+)
+```
+
+Call calling is performed on the data prior to finding overlaps. Currently the `emptyDrops` method from \code{DropletUtils} is implemented.
+
+```{r}
+sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
+                          feature_input = reference, 
+                          bam_tags      = list(bc="CB", mb="OX"), 
+                          feature_type  = "genome_bin",
+                          organism      = "hg38",
+                          cell_calling  = "emptydrops",
+                          genome_size   = NULL,
+                          bin_size      = NULL, 
+                          qc_per_bc_file= NULL,
+                          yieldsize     = 1000000,
+                          mapq          = 20,
+                          exclude_regions = TRUE,
+                          output_folder = "",
+                          fix_chr       = "none"
+                          )
+```
+
+Additionally, regions that are considered anomalous, unstructured, or high signal in next-generation sequencing experiments are excluded using an inbuilt `excluded_regions` file (available are for `organism` `hg19`, `hg38`, and `mm10`) or a user provided `excluded_regions_filename` file in BED format.
+
+The discrepancy of `chr` between the alignment file and the feature file/excluded regions file can also be fixed (using `fix_char` parameter) if needed. Options for `fix_char`are "none", "excluded_regions", "feature", "both".
 
 **NOTE** `genome_bin` approach may be more reliable in detecting sensitive features than using a pseudo-bulk peak calling approach, hence it would make the function slower as well.
 
