@@ -47,7 +47,7 @@ barcode_fastq      <- here::here("data","testfastq_S1_L001_R2_001.fastq.gz")
 barcode_1000       <- here::here("data", "testfastq_modified_barcode_1000.csv")
 ```
 
-The pipeline starts with fastq file reformatting. We move the barcode and UMI sequences (if available) to the read name and leave the transcript sequence as is. This outputs a read name that looks like `@[barcode_sequence]_[UMI_sequence]#[readname]` ... Usually the scATAC-Seq data is paired-end and a 16bp long barcode is located on both reads. Here the barcode information is located on a separate fastq file and the length of the barcode fastq file matches the length of the reads files. Therefore, you need a minimal example like below to generate the output.
+The pipeline starts with fastq file reformatting. We move the barcode and UMI sequences (if available) to the read name and leave the transcript sequence as is. This outputs a read name that looks like `@[barcode_sequence]_[UMI_sequence]#[readname]`. Usually the scATAC-Seq data is paired-end and a 16bp long barcode is located on both reads. Here the barcode information is located on a separate fastq file and the length of the barcode fastq file matches the length of the reads files. Therefore, you need a minimal example like below to generate the output.
 
 ```{r,eval=TRUE}
 sc_atac_trim_barcode (r1            = r1, 
@@ -60,19 +60,23 @@ sc_atac_trim_barcode (r1            = r1,
 
 This generates two output fastq files that are appended by the prefix `demux_` to notify that the new files are the reformatted (a.k.a. demultiplexed) `.fastq` files. These will get saved in the `scPipe-atac-output` directory if the user has not specified an `output_folder`.
 
-However, if the barcodes are in the form of a `.csv` file, some extra information on 0-indexed barcode start (`bc_start`) and the barcode length (`bc_length`) are also required to be entered by the user. The algorithms is flexible to do a "look-around" to identify whether the correct parameters are used for a subset of data (hence saving time) and report back to the console if it believes the barcode position is incorrect and/or should be shifted.
+However, if the barcodes are in the form of a `.csv` file, some extra information on 0-indexed barcode start (`id1_st`, `id2_st`) and the barcode length (`id1_len`, `id2_len`) are also required to be entered by the user. The algorithms is flexible to do a "look-around" to identify whether the correct parameters are used for a subset of data (hence saving time) and report back to the console if it believes the barcode position is incorrect and/or should be shifted.
 
 ```{r,eval=FALSE}
 sc_atac_trim_barcode (r1            = r1_barcode, 
                       r2            = r2_barcode, 
                       bc_file       = barcode_1000, 
-                      bc_start      = 3, 
-                      bc_length     = 16, 
+                      id1_st        = -1,  
+                      id1_len       = -1,  
+                      id2_st        = -1,  
+                      id2_len       = -10,  
                       output_folder = "", 
                       rmN           = TRUE)
 ```
 
 To accommodate combinatorial indexing in some scATAC-seq protocols, the `bc_file` parameter will accept a list of barcode files as well (currently only implemented for the `fastq` approach).
+
+Additionally, `rmN`, `rmlow` and `min_qual` oaramters define the quality thresholds for the reads. If there are `Ns` in the barcode or UMI positions those will be discarded by `rmN = TRUE`. `rmlow =TRUE` will remove reads having lower quality than what is defined by `min_qual` (default: 20).
 
 Completion of this function will output three different outputs depending on the findings;
 * complete matches: When the barcode is completely matched and identified in the correct position
@@ -90,7 +94,7 @@ Next, we align reads to the genome. This example uses `Rsubread` but any aligner
 demux_r1        <- here::here("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001.fastq.gz")
 demux_r2        <- here::here("scPipe-atac-output", "demux_testfastq_S1_L001_R3_001.fastq.gz")
 
-reference          <- here::here("data", "genome.fa")
+reference       <- here::here("data", "genome.fa")
 
 sc_atac_aligning(ref       = reference, 
                  readFile1 = demux_r1, 
@@ -196,7 +200,7 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
 
 Additionally, regions that are considered anomalous, unstructured, or high signal in next-generation sequencing experiments are excluded using an inbuilt `excluded_regions` file (available are for `organism` `hg19`, `hg38`, and `mm10`) or a user provided `excluded_regions_filename` file in BED format.
 
-The discrepancy of `chr` between the alignment file and the feature file/excluded regions file can also be fixed (using `fix_char` parameter) if needed. Options for `fix_char`are "none", "excluded_regions", "feature", "both".
+The discrepancy of `chr` between the alignment file and the feature file/excluded regions file can also be fixed (using `fix_char` parameter) if needed by adding the string `chr` to the beginning of either the features, and/or excluded regions. So the ptions for `fix_char`are "none", "excluded_regions", "feature", "both".
 
 **NOTE** `genome_bin` approach may be more reliable in detecting sensitive features than using a pseudo-bulk peak calling approach, hence it would make the function slower as well.
 
@@ -210,9 +214,9 @@ sparseM <- readMM(here::here("scPipe-atac-output", "sparse_matrix.mtx"))
 dplyr::glimpse(sparseM)
 ```
 
-# Generating the *Single-cell Experiment* object
+# Generating the *Single-cell Experiment (SCE)* object
 
-... to be completed .... 
+Eas=iest way to generate a *SCE* object is to run `sc_atac_create_sce` with the `input_folder` parameter. However, if the default dir name was used for previous steps simply running `sc_atac_create_sce()` would produce a `sce` object in the default location (i.e. `scPipe-atac-output`)
 
 ```{r, eval=FALSE}
 sc_atac_create_sce(input_folder = here::here("scPipe-atac-output"), 
@@ -222,7 +226,7 @@ sc_atac_create_sce(input_folder = here::here("scPipe-atac-output"),
                    report       = TRUE)
 ```
 
-We have now completed the preprocessing steps. The feature count matrix is available as a `.rds` file in `scPipe-atac-output/feature_matrix.rds` and quality control statistics are saved in the `scPipe-atac-output/scPipe_atac_stats` folder. These data are useful for later quality control (QC).
+We have now completed the preprocessing steps. The feature count matrix is available as a `.rds` file in `scPipe-atac-output/feature_matrix.rds` and quality control statistics are saved in the `scPipe-atac-output/scPipe_atac_stats` folder. These data are useful for later quality control as well (QC).
 
 
 ## Quality Control

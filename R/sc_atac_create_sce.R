@@ -64,7 +64,7 @@ sc_atac_create_sce <- function(input_folder = NULL,
     colData(sce) <- cbind(colData(sce), pheno_data[order(rownames(pheno_data)),])
   }
   
-  feature_info(sce) <- feature_stats
+  #feature_info(sce) <- feature_stats
   
   saveRDS(sce, file = paste(input_folder,"/scPipe_atac_SCEobject.rds",sep = ""))
   
