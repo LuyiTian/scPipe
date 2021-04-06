@@ -724,9 +724,9 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
                 }
 
                 seq3_name = seq3->name.s;
-                seq3_seq = seq3->seq.s;
+                //seq3_seq = seq3->seq.s;
                 seq3_namelen = seq3->name.l;
-                seq3_seqlen = seq3->seq.l;
+                //seq3_seqlen = seq3->seq.l;
             }
             else{
                 Rcpp::Rcout << "read2 file is not of the same length as the barcode fastq file: " << "\n";
