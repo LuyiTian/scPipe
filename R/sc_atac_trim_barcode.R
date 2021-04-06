@@ -54,6 +54,8 @@ sc_atac_trim_barcode <- function(
   r2,
   bc_file,
   output_folder = "",
+  bc_start=-1,
+  bc_length=-1,
   umi_start=0,
   umi_length=0,
   umi_in = "both",
@@ -148,6 +150,9 @@ sc_atac_trim_barcode <- function(
 
     } else {
       cat("Using barcode CSV file, since barcode FastQ file is not passed \n")
+      if(bc_start == -1 || bc_length == -1 ){
+        stop("Please pass bc_start and bc_length values")
+      }
 
 
       # trim the barcode csv file (which contains the actual barcodes in the second column)
