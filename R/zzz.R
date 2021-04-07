@@ -3,7 +3,7 @@
   
   
   # Check if required packages are installed
-  list_of_packages <- c("tools", "tidyr", "locStra", "grid", "dplyr", "Matrix", "seqinr", "ggpubr")
+  list_of_packages <- c("tools", "tidyr", "locStra", "grid", "dplyr", "Matrix", "ggpubr", "reticulate")
   bioconductor_packages <- c("BiocParallel", "Rsubread", "rtracklayer", "GenomicAlignments", "GenomicRanges", "GenomicFeatures", "Rsamtools", "SingleCellExperiment")
   
   if (!requireNamespace("BiocManager", quietly = TRUE)) 
