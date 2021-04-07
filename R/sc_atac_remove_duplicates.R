@@ -73,11 +73,11 @@ sc_atac_remove_duplicates <- function(inbam, output_folder = ""){
         }
         
       },
-      warning <- function(w) {w
+      warning = function(w) {w
         message(w)
       },
       
-      error <- function(e) {
+      error = function(e) {
         message(e)
       }
     )
