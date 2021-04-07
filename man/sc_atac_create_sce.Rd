@@ -5,7 +5,7 @@
 \title{sc_atac_create_sce()}
 \usage{
 sc_atac_create_sce(
-  input_folder,
+  input_folder = NULL,
   organism = NULL,
   feature_type = NULL,
   pheno_data = NULL,

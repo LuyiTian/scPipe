@@ -2,15 +2,13 @@
 % Please edit documentation in R/sc_atac_trim_barcode.R
 \name{sc_atac_trim_barcode}
 \alias{sc_atac_trim_barcode}
-\title{sc_atac_trim_barcode()}
+\title{demultiplex raw single-cell ATAC-Seq fastq reads}
 \usage{
 sc_atac_trim_barcode(
   r1,
   r2,
   bc_file,
   output_folder = "",
-  bc_start = -1,
-  bc_length = -1,
   umi_start = 0,
   umi_length = 0,
   umi_in = "both",
@@ -24,16 +22,62 @@ sc_atac_trim_barcode(
   id2_len = -10
 )
 }
-\value{
+\arguments{
+\item{r1}{read one for pair-end reads.}
 
+\item{r2}{read two for pair-end reads, NULL if single read.}
+
+\item{bc_file}{the barcode information, can be either in a \code{fastq} format (e.g. from 10x-ATAC) or
+from a \core{.csv} file (here the barcode is expected to be on the second column). 
+Currently, for the fastq approach, this can be a list of barcode files.}
+
+\item{output_folder}{the output dir for the demultiplexed fastq file, which will contain 
+fastq files with reformatted barcode and UMI into the read name. 
+Files ending in \code{.gz} will be automatically compressed.}
+
+\item{umi_start}{if available, the start position of the molecular identifier.}
+
+\item{umi_length}{if available, the start position of the molecular identifier.}
+
+\item{rmN}{logical, whether to remove reads that contains N in UMI or cell barcode.}
+
+\item{rmlow}{logical, whether to remove the low quality reads.}
+
+\item{min_qual}{the minimum base pair quality that is allowed.}
+
+\item{num_below_min}{the maximum number of base pairs below the quality threshold.}
+
+\item{bc_start}{barcode start position (0-indexed), which is an extra parameter that is needed if the
+\code{bc_file} is in a \code{.csv} format.}
+
+\item{bc_length}{barcode length, which is an extra parameter that is needed if the
+\code{bc_file} is in a \code{.csv} format.}
 }
 \description{
-sc_atac_trim_barcode()
+single-cell data need to be demultiplexed in order to retain the information of the cell barcodes
+the data belong to. Here we reformat fastq files so barcode/s (and if available the UMI sequences) are moved from
+the sequence into the read name. Since scATAC-Seq data are mostly paired-end, both `r1` and `r2` are demultiplexed in this function.
 }
 \examples{
 \dontrun{
+using a barcode fastq file
+sc_atac_trim_barcode (
+r1            = r1, 
+r2            = r2, 
+bc_file       = barcode_fastq,
+rmN           = TRUE,
+rmlow         = TRUE,
+output_folder = "")
 
-
+using a barcode csv file
+sc_atac_trim_barcode (
+r1            = r1, 
+r2            = r2, 
+bc_file       = barcode_1000, 
+bc_start      = 3, 
+bc_length     = 16, 
+rmN           = TRUE,
+rmlow         = TRUE,
+output_folder = "")
 }
-
 }
