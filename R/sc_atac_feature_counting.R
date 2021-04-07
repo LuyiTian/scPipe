@@ -235,40 +235,7 @@ sc_atac_feature_counting <- function(
   
   ############################### end fix_chr
   
-  number_of_lines_to_remove <- 0
-  
-  if(exclude_regions){
-    
-    if(is.null(excluded_regions_filename) & !is.null(organism)){
-      ## If excluded_regions_filename is null but organism is not, then read the file from system
-      
-      organism_files                <- list.files(system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE))
-      excluded_regions_filename_aux <- grep(pattern = organism, x = organism_files, value = TRUE) %>% 
-        grep(pattern = "blacklist", x = ., value = TRUE)
-      excluded_regions_filename     <- system.file(paste0("extdata/annotations/", excluded_regions_filename_aux), package = "scPipe", mustWork = TRUE)
-    } 
-    
-    if(!is.null(excluded_regions_filename)){
-      excluded_regions.gr               <- rtracklayer::import(excluded_regions_filename)
-      overlaps_excluded_regions_feature <- findOverlaps(excluded_regions.gr, feature.gr, maxgap = -1L, minoverlap = 0L) # Find overlaps
-      lines_to_remove                   <- as.data.frame(overlaps_excluded_regions_feature)$subjectHits # Lines to remove in feature file
-      number_of_lines_to_remove         <- length(lines_to_remove)
-      
-      if(number_of_lines_to_remove > 0){ # If there are lines to remove
-        feature.gr.df            <- as.data.frame(feature.gr)
-        lines_to_keep            <- setdiff(1:nrow(feature.gr.df), lines_to_remove)
-        feature.gr               <- feature.gr[lines_to_keep, ]
-      } # End if(number_of_lines_to_remove > 0)
-      
-    } else{
-      warning("Parameter exclude_regions was TRUE but no known organism or excluded_regions_filename provided. Proceding without excluding regions.")
-    }
-    
-    
-  } # End if(exclude_regions)
-  
   ###################### generate the GAlignment objects from BAM and features ######################
-  
   
   ############## read in the aligned and demultiplexed BAM file
   
@@ -305,6 +272,39 @@ sc_atac_feature_counting <- function(
     feature.gr <- rtracklayer::import(out_bed_filename)
   }
   
+  ############################### exclude regions 
+  
+  number_of_lines_to_remove <- 0
+  
+  if(exclude_regions){
+    
+    if(is.null(excluded_regions_filename) & !is.null(organism)){
+      ## If excluded_regions_filename is null but organism is not, then read the file from system
+      
+      organism_files                <- list.files(system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE))
+      excluded_regions_filename_aux <- grep(pattern = organism, x = organism_files, value = TRUE) %>% 
+        grep(pattern = "blacklist", x = ., value = TRUE)
+      excluded_regions_filename     <- system.file(paste0("extdata/annotations/", excluded_regions_filename_aux), package = "scPipe", mustWork = TRUE)
+    } 
+    
+    if(!is.null(excluded_regions_filename)){
+      excluded_regions.gr               <- rtracklayer::import(excluded_regions_filename)
+      overlaps_excluded_regions_feature <- findOverlaps(excluded_regions.gr, feature.gr, maxgap = -1L, minoverlap = 0L) # Find overlaps
+      lines_to_remove                   <- as.data.frame(overlaps_excluded_regions_feature)$subjectHits # Lines to remove in feature file
+      number_of_lines_to_remove         <- length(lines_to_remove)
+      
+      if(number_of_lines_to_remove > 0){ # If there are lines to remove
+        feature.gr.df            <- as.data.frame(feature.gr)
+        lines_to_keep            <- setdiff(1:nrow(feature.gr.df), lines_to_remove)
+        feature.gr               <- feature.gr[lines_to_keep, ]
+      } # End if(number_of_lines_to_remove > 0)
+      
+    } else{
+      warning("Parameter exclude_regions was TRUE but no known organism or excluded_regions_filename provided. Proceding without excluding regions.")
+    }
+    
+    
+  } # End if(exclude_regions)
   
   ################# Initiate log file
   log_and_stats_folder       <- paste0(output_folder, "/scPipe_atac_stats/")
