@@ -903,7 +903,6 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     int removed_low_qual = 0;
     int exact_match = 0;
     int approx_match = 0;
-    int total_barcodes = 0;
     
     bool R3 = false;
     bool isUMIR1 = (umi_length > 0 && (strcmp(umi_in,"both") == 0 || strcmp(umi_in,"R1") == 0));
@@ -930,12 +929,8 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     if(!bc.is_open()) throw std::runtime_error("Could not open file");
     while(std::getline(bc, line))
     {
-        total_barcodes++;
         std::string substr = line.substr(0,std::min(id1_len, id2_len));
         barcode_map.insert(std::pair<std::string, int>(substr, 1)); 
-        if (barcode_map.count(substr) > 1) {
-            total_barcodes--; // if there is already a barcode at this position, remove 1 from total barcode count
-        }
     }
     
     if(barcode_map.empty()){
@@ -1273,14 +1268,14 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     out_vect[2] = removed_low_qual;
     out_vect[3] = exact_match;
     out_vect[4] = approx_match;
-    out_vect[5] = total_barcodes;
+    out_vect[5] = (int)barcode_map.size();
     
     Rcpp::Rcout << "Total Reads: " << passed_reads << std::endl;
     Rcpp::Rcout << "Total N's removed: " << removed_Ns << std::endl;
     Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
     Rcpp::Rcout << "Exact match Reads: " << exact_match << std::endl;
     Rcpp::Rcout << "Approx Match Reads: " << approx_match << std::endl;
-    Rcpp::Rcout << "Total barcodes: " << total_barcodes << std::endl;
+    Rcpp::Rcout << "Total barcodes: " << (int)barcode_map.size() << std::endl;
     
     return(out_vect);
 }
