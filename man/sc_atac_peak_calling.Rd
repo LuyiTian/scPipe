@@ -2,15 +2,20 @@
 % Please edit documentation in R/sc_atac_peak_calling.R
 \name{sc_atac_peak_calling}
 \alias{sc_atac_peak_calling}
-\title{sc_atac_call_peaks()}
+\title{sc_atac_peak_calling()}
 \usage{
-sc_atac_peak_calling(inbam, output_folder = "")
+sc_atac_peak_calling(
+  inbam,
+  ref = NULL,
+  output_folder = NULL,
+  genome_size = NULL
+)
 }
 \value{
 
 }
 \description{
-sc_atac_call_peaks()
+sc_atac_peak_calling()
 }
 \examples{
 \dontrun{

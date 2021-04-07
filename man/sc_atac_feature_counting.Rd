@@ -2,7 +2,7 @@
 % Please edit documentation in R/sc_atac_feature_counting.R
 \name{sc_atac_feature_counting}
 \alias{sc_atac_feature_counting}
-\title{TODO: documentation}
+\title{generating the feature by cell matrix}
 \usage{
 sc_atac_feature_counting(
   insortedbam,
@@ -10,7 +10,7 @@ sc_atac_feature_counting(
   bam_tags = list(bc = "CB", mb = "OX"),
   feature_type = "peak",
   organism = NULL,
-  cell_calling = "cellranger",
+  cell_calling = FALSE,
   genome_size = NULL,
   qc_per_bc_file = NULL,
   bin_size = NULL,
@@ -23,5 +23,6 @@ sc_atac_feature_counting(
 )
 }
 \description{
-TODO: documentation
+feature matrix is created using a given demultiplexed BAM file and 
+a selected feature type
 }

@@ -582,7 +582,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
     
     std::vector<kseq_t*> seq2_list;
     std::vector<gzFile> fq2_list;
-    for(int i=0;i<fq2_fn_list.size();i++){
+    for(int i=0;i<(int)fq2_fn_list.size();i++){
         char* fq2_fn = (char *)fq2_fn_list[i].c_str();
         gzFile fq2 = gzopen(fq2_fn, "r");
         if (!fq2) {
@@ -710,9 +710,9 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         //int seq1_seqlen = seq1->seq.l;
         
         char * seq3_name;
-        char * seq3_seq;
+        //char * seq3_seq;
         int seq3_namelen;
-        int seq3_seqlen;
+        //int seq3_seqlen;
         if (R3){
             if((l3 = kseq_read(seq3)) >= 0){
                 // check this read is long enough for id2 and umi positions
@@ -724,16 +724,16 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
                 }
 
                 seq3_name = seq3->name.s;
-                seq3_seq = seq3->seq.s;
+                //seq3_seq = seq3->seq.s;
                 seq3_namelen = seq3->name.l;
-                seq3_seqlen = seq3->seq.l;
+                //seq3_seqlen = seq3->seq.l;
             }
             else{
                 Rcpp::Rcout << "read2 file is not of the same length as the barcode fastq file: " << "\n";
             }
         } 
         
-        for(int i=0;i<seq2_list.size();i++){
+        for(int i=0;i<(int)seq2_list.size();i++){
             kseq_t* seq2 = seq2_list[i];
             if ((l2 = kseq_read(seq2)) >= 0){
                 //char * const seq2_name = seq2->name.s;
@@ -832,7 +832,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
     
     // free subStr1
     kseq_destroy(seq1); 
-    for(int i=0;i<seq2_list.size();i++){
+    for(int i=0;i<(int)seq2_list.size();i++){
         kseq_t* seq2 = seq2_list[i];
         kseq_destroy(seq2);// free seq
         gzclose(fq2_list[i]);
@@ -882,8 +882,6 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         char *fq3_fn,
         char *fq_out, 
         char *bc_fn, // barcode file must be a file where each line is a barcode (not comma separated)
-        int start, // get rid
-        int length, // get rid
         int umi_start,
         int umi_length,
         char *umi_in,

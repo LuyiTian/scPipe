@@ -2,7 +2,7 @@
 % Please edit documentation in R/sc_atac_cell_calling.R
 \name{sc_atac_cell_calling}
 \alias{sc_atac_cell_calling}
-\title{sc_atac_bam_tagging()}
+\title{sc_atac_cell_calling()}
 \usage{
 sc_atac_cell_calling(
   mat,
@@ -17,7 +17,7 @@ sc_atac_cell_calling(
 
 }
 \description{
-sc_atac_bam_tagging()
+sc_atac_cell_calling()
 }
 \examples{
 \dontrun{

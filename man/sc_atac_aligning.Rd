@@ -2,31 +2,42 @@
 % Please edit documentation in R/sc_atac_aligning.R
 \name{sc_atac_aligning}
 \alias{sc_atac_aligning}
-\title{sc_atac_align()}
+\title{aligning the demultiplexed FASTQ reads}
 \usage{
 sc_atac_aligning(
   ref,
   readFile1,
   readFile2 = NULL,
-  readDir = NULL,
-  output_folder = "",
-  output_file = "",
+  output_folder = NULL,
+  output_file = NULL,
   input_format = "FASTQ",
   output_format = "BAM",
+  index_path = NULL,
   type = "dna",
   nthreads = 1
 )
+}
+\arguments{
+\item{ref}{the reference genome file (.fasta, .fa format)}
+
+\item{readFile1}{the first fastq file which is mandatory}
+
+\item{readFile2}{the second fastq file, which is required if the data is paired-end}
+
+\item{index_path}{if the Rsubread genome build is available user can enter the path here}
 }
 \value{
 
 }
 \description{
-sc_atac_align()
+after we run the \code{sc_atac_trim_barcode} to demultiplex the fastq files, we are using this
+function to align those fastq files to a known reference.
 }
 \examples{
 \dontrun{
-
-
+sc_atac_aligning(ref
+    readFile1  
+    readFile2 
+    nthreads  = 6) 
 }
-
 }
