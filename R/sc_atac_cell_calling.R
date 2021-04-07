@@ -14,8 +14,12 @@
 #'
 #' @export
 #'
-sc_atac_cell_calling <- function(
-  mat, cell_calling, output_folder, genome_size = NULL, qc_per_bc_file = NULL, lower = NULL){
+sc_atac_cell_calling <- function(mat, 
+                                 cell_calling, 
+                                 output_folder, 
+                                 genome_size = NULL, 
+                                 qc_per_bc_file = NULL, 
+                                 lower = NULL){
   
   if(cell_calling == "emptydrops"){
     
@@ -26,11 +30,11 @@ sc_atac_cell_calling <- function(
     set.seed(2019)
     
     # generating the knee plot
-    my_counts <- Matrix(mat)
+    my.counts <- Matrix(mat)
     br.out    <- DropletUtils::barcodeRanks(my.counts)
     
     # Making a plot
-    dev.off()
+    while (!is.null(dev.list()))  dev.off()
     png(file=paste0(output_folder, "/scPipe_atac_stats/knee_plot.png"))
         plot(br.out$rank, br.out$total, log="xy", xlab="Rank", ylab="Total")
         o <- order(br.out$rank)

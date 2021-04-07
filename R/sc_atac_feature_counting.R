@@ -62,12 +62,13 @@ sc_atac_feature_counting <- function(
   # timer
   cat(
     paste0(
-      "sc_atac_counting starts at ",
+      "sc_atac_feature_counting starts at ",
       as.character(Sys.time()),
       "\n"
     ), 
     file = log_file, append = TRUE)
   
+  ############# feature type is genome_bin ####################
   
   if(feature_type == 'genome_bin'){
     # TODO: test the format of the fasta file here and stop if not proper format
@@ -120,7 +121,7 @@ sc_atac_feature_counting <- function(
         sizes_df_aux <- sizes_df %>% 
           dplyr::group_by(V1) %>% 
           dplyr::mutate(V3 = floor(V2/bin_size),
-                 V4 = bin_size*V3) %>% 
+                        V4 = bin_size*V3) %>% 
           dplyr::ungroup()
         
         
@@ -141,8 +142,8 @@ sc_atac_feature_counting <- function(
           
           options(scipen = 999) # To prevent scientific notation
           out_df <- dplyr::tibble(init = c(seq_aux_init, last_row_init), 
-                                 end = c(seq_aux_end, last_row_end)
-                                 ) %>% 
+                                  end = c(seq_aux_end, last_row_end)
+          ) %>% 
             dplyr::mutate(name = aux_i$V1, .before = init)
           
           return(out_df)
@@ -157,9 +158,6 @@ sc_atac_feature_counting <- function(
         else {
           stop("File ", out_bed_filename, "file was not created.")
         }
-        
-        
-        
       } else{
         stop("Either organism or feature_input should be provided.")
       }
@@ -168,46 +166,11 @@ sc_atac_feature_counting <- function(
     # feature_input <- genome_bin
   }
   
-  # read in the aligned and demltiplexed BAM file
-  
-  cat("Creating GAlignment object for the sorted BAM file...\n")
-  
-  param <- Rsamtools::ScanBamParam(tag = as.character(bam_tags),  mapqFilter=mapq)
-  bamfl <- Rsamtools::BamFile(insortedbam, yieldSize = yieldsize)
-  open(bamfl)
-  
-  yld                            <- GenomicAlignments::readGAlignments(bamfl,use.names = TRUE, param = param)
-  yld.gr                         <- makeGRangesFromDataFrame(yld,keep.extra.columns=TRUE) 
-  average_number_of_lines_per_CB <- length(yld.gr$CB)/length(unique(yld.gr$CB))
-  
-  ######## Adjusting for the Tn5 cut site
-  cat("Adjusting for the 9bp Tn5 cut site...\n")
-  
-  isMinus <- BiocGenerics::which(strand(yld.gr) == "-")
-  isOther <- BiocGenerics::which(strand(yld.gr) != "-")
-  #Forward
-  start(yld.gr)[isOther] <- start(yld.gr)[isOther] - 5
-  end(yld.gr)[isOther] <- end(yld.gr)[isOther] + 4
-  #Reverse
-  end(yld.gr)[isMinus] <- end(yld.gr)[isMinus] + 5
-  start(yld.gr)[isMinus] <- start(yld.gr)[isMinus] - 4
-  
-  saveRDS(yld.gr, file = paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = ""))
-  cat("GAlignment object is created and saved in \n", paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = "") , "\n")
-  
-  # generate the GAalignment file from the feature_input file
-  cat("Creating Galignment object for the feature input...\n")
-  if(feature_type != 'genome_bin'){
-  feature.gr <- rtracklayer::import(feature_input)
-  } else {
-    feature.gr <- rtracklayer::import(out_bed_filename)
-  }
-  
-  ############################### fix_chr
-  
+  ############################## feature type is peak #####################
   if(feature_type == 'peak'){
     cat("`peak` feature_type is selected for feature input", "\n")
     
+    ############################### fix_chr in feature file
     if(fix_chr %in% c("feature", "both")){
       
       out_bed_filename_feature <- paste0(output_folder, "/", 
@@ -217,9 +180,9 @@ sc_atac_feature_counting <- function(
                                          ), "_fixedchr.bed"
       ) # remove extension and append output folder
       
-      # Try to read first 5 rows of excluded_regions file to see if the format is correct
+      # Try to read first 5 rows of feature_input file to see if the format is correct
       feature_head <- read.table(feature_input, nrows = 5)
-      if(ncol(feature_head) != 3){
+      if(ncol(feature_head) < 3){
         warning("Feature file provided does not contain 3 columns. Cannot append chr")
         break;
       }
@@ -230,6 +193,7 @@ sc_atac_feature_counting <- function(
       # Check if file was created
       if(file.exists(out_bed_filename_feature)) {
         cat("Appended 'chr' to feature file and output created in:", out_bed_filename_feature, "\n")
+        feature_input <- out_bed_filename_feature
       }
       else {
         stop("File ", out_bed_filename_feature, "file was not created.")
@@ -237,7 +201,7 @@ sc_atac_feature_counting <- function(
       
     }
     
-    
+    ############################### fix_chr in excluded regions
     if(fix_chr %in% c("excluded_regions", "both")){
       if(!is.null(excluded_regions_filename)){
         
@@ -250,7 +214,7 @@ sc_atac_feature_counting <- function(
         
         # Try to read first 5 rows of excluded_regions file to see if the format is correct
         excluded_regions_head <- read.table(excluded_regions_filename, nrows = 5)
-        if(ncol(excluded_regions_head) != 3){
+        if(ncol(excluded_regions_head) < 3){
           warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
           break
         }
@@ -260,6 +224,7 @@ sc_atac_feature_counting <- function(
         # Check if file was created
         if(file.exists(out_bed_filename_excluded_regions)) {
           cat("Appended 'chr' to excluded_regions file and output created in:", out_bed_filename_excluded_regions, "\n")
+          excluded_regions_filename <- out_bed_filename_excluded_regions
         }
         else {
           stop("File ", out_bed_filename_excluded_regions, "file was not created.")
@@ -303,8 +268,46 @@ sc_atac_feature_counting <- function(
     
   } # End if(exclude_regions)
   
+  ###################### generate the GAlignment objects from BAM and features ######################
   
-  # Log file
+  
+  ############## read in the aligned and demultiplexed BAM file
+  
+  cat("Creating GAlignment object for the sorted BAM file...\n")
+  
+  param <- Rsamtools::ScanBamParam(tag = as.character(bam_tags),  mapqFilter=mapq)
+  bamfl <- Rsamtools::BamFile(insortedbam, yieldSize = yieldsize)
+  open(bamfl)
+  
+  yld                            <- GenomicAlignments::readGAlignments(bamfl,use.names = TRUE, param = param)
+  yld.gr                         <- makeGRangesFromDataFrame(yld,keep.extra.columns=TRUE) 
+  average_number_of_lines_per_CB <- length(yld.gr$CB)/length(unique(yld.gr$CB))
+  
+  ############# Adjusting for the Tn5 cut site
+  cat("Adjusting for the 9bp Tn5 cut site...\n")
+  
+  isMinus <- BiocGenerics::which(strand(yld.gr) == "-")
+  isOther <- BiocGenerics::which(strand(yld.gr) != "-")
+  #Forward
+  start(yld.gr)[isOther] <- start(yld.gr)[isOther] - 5
+  end(yld.gr)[isOther] <- end(yld.gr)[isOther] + 4
+  #Reverse
+  end(yld.gr)[isMinus] <- end(yld.gr)[isMinus] + 5
+  start(yld.gr)[isMinus] <- start(yld.gr)[isMinus] - 4
+  
+  saveRDS(yld.gr, file = paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = ""))
+  cat("GAlignment object is created and saved in \n", paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = "") , "\n")
+  
+  ############## generate the GAalignment file from the feature_input file
+  cat("Creating Galignment object for the feature input...\n")
+  if(feature_type != 'genome_bin'){
+    feature.gr <- rtracklayer::import(feature_input)
+  } else {
+    feature.gr <- rtracklayer::import(out_bed_filename)
+  }
+  
+  
+  ################# Initiate log file
   log_and_stats_folder       <- paste0(output_folder, "/scPipe_atac_stats/")
   dir.create(log_and_stats_folder, showWarnings = FALSE)
   log_file                   <- paste0(log_and_stats_folder, "log_file.txt")
@@ -316,7 +319,7 @@ sc_atac_feature_counting <- function(
   cat("Number of regions removed from feature_input:", number_of_lines_to_remove, "\n", 
       file = log_file, append = TRUE)
   
-  # Overlaps
+  ############### Overlaps
   median_feature_overlap <- median(ranges(feature.gr)@width)
   minoverlap             <- 0.51*median_feature_overlap
   maxgap                 <- 0.51*median_feature_overlap
@@ -372,10 +375,18 @@ sc_atac_feature_counting <- function(
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
   sparseM <- Matrix(matrixData, sparse=TRUE)
+  # add dimensions of the sparse matrix if available
+  if(cell_calling != FALSE){
+    barcodes <- file.path(paste0(output_folder, '/non_empty_barcodes.txt'))
+    features <- read.table(paste0(output_folder, '/non_empty_features.txt'))
+    dimnames(sparseM)  <-  list(features, barcodes)
+  }
+  
   cat("Sparse matrix generated", "\n")
+  saveRDS(sparseM, file = paste(output_folder,"/sparse_matrix.rds",sep = ""))
   writeMM(obj = sparseM, file=paste(output_folder,"/sparse_matrix.mtx", sep =""))
   cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
-
+  
   # generate and save jaccard matrix
   jaccardM <- jaccardMatrix(sparseM)
   cat("Jaccard matrix generated", "\n")
@@ -403,7 +414,7 @@ sc_atac_feature_counting <- function(
       by = "cell"
     )
   
-  info_per_feature = data.frame(counts_per_feature = counts_per_feature) %>% 
+  info_per_feature <- data.frame(counts_per_feature = counts_per_feature) %>% 
     tibble::rownames_to_column(var = "feature") %>% 
     full_join(
       data.frame(cells_per_feature = cells_per_feature) %>% 
@@ -411,7 +422,7 @@ sc_atac_feature_counting <- function(
       by = "feature"
     )
   
-
+  
   write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
   write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
   
