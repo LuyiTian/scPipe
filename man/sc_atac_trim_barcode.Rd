@@ -28,7 +28,7 @@ sc_atac_trim_barcode(
 \item{r2}{read two for pair-end reads, NULL if single read.}
 
 \item{bc_file}{the barcode information, can be either in a \code{fastq} format (e.g. from 10x-ATAC) or
-from a \core{.csv} file (here the barcode is expected to be on the second column). 
+from a \code{.csv} file (here the barcode is expected to be on the second column). 
 Currently, for the fastq approach, this can be a list of barcode files.}
 
 \item{output_folder}{the output dir for the demultiplexed fastq file, which will contain 

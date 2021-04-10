@@ -8,6 +8,8 @@
 #include "Timer.h"
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <algorithm>
 
 using namespace Rcpp;
 
