@@ -1019,6 +1019,12 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     
     std::set<std::string> seq_2_set; // Set that will include the unique barcode sequences
     size_t _interrupt_ind = 0;
+
+    // for output files;
+    gzFile *R1_gz_outfile;
+    gzFile  *R3_gz_outfile;
+    std::ofstream *R1_outfile;
+    std::ofstream *R3_outfile;
     // Assuming R1, R2, R3 all are of equal lengths.
     while (((l1 = kseq_read(seq1)) >= 0))
     {
@@ -1029,8 +1035,6 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         if(passed_reads % 1000==0) {
             Rcout << passed_reads << " lines have been read..." << std::endl; 
         }
-
-        
         
         // variables for copying sequences and for checking lengths
         char *seq1_name = seq1->name.s;
@@ -1098,20 +1102,20 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         if(isUMIR1){ // create subStr1 of barcode concatenated with UMI, seperated by '_'
             bcUMIlen1 = id1_len + umi_length + 1;
             subStr1 = (char *)malloc(bcUMIlen1 + 1); // additional space for zero terminator
-            memcpy(subStr1, seq1_seq + id1_st, id1_len);
+            memcpy(subStr1, seq1->seq.s + id1_st, id1_len);
             subStr1[id1_len] = '_'; 
-            memcpy(subStr1 + id1_len + 1, seq1_seq + umi_start, umi_length); 
+            memcpy(subStr1 + id1_len + 1, seq1->seq.s + umi_start, umi_length); 
             subStr1[bcUMIlen1] = '\0';
         } else { // create subStr1 of barcode sequence
             bcUMIlen1 = id1_len;
             subStr1 = (char *)malloc(bcUMIlen1 + 1); // additional space for zero terminator
-            memcpy(subStr1, &seq1_seq[id1_st], id1_len); 
+            memcpy(subStr1, &seq1->seq.s[id1_st], id1_len); 
             subStr1[bcUMIlen1] = '\0';
         }
         
         // allocate and copy just the barcode, to check against the barcodes in the barcode map
-        char barcode[id1_len + 1];
-        memcpy( barcode, seq1_seq + id1_st, id1_len); 
+        char *barcode = (char *)malloc((id1_len + 1) * sizeof(char));
+        memcpy( barcode, seq1->seq.s + id1_st, id1_len); 
         barcode[id1_len] = '\0'; 
         
         int match_type = 2; // 0 for exact, 1 for partial, 2 for no
@@ -1132,18 +1136,17 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             }
         }
         // if the barcode matches exactly or inexactly, write the modifiyed sequence lines to the output file
-        const int new_name_length1 = seq1_namelen + bcUMIlen1 + 1;
+        const int new_name_length1 = seq1->name.l + bcUMIlen1 + 1;
         seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1 + 1); // allocate additional memory
-        memmove(seq1_name + bcUMIlen1 + 1, seq1_name, seq1_namelen );// move original read name from second arg to first arg
+        memmove(seq1->name.s + bcUMIlen1 + 1, seq1->name.s, seq1->name.l);// move original read name from second arg to first arg
         memcpy(seq1_name, subStr1, bcUMIlen1 * sizeof(char)); // copy index one
-        seq1_name[bcUMIlen1] = '#'; // add separator
-        seq1_name[new_name_length1] = '\0';
+        seq1->name.s[bcUMIlen1] = '#'; // add separator
+        seq1->name.s[new_name_length1] = '\0'; // should we really add a 0 terminator?? this will get added every time, for every barcode
         
         // chop read to only be what has not been copied to header
-        memmove(seq1_seq, seq1_seq + bc1_end, seq1_seqlen - bc1_end + 1);
+        memmove(seq1->seq.s, seq1->seq.s + bc1_end, seq1->name.l - bc1_end);
         
-        gzFile *R1_gz_outfile;
-        std::ofstream *R1_outfile;
+
         switch (match_type) {
             case 0:
                 R1_outfile = &o_stream_R1;
@@ -1174,45 +1177,44 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             if (isUMIR2) {
                 bcUMIlen3 = id2_len + umi_length +1;
                 subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
-                memcpy(subStr3, seq3_seq + id2_st, id2_len);
+                memcpy(subStr3, seq3->seq.s + id2_st, id2_len);
                 subStr3 [id2_len] = '_';
-                memcpy(subStr3 + id2_len + 1, seq3_seq + umi_start, umi_length);
+                memcpy(subStr3 + id2_len + 1, seq3->seq.s + umi_start, umi_length);
                 subStr3[bcUMIlen3] = '\0';          
             } else {
                 bcUMIlen3 = id2_len;
                 subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
-                memcpy( subStr3, &seq3_seq[id2_st], id2_len );
+                memcpy( subStr3, &seq3->seq.s[id2_st], id2_len );
                 subStr3[bcUMIlen3] = '\0';
             }
             
-            char barcode[id2_len + 1];
-            memcpy( barcode, seq3_seq + id2_st, id2_len);
-            barcode[id2_len] = '\0';
-            int match_type = 0; // 0 for exact, 1 for partial, 2 for no
+            char *barcode3 = (char *)malloc((id2_len + 1) * sizeof(char));
+            memcpy( barcode3, seq3->seq.s + id2_st, id2_len);
+            barcode3[id2_len] = '\0';
+            int match_type = 2; // 0 for exact, 1 for partial, 2 for no
             
             if (barcode_map.find(subStr3) != barcode_map.end()) {
                 match_type = 0;
             } else {
                 match_type = 2; // assume there is no match
                 for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
-                    if(hamming_distance(it->first, barcode) < 2){
+                    if(hamming_distance(it->first, barcode3) < 2){
                         match_type = 1;
                         break;
                     }
                 }
             }
 
-            const int new_name_length1 = seq3_namelen + bcUMIlen3 + 1;
-            seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1); // allocate additional memory
-            memmove(seq3_name + bcUMIlen3+1, seq3_name, seq3_namelen * sizeof(char) );// move original read name
-            memcpy(seq3_name, subStr3, bcUMIlen3 * sizeof(char)); // copy index one
+            const int new_name_length1 = seq3->name.l + bcUMIlen3 + 1;
+            seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1 + 1); // allocate additional memory
+            memmove(seq3->name.s + bcUMIlen3+1, seq3->name.s, seq3->name.l);// move original read name
+            memcpy(seq3->name.s, subStr3, bcUMIlen3 * sizeof(char)); // copy index one
             seq3_name[bcUMIlen3] = '#'; // add separator
             seq3_name[new_name_length1] = '\0';
             
-            memmove(seq3_seq, seq3_seq + bc2_end, seq3_seqlen - bc2_end + 1);           
-            
-            gzFile *R3_gz_outfile;
-            std::ofstream *R3_outfile;
+            memmove(seq3->seq.s, seq3->seq.s + bc2_end, seq3->seq.l - bc2_end);           
+            //seq3->seq.s[seq3->seq.l - bc2_end];
+
             switch (match_type) {
                 case 0:
                     R3_outfile = &o_stream_R3;
@@ -1234,10 +1236,11 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             } else {
                 fq_write(*R3_outfile, seq3, 0); // write to fastq file
             }
-            
+            free(barcode3);
             free(subStr3);
             
         }
+        free(barcode);
         free(subStr1);
         
     }
