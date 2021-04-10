@@ -1037,24 +1037,25 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         }
         
         // variables for copying sequences and for checking lengths
-        char *seq1_name = seq1->name.s;
-        char *seq1_seq = seq1->seq.s;
-        int seq1_namelen = seq1->name.l;
-        int seq1_seqlen = seq1->seq.l;
+        //char *seq1_name = seq1->name.s;
+        //char *seq1_seq = seq1->seq.s;
+        //int seq1_namelen = seq1->name.l;
+        //int seq1_seqlen = seq1->seq.l;
         
-        char * seq3_name;
-        char * seq3_seq;
-        int seq3_namelen;
-        int seq3_seqlen;
+        //char * seq3_name;
+        //char * seq3_seq;
+        //int seq3_namelen;
+        //int seq3_seqlen;
         if (R3){
-            if((l3 = kseq_read(seq3)) >= 0){
-                seq3_name = seq3->name.s;
-                seq3_seq = seq3->seq.s;
-                seq3_namelen = seq3->name.l;
-                seq3_seqlen = seq3->seq.l;
-            }
-            else{
+            if((l3 = kseq_read(seq3)) < 0){
+                //seq3_name = seq3->name.s;
+                //seq3_seq = seq3->seq.s;
+                //seq3_namelen = seq3->name.l;
+                //seq3_seqlen = seq3->seq.l;
+            //}
+            //else{
                 Rcpp::Rcout << "R3 file is not of same length as R2: " << std::endl;
+            //}
             }
         } 
 
@@ -1139,7 +1140,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         const int new_name_length1 = seq1->name.l + bcUMIlen1 + 1;
         seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1 + 1); // allocate additional memory
         memmove(seq1->name.s + bcUMIlen1 + 1, seq1->name.s, seq1->name.l);// move original read name from second arg to first arg
-        memcpy(seq1_name, subStr1, bcUMIlen1 * sizeof(char)); // copy index one
+        memcpy(seq1->name.s, subStr1, bcUMIlen1 * sizeof(char)); // copy index one
         seq1->name.s[bcUMIlen1] = '#'; // add separator
         seq1->name.s[new_name_length1] = '\0'; // should we really add a 0 terminator?? this will get added every time, for every barcode
         
@@ -1209,8 +1210,8 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1 + 1); // allocate additional memory
             memmove(seq3->name.s + bcUMIlen3+1, seq3->name.s, seq3->name.l);// move original read name
             memcpy(seq3->name.s, subStr3, bcUMIlen3 * sizeof(char)); // copy index one
-            seq3_name[bcUMIlen3] = '#'; // add separator
-            seq3_name[new_name_length1] = '\0';
+            seq3->name.s[bcUMIlen3] = '#'; // add separator
+            seq3->name.s[new_name_length1] = '\0';
             
             memmove(seq3->seq.s, seq3->seq.s + bc2_end, seq3->seq.l - bc2_end);           
             //seq3->seq.s[seq3->seq.l - bc2_end];
