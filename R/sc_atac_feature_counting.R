@@ -62,12 +62,13 @@ sc_atac_feature_counting <- function(
   # timer
   cat(
     paste0(
-      "sc_atac_counting starts at ",
+      "sc_atac_feature_counting starts at ",
       as.character(Sys.time()),
       "\n"
     ), 
     file = log_file, append = TRUE)
   
+  ############# feature type is genome_bin ####################
   
   if(feature_type == 'genome_bin'){
     # TODO: test the format of the fasta file here and stop if not proper format
@@ -106,14 +107,13 @@ sc_atac_feature_counting <- function(
       ## End if is.null
     } else{
       if(!is.null(organism)){
-        # Do something
-        # Use organism data sizes saved in repository
         
-        organism_files     <- list.files(system.file("extdata/organism_data/", package = "scPipe", mustWork = TRUE))
+        # Use organism data sizes saved in repository
+        organism_files     <- list.files(system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE))
         sizes_filename_aux <- grep(pattern = organism, x = organism_files, value = TRUE) %>% 
           grep(pattern     <- "size", x = ., value = TRUE)
         
-        sizes_filename <- system.file(paste0("extdata/organism_data/", sizes_filename_aux), package = "scPipe", mustWork = TRUE)
+        sizes_filename <- system.file(paste0("extdata/annotations/", sizes_filename_aux), package = "scPipe", mustWork = TRUE)
         
         sizes_df <- read.table(sizes_filename, header = FALSE, col.names = c("V1", "V2"))
         
@@ -157,9 +157,6 @@ sc_atac_feature_counting <- function(
         else {
           stop("File ", out_bed_filename, "file was not created.")
         }
-        
-        
-        
       } else{
         stop("Either organism or feature_input should be provided.")
       }
@@ -168,7 +165,79 @@ sc_atac_feature_counting <- function(
     # feature_input <- genome_bin
   }
   
-  # read in the aligned and demltiplexed BAM file
+  ############################## feature type is peak #####################
+  if(feature_type == 'peak'){
+    cat("`peak` feature_type is selected for feature input", "\n")
+    
+    ############################### fix_chr in feature file
+    if(fix_chr %in% c("feature", "both")){
+      
+      out_bed_filename_feature <- paste0(output_folder, "/", 
+                                         sub('\\..[^\\.]*$', 
+                                             '', 
+                                             basename(feature_input)
+                                         ), "_fixedchr.bed"
+      ) # remove extension and append output folder
+      
+      # Try to read first 5 rows of feature_input file to see if the format is correct
+      feature_head <- read.table(feature_input, nrows = 5)
+      if(ncol(feature_head) < 3){
+        warning("Feature file provided does not contain 3 columns. Cannot append chr")
+        break;
+      }
+      
+      
+      rcpp_append_chr_to_bed_file(feature_input, out_bed_filename_feature)
+      
+      # Check if file was created
+      if(file.exists(out_bed_filename_feature)) {
+        cat("Appended 'chr' to feature file and output created in:", out_bed_filename_feature, "\n")
+        feature_input <- out_bed_filename_feature
+      }
+      else {
+        stop("File ", out_bed_filename_feature, "file was not created.")
+      }
+      
+    }
+    
+    ############################### fix_chr in excluded regions
+    if(fix_chr %in% c("excluded_regions", "both")){
+      if(!is.null(excluded_regions_filename)){
+        
+        out_bed_filename_excluded_regions <- paste0(output_folder, "/", 
+                                                    sub('\\..[^\\.]*$', 
+                                                        '', 
+                                                        basename(excluded_regions_filename)
+                                                    ), "_fixedchr.bed"
+        ) # remove extension and append output folder
+        
+        # Try to read first 5 rows of excluded_regions file to see if the format is correct
+        excluded_regions_head <- read.table(excluded_regions_filename, nrows = 5)
+        if(ncol(excluded_regions_head) < 3){
+          warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
+          break
+        }
+        
+        rcpp_append_chr_to_bed_file(excluded_regions_filename, out_bed_filename_excluded_regions)
+        
+        # Check if file was created
+        if(file.exists(out_bed_filename_excluded_regions)) {
+          cat("Appended 'chr' to excluded_regions file and output created in:", out_bed_filename_excluded_regions, "\n")
+          excluded_regions_filename <- out_bed_filename_excluded_regions
+        }
+        else {
+          stop("File ", out_bed_filename_excluded_regions, "file was not created.")
+        }
+      }
+      
+    } # end if excluded_regions
+  }
+  
+  ############################### end fix_chr
+  
+  ###################### generate the GAlignment objects from BAM and features ######################
+  
+  ############## read in the aligned and demultiplexed BAM file
   
   cat("Creating GAlignment object for the sorted BAM file...\n")
   
@@ -180,7 +249,7 @@ sc_atac_feature_counting <- function(
   yld.gr                         <- makeGRangesFromDataFrame(yld,keep.extra.columns=TRUE) 
   average_number_of_lines_per_CB <- length(yld.gr$CB)/length(unique(yld.gr$CB))
   
-  ######## Adjusting for the Tn5 cut site
+  ############# Adjusting for the Tn5 cut site
   cat("Adjusting for the 9bp Tn5 cut site...\n")
   
   isMinus <- BiocGenerics::which(strand(yld.gr) == "-")
@@ -195,7 +264,7 @@ sc_atac_feature_counting <- function(
   saveRDS(yld.gr, file = paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = ""))
   cat("GAlignment object is created and saved in \n", paste(output_folder,"/BAM_GAlignmentsObject.rds",sep = "") , "\n")
   
-  # generate the GAalignment file from the feature_input file
+  ############## generate the GAalignment file from the feature_input file
   cat("Creating Galignment object for the feature input...\n")
   if(feature_type != 'genome_bin'){
     feature.gr <- rtracklayer::import(feature_input)
@@ -203,73 +272,7 @@ sc_atac_feature_counting <- function(
     feature.gr <- rtracklayer::import(out_bed_filename)
   }
   
-  ############################### fix_chr
-  
-  if(feature_type == 'peak'){
-    cat("`peak` feature_type is selected for feature input", "\n")
-    
-    if(fix_chr %in% c("feature", "both")){
-      
-      out_bed_filename_feature <- paste0(output_folder, "/", 
-                                         sub('\\..[^\\.]*$', 
-                                             '', 
-                                             basename(feature_input)
-                                         ), "_fixedchr.bed"
-      ) # remove extension and append output folder
-      
-      # Try to read first 5 rows of excluded_regions file to see if the format is correct
-      feature_head <- read.table(feature_input, nrows = 5)
-      if(ncol(feature_head) != 3){
-        warning("Feature file provided does not contain 3 columns. Cannot append chr")
-        break;
-      }
-      
-      
-      rcpp_append_chr_to_bed_file(feature_input, out_bed_filename_feature)
-      
-      # Check if file was created
-      if(file.exists(out_bed_filename_feature)) {
-        cat("Appended 'chr' to feature file and output created in:", out_bed_filename_feature, "\n")
-      }
-      else {
-        stop("File ", out_bed_filename_feature, "file was not created.")
-      }
-      
-    }
-    
-    
-    if(fix_chr %in% c("excluded_regions", "both")){
-      if(!is.null(excluded_regions_filename)){
-        
-        out_bed_filename_excluded_regions <- paste0(output_folder, "/", 
-                                                    sub('\\..[^\\.]*$', 
-                                                        '', 
-                                                        basename(excluded_regions_filename)
-                                                    ), "_fixedchr.bed"
-        ) # remove extension and append output folder
-        
-        # Try to read first 5 rows of excluded_regions file to see if the format is correct
-        excluded_regions_head <- read.table(excluded_regions_filename, nrows = 5)
-        if(ncol(excluded_regions_head) != 3){
-          warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
-          break
-        }
-        
-        rcpp_append_chr_to_bed_file(excluded_regions_filename, out_bed_filename_excluded_regions)
-        
-        # Check if file was created
-        if(file.exists(out_bed_filename_excluded_regions)) {
-          cat("Appended 'chr' to excluded_regions file and output created in:", out_bed_filename_excluded_regions, "\n")
-        }
-        else {
-          stop("File ", out_bed_filename_excluded_regions, "file was not created.")
-        }
-      }
-      
-    } # end if excluded_regions
-  }
-  
-  ############################### end fix_chr
+  ############################### exclude regions 
   
   number_of_lines_to_remove <- 0
   
@@ -278,10 +281,10 @@ sc_atac_feature_counting <- function(
     if(is.null(excluded_regions_filename) & !is.null(organism)){
       ## If excluded_regions_filename is null but organism is not, then read the file from system
       
-      organism_files                <- list.files(system.file("data/extdata/annotations/", package = "scPipe", mustWork = TRUE))
+      organism_files                <- list.files(system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE))
       excluded_regions_filename_aux <- grep(pattern = organism, x = organism_files, value = TRUE) %>% 
         grep(pattern = "blacklist", x = ., value = TRUE)
-      excluded_regions_filename     <- system.file(paste0("data/extdata/annotations/", excluded_regions_filename_aux), package = "scPipe", mustWork = TRUE)
+      excluded_regions_filename     <- system.file(paste0("extdata/annotations/", excluded_regions_filename_aux), package = "scPipe", mustWork = TRUE)
     } 
     
     if(!is.null(excluded_regions_filename)){
@@ -303,8 +306,7 @@ sc_atac_feature_counting <- function(
     
   } # End if(exclude_regions)
   
-  
-  # Log file
+  ################# Initiate log file
   log_and_stats_folder       <- paste0(output_folder, "/scPipe_atac_stats/")
   dir.create(log_and_stats_folder, showWarnings = FALSE)
   log_file                   <- paste0(log_and_stats_folder, "log_file.txt")
@@ -316,7 +318,7 @@ sc_atac_feature_counting <- function(
   cat("Number of regions removed from feature_input:", number_of_lines_to_remove, "\n", 
       file = log_file, append = TRUE)
   
-  # Overlaps
+  ############### Overlaps
   median_feature_overlap <- median(ranges(feature.gr)@width)
   minoverlap             <- 0.51*median_feature_overlap
   maxgap                 <- 0.51*median_feature_overlap
@@ -411,7 +413,7 @@ sc_atac_feature_counting <- function(
       by = "cell"
     )
   
-  info_per_feature = data.frame(counts_per_feature = counts_per_feature) %>% 
+  info_per_feature <- data.frame(counts_per_feature = counts_per_feature) %>% 
     tibble::rownames_to_column(var = "feature") %>% 
     full_join(
       data.frame(cells_per_feature = cells_per_feature) %>% 
@@ -436,3 +438,4 @@ sc_atac_feature_counting <- function(
     file = log_file, append = TRUE)
   
 }
+

@@ -3,7 +3,7 @@
   
   
   # Check if required packages are installed
-  list_of_packages <- c("tools", "tidyr", "locStra", "grid", "dplyr", "Matrix", "seqinr", "ggpubr")
+  list_of_packages <- c("tools", "tidyr", "locStra", "grid", "dplyr", "Matrix", "ggpubr", "reticulate")
   bioconductor_packages <- c("BiocParallel", "Rsubread", "rtracklayer", "GenomicAlignments", "GenomicRanges", "GenomicFeatures", "Rsamtools", "SingleCellExperiment")
   
   if (!requireNamespace("BiocManager", quietly = TRUE)) 
@@ -21,14 +21,14 @@
     library(package, character.only = TRUE)
   
   # Install MACS3 for peak calling, and sinto for fragment file generation
-  library(reticulate)
-  if (!"scPipe_env" %in% virtualenv_list()) {
-    cat("Installing sinto==0.7.2.2 for fragment file generation and MACS3==3.0.0a6 for peak calling\n")
-    reticulate::virtualenv_install(envname="scPipe_env", 
-                                   packages=c("sinto==0.7.2.2", "MACS3==3.0.0a6"))
-  } else {
-    cat("sinto and MACS3 are already installed in the scPipe_env Python virtual environment.\n")
-  }
+  #library(reticulate)
+  #if (!"scPipe_env" %in% virtualenv_list()) {
+  #  cat("Installing sinto==0.7.2.2 for fragment file generation and MACS3==3.0.0a6 for peak calling\n")
+  #  reticulate::virtualenv_install(envname="scPipe_env", 
+  #                                 packages=c("sinto==0.7.2.2", "MACS3==3.0.0a6"))
+  #} else {
+  #  cat("sinto and MACS3 are already installed in the scPipe_env Python virtual environment.\n")
+  #}
   
   # if (!"MACSr" %in% installed.packages()[,"Package"]) {
   #   if (paste0(R.version$major, ".", R.version$minor) > "4.1.0") {
