@@ -1,3 +1,4 @@
+#' @importFrom basilisk BasiliskEnvironment
 scPipe_env <- BasiliskEnvironment(envname="scPipe_env", 
     pkgname="scPipe",
     packages=c("python==3.9.0"),

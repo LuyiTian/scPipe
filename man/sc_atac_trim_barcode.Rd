@@ -73,9 +73,8 @@ using a barcode csv file
 sc_atac_trim_barcode (
 r1            = r1, 
 r2            = r2, 
-bc_file       = barcode_1000, 
-bc_start      = 3, 
-bc_length     = 16, 
+bc_file       = barcode_csv, 
+id1_st        = 0,
 rmN           = TRUE,
 rmlow         = TRUE,
 output_folder = "")

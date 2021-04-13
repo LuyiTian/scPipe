@@ -17,8 +17,8 @@
 #' }
 #'
 #' @export
-
-# 
+#' @importFrom reticulate import
+#' @importFrom basilisk basiliskStart basiliskStop basiliskRun
 sc_atac_create_fragments <- function(inbam, output_folder = "") {
     # Check if output directory exists
     if(output_folder == ''){

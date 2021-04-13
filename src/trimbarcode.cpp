@@ -1029,33 +1029,24 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     while (((l1 = kseq_read(seq1)) >= 0))
     {
         if (++_interrupt_ind % 50 == 0) checkUserInterrupt();
-        //if (passed_reads > 500) break; // testing line
         passed_reads++;
 
         if(passed_reads % 1000==0) {
             Rcout << passed_reads << " lines have been read..." << std::endl; 
         }
         
-        // variables for copying sequences and for checking lengths
-        //char *seq1_name = seq1->name.s;
-        //char *seq1_seq = seq1->seq.s;
-        //int seq1_namelen = seq1->name.l;
-        //int seq1_seqlen = seq1->seq.l;
-        
-        //char * seq3_name;
-        //char * seq3_seq;
-        //int seq3_namelen;
-        //int seq3_seqlen;
+        // check if this read is long enough for input params
+        if (bc1_end > seq1->seq.l) {
+            Rcpp::stop("Read not long enough to support bc1 length");
+        }
+
         if (R3){
             if((l3 = kseq_read(seq3)) < 0){
-                //seq3_name = seq3->name.s;
-                //seq3_seq = seq3->seq.s;
-                //seq3_namelen = seq3->name.l;
-                //seq3_seqlen = seq3->seq.l;
-            //}
-            //else{
                 Rcpp::Rcout << "R3 file is not of same length as R2: " << std::endl;
-            //}
+            } else {
+                if (bc2_end > seq3->seq.l) {
+                    Rcpp::stop("Read not long enough to support bc2 length");
+                }
             }
         } 
 
