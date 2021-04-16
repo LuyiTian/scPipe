@@ -544,7 +544,8 @@ void rcpp_fasta_bin_bed_file(std::string in_filename, std::string out_filename, 
         
       }
       
-      name = line.substr(1);
+      //name = line.substr(1); old to remove > character, but keeps in any additional header information
+      name = line.substr(1, std::min(line.find_first_of(' '), line.find_first_of("\t")));
       sequence.clear();
     } else { //  if (line[0] != '>')
       sequence += line;
