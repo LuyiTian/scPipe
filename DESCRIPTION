@@ -26,6 +26,7 @@ LinkingTo:
     zlibbioc,
     testthat
 Imports:
+    basilisk,
     Rhtslib,
     biomaRt,
     GGally,
