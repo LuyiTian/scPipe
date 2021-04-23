@@ -11,12 +11,18 @@
 #' @export
 #' 
 
-sc_atac_remove_duplicates <- function(inbam, output_folder = ""){
+sc_atac_remove_duplicates <- function(inbam, samtools_path = NULL, output_folder = ""){
   
   # Check if samtools is installed
   samtools.installed <<- TRUE
   
-  samtools <- "samtools"
+  
+  if (!is.null(samtools_path)) {
+    samtools <- samtools_path
+  } else {
+    samtools <- "samtools"
+  }
+  
   # Check if samtools is installed
   tryCatch(
     {
@@ -26,7 +32,11 @@ sc_atac_remove_duplicates <- function(inbam, output_folder = ""){
     
     warning = function(w) {
       samtools.installed <<- FALSE
-      message("samtools was not located, so can't remove duplicates. Please make sure it is installed.")
+      if (is.null(samtools_path)) {
+        message("samtools was not located, so can't remove duplicates. Please make sure it is installed.")
+      } else {
+        message("samtools was not located via the specified path. Please make sure it is correct.")
+      }
     }
   )
   
@@ -56,7 +66,17 @@ sc_atac_remove_duplicates <- function(inbam, output_folder = ""){
         
         system2(samtools, c("collate", "-o", paste(inbam.name, "namecollate.bam", sep="_"), inbam))
         system2(samtools, c("fixmate", "-m", paste(inbam.name, "namecollate.bam", sep="_"), paste(inbam.name, "fixmate.bam", sep="_")))
+        
+        # Remove existing copy if one exists
+        output.bam <- paste0(output_folder, "/", basename(inbam.name), "_markdup.bam")
+        if (file.exists(output.bam)) {
+          system2("rm", output.bam)
+        }
+        
         system2(samtools, c("sort", "-o", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "fixmate.bam", sep="_")))
+        
+        # Note: the output bam file is originally created in the same directory as the input bam file
+        
         system2(samtools, c("markdup", "-s", "-r", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "markdup.bam", sep="_")))
         Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"))
         
@@ -64,10 +84,13 @@ sc_atac_remove_duplicates <- function(inbam, output_folder = ""){
         system2("rm", paste(inbam.name, "positionsort.bam", sep="_"))
         system2("rm", paste(inbam.name, "fixmate.bam", sep="_"))
         
-        
         if (file.exists(paste(inbam.name, "markdup.bam", sep="_"))) {
           message(paste("The output BAM file was sent to", output_folder))
-          system2("mv", c(paste(inbam.name, "markdup.bam", sep="_"), output_folder))
+          
+          # If the new file is already in the destination folder, don't need to move it!
+          if (paste(inbam.name, "markdup.bam", sep="_") != output.bam)
+            system2("mv", c("--force", paste(inbam.name, "markdup.bam", sep="_"), output_folder))
+          
         } else {
           message("Couldn't remove duplicates from the input BAM file. Make sure it is a valid BAM file.")
         }
