@@ -15,9 +15,13 @@
 #' @param output_folder the output dir for the demultiplexed fastq file, which will contain 
 #' fastq files with reformatted barcode and UMI into the read name. 
 #' Files ending in \code{.gz} will be automatically compressed.
-#' @param bc_start barcode start position (0-indexed), which is an extra parameter that is needed if the
+#' @param id1_st barcode start position (0-indexed) for read 1, which is an extra parameter that is needed if the
 #' \code{bc_file} is in a \code{.csv} format.
-#' @param bc_length barcode length, which is an extra parameter that is needed if the
+#' @param id2_st barcode start position (0-indexed) for read 2, which is an extra parameter that is needed if the
+#' \code{bc_file} is in a \code{.csv} format.
+#' @param id1_len barcode length for read 1, which is an extra parameter that is needed if the
+#' \code{bc_file} is in a \code{.csv} format.
+#' @param id2_len barcode length for read 2, which is an extra parameter that is needed if the
 #' \code{bc_file} is in a \code{.csv} format.
 #' @param umi_start if available, the start position of the molecular identifier.
 #' @param umi_length if available, the start position of the molecular identifier.  

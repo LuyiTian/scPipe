@@ -191,14 +191,14 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           bin_size      = NULL, 
                           qc_per_bc_file= NULL,
                           yieldsize     = 1000000,
-                          mapq          = 20,
+                          mapq          = 30,
                           exclude_regions = TRUE,
                           output_folder = "",
                           fix_chr       = "none"
                           )
 ```
 
-Additionally, regions that are considered anomalous, unstructured, or high signal in next-generation sequencing experiments are excluded using an inbuilt `excluded_regions` file (available are for `organism` `hg19`, `hg38`, and `mm10`) or a user provided `excluded_regions_filename` file in BED format.
+Mapping quality (MAPQ) value can be set to filter data further in step (default: 30). Additionally, regions that are considered anomalous, unstructured, or high signal in next-generation sequencing experiments are excluded using an inbuilt `excluded_regions` file (available are for `organism` `hg19`, `hg38`, and `mm10`) or a user provided `excluded_regions_filename` file in BED format.
 
 The discrepancy of `chr` between the alignment file and the feature file/excluded regions file can also be fixed (using `fix_char` parameter) if needed by adding the string `chr` to the beginning of either the features, and/or excluded regions. So the ptions for `fix_char`are "none", "excluded_regions", "feature", "both".
 

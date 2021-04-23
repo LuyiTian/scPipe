@@ -7,8 +7,21 @@
 #' @title generating the feature by cell matrix 
 #' @description feature matrix is created using a given demultiplexed BAM file and 
 #' a selected feature type
-#' @param 
-#'
+#' @param insorredbam
+#' @param feature_input
+#' @param bam_tags
+#' @param feature_type
+#' @param organism
+#' @param cell_calling
+#' @param genome_size
+#' @param qc_per_bc_file
+#' @param bin_size
+#' @param yieldsize
+#' @param mapq
+#' @param exclude_regions
+#' @param exclude_regions_filename
+#' @param output_folder
+#' @param fix_chr
 #' @export
 #' 
 
@@ -23,7 +36,7 @@ sc_atac_feature_counting <- function(
   qc_per_bc_file = NULL, # this is optional but needed if the cell_calling option is cellranger
   bin_size       = NULL, 
   yieldsize      = 1000000,
-  mapq           = 0,
+  mapq           = 30,
   exclude_regions= FALSE, 
   excluded_regions_filename = NULL,
   output_folder  = "",
@@ -166,8 +179,8 @@ sc_atac_feature_counting <- function(
   }
   
   ############################## feature type is peak #####################
-  if(feature_type == 'peak'){
-    cat("`peak` feature_type is selected for feature input", "\n")
+  if(feature_type == 'peak' || feature_type == 'tss' || feature_type == 'gene'){
+    cat("`peak`, `tss` or `gene` feature_type is selected for feature input", "\n")
     
     ############################### fix_chr in feature file
     if(fix_chr %in% c("feature", "both")){
