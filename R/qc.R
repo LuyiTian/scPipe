@@ -253,8 +253,8 @@ calculate_QC_metrics <- function(sce) {
 
   # get ERCC ratio
   if(any(grepl("^ERCC-", rownames(sce)))){
-    exon_count = colSums(assay(sce,"counts")[!grepl("^ERCC-", rownames(sce)),])
-    ERCC_count = colSums(assay(sce,"counts")[grepl("^ERCC-", rownames(sce)),])
+    exon_count = colSums(assay(sce,"counts")[!grepl("^ERCC-", rownames(sce)), , drop = FALSE])
+    ERCC_count = colSums(assay(sce,"counts")[grepl("^ERCC-", rownames(sce)), , drop = FALSE])
     QC_metrics(sce)$non_ERCC_percent = exon_count/(ERCC_count+exon_count+1e-5)
   }else{
       message("no ERCC spike-in. Skip `non_ERCC_percent`")
@@ -267,7 +267,7 @@ calculate_QC_metrics <- function(sce) {
                                 go=c("GO:0005739"))
     if (length(mt_genes)>0) {
       if (sum(rownames(sce) %in% mt_genes)>1) {
-        mt_count <- colSums(assay(sce,"counts")[rownames(sce) %in% mt_genes, ])
+        mt_count <- colSums(assay(sce,"counts")[rownames(sce) %in% mt_genes, , drop = FALSE])
         QC_metrics(sce)$non_mt_percent <- (colSums(assay(sce,"counts"))-
                                              mt_count)/(colSums(assay(sce,"counts"))+1e-5)
         # add 1e-5 to make sure they are not NA
