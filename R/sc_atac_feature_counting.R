@@ -376,7 +376,7 @@ sc_atac_feature_counting <- function(
   sparseM <- Matrix(matrixData, sparse=TRUE)
   # add dimensions of the sparse matrix if available
   if(cell_calling != FALSE){
-    barcodes <- file.path(paste0(output_folder, '/non_empty_barcodes.txt'))
+    barcodes <- read.table(paste0(output_folder, '/non_empty_barcodes.txt'))
     features <- read.table(paste0(output_folder, '/non_empty_features.txt'))
     dimnames(sparseM)  <-  list(features, barcodes)
   }
