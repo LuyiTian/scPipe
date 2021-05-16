@@ -92,17 +92,6 @@ sc_atac_bam_tagging <- function(inbam,
   bam0 = scanBam(inbam)
   barcodes = substr(bam0[[1]]$qname, 1, bc_length)
   
-  barcode_info <- tibble(
-    barcode = barcodes,
-    flag    = bam0[[1]]$flag) %>%
-    left_join(flag_defs, by = "flag") %>%
-    left_join(as.data.frame(table(barcodes)) %>% 
-                purrr::set_names(c("barcode", "number_of_reads")),
-              by = "barcode")
-  
-  barcode_stats_filename <- paste(log_and_stats_folder, "mapping_stats_per_barcode.csv", sep = "")
-  cat("Saving csv file with barcode stats in", barcode_stats_filename)
-  write.csv(barcode_info, barcode_stats_filename, row.names = FALSE)
   
   
   # generate the fragment file for the BAM file 

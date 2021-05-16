@@ -7,8 +7,24 @@
 #' @title generating the feature by cell matrix 
 #' @description feature matrix is created using a given demultiplexed BAM file and 
 #' a selected feature type
-#' @param 
-#'
+#' @param insorredbam
+#' @param feature_input
+#' @param bam_tags
+#' @param feature_type
+#' @param organism
+#' @param cell_calling
+#' @param genome_size
+#' @param qc_per_bc_file
+#' @param bin_size
+#' @param yieldsize
+#' @param mapq
+#' @param exclude_regions
+#' @param exclude_regions_filename
+#' @param output_folder
+#' @param fix_chr
+#' 
+#' @import ggplot2 grid
+#' 
 #' @export
 #' 
 
@@ -23,7 +39,7 @@ sc_atac_feature_counting <- function(
   qc_per_bc_file = NULL, # this is optional but needed if the cell_calling option is cellranger
   bin_size       = NULL, 
   yieldsize      = 1000000,
-  mapq           = 0,
+  mapq           = 30,
   exclude_regions= FALSE, 
   excluded_regions_filename = NULL,
   output_folder  = "",
@@ -166,8 +182,8 @@ sc_atac_feature_counting <- function(
   }
   
   ############################## feature type is peak #####################
-  if(feature_type == 'peak'){
-    cat("`peak` feature_type is selected for feature input", "\n")
+  if(feature_type == 'peak' || feature_type == 'tss' || feature_type == 'gene'){
+    cat("`peak`, `tss` or `gene` feature_type is selected for feature input", "\n")
     
     ############################### fix_chr in feature file
     if(fix_chr %in% c("feature", "both")){
@@ -376,9 +392,9 @@ sc_atac_feature_counting <- function(
   sparseM <- Matrix(matrixData, sparse=TRUE)
   # add dimensions of the sparse matrix if available
   if(cell_calling != FALSE){
-    barcodes <- read.table(paste0(output_folder, '/non_empty_barcodes.txt'))
-    features <- read.table(paste0(output_folder, '/non_empty_features.txt'))
-    dimnames(sparseM)  <-  list(features, barcodes)
+    barcodes <- read.table(paste0(output_folder, '/non_empty_barcodes.txt'))$v1
+    features <- read.table(paste0(output_folder, '/non_empty_features.txt'))$v1
+    dimnames(sparseM) <- list(features, barcodes)
   }
   
   cat("Sparse matrix generated", "\n")
@@ -421,9 +437,28 @@ sc_atac_feature_counting <- function(
       by = "feature"
     )
   
-  
+
+
   write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
   write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
+  
+  cat("Performing QC\n")
+  
+  # Generate qc_per_bc_file
+  # Should check that the files are present
+  sc_atac_create_qc_per_bc_file(inbam = insortedbam, 
+                                frags_file = here("scPipe-atac-output", "fragments.bed"),
+                                peaks_file = here("scPipe-atac-output", "NA_peaks.narrowPeak"),
+                                promoters_file = here("inst", "extdata", "annotations", "hg38_promoter.bed"),
+                                tss_file = here("inst", "extdata", "annotations", "hg38_tss.bed"),
+                                enhs_file = here("inst", "extdata", "annotations", "hg38_enhancer.bed"),
+                                output_folder = output_folder)
+  
+  # Generate QC plots
+  sc_atac_generate_qc_plots(frags_file = here("scPipe-atac-output", "fragments.bed"),
+                            peaks_file = here("scPipe-atac-output", "NA_peaks.narrowPeak"),
+                            qc_per_bc_file = here("scPipe-atac-output", "qc_per_bc_file.txt"),
+                            output_folder = output_folder)
   
   end_time = Sys.time()
   
@@ -438,4 +473,446 @@ sc_atac_feature_counting <- function(
     file = log_file, append = TRUE)
   
 }
+
+#' @name sc_atac_generate_qc_plots
+#' @title generating qc plots
+#' @description qc plots are produced using fragment file and peak file for features
+#' @param inbam
+#' @param frags_file
+#' @param peaks_file
+#' @param output_folder
+#' 
+#' @import ggplot2 grid here kableExtra RColorBrewer
+#' @export
+#' 
+sc_atac_generate_qc_plots <- function(
+  frags_file,
+  peaks_file,
+  qc_per_bc_file,
+  output_folder
+) {
+  frags <- fread(frags_file)
+  head(frags)
+  
+  nrow(frags)
+  sum(frags$V5)
+
+  # read in qc_per_bc file
+  bc_stat <- fread(qc_per_bc_file)
+  head(bc_stat)
+  nrow(bc_stat)
+  sum(bc_stat$total_frags)
+  
+  # read in called cellular barcodes
+  cell_barcode_file <- here("scPipe-atac-output", "non_empty_barcodes.txt")
+  cell_barcodes <- fread(cell_barcode_file, header=F)$V1
+  
+  qc_sele <- bc_stat[bc %in% cell_barcodes, ]
+  qc_nonsele <- bc_stat[!bc %in% cell_barcodes, ]
+  # --------------------------------------------------------------------
+  # PLOT 1 Total fragments VS fraction in peaks
+  
+  bc_stat[, 'group' := ifelse(bc %in% cell_barcodes, 'cell', 'non-cell')]
+  
+  nsub_frags = min(15000, nrow(bc_stat))  ## downsample for scatter plot
+  bc_stat_down = bc_stat[sort(sample(1:nrow(bc_stat), nsub_frags)), ]
+  g <- ggplot(data = bc_stat_down, 
+              aes(x = total_frags, y = frac_peak, col = group)) + 
+    geom_point(size = 0.5) + scale_x_continuous(trans='log10') + theme_bw() +
+    theme(legend.position = 'none', 
+          legend.title=element_blank(),
+          axis.text = element_text(size = 15, family = "Helvetica"),
+          axis.title = element_text(size = 18, family = "Helvetica")) +
+    xlab('Total #Unique Fragments') + ylab('Fraction in Peak')
+  
+  text1 <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
+                             gp=gpar(col='#1F78B4', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+  text2 <- grobTree(textGrob("Non-cell", x=0.8,  y=0.83, hjust=0,
+                             gp=gpar(col='#B2DF8A', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+  
+  g + annotation_custom(text1) + annotation_custom(text2) + scale_color_manual(values = c('#1F78B4', '#B2DF8A'))
+  
+  ggsave(paste0(output_folder, "/scPipe_atac_stats/fragfracinpeaks.png"))
+  
+  # --------------------------------------------------------------------
+  # PLOT 2 Distribution of Insert Size
+  
+  frags[, 'isize' := V3 - V2]
+  if (nrow(frags) >= 100000) {
+    frags = frags[sort(sample(1:nrow(frags), 100000)), ]
+  }
+  
+  ggplot(data = frags[isize < 800], aes(x = isize)) +
+    geom_density(fill = 'lightblue') + xlab('Insert Size') + ylab('Density') + theme_bw() +  theme(legend.title=element_blank(), 
+                                                                                                   legend.background = NULL, 
+                                                                                                   axis.text = element_text(size = 15, family = "Helvetica"), 
+                                                                                                   axis.title = element_text(size = 18, family = "Helvetica")) 
+  
+  ggsave(paste0(output_folder, "/scPipe_atac_stats/insertsizedist.png"))
+  
+  # --------------------------------------------------------------------
+  # PLOT 3 Density plot of total number of unique fragments
+  
+  bc_stat[, 'group' := ifelse(bc %in% cell_barcodes, 'cell', 'non-cell')]
+  
+  p <- ggplot(data = bc_stat, aes(x = total_frags, fill = group)) + 
+    geom_density() + scale_x_continuous(trans = 'log10') + theme_bw() +
+    theme(legend.position='none', legend.title=element_blank(),
+          axis.title = element_text(size = 18, family = "Helvetica"),
+          axis.text = element_text(size = 15, family = "Helvetica")) + 
+    xlab('Total #Unique Fragments') + ylab('Density') 
+  
+  text1 <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
+                             gp=gpar(col='#1F78B4', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+  text2 <- grobTree(textGrob("Non-cell", x=0.8,  y=0.83, hjust=0,
+                             gp=gpar(col='#B2DF8A', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+  
+  p + annotation_custom(text1) + annotation_custom(text2) +
+    scale_fill_manual(values = c('#1F78B4', '#B2DF8A'))
+  
+  ggsave(paste0(output_folder, "/scPipe_atac_stats/densityplot.png"))
+  
+  # --------------------------------------------------------------------
+  # PLOT 4 Overlapping with sequence annotated regions
+
+  qc_sele_df = data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 'type' = rep(c('Peaks', 'Tss', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))
+  
+  qc_sele_df$type = factor(qc_sele_df$type, levels = c('Peaks', 'Tss', 'Promoter', 'Enhancer', 'Mito'))
+  
+  ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
+    geom_boxplot(outlier.size = 0.01, show.legend = FALSE) + 
+    scale_fill_manual(values = brewer.pal(5, 'Paired')) +
+    theme(legend.position = 'none', 
+          axis.text = element_text(size = 18, family = "Helvetica"), 
+          axis.title.x = element_blank(), 
+          axis.title.y = element_text(size = 18, family = "Helvetica")) + xlab('') 
+  
+  ggsave(paste0(output_folder, "/scPipe_atac_stats/fragoverlapwithregions.png"))
+  
+  # --------------------------------------------------------------------
+  # Overall statistics (fraction in peaks, promoters, enhancers, TSS)
+  
+  frac_peak = sum(qc_sele$total_frags * qc_sele$frac_peak)/sum(qc_sele$total_frags)
+  frac_mito = sum(qc_sele$total_frags * qc_sele$frac_mito)/sum(qc_sele$total_frags)
+  frac_promoter = sum(qc_sele$total_frags * qc_sele$frac_promoter)/sum(qc_sele$total_frags)
+  frac_enh = sum(qc_sele$total_frags * qc_sele$frac_enhancer)/sum(qc_sele$total_frags)
+  frac_tss = sum(qc_sele$total_frags * qc_sele$frac_tss)/sum(qc_sele$total_frags)
+  
+  fracs = data.frame(c(frac_peak,  frac_promoter, frac_enh, frac_tss))
+  row.names(fracs) = c('Fraction in peaks', 
+                       'Fraction in promoters', 'Fraction in Enhancers(ENCODE)', 
+                       'Fraction in TSS')
+  colnames(fracs) = 'pr'
+  fracs$pr = round(fracs$pr, 3)
+  fracs$pr = paste0(100*fracs$pr, '%')
+  
+  kable(fracs, row.names = T, col.names = NULL) %>%
+    kable_styling(full_width = F, position = 'left', font_size = 15) %>%
+    save_kable(paste0(output_folder, "/scPipe_atac_stats/overall_stats.txt"))
+  
+  # --------------------------------------------------------------------
+  # Cell demultiplexing statistics for reads
+  
+  # mapping_stats_per_barcode.file <- here::here("scPipe-atac-output", "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
+  # mapping_stats_per_barcode <- fread(mapping_stats_per_barcode.file)
+  # unique(mapping_stats_per_barcode$barcode)
+  # reads_in_bc <- mapping_stats_per_barcode[barcode %in% cell_barcodes, ]
+  # reads_not_in_bc <- mapping_stats_per_barcode[!barcode %in% cell_barcodes, ]
+  # mapped_reads_not_in_bc <- reads_not_in_bc[type == "mapped"]
+  
+  # ------------------------------- table -------------------------------------
+  # qc_total_frag_count <- sum(qc_sele$total_frags) + sum(qc_nonsele$total_frags)
+  # qc_sele_count <- sum(qc_sele$total_frags)
+  # qc_nonsele_count <- sum(qc_nonsele$total_frags)
+  # qc_nonsele_count_in_peak <- sum(qc_nonsele$total_frags * qc_nonsele$frac_peak)
+  # qc_nonsele_count_in_promoter <- sum(qc_nonsele$total_frags * qc_nonsele$frac_promoter)
+  # qc_nonsele_count_in_enhancer <- sum(qc_nonsele$total_frags * qc_nonsele$frac_enhancer)
+  # qc_nonsele_count_in_tss <- sum(qc_nonsele$total_frags * qc_nonsele$frac_tss)
+  # qc_nonsele_non_overlap <- qc_nonsele_count - 
+  #                           qc_nonsele_count_in_peak - 
+  #                           qc_nonsele_count_in_promoter - 
+  #                           qc_nonsele_count_in_enhancer - 
+  #                           qc_nonsele_count_in_tss
+  # 
+  # df_counts <- data.frame(demultiplex_status = c("#ragments in called cells", 
+  #                            "non-cell fragments overlapping with peaks", 
+  #                            "non-cell fragments overlapping with promoter",
+  #                            "non-cell fragments overlapping with enhancer",
+  #                            "non-cell fragments containing tss",
+  #                            "other non-cell fragments"),
+  #                 counts = c(qc_sele_count, qc_nonsele_count_in_peak, qc_nonsele_count_in_promoter, qc_nonsele_count_in_enhancer, qc_nonsele_count_in_tss, qc_nonsele_non_overlap))
+  # 
+  # kable(df_counts) %>%
+  #   kable_styling(full_width = F, position = 'left', font_size = 15)
+  
+  # ------------------------------- bar graph -------------------------------------
+  # df_fracs <- data.frame(demultiplex_status = c("fragments in called cells", 
+  #                                               "non-cell fragments overlapping with peaks", 
+  #                                               "non-cell fragments overlapping with promoter",
+  #                                               "non-cell fragments overlapping with enhancer",
+  #                                               "non-cell fragments containing tss",
+  #                                               "other non-cell fragments"),
+  #                        fracs = c(qc_sele_count, qc_nonsele_count_in_peak, qc_nonsele_count_in_promoter, qc_nonsele_count_in_enhancer, qc_nonsele_count_in_tss, qc_nonsele_non_overlap)/qc_total_frag_count)
+  # 
+  # ggplot(data=df_fracs, aes(x=demultiplex_status, y=fracs, fill=fracs)) +
+  #   geom_bar(stat="identity", fill="steelblue") +
+  #   geom_text(aes(label=paste0(round(fracs, 3)*100, "%")), vjust=-0.3, size=3.5)+
+  #   theme_minimal() + 
+  #   theme(axis.text.x=element_text(angle=30,hjust=1), plot.title = element_text(hjust = 0.5)) +
+  #   ylab("Percentage")
+  # 
+  # # ------------------------------- stacked bar graph -------------------------------------
+  # qc_sele[, 'frac_other' := 1 - frac_peak - frac_promoter - frac_tss - frac_enhancer]
+}
+  
+#' @name sc_atac_generate_per_ber_pc_file
+#' @title generating a file useful for producing the qc plots
+#' @description uses the peak file and annotation files for features
+#' @param inbam
+#' @param frags_file
+#' @param peaks_file
+#' @param promoters_file
+#' @param tss_file
+#' @param enhs_file
+#' @param output_folder
+#' 
+#' 
+#' @export
+#' 
+sc_atac_create_qc_per_bc_file <- function(inbam, 
+                                          frags_file,
+                                          peaks_file,
+                                          promoters_file,
+                                          tss_file,
+                                          enhs_file,
+                                          output_folder) {
+  #sourceCpp(paste0('getOverlaps.cpp'))
+  
+  sourceCpp(code='
+  #include <Rcpp.h>
+  using namespace Rcpp;
+  // for each read, return 1 if it overlap with any region, otherwise 0;
+  // should sort both reads and regions
+  // [[Rcpp::export]]
+  IntegerVector getOverlaps_read2AnyRegion(DataFrame reads, DataFrame regions) {
+      NumericVector start1 = reads["start"];
+      NumericVector end1 = reads["end"];
+      NumericVector start2 = regions["start"];
+      NumericVector end2 = regions["end"];
+          
+      int n1 = start1.size(), n2 = start2.size();
+      NumericVector midP1(n1), len1(n1), len2(n2), midP2(n2);
+      IntegerVector over1(n1);
+          
+      len1 = (end1 - start1 + 1)/2;
+      midP1 = (end1 + start1)/2;
+          
+      len2 = (end2 - start2 + 1)/2;
+      midP2 = (end2 + start2)/2;
+      int k = 0;
+      for(int i=0; i<n1; i++){
+          over1[i] = 0;
+          for(int j=k; j<n2; j++){
+             if((fabs(midP1[i] - midP2[j]) <= (len1[i]+len2[j]))){
+                over1[i] = 1;
+                k = j;
+                break;
+              }
+          }
+      }
+          
+         return(over1);
+  }
+    
+// [[Rcpp::export]]
+  NumericVector getOverlaps_read2AllRegion(DataFrame reads, DataFrame regions) {
+      NumericVector start1 = reads["start"];
+      NumericVector end1 = reads["end"];
+      
+      NumericVector start2 = regions["start"];
+      NumericVector end2 = regions["end"];
+          
+      int n1 = start1.size(), n2 = start2.size();
+      NumericVector midP1(n1), len1(n1), len2(n2), midP2(n2);
+      NumericVector over1(n1);
+          
+      len1 = (end1 - start1 + 1)/2;
+      midP1 = (end1 + start1)/2;
+          
+      len2 = (end2 - start2 + 1)/2;
+      midP2 = (end2 + start2)/2;
+      int j = 0;
+      int k = 0;
+      //for(int i=0; i<n1; i++){
+      //    over1[i] = 0;
+      //}
+      //over1 = 0;
+      if(start1[0] > end2[n2-1] || end1[n1-1] < start2[0]) {
+          return(over1);
+      }
+      for(int i=0; i<n1; i++){
+          while (k<n2 && fabs(midP1[i] - midP2[k]) > (len1[i]+len2[k])){
+            k++;
+          }
+          // the kth element is the first element overlapped with the current fragment
+          // take advantage of sorted fragments and regions, for next fragment,
+          // it will start searching from kth region
+          j=k;
+          
+          // current frag not overlapped any region then search from beginning
+          if(j >= n2 -1) k = 0, j = 0;  
+          while (j<n2 && fabs(midP1[i] - midP2[j]) <= (len1[i]+len2[j])){
+                over1[i] = over1[i] + 1;
+                j++;
+          }
+      }
+          
+         return(over1);
+    }
+  
+ // [[Rcpp::export]]
+  NumericVector getOverlaps_tss2Reads(DataFrame regions, DataFrame left_flank, DataFrame reads) {
+      NumericVector start1 = regions["start"];
+          
+      int n = start1.size();
+      NumericVector over(n), left_over(n);
+      NumericVector tss_enrich_score(n);
+      over = getOverlaps_read2AllRegion(regions, reads);
+      left_over = getOverlaps_read2AllRegion(left_flank, reads);
+      tss_enrich_score = (over+1.0) / (left_over+1.0) ;
+      return(tss_enrich_score);
+    }    
+  
+  
+ '
+  )
+  
+  out.frag.overlap.file = paste0(output_folder, "/qc_per_bc_file.txt")
+  
+  frags = fread(frags_file, select=1:4, header = F)
+  names(frags) = c('chr', 'start', 'end', 'bc')
+  setkey(frags, chr, start)
+  
+  frags[, 'total_frags' := .N, by = bc]
+  frags = frags[total_frags > 5]
+  
+  frags = frags[!grepl(chr, pattern = 'random', ignore.case = T)]
+  frags = frags[!grepl(chr, pattern ='un', ignore.case = T)]
+  
+  peaks = fread(peaks_file, select=1:3, header = F)
+  promoters = fread(promoters_file, select=1:3, header = F)
+  tss = fread(tss_file, select=1:3, header = F)
+  enhs = fread(enhs_file, select=1:3, header = F)
+  names(peaks) = names(promoters) = names(tss) =
+    names(enhs) = c('chr', 'start', 'end')
+  
+  
+  setkey(peaks, chr, start)
+  setkey(promoters, chr, start)
+  setkey(tss, chr, start)
+  setkey(enhs, chr, start)
+  
+  chrs = unique(frags$chr)
+  
+  ## calculate tss enrichment score
+  if(T){
+    set.seed(2021)
+    tss4escore = copy(tss)
+    if(nrow(tss) > 40000) tss4escore = tss[sort(sample(1:nrow(tss), 40000))]
+    setkey(tss4escore, chr, start)
+    
+    tss4escore = unique(tss4escore)
+    tss4escore.left = copy(tss4escore)
+    tss4escore[, 'start' := start - 50]
+    tss4escore[, 'end' := start + 100]
+    tss4escore.left[, 'start' := start - 1950]
+    tss4escore.left[, 'end' := start + 100]
+    
+    bcs = unique(frags$bc)
+    escores = rep(1, length(bcs))
+    names(escores) = bcs
+    frags4escore = frags[total_frags >= 1000] ## only caculate tss_escore for selected bc
+    
+    for(bc0 in unique(frags4escore$bc)){
+      frags0 = frags4escore[bc == bc0]
+      chrs0 = unique(frags0$chr)
+      tss4escore0 = tss4escore[chr %in% chrs0]
+      tss4escore0.left = tss4escore.left[chr %in% chrs0]
+      chrs = unique(frags0$chr)
+      escores_chrs = NULL
+      for(chr0 in chrs0){
+        if(nrow(frags0[chr==chr0]) <= 50) next
+        escores_chrs[chr0] = max(getOverlaps_tss2Reads(tss4escore0[chr==chr0], 
+                                                       tss4escore0.left[chr==chr0],
+                                                       frags0[chr==chr0]))
+      }
+      
+      escores[bc0] = max(escores_chrs)
+    }
+    escores = escores + runif(length(escores), 0, 0.1)
+    rm(frags4escore, frags0, tss4escore, tss4escore.left)
+  }
+  
+  
+  tss[, 'start' := start - 1000]
+  tss[, 'end' := end + 1000]
+  fragsInRegion = NULL
+  for(chr0 in chrs){
+    peaks0 = peaks[chr == chr0]
+    promoters0 = promoters[chr == chr0]
+    
+    tss0 = tss[chr == chr0]
+    enhs0 = enhs[chr == chr0]
+    frags0 = frags[chr == chr0]
+    frags = frags[chr != chr0]
+    if(nrow(peaks0) == 0){
+      frags0[, 'peaks' := 0]
+    }else{
+      frags0[, 'peaks' := getOverlaps_read2AnyRegion(frags0, peaks0)]
+    }
+    
+    if(nrow(promoters0) == 0){
+      frags0[, 'promoters' := 0]
+    }else{
+      frags0[, 'promoters' := getOverlaps_read2AnyRegion(frags0, promoters0)]
+    }
+    
+    if(nrow(tss0) == 0){
+      frags0[, 'tss' := 0]
+    }else{
+      frags0[, 'tss' := getOverlaps_read2AnyRegion(frags0, tss0)]
+    }
+    
+    if(nrow(enhs0) == 0){
+      frags0[, 'enhs' := 0]
+    }else{
+      frags0[, 'enhs' := getOverlaps_read2AnyRegion(frags0, enhs0)]
+    }
+    
+    
+    fragsInRegion = rbind(fragsInRegion, frags0)
+    message(paste(chr0, 'Done!'))
+  }
+  rm(frags)
+  
+  # get barcode region count matrix
+  fragsInRegion[, 'isMito' := ifelse(chr %in% c('chrM'), 1, 0)]
+  fragsInRegion[, c('chr', 'start', 'end') := NULL]
+  fragsInRegion[, 'frac_mito' := sum(isMito)/total_frags, by = bc]
+  fragsInRegion[, 'isMito' := NULL]
+  fragsInRegion[, 'frac_peak' := sum(peaks)/total_frags, by = bc]
+  fragsInRegion[, 'peaks' := NULL]
+  fragsInRegion[, 'frac_promoter' := sum(promoters)/total_frags, by = bc]
+  fragsInRegion[, 'promoters' := NULL]
+  fragsInRegion[, 'frac_tss' := sum(tss)/total_frags, by = bc]
+  fragsInRegion[, 'tss' := NULL]
+  fragsInRegion[, 'frac_enhancer' := sum(enhs)/total_frags, by = bc]
+  fragsInRegion[, 'enhs' := NULL]
+  fragsInRegion = unique(fragsInRegion)
+  fragsInRegion$tss_enrich_score = escores[fragsInRegion$bc]
+  
+  write.table(fragsInRegion, file = out.frag.overlap.file, sep = '\t',
+              row.names = F, quote = F)
+}
+
 

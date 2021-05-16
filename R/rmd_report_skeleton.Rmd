@@ -8,6 +8,9 @@ params:
 editor_options: 
   chunk_output_type: console
 ---
+```{r}
+
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -18,6 +21,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(readr)
 library(ggplot2)
+library(kableExtra)
+library(RColorBrewer)
+library(grid)
 library(knitr)
 library(stringr)
 theme_set(theme_bw())
@@ -197,5 +203,132 @@ ggpubr::ggscatter(feature_stats,
 
 ```{r}
 plot(sort(cell_stats$features_per_cell), xlab='cell', log='y', ylab ="features", main='features per cell (ordered)')
+```
+
+# QC plots
+
+```{r}
+frags_file <- here::here("scPipe-atac-output", "fragments.bed")
+peaks_file <- here::here("scPipe-atac-output", "NA_peaks.narrowPeak")
+promoters_file <- here::here("inst", "extdata", "annotations", "hg38_promoter.bed")
+tss_file <- here::here("inst", "extdata", "annotations", "hg38_tss.bed")
+enhs_file <- here::here("inst", "extdata", "annotations", "hg38_enhancer.bed")
+qc_per_bc_file <- here::here("scPipe-atac-output", "qc_per_bc_file.txt")
+
+frags <- fread(frags_file)
+head(frags)
+
+nrow(frags)
+sum(frags$V5)
+
+# read in qc_per_bc file
+bc_stat <- fread(qc_per_bc_file)
+head(bc_stat)
+nrow(bc_stat)
+sum(bc_stat$total_frags)
+
+# read in called cellular barcodes
+cell_barcode_file <- here("scPipe-atac-output", "non_empty_barcodes.txt")
+cell_barcodes <- fread(cell_barcode_file, header=F)$V1
+
+qc_sele <- bc_stat[bc %in% cell_barcodes, ]
+qc_nonsele <- bc_stat[!bc %in% cell_barcodes, ]
+```
+
+## PLOT 1 Total fragments VS fraction in peaks
+
+```{r}
+bc_stat[, 'group' := ifelse(bc %in% cell_barcodes, 'cell', 'non-cell')]
+
+nsub_frags = min(15000, nrow(bc_stat))  ## downsample for scatter plot
+bc_stat_down = bc_stat[sort(sample(1:nrow(bc_stat), nsub_frags)), ]
+g <- ggplot(data = bc_stat_down, 
+            aes(x = total_frags, y = frac_peak, col = group)) + 
+  geom_point(size = 0.5) + scale_x_continuous(trans='log10') + theme_bw() +
+  theme(legend.position = 'none', 
+        legend.title=element_blank(),
+        axis.text = element_text(size = 15, family = "Helvetica"),
+        axis.title = element_text(size = 18, family = "Helvetica")) +
+  xlab('Total #Unique Fragments') + ylab('Fraction in Peak')
+
+text1 <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
+                           gp=gpar(col='#1F78B4', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+text2 <- grobTree(textGrob("Non-cell", x=0.8,  y=0.83, hjust=0,
+                           gp=gpar(col='#B2DF8A', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+
+g + annotation_custom(text1) + annotation_custom(text2) + scale_color_manual(values = c('#1F78B4', '#B2DF8A'))
+```
+
+## PLOT 2 Distribution of Insert Size
+
+```{r}
+  frags[, 'isize' := V3 - V2]
+  if (nrow(frags) >= 100000) {
+    frags = frags[sort(sample(1:nrow(frags), 100000)), ]
+  }
+  
+  ggplot(data = frags[isize < 800], aes(x = isize)) +
+    geom_density(fill = 'lightblue') + xlab('Insert Size') + ylab('Density') + theme_bw() +  theme(legend.title=element_blank(), 
+                                                                                                   legend.background = NULL, 
+                                                                                                   axis.text = element_text(size = 15, family = "Helvetica"), 
+                                                                                                   axis.title = element_text(size = 18, family = "Helvetica"))
+```
+
+## PLOT 3 Density plot of total number of unique fragments
+
+```{r}
+bc_stat[, 'group' := ifelse(bc %in% cell_barcodes, 'cell', 'non-cell')]
+
+p <- ggplot(data = bc_stat, aes(x = total_frags, fill = group)) + 
+  geom_density() + scale_x_continuous(trans = 'log10') + theme_bw() +
+  theme(legend.position='none', legend.title=element_blank(),
+        axis.title = element_text(size = 18, family = "Helvetica"),
+        axis.text = element_text(size = 15, family = "Helvetica")) + 
+  xlab('Total #Unique Fragments') + ylab('Density') 
+
+text1 <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
+                           gp=gpar(col='#1F78B4', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+text2 <- grobTree(textGrob("Non-cell", x=0.8,  y=0.83, hjust=0,
+                           gp=gpar(col='#B2DF8A', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+
+p + annotation_custom(text1) + annotation_custom(text2) +
+  scale_fill_manual(values = c('#1F78B4', '#B2DF8A'))
+```
+
+## PLOT 4 Overlapping with sequence annotated regions
+
+```{r}
+qc_sele_df = data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 'type' = rep(c('Peaks', 'Tss', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))
+  
+qc_sele_df$type = factor(qc_sele_df$type, levels = c('Peaks', 'Tss', 'Promoter', 'Enhancer', 'Mito'))
+
+ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
+  geom_boxplot(outlier.size = 0.01, show.legend = FALSE) + 
+  scale_fill_manual(values = brewer.pal(5, 'Paired')) +
+  theme(legend.position = 'none', 
+        axis.text = element_text(size = 18, family = "Helvetica"), 
+        axis.title.x = element_blank(), 
+        axis.title.y = element_text(size = 18, family = "Helvetica")) + xlab('') 
+```
+
+## Overall statistics (fraction in peaks, promoters, enhancers, TSS)
+
+```{r}
+frac_peak = sum(qc_sele$total_frags * qc_sele$frac_peak)/sum(qc_sele$total_frags)
+frac_mito = sum(qc_sele$total_frags * qc_sele$frac_mito)/sum(qc_sele$total_frags)
+frac_promoter = sum(qc_sele$total_frags * qc_sele$frac_promoter)/sum(qc_sele$total_frags)
+frac_enh = sum(qc_sele$total_frags * qc_sele$frac_enhancer)/sum(qc_sele$total_frags)
+frac_tss = sum(qc_sele$total_frags * qc_sele$frac_tss)/sum(qc_sele$total_frags)
+
+fracs = data.frame(c(frac_peak,  frac_promoter, frac_enh, frac_tss))
+row.names(fracs) = c('Fraction in peaks', 
+                     'Fraction in promoters', 'Fraction in Enhancers(ENCODE)', 
+                     'Fraction in TSS')
+colnames(fracs) = 'pr'
+fracs$pr = round(fracs$pr, 3)
+fracs$pr = paste0(100*fracs$pr, '%')
+
+kable(fracs, row.names = T, col.names = NULL) %>%
+  kable_styling(full_width = F, position = 'left', font_size = 15)
 ```
 
