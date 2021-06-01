@@ -247,7 +247,7 @@ BEGIN_RCPP
 END_RCPP
 }
 
-RcppExport SEXP run_testthat_tests();
+RcppExport SEXP run_testthat_tests(SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_check_barcode_reads", (DL_FUNC) &_scPipe_check_barcode_reads, 6},
@@ -263,7 +263,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_atac_bam_tagging", (DL_FUNC) &_scPipe_rcpp_sc_atac_bam_tagging, 5},
     {"_scPipe_rcpp_fasta_bin_bed_file", (DL_FUNC) &_scPipe_rcpp_fasta_bin_bed_file, 3},
     {"_scPipe_rcpp_append_chr_to_bed_file", (DL_FUNC) &_scPipe_rcpp_append_chr_to_bed_file, 2},
-    {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 0},
+    {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 1},
     {NULL, NULL, 0}
 };
 
