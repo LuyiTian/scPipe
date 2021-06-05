@@ -154,7 +154,7 @@ sc_atac_trim_barcode <- function(
       
     } else {
       cat("Using barcode CSV file, since barcode FastQ file is not passed \n")
-      if(id1_st < 0 || id2_st <0 -1 || id1_len < 0 || id2_len < 0 ){
+      if(id1_st < 0 || id2_st < 0 || id1_len < 0 || id2_len < 0 ){
        stop("Please pass positive integer values for id1_st, id2_st, id1_len, and id2_len")
       }
       

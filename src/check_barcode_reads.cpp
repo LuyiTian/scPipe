@@ -10,15 +10,6 @@
 using namespace Rcpp;
 using namespace std;
 
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-//
 
 #define BLOCKSIZE 10000000
 #define TERMINATOR '@'
@@ -357,7 +348,6 @@ bool check_barcode_reads(String fastq, String barcodeseqs,
         // if we don't reach the threshold, we should search the whole read for barcode locations and give a break down
         // of the best spots
         search_result = (double) found / (double) lines_to_search;
-
         if (search_result >= threshold) {
             Rprintf("Successful; continuing with program.\n");
             finish_program = true;

@@ -15,7 +15,7 @@ sc_atac_feature_counting(
   qc_per_bc_file = NULL,
   bin_size = NULL,
   yieldsize = 1e+06,
-  mapq = 0,
+  mapq = 30,
   exclude_regions = FALSE,
   excluded_regions_filename = NULL,
   output_folder = "",

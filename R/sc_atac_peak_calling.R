@@ -15,7 +15,7 @@
 #' @export
 #' 
 #' @importFrom reticulate import
-#' @importFrom basislisk basiliskStart basiliskStop
+#' @importFrom basilisk basiliskStart basiliskStop
 sc_atac_peak_calling <- function(inbam, ref = NULL, output_folder = NULL, genome_size = NULL){
   if (is.null(ref) && is.null(genome_size)) {
     stop("No genome or genome size was specified. Must specify at least one!")
