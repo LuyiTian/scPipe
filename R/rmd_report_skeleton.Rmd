@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 
 library(dplyr)
-library(readr)
+library(readr) 
 library(ggplot2)
 library(kableExtra)
 library(RColorBrewer)

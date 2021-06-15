@@ -36,7 +36,7 @@ sc_atac_feature_counting <- function(
   organism       = NULL,
   cell_calling   = FALSE, # either c("cellranger", "emptydrops", "filter")
   genome_size    = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
-  qc_per_bc_file = NULL, # this is optional but needed if the cell_calling option is cellranger
+  # qc_per_bc_file = NULL, # this is optional but needed if the cell_calling option is cellranger
   bin_size       = NULL, 
   yieldsize      = 1000000,
   mapq           = 30,
@@ -382,11 +382,20 @@ sc_atac_feature_counting <- function(
   cat("Raw feature matrix generated: ", paste(output_folder,"/unfiltered_feature_matrix.rds",sep = "") , "\n")
   Matrix::writeMM(Matrix::Matrix(matrixData), file = paste(output_folder,"/unfiltered_feature_matrix.mtx",sep = ""))
   
-  # call sc_atac_cell_callling.R here : emptyDrops() function currently implemented
-  if(cell_calling =="emptydrops" || cell_calling =="cellranger" || cell_calling =="filter"){
-    cat("calling `EmptyDrops` function for cell calling ... \n")
-    matrixData <- sc_atac_cell_calling(mat = matrixData, cell_calling = 'emptydrops', output_folder = output_folder)
-  }
+  # generate qc_per_bc_file
+  sc_atac_create_qc_per_bc_file(inbam = insortedbam, 
+                                frags_file = here("scPipe-atac-output", "fragments.bed"),
+                                peaks_file = here("scPipe-atac-output", "NA_peaks.narrowPeak"),
+                                promoters_file = here("inst", "extdata", "annotations", "hg38_promoter.bed"),
+                                tss_file = here("inst", "extdata", "annotations", "hg38_tss.bed"),
+                                enhs_file = here("inst", "extdata", "annotations", "hg38_enhancer.bed"),
+                                output_folder = output_folder)
+  
+  qc_per_bc_file <- here("scPipe-atac-output", "qc_per_bc_file.txt")
+  
+  # Cell calling
+  matrixData <- sc_atac_cell_calling(mat = matrixData, cell_calling = cell_calling, output_folder = output_folder, genome_size = genome_size, qc_per_bc_file = qc_per_bc_file, lower = NULL)
+  
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
   sparseM <- Matrix(matrixData, sparse=TRUE)
@@ -446,13 +455,7 @@ sc_atac_feature_counting <- function(
   
   # Generate qc_per_bc_file
   # Should check that the files are present
-  sc_atac_create_qc_per_bc_file(inbam = insortedbam, 
-                                frags_file = here("scPipe-atac-output", "fragments.bed"),
-                                peaks_file = here("scPipe-atac-output", "NA_peaks.narrowPeak"),
-                                promoters_file = here("inst", "extdata", "annotations", "hg38_promoter.bed"),
-                                tss_file = here("inst", "extdata", "annotations", "hg38_tss.bed"),
-                                enhs_file = here("inst", "extdata", "annotations", "hg38_enhancer.bed"),
-                                output_folder = output_folder)
+
   
   # Generate QC plots
   sc_atac_generate_qc_plots(frags_file = here("scPipe-atac-output", "fragments.bed"),
@@ -492,10 +495,7 @@ sc_atac_generate_qc_plots <- function(
   output_folder
 ) {
   frags <- fread(frags_file)
-  head(frags)
-  
-  nrow(frags)
-  sum(frags$V5)
+
 
   # read in qc_per_bc file
   bc_stat <- fread(qc_per_bc_file)
@@ -509,6 +509,7 @@ sc_atac_generate_qc_plots <- function(
   
   qc_sele <- bc_stat[bc %in% cell_barcodes, ]
   qc_nonsele <- bc_stat[!bc %in% cell_barcodes, ]
+  
   # --------------------------------------------------------------------
   # PLOT 1 Total fragments VS fraction in peaks
   
@@ -581,7 +582,7 @@ sc_atac_generate_qc_plots <- function(
   
   ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
     geom_boxplot(outlier.size = 0.01, show.legend = FALSE) + 
-    scale_fill_manual(values = brewer.pal(5, 'Paired')) +
+    scale_fill_manual(values = RColorBrewer::brewer.pal(5, 'Paired')) +
     theme(legend.position = 'none', 
           axis.text = element_text(size = 18, family = "Helvetica"), 
           axis.title.x = element_blank(), 
@@ -606,9 +607,9 @@ sc_atac_generate_qc_plots <- function(
   fracs$pr = round(fracs$pr, 3)
   fracs$pr = paste0(100*fracs$pr, '%')
   
-  kable(fracs, row.names = T, col.names = NULL) %>%
-    kable_styling(full_width = F, position = 'left', font_size = 15) %>%
-    save_kable(paste0(output_folder, "/scPipe_atac_stats/overall_stats.txt"))
+  kableExtra::kable(fracs, row.names = T, col.names = NULL) %>%
+    kableExtra::kable_styling(full_width = F, position = 'left', font_size = 15) %>%
+    kableExtra::save_kable(paste0(output_folder, "/scPipe_atac_stats/overall_stats.txt"))
   
   # --------------------------------------------------------------------
   # Cell demultiplexing statistics for reads
@@ -686,15 +687,15 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
                                           tss_file,
                                           enhs_file,
                                           output_folder) {
-  #sourceCpp(paste0('getOverlaps.cpp'))
+  
   
   sourceCpp(code='
-  #include <Rcpp.h>
-  using namespace Rcpp;
-  // for each read, return 1 if it overlap with any region, otherwise 0;
-  // should sort both reads and regions
-  // [[Rcpp::export]]
-  IntegerVector getOverlaps_read2AnyRegion(DataFrame reads, DataFrame regions) {
+    #include <Rcpp.h>
+    using namespace Rcpp;
+    // for each read, return 1 if it overlap with any region, otherwise 0;
+    // should sort both reads and regions
+    // [[Rcpp::export]]
+    IntegerVector getOverlaps_read2AnyRegion(DataFrame reads, DataFrame regions) {
       NumericVector start1 = reads["start"];
       NumericVector end1 = reads["end"];
       NumericVector start2 = regions["start"];
@@ -711,24 +712,24 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
       midP2 = (end2 + start2)/2;
       int k = 0;
       for(int i=0; i<n1; i++){
-          over1[i] = 0;
-          for(int j=k; j<n2; j++){
-             if((fabs(midP1[i] - midP2[j]) <= (len1[i]+len2[j]))){
-                over1[i] = 1;
-                k = j;
-                break;
-              }
+        over1[i] = 0;
+        for(int j=k; j<n2; j++){
+         if((fabs(midP1[i] - midP2[j]) <= (len1[i]+len2[j]))){
+            over1[i] = 1;
+            k = j;
+            break;
           }
+        }
       }
           
-         return(over1);
-  }
+      return(over1);
+    }
     
-// [[Rcpp::export]]
-  NumericVector getOverlaps_read2AllRegion(DataFrame reads, DataFrame regions) {
+    // [[Rcpp::export]]
+    NumericVector getOverlaps_read2AllRegion(DataFrame reads, DataFrame regions) {
       NumericVector start1 = reads["start"];
       NumericVector end1 = reads["end"];
-      
+          
       NumericVector start2 = regions["start"];
       NumericVector end2 = regions["end"];
           
@@ -743,49 +744,44 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
       midP2 = (end2 + start2)/2;
       int j = 0;
       int k = 0;
-      //for(int i=0; i<n1; i++){
-      //    over1[i] = 0;
-      //}
-      //over1 = 0;
+ 
       if(start1[0] > end2[n2-1] || end1[n1-1] < start2[0]) {
           return(over1);
       }
+      
       for(int i=0; i<n1; i++){
-          while (k<n2 && fabs(midP1[i] - midP2[k]) > (len1[i]+len2[k])){
-            k++;
-          }
-          // the kth element is the first element overlapped with the current fragment
-          // take advantage of sorted fragments and regions, for next fragment,
-          // it will start searching from kth region
-          j=k;
-          
-          // current frag not overlapped any region then search from beginning
-          if(j >= n2 -1) k = 0, j = 0;  
-          while (j<n2 && fabs(midP1[i] - midP2[j]) <= (len1[i]+len2[j])){
-                over1[i] = over1[i] + 1;
-                j++;
-          }
+        while (k<n2 && fabs(midP1[i] - midP2[k]) > (len1[i]+len2[k])){
+          k++;
+        }
+        // the kth element is the first element overlapped with the current fragment
+        // take advantage of sorted fragments and regions, for next fragment,
+        // it will start searching from kth region
+        j=k;
+        
+        // current frag not overlapped any region then search from beginning
+        if(j >= n2 -1) k = 0, j = 0;  
+        while (j<n2 && fabs(midP1[i] - midP2[j]) <= (len1[i]+len2[j])){
+          over1[i] = over1[i] + 1;
+          j++;
+        }
       }
           
-         return(over1);
+      return(over1);
     }
   
- // [[Rcpp::export]]
+  // [[Rcpp::export]]
   NumericVector getOverlaps_tss2Reads(DataFrame regions, DataFrame left_flank, DataFrame reads) {
-      NumericVector start1 = regions["start"];
-          
-      int n = start1.size();
-      NumericVector over(n), left_over(n);
-      NumericVector tss_enrich_score(n);
-      over = getOverlaps_read2AllRegion(regions, reads);
-      left_over = getOverlaps_read2AllRegion(left_flank, reads);
-      tss_enrich_score = (over+1.0) / (left_over+1.0) ;
-      return(tss_enrich_score);
-    }    
-  
-  
- '
-  )
+    NumericVector start1 = regions["start"];
+        
+    int n = start1.size();
+    NumericVector over(n), left_over(n);
+    NumericVector tss_enrich_score(n);
+    over = getOverlaps_read2AllRegion(regions, reads);
+    left_over = getOverlaps_read2AllRegion(left_flank, reads);
+    tss_enrich_score = (over+1.0) / (left_over+1.0) ;
+    return(tss_enrich_score);
+  }    
+  ')
   
   out.frag.overlap.file = paste0(output_folder, "/qc_per_bc_file.txt")
   

@@ -8,9 +8,16 @@
 #'
 #' @examples
 #' \dontrun{
-#' 
-#' 
+#' sc_atac_cell_calling(mat, "filter")
+#' sc_atac_cell_calling(mat, "cellranger")
 #' }
+#'
+#' @param mat The input matrix
+#' @param cell_calling The chosen cell calling method
+#' @param output_folder
+#' @param genome_size The size of the genome, used for the cellranger cell calling method
+#' @param qc_per_bc_file A file containing qc statistics for each cell
+#' @param lower
 #'
 #' @export
 #'
@@ -21,81 +28,42 @@ sc_atac_cell_calling <- function(mat,
                                  qc_per_bc_file = NULL, 
                                  lower = NULL){
   
+  cat("calling `", cell_calling, "` function for cell calling ... \n")
+  
+  selected_cells <- NULL
   if(cell_calling == "emptydrops"){
-    
-    library(DropletUtils)
-    library(data.table)
-    library(Matrix)
-    
-    set.seed(2019)
-    
-    # generating the knee plot
-    my.counts <- Matrix(mat)
-    br.out    <- DropletUtils::barcodeRanks(my.counts)
-    
-    # Making a plot
-    while (!is.null(dev.list()))  dev.off()
-    png(file=paste0(output_folder, "/scPipe_atac_stats/knee_plot.png"))
-        plot(br.out$rank, br.out$total, log="xy", xlab="Rank", ylab="Total")
-        o <- order(br.out$rank)
-        lines(br.out$rank[o], br.out$fitted[o], col="red")
-        
-        abline(h=metadata(br.out)$knee, col="dodgerblue", lty=2)
-        abline(h=metadata(br.out)$inflection, col="forestgreen", lty=2)
-        legend("bottomleft", lty=2, col=c("dodgerblue", "forestgreen"), 
-               legend=c("knee", "inflection"))
-    dev.off()
-    
-    if(is.null(lower)){
-      #lower <- floor(0.1*ncol(mat))
-      lower <- 1
-    }
-    cell.out <- DropletUtils::emptyDrops(mat, lower = lower)
-    # cell.out <- emptyDrops2(mat, lower = lower)
-    
-    filter.out <- cell.out[S4Vectors::complete.cases(cell.out), ]
-    
-    #saveRDS(filter.out, file = paste0(output_folder, '/EmptyDrop_obj.rds'))
-    #cat("Empty cases are removed and saved in ", output_folder, "\n")
-    
-    if(length(filter.out$FDR) > 0){
-      fdr <- 0.01
-      cat("FDR of 0.01 is assigned... \n")
-      filter.out <- filter.out[filter.out$FDR <= fdr, ]
-    } else{
-      message("insufficient unique points for computing knee/inflection points ... Use the output matrices with caution! \n")
-    }
-    
-    select.cells <- rownames(filter.out)
-    
-    out_mat      <- mat[, colnames(mat) %in% select.cells]
-    barcodes     <- colnames(out_mat)
-    features     <- rownames(out_mat)
-    
-    #if(length(filter.out$FDR) > 0){
-    #  cat("Empty filter.out\n")
-      Matrix::writeMM(Matrix::Matrix(out_mat), file = paste0(output_folder, '/cell_called_matrix.mtx'))
-      cat("cell called and stored in ", output_folder, "\n")
-      write.table(barcodes, file = paste0(output_folder, '/non_empty_barcodes.txt'), sep = '\t',
-                  row.names = FALSE, quote = FALSE, col.names = FALSE)
-      write.table(features, file = paste0(output_folder, '/non_empty_features.txt'), sep = '\t',
-                  row.names = FALSE, quote = FALSE, col.names = FALSE)
-    #}
-    
-    return(out_mat)
-  } # end emptydrops
+    selected_cells <- sc_atac_emptydrops_cell_calling(mat = mat, output_folder = output_folder, lower = lower)
+  }
+  else if(cell_calling == 'cellranger'){
+    selected_cells <- sc_atac_cellranger_cell_calling(mat = mat, genome_size = genome_size, qc_per_bc_file = qc_per_bc_file)
+  } 
+  else if(cell_calling == 'filter'){
+    selected_cells <- sc_atac_filter_cell_calling(mtx = mat, qc_per_bc_file = qc_per_bc_file)
+  } 
+  else { # no legitimate cell calling method chosen, so just return the original matrix
+    cat(cell_calling, " was not an implemented cell calling method\n")
+    return(mat)
+  }
   
+  cat("Number of called barcodes: ")
+  cat(length(selected_cells))
+  cat("\n")
   
-  if(cell_calling == 'cellranger'){
-    cellranger_cell_caller(mat, output_folder, genome_size, qc_per_bc_file)
-  } # end cellranger
+  # Only keep selected cells in matrix
+  out_mat      <- mat[, colnames(mat) %in% selected_cells]
+  barcodes     <- colnames(out_mat)
+  features     <- rownames(out_mat)
   
+  # Store output matrix
+  Matrix::writeMM(Matrix::Matrix(out_mat), file = paste0(output_folder, '/cell_called_matrix.mtx'))
+  cat("cell called and stored in ", output_folder, "\n")
+  write.table(barcodes, file = paste0(output_folder, '/non_empty_barcodes.txt'), sep = '\t',
+              row.names = FALSE, quote = FALSE, col.names = FALSE)
+  write.table(features, file = paste0(output_folder, '/non_empty_features.txt'), sep = '\t',
+              row.names = FALSE, quote = FALSE, col.names = FALSE)
+
   
-  
-  if(cell_calling == 'filter'){
-    filter_barcodes(mtx = mat, output_folder = output_folder)
-  } # end filter
-  
+  return(out_mat)
   
 }
 
@@ -176,133 +144,162 @@ sc_atac_cell_calling <- function(mat,
 #   return(stats)
 # }
 
-
-cellranger_cell_caller  <- function(mat, output_folder, genome_size, qc_per_bc_file){
+#' @name sc_atac_cellranger_cell_calling
+#' @title cellranger cell calling
+#' @description use the cellranger cell calling algorithm
+#' 
+#' @param mat The input matrix
+#' @param qc_per_bc_file A file containing qc statistics for each cell
+#' @param genome_size The size of the genome
+#' 
+#' @import data.table Matrix flexmix countreg
+#' 
+#' @export
+#' 
+sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
   # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/cellranger_cell_caller.R
+  # https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/algorithms/overview
   
-  library(data.table)
-  library(Matrix)
-  library(flexmix)
-  library(countreg)  ##install.packages("countreg", repos="http://R-Forge.R-project.org")
-  
-  # args = commandArgs(T)
-  # 
-  # input_mtx_file = args[1]
-  # output_folder = args[2]
-  # genome_size = as.numeric(args[3])
-  # qc_per_bc_file = args[4]
-  # 
-  # 
-  # ## read matrix data
-  # input_mtx_dir = dirname(input_mtx_file)
-  # mat = readMM(input_mtx_file)
-  # 
-  # barcodes = fread(paste0(input_mtx_dir, '/barcodes.txt'), header = F)
-  # 
-  # colnames(mat) = barcodes$V1
-  
-  
-  ## filter barcodes by frac_in_peak
+  # first filter barcodes by frac_in_peak
   qc_per_bc = fread(qc_per_bc_file)
   peak_cov_frac = min(0.05, nrow(mat) * 1000/genome_size)
   qc_sele_bc = qc_per_bc[frac_peak >= peak_cov_frac]
   
-  ## subtract counts due to contamination (rate 0.02)
+  # subtract counts due to contamination (rate 0.02)
   CN = max(1, round(median(qc_sele_bc$total_frags)* 0.02))
   qc_sele_bc[, 'total_frags' := total_frags -CN]
-  qc_sele_bc = qc_sele_bc[total_frags >= 0]
+  qc_sele_bc <- qc_sele_bc[total_frags >= 0]
   
-  ## fit two NB mixture model & using signal to noisy ratio to select cells
-  n_in_peak = Matrix::colSums(mat)
-  n_in_peak = n_in_peak[names(n_in_peak) %in% qc_sele_bc$bc]
-  flexmix(n_in_peak ~ 1, k = 2, model = FLXMRnegbin(theta = 1))
+  # fit two NB mixture model & using signal to noisy ratio to select cells
+  n_in_peak <- Matrix::colSums(mat)
+  n_in_peak <- n_in_peak[names(n_in_peak) %in% qc_sele_bc$bc]
+  # flexmix(n_in_peak ~ 1, k = 2, model = FLXMRnegbin(theta = 1))
   fm0 <- flexmix(n_in_peak ~ 1, k = 2, model = FLXMRnegbin())
-  prob1 = posterior(fm0)[, 1]
-  prob2 = posterior(fm0)[, 2]
-  mus = parameters(fm0)[1, ]
+  prob1 <- posterior(fm0)[, 1]
+  prob2 <- posterior(fm0)[, 2]
+  mus <- parameters(fm0)[1, ]
   
   if(mus[1] > mus[2]){
-    #odd = prob1/prob2
     odd = prob1
   }else{
-    #odd = prob2/prob1
     odd = prob2
   }
+
   aa = which(odd == 1)
+
   select.cells = names(n_in_peak)[aa]
-  length(select.cells)
-  
-  out_mat = mat[, colnames(mat) %in% select.cells]
-  barcodes = colnames(out_mat)
-  # dim(out_mat)
-  
-  
-  # system(paste('mkdir -p', output_folder))
-  writeMM(out_mat, file = paste0(output_folder, '/matrix.mtx'))  
-  write.table(barcodes, file = paste0(output_folder, '/barcodes.txt'), 
-              sep = '\t', row.names = F, quote = F, col.names = F)
-  # system(paste0('cp ', input_mtx_dir, '/features.txt ',  output_folder, '/'))
+
+  return(select.cells)
 }
 
 
-
-
-
-
-
-
-
-
-
-filter_barcodes <- function(
+#' @name sc_atac_filter_cell_calling
+#' @title filter cell calling
+#' @description specify various qc cutoffs to select the desired cells
+#' 
+#' @param mtx The input matrix
+#' @param qc_per_bc_file A file containing qc statistics for each cell
+#' @param min_uniq_frags The minimum number of required unique fragments required for a cell
+#' @param max_uniq_frags The maximum number of required unique fragments required for a cell
+#' @param min_frac_peak The minimum proportion of fragments in a cell to overlap with a peak
+#' @param min_frac_tss The minimum proportion of fragments in a cell to overlap with a tss
+#' @param min_frac_enhancer The minimum proportion of fragments in a cell to overlap with a enhancer sequence
+#' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence
+#' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial
+#' 
+#' @import data.table Matrix
+#' 
+#' @export
+#' 
+sc_atac_filter_cell_calling <- function(
   mtx, 
-  output_folder,
-  bc_stat_file = NULL,
-  min_uniq_frags = 3000,
+  qc_per_bc_file,
+  min_uniq_frags = 0,
   max_uniq_frags = 50000,
   min_frac_peak = 0.05,
   min_frac_tss = 0,
   min_frac_enhancer = 0,
   min_frac_promoter = 0,
-  max_frac_mito = 0.2){
+  max_frac_mito = 0.2) {
   
   # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/filter_barcodes.R
   
-  ## call cell by filtering barcodes given some qc stats cutoffs
-  library(data.table)
-  library(Matrix)
-  
-  qc_bc_stat = fread(bc_stat_file)
-  
-  # Change names of variables from optparse package
-  cut.min.frag = min_uniq_frags
-  cut.max.frag = max_uniq_frags
-  cut.mito = max_frac_mito
-  cut.peak = min_frac_peak
-  cut.tss = min_frac_tss
-  cut.promoter = min_frac_promoter
-  cut.enh = min_frac_enhancer
-  
-  qc_sele = qc_bc_stat[total_frags >= cut.min.frag & total_frags <= cut.max.frag &
-                         frac_mito <= cut.mito &
-                         frac_peak >= cut.peak &
-                         frac_tss >= cut.tss &
-                         frac_promoter >= cut.promoter &
-                         frac_enhancer >= cut.enh]
-  
-  # mtx = readMM(mtx_file)
-  # input_mtx_dir = dirname(mtx_file)
-  # colnames(mtx) = fread(paste0(input_mtx_dir, '/barcodes.txt'), header = F)$V1
-  mtx = mtx[, colnames(mtx) %in% qc_sele$bc]
-  saveRDS(mtx, file = paste0(output_folder, '/matrix.rds'))
-  
-  # mtx.dir = dirname(mtx_file)
-  # system(paste('mkdir -p', output_folder))
-  writeMM(mtx, file = paste0(output_folder, '/matrix.mtx'))
-  write.table(colnames(mtx), file = paste0(output_folder, '/barcodes.txt'), 
-              sep = '\t', row.names = F, quote = F, col.names = F)
-  # system(paste0('cp ', dirname(mtx_file), '/features.txt ', output_folder, '/features.txt'))
+  qc_bc_stat <- fread(qc_per_bc_file)
+
+  qc_sele <- qc_bc_stat[total_frags >= min_uniq_frags & total_frags <= max_uniq_frags &
+                         frac_mito <= max_frac_mito &
+                         frac_peak >= min_frac_peak &
+                         frac_tss >= min_frac_tss &
+                         frac_promoter >= min_frac_promoter &
+                         frac_enhancer >= min_frac_enhancer]
+
+  return(qc_sele$bc)
 }
+
+
+#' @name sc_atac_emptydrops_cell_calling
+#' @title empty drops cell calling
+#' @description The empty drops cell calling method
+#' 
+#' @param mat The input matrix
+#' @param output_folder
+#' @param lower
+#'
+#' @import DropletUtils data.table Matrix
+#' 
+#' @export
+#' 
+sc_atac_emptydrops_cell_calling <- function(
+  mat, 
+  output_folder,
+  lower = NULL) {
+  
+  set.seed(2019)
+  
+  # generating the knee plot
+  my.counts <- Matrix(mat)
+  br.out    <- DropletUtils::barcodeRanks(my.counts)
+  
+  # Making a plot
+  while (!is.null(dev.list()))  dev.off()
+  png(file=paste0(output_folder, "/scPipe_atac_stats/knee_plot.png"))
+  plot(br.out$rank, br.out$total, log="xy", xlab="Rank", ylab="Total")
+  o <- order(br.out$rank)
+  lines(br.out$rank[o], br.out$fitted[o], col="red")
+  
+  abline(h=metadata(br.out)$knee, col="dodgerblue", lty=2)
+  abline(h=metadata(br.out)$inflection, col="forestgreen", lty=2)
+  legend("bottomleft", lty=2, col=c("dodgerblue", "forestgreen"), 
+         legend=c("knee", "inflection"))
+  dev.off()
+  
+  if(is.null(lower)){
+    #lower <- floor(0.1*ncol(mat))
+    lower <- 1
+  }
+  cell.out <- DropletUtils::emptyDrops(mat, lower = lower)
+  # cell.out <- emptyDrops2(mat, lower = lower)
+  
+  filter.out <- cell.out[S4Vectors::complete.cases(cell.out), ]
+  
+  #saveRDS(filter.out, file = paste0(output_folder, '/EmptyDrop_obj.rds'))
+  #cat("Empty cases are removed and saved in ", output_folder, "\n")
+  
+  if(length(filter.out$FDR) > 0){
+    fdr <- 0.01
+    cat("FDR of 0.01 is assigned... \n")
+    filter.out <- filter.out[filter.out$FDR <= fdr, ]
+  } else{
+    message("insufficient unique points for computing knee/inflection points ... Use the output matrices with caution! \n")
+  }
+  
+  select.cells <- rownames(filter.out)
+  
+  return(select.cells)
+}
+
+
+
 
 
 
