@@ -22,9 +22,6 @@
 #' @param exclude_regions_filename
 #' @param output_folder
 #' @param fix_chr
-#' 
-#' @import ggplot2 grid
-#' 
 #' @export
 #' 
 

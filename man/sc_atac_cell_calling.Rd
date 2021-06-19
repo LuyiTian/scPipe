@@ -2,27 +2,51 @@
 % Please edit documentation in R/sc_atac_cell_calling.R
 \name{sc_atac_cell_calling}
 \alias{sc_atac_cell_calling}
-\title{sc_atac_cell_calling()}
+\title{identifying true vs empty cells}
 \usage{
 sc_atac_cell_calling(
   mat,
   cell_calling,
   output_folder,
+  frag_file = NULL,
   genome_size = NULL,
   qc_per_bc_file = NULL,
   lower = NULL
 )
 }
+\arguments{
+\item{mat}{the feature by cell matrix.}
+
+\item{cell_calling}{the cell calling approach, possible options are "emptydrops" , "cellranger" and "filter".}
+
+\item{output_folder}{output directory for the cell called matrix.}
+
+\item{frag_file}{the fragment file generated from the alignment data file. \code{sc_atac_create_fragments()} can be
+used to generate the fragment file.}
+
+\item{genome_size}{genome size for the data in feature by cell matrix.}
+
+\item{qc_per_bc_file}{quality per barcode file for the barcodes in the matrix if using the \code{celranger} or \code{filter} options.}
+
+\item{lower}{the lower threshold for the data if using the \code{emptydrops} function for cell calling.}
+}
 \value{
 
 }
 \description{
-sc_atac_cell_calling()
+the methods to call true cells are of various ways. \code{emptyDrops} function from 
+\code{DropletUtils} package is one of them that is fully implemented here. There are two more that we anticipate to 
+implement (i.e. \code{filtering} from \core{scATACSeq-Pro} and \code{cellranger approach}).
 }
 \examples{
 \dontrun{
-
-
+sc_atac_cell_calling <- function(mat, 
+ cell_calling, 
+ output_folder, 
+ frag_file      = NULL,
+ genome_size    = NULL, 
+ qc_per_bc_file = NULL, 
+ lower          = NULL)
 }
 
 }

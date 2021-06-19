@@ -57,8 +57,8 @@ void ResizeArray::Delete (void) {
 
 void ResizeArray::Print(ResizeArray *positions) {
     for (int i = 0; i < positions->length(); i++) {
-        Rprintf("Pos %d, val: %ld\t", i, positions[i]);
-        if (i % 5 == 0) {
+        Rprintf("Pos %d, val: %ld\t", i, (*positions)[i]);
+        if (i % 5 == 4) {
             Rprintf("\n");
         }
     }

@@ -15,9 +15,13 @@
 #' @param output_folder the output dir for the demultiplexed fastq file, which will contain 
 #' fastq files with reformatted barcode and UMI into the read name. 
 #' Files ending in \code{.gz} will be automatically compressed.
-#' @param bc_start barcode start position (0-indexed), which is an extra parameter that is needed if the
+#' @param id1_st barcode start position (0-indexed) for read 1, which is an extra parameter that is needed if the
 #' \code{bc_file} is in a \code{.csv} format.
-#' @param bc_length barcode length, which is an extra parameter that is needed if the
+#' @param id2_st barcode start position (0-indexed) for read 2, which is an extra parameter that is needed if the
+#' \code{bc_file} is in a \code{.csv} format.
+#' @param id1_len barcode length for read 1, which is an extra parameter that is needed if the
+#' \code{bc_file} is in a \code{.csv} format.
+#' @param id2_len barcode length for read 2, which is an extra parameter that is needed if the
 #' \code{bc_file} is in a \code{.csv} format.
 #' @param umi_start if available, the start position of the molecular identifier.
 #' @param umi_length if available, the start position of the molecular identifier.  
@@ -150,7 +154,7 @@ sc_atac_trim_barcode <- function(
       
     } else {
       cat("Using barcode CSV file, since barcode FastQ file is not passed \n")
-      if(id1_st < 0 || id2_st <0 -1 || id1_len < 0 || id2_len < 0 ){
+      if(id1_st < 0 || id2_st < 0 || id1_len < 0 || id2_len < 0 ){
        stop("Please pass positive integer values for id1_st, id2_st, id1_len, and id2_len")
       }
       
