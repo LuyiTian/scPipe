@@ -1,11 +1,11 @@
-#include <Rcpp.h>
+//#include <Rcpp.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include "Trie.h"
 #define TERMINATOR '@'
 
-using namespace Rcpp;
+//using namespace Rcpp;
 using namespace std;
 
 int Trie::Get_Links_Position(char base)
@@ -175,10 +175,15 @@ int Trie::Locate_Seq_At_Pos(string read, int index, int barcode_length)
     end_node *end;
     current_node = head;
     if ((int)read.length() < index) {
-        Rprintf("Short read: %s. Index: %d\n", read.c_str(), index);
+        //Rprintf("Short read: %s. Index: %d\n", read.c_str(), index);
         //exit(0);
         return -1;
     }
+
+    if (!current_node) {
+        return -1;
+    }
+
     // search from index until we find a TERMINATOR
     for (j = index; j < index + barcode_length; j++)
     {
@@ -269,6 +274,7 @@ int Trie::Locate_Seq_Subsection(string read, int section_start, int section_end,
 
 void Trie::Clear_Trie() {
     clear_trie_rec(head);
+    head = Initialise_Node('\0');
 }
 void Trie::clear_trie_rec(trie_node *node)
 {

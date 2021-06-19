@@ -47,10 +47,16 @@ Files ending in \code{.gz} will be automatically compressed.}
 
 \item{num_below_min}{the maximum number of base pairs below the quality threshold.}
 
-\item{bc_start}{barcode start position (0-indexed), which is an extra parameter that is needed if the
+\item{id1_st}{barcode start position (0-indexed) for read 1, which is an extra parameter that is needed if the
 \code{bc_file} is in a \code{.csv} format.}
 
-\item{bc_length}{barcode length, which is an extra parameter that is needed if the
+\item{id1_len}{barcode length for read 1, which is an extra parameter that is needed if the
+\code{bc_file} is in a \code{.csv} format.}
+
+\item{id2_st}{barcode start position (0-indexed) for read 2, which is an extra parameter that is needed if the
+\code{bc_file} is in a \code{.csv} format.}
+
+\item{id2_len}{barcode length for read 2, which is an extra parameter that is needed if the
 \code{bc_file} is in a \code{.csv} format.}
 }
 \description{

@@ -19,7 +19,6 @@ class Trie {
     private:
         trie_node* head;
         void clear_trie_rec(trie_node*);
-    public:
         static int Get_Links_Position(char);
         static trie_node* Initialise_Node(char);
         static trie_node* Initialise_End_Node(char, int, int);
@@ -27,6 +26,7 @@ class Trie {
         static trie_node* Add_Node(trie_node*, char);
         static trie_node* Add_End_Node(trie_node*, char, int, int);
 
+    public:
         void Add_String(std::string, int, int);
         int Locate_Seq_At_Pos(std::string, int, int);
         int Locate_Seq_Subsection(std::string, int, int, int*);

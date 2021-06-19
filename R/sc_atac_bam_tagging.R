@@ -4,40 +4,40 @@
 
 #' sc_atac_bam_tagging()
 #'
-#' @return 
+#' @return
 #'
 #' @examples
 #' \dontrun{
-#' 
-#' 
+#'
+#'
 #' }
 #'
 #' @export
 #'
 
-sc_atac_bam_tagging <- function(inbam, 
+sc_atac_bam_tagging <- function(inbam,
                                 output_folder = "",
                                 bc_length = NULL,
                                 bam_tags = list(bc="CB", mb="OX"),
                                 nthreads = 1
 ) {
-  
+
   if (any(!file.exists(inbam))) {
     stop("At least one input bam file should be present")
   } else {
     inbam = path.expand(inbam)
   }
-  
+
   if(output_folder == ''){
     #output_folder <- file.path(getwd(), "scPipe-atac-output")
     output_folder <- paste0(sub('[/][^/]+$', '', inbam))
   }
-  
+
   if (!dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
     cat("Output directory does not exist. Creating ", output_folder, "\n")
   }
-  
+
   fileNameWithoutExtension <- strsplit(basename(inbam), "\\.")[[1]][1]
   outbam                   <- paste(output_folder, "/", fileNameWithoutExtension, "_tagged.bam", sep = "")
   outsortedbam             <- paste(output_folder, "/", fileNameWithoutExtension, "_tagged_sorted", sep = "")
@@ -47,63 +47,103 @@ sc_atac_bam_tagging <- function(inbam,
   log_file                   <- paste0(log_and_stats_folder, "log_file.txt")
   stats_file                 <- paste0(log_and_stats_folder, "stats_file_bam_tagging.txt")
   if(!file.exists(log_file)) file.create(log_file)
-  
+
   cat(
     paste0(
       "sc_atac_tagging starts at ",
       as.character(Sys.time()),
       "\n"
-    ), 
+    ),
     file = log_file, append = TRUE)
 
   outbam <- path.expand(outbam)
   if(!file.exists(outbam)){
     file.create(outbam)
   }
-  
+
   rcpp_sc_atac_bam_tagging(inbam, outbam, bam_tags$bc, bam_tags$mb,nthreads)
-  
+
   cat("Tagged BAM file is located in: \n")
   cat(outbam)
   cat("\n")
-  
+
   Rsamtools::sortBam(outbam, outsortedbam, indexDestination = TRUE)
   Rsamtools::indexBam(paste0(outsortedbam, ".bam"))
-  
+
   cat("Sorted & indexed tagged BAM file is located in: \n")
   cat(paste0(outsortedbam, ".bam"))
   cat("\n")
-  
-  
+
+
   if(is.null(bc_length)){
     cat("Using default value for barcode length (bc_length = 16) \n")
     bc_length <- 16
   }
-  
-  
+
+
   flag_defs = tibble(
-    type = 
+    type =
       c("one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "both_reads_unmapped", "both_reads_unmapped", "mapped", "mapped", "mapped", "mapped", "mapped_wrong_orientation", "mapped_wrong_orientation", "mapped_wrong_orientation", "mapped_wrong_orientation", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously")
     ,
-    flag = 
+    flag =
       c(73, 133, 89, 121, 165, 181, 101, 117, 153, 185, 69, 137, 77, 141, 99, 147, 83, 163, 67, 131, 115, 179, 81, 161, 97, 145, 65, 129, 113, 177))
-  
-  
+
+
   bam0 = scanBam(inbam)
   barcodes = substr(bam0[[1]]$qname, 1, bc_length)
-  
-  
-  
-  # generate the fragment file for the BAM file 
+
+
+  barcode_info <- tibble(
+    barcode = barcodes,
+    flag    = bam0[[1]]$flag) %>%
+    left_join(flag_defs, by = "flag") %>%
+    left_join(as.data.frame(table(barcodes)) %>%
+                purrr::set_names(c("barcode", "number_of_reads")),
+              by = "barcode")
+
+  barcode_stats_filename <- paste(log_and_stats_folder, "mapping_stats_per_barcode.csv", sep = "")
+  cat("Saving csv file with barcode stats in", barcode_stats_filename)
+  write.csv(barcode_info, barcode_stats_filename, row.names = FALSE)
+
+
+  # generate the fragment file for the BAM file
   # need bedtools v2.26.0 or later
   # system2("bedtools", c("bamToBed", "i", outsortedbam), "|", "awk", c(-F"#" '{print $1"\t"$2}'), stdout = paste(output_folder,"/fragments.bed",sep = ""))
-  
+
   cat(
     paste0(
       "sc_atac_tagging finishes at ",
       as.character(Sys.time()),
       "\n\n"
-    ), 
+    ),
     file = log_file, append = TRUE)
-  
+
+  # generate the logs_and_stats graph and table of mapping_stats_per_barcode
+  generate_table_graph(log_and_stats_folder, barcode_stats_filename)
+
+}
+
+#' importFrom ggplot2 ggplot geom_col aes ggsave
+generate_table_graph <- function(logs_and_stats_folder) {
+  stats_file = paste0(logs_and_stats_folder, "/mapping_stats_per_barcode.csv")
+  raw <- read.csv(stats_file)
+  colnames(raw) <- c("barcode", "flag", "type", "reads")
+
+  filtered <- aggregate(raw$reads, by=list(type=raw$type), FUN=sum)
+  colnames(filtered) <- c("status", "count")
+
+  saveRDS(filtered, paste0(logs_and_stats_folder, "/mapping_stats_data.rds"))
+  # can use readRDS(paste0(logs_and_stats_folder, "/mapping_stats_data.rds")) to
+  # to retrive the data
+  #output_table <- datatable(filtered, options=list(paging=FALSE, searching=FALSE))
+  #htmlwidgets::saveWidget(output_table, paste0(logs_and_stats_folder, "/mapping_stats_datatable.html"))
+
+  # generate the ggplot2 graph to save as png
+  filtered$count <- filtered$count / sum(filtered$count)
+  gg <- ggplot2::ggplot(filtered, ggplot2::aes(x=status, y=count, fill=status)) +
+    ggplot2::geom_col() +
+    ggtitle("Demultiplex Statistics") +
+    xlab("Status") +
+    ylab("Count")
+  ggsave("mapping_stats_graph.png", plot=gg, path=logs_and_stats_folder)
 }
