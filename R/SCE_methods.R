@@ -326,4 +326,85 @@ setReplaceMethod("gene_id_type",signature="SingleCellExperiment",
                    return(object)
                  })
 
+# -------------------------------------------------------- scATAC-seq -----------------------------------------------------------
+#' Get or set \code{feature_info} from a SingleCellExperiment object
+#' @rdname feature_info
+#' @param object A \code{\link{SingleCellExperiment}} object.
+#' @param value Value to be assigned to corresponding object.
+#'
+#' @return A DataFrame of feature information
+#' @author 
+#'
+#' @export
+#'
+#' @examples
+#'
+feature_info.sce <- function(object) {
+  if(!("scPipe" %in% names(object@metadata))){
+    warning("`scPipe` not in `metadata`.")
+    return(NULL)
+  }else if(!("feature_cols" %in% names(object@metadata$scPipe))){
+    warning("The metadata$scPipe does not have `feature_cols`.")
+    return(NULL)
+  }
+  return(rowData(object)[, object@metadata$scPipe$feature_cols])
+}
 
+
+#' @rdname feature_info
+#' @aliases feature_info
+#' @export
+setMethod("feature_info", signature(object = "SingleCellExperiment"),
+          feature_info.sce)
+
+
+#' @aliases feature_info
+#' @rdname feature_info
+#' @export
+setReplaceMethod("feature_info",signature="SingleCellExperiment",
+                 function(object, value) {
+                   if (!("scPipe" %in% names(object@metadata))) {
+                     object@metadata[["scPipe"]] = list(feature_cols=colnames(value))
+                   } else {
+                     object@metadata$scPipe$feature_cols = colnames(value)
+                   }
+                   rowData(object)[, colnames(value)] <- DataFrame(value)
+                   return(object)
+                 })
+
+#' Get or set \code{feature_type} from a SingleCellExperiment object
+#' @rdname feature_type
+#' @param object A \code{\link{SingleCellExperiment}} object.
+#' @param value Value to be assigned to corresponding object.
+#'
+#' @return A string representing the feature type
+#' @author 
+#'
+#' @export
+#'
+#' @examples
+#'
+feature_type.sce <- function(object) {
+  return(object@metadata$scPipe$feature_type)
+}
+
+
+#' @rdname feature_type
+#' @aliases feature_type
+#' @export
+setMethod("feature_type", signature(object = "SingleCellExperiment"),
+          feature_type.sce)
+
+
+#' @aliases feature_type
+#' @rdname feature_type
+#' @export
+setReplaceMethod("feature_type",signature="SingleCellExperiment",
+                 function(object, value) {
+                     if(is.null(value) || value == "NA"){
+                       object@metadata$scPipe$feature_type = NA
+                     }else{
+                       object@metadata$scPipe$feature_type = value
+                     }
+                   return(object)
+                 })

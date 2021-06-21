@@ -3,10 +3,17 @@
 #' @return 
 #'
 #' @examples
+#' sc_atac_create_report(log_and_stats_folder = here::here("out/test_out_bam/log_and_stats/"))
+# 
+#  sc_atac_create_report(
+#    log_and_stats_folder = here::here("out/test_out_bam/log_and_stats/"),
+#    output_folder = here::here("out/test_out_bam/log_and_stats/"))
 #' \dontrun{
 #' 
 #' 
 #' }
+#'
+#' @import data.table
 #'
 #' @export
 #'
@@ -43,7 +50,8 @@ sc_atac_create_report <- function(input_folder,
     params <- list(
       log_and_stats_folder = input_folder
     ),
-    output_file <- paste0(output_folder, "/scPipe_atac_report.html")
+    output_file <- paste0(output_folder, "/scPipe_atac_report.html"),
+    output_format = "html_document",
   )
 }
 

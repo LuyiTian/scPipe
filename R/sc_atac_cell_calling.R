@@ -65,6 +65,10 @@ sc_atac_cell_calling <- function(mat,
   barcodes     <- colnames(out_mat)
   features     <- rownames(out_mat)
   
+  cat("Number of columns: ")
+  cat(length(barcodes))
+  cat("\n")
+  
   # Store output matrix
   Matrix::writeMM(Matrix::Matrix(out_mat), file = paste0(output_folder, '/cell_called_matrix.mtx'))
   cat("cell called and stored in ", output_folder, "\n")
@@ -163,7 +167,10 @@ sc_atac_cell_calling <- function(mat,
 #' @param qc_per_bc_file A file containing qc statistics for each cell
 #' @param genome_size The size of the genome
 #' 
-#' @import data.table Matrix flexmix countreg
+#' @import data.table 
+#' @import Matrix 
+#' @import flexmix 
+#' @import countreg
 #' 
 #' @export
 #' 
@@ -172,7 +179,7 @@ sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
   # https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/algorithms/overview
   
   # first filter barcodes by frac_in_peak
-  qc_per_bc = fread(qc_per_bc_file)
+  qc_per_bc <- fread(qc_per_bc_file)
   peak_cov_frac = min(0.05, nrow(mat) * 1000/genome_size)
   qc_sele_bc = qc_per_bc[frac_peak >= peak_cov_frac]
   
@@ -184,15 +191,14 @@ sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
   # fit two NB mixture model & using signal to noisy ratio to select cells
   n_in_peak <- Matrix::colSums(mat)
   n_in_peak <- n_in_peak[names(n_in_peak) %in% qc_sele_bc$bc]
-  # flexmix(n_in_peak ~ 1, k = 2, model = FLXMRnegbin(theta = 1))
-  fm0 <- flexmix(n_in_peak ~ 1, k = 2, model = FLXMRnegbin())
-  prob1 <- posterior(fm0)[, 1]
-  prob2 <- posterior(fm0)[, 2]
-  mus <- parameters(fm0)[1, ]
+  fm0 <- flexmix::flexmix(n_in_peak ~ 1, k = 2, model = countreg::FLXMRnegbin())
+  prob1 <- flexmix::posterior(fm0)[, 1]
+  prob2 <- flexmix::posterior(fm0)[, 2]
+  mus <- flexmix::parameters(fm0)[1, ]
   
   if(mus[1] > mus[2]){
     odd = prob1
-  }else{
+  } else {
     odd = prob2
   }
 
@@ -225,7 +231,7 @@ sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
 sc_atac_filter_cell_calling <- function(
   mtx, 
   qc_per_bc_file,
-  min_uniq_frags = 0,
+  min_uniq_frags = 100,
   max_uniq_frags = 50000,
   min_frac_peak = 0.05,
   min_frac_tss = 0,

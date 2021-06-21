@@ -22,6 +22,9 @@
 #' @param exclude_regions_filename
 #' @param output_folder
 #' @param fix_chr
+#' 
+#' @import data.table
+#' 
 #' @export
 #' 
 
@@ -242,7 +245,7 @@ sc_atac_feature_counting <- function(
           stop("File ", out_bed_filename_excluded_regions, "file was not created.")
         }
       }
-      
+    
     } # end if excluded_regions
   }
   
@@ -398,14 +401,14 @@ sc_atac_feature_counting <- function(
   sparseM <- Matrix(matrixData, sparse=TRUE)
   # add dimensions of the sparse matrix if available
   if(cell_calling != FALSE){
-    barcodes <- read.table(paste0(output_folder, '/non_empty_barcodes.txt'))$v1
-    features <- read.table(paste0(output_folder, '/non_empty_features.txt'))$v1
+    barcodes <- read.table(paste0(output_folder, '/non_empty_barcodes.txt'))$V1
+    features <- read.table(paste0(output_folder, '/non_empty_features.txt'))$V1
     dimnames(sparseM) <- list(features, barcodes)
   }
   
   cat("Sparse matrix generated", "\n")
-  saveRDS(sparseM, file = paste(output_folder,"/sparse_matrix.rds",sep = ""))
-  writeMM(obj = sparseM, file=paste(output_folder,"/sparse_matrix.mtx", sep =""))
+  saveRDS(sparseM, file = paste(output_folder, "/sparse_matrix.rds", sep = ""))
+  writeMM(obj = sparseM, file=paste(output_folder, "/sparse_matrix.mtx", sep =""))
   cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
   
   # generate and save jaccard matrix
@@ -482,7 +485,7 @@ sc_atac_feature_counting <- function(
 #' @param peaks_file
 #' @param output_folder
 #' 
-#' @import ggplot2 grid here kableExtra RColorBrewer
+#' @import ggplot2 grid here kableExtra RColorBrewer data.table
 #' @export
 #' 
 sc_atac_generate_qc_plots <- function(
@@ -608,59 +611,6 @@ sc_atac_generate_qc_plots <- function(
     kableExtra::kable_styling(full_width = F, position = 'left', font_size = 15) %>%
     kableExtra::save_kable(paste0(output_folder, "/scPipe_atac_stats/overall_stats.txt"))
   
-  # --------------------------------------------------------------------
-  # Cell demultiplexing statistics for reads
-  
-  # mapping_stats_per_barcode.file <- here::here("scPipe-atac-output", "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-  # mapping_stats_per_barcode <- fread(mapping_stats_per_barcode.file)
-  # unique(mapping_stats_per_barcode$barcode)
-  # reads_in_bc <- mapping_stats_per_barcode[barcode %in% cell_barcodes, ]
-  # reads_not_in_bc <- mapping_stats_per_barcode[!barcode %in% cell_barcodes, ]
-  # mapped_reads_not_in_bc <- reads_not_in_bc[type == "mapped"]
-  
-  # ------------------------------- table -------------------------------------
-  # qc_total_frag_count <- sum(qc_sele$total_frags) + sum(qc_nonsele$total_frags)
-  # qc_sele_count <- sum(qc_sele$total_frags)
-  # qc_nonsele_count <- sum(qc_nonsele$total_frags)
-  # qc_nonsele_count_in_peak <- sum(qc_nonsele$total_frags * qc_nonsele$frac_peak)
-  # qc_nonsele_count_in_promoter <- sum(qc_nonsele$total_frags * qc_nonsele$frac_promoter)
-  # qc_nonsele_count_in_enhancer <- sum(qc_nonsele$total_frags * qc_nonsele$frac_enhancer)
-  # qc_nonsele_count_in_tss <- sum(qc_nonsele$total_frags * qc_nonsele$frac_tss)
-  # qc_nonsele_non_overlap <- qc_nonsele_count - 
-  #                           qc_nonsele_count_in_peak - 
-  #                           qc_nonsele_count_in_promoter - 
-  #                           qc_nonsele_count_in_enhancer - 
-  #                           qc_nonsele_count_in_tss
-  # 
-  # df_counts <- data.frame(demultiplex_status = c("#ragments in called cells", 
-  #                            "non-cell fragments overlapping with peaks", 
-  #                            "non-cell fragments overlapping with promoter",
-  #                            "non-cell fragments overlapping with enhancer",
-  #                            "non-cell fragments containing tss",
-  #                            "other non-cell fragments"),
-  #                 counts = c(qc_sele_count, qc_nonsele_count_in_peak, qc_nonsele_count_in_promoter, qc_nonsele_count_in_enhancer, qc_nonsele_count_in_tss, qc_nonsele_non_overlap))
-  # 
-  # kable(df_counts) %>%
-  #   kable_styling(full_width = F, position = 'left', font_size = 15)
-  
-  # ------------------------------- bar graph -------------------------------------
-  # df_fracs <- data.frame(demultiplex_status = c("fragments in called cells", 
-  #                                               "non-cell fragments overlapping with peaks", 
-  #                                               "non-cell fragments overlapping with promoter",
-  #                                               "non-cell fragments overlapping with enhancer",
-  #                                               "non-cell fragments containing tss",
-  #                                               "other non-cell fragments"),
-  #                        fracs = c(qc_sele_count, qc_nonsele_count_in_peak, qc_nonsele_count_in_promoter, qc_nonsele_count_in_enhancer, qc_nonsele_count_in_tss, qc_nonsele_non_overlap)/qc_total_frag_count)
-  # 
-  # ggplot(data=df_fracs, aes(x=demultiplex_status, y=fracs, fill=fracs)) +
-  #   geom_bar(stat="identity", fill="steelblue") +
-  #   geom_text(aes(label=paste0(round(fracs, 3)*100, "%")), vjust=-0.3, size=3.5)+
-  #   theme_minimal() + 
-  #   theme(axis.text.x=element_text(angle=30,hjust=1), plot.title = element_text(hjust = 0.5)) +
-  #   ylab("Percentage")
-  # 
-  # # ------------------------------- stacked bar graph -------------------------------------
-  # qc_sele[, 'frac_other' := 1 - frac_peak - frac_promoter - frac_tss - frac_enhancer]
 }
   
 #' @name sc_atac_generate_per_ber_pc_file
