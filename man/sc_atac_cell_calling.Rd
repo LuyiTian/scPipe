@@ -49,4 +49,5 @@ sc_atac_cell_calling <- function(mat,
  lower          = NULL)
 }
 
+
 }

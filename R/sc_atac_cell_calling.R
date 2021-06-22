@@ -224,14 +224,15 @@ sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
 #' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial
 #' 
-#' @import data.table Matrix
+#' @import data.table 
+#' @import Matrix
 #' 
 #' @export
 #' 
 sc_atac_filter_cell_calling <- function(
   mtx, 
   qc_per_bc_file,
-  min_uniq_frags = 100,
+  min_uniq_frags = 0,
   max_uniq_frags = 50000,
   min_frac_peak = 0.05,
   min_frac_tss = 0,

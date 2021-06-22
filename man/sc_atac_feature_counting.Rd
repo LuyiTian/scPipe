@@ -12,7 +12,6 @@ sc_atac_feature_counting(
   organism = NULL,
   cell_calling = FALSE,
   genome_size = NULL,
-  qc_per_bc_file = NULL,
   bin_size = NULL,
   yieldsize = 1e+06,
   mapq = 30,
@@ -21,6 +20,9 @@ sc_atac_feature_counting(
   output_folder = "",
   fix_chr = "none"
 )
+}
+\arguments{
+\item{fix_chr}{}
 }
 \description{
 feature matrix is created using a given demultiplexed BAM file and 

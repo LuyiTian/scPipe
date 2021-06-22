@@ -363,6 +363,7 @@ setMethod("feature_info", signature(object = "SingleCellExperiment"),
 #' @export
 setReplaceMethod("feature_info",signature="SingleCellExperiment",
                  function(object, value) {
+                   value <- subset(value, select = -c(feature))
                    if (!("scPipe" %in% names(object@metadata))) {
                      object@metadata[["scPipe"]] = list(feature_cols=colnames(value))
                    } else {

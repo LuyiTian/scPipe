@@ -24,6 +24,7 @@
 #' @param fix_chr
 #' 
 #' @import data.table
+#' @import rtracklayer
 #' 
 #' @export
 #' 

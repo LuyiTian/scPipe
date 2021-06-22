@@ -19,6 +19,7 @@ sc_atac_create_report(
 sc_atac_create_report()
 }
 \examples{
+sc_atac_create_report(log_and_stats_folder = here::here("out/test_out_bam/log_and_stats/"))
 \dontrun{
 
 

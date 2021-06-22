@@ -4,7 +4,7 @@
 \alias{sc_atac_remove_duplicates}
 \title{sc_atac_remove_duplicates()}
 \usage{
-sc_atac_remove_duplicates(inbam, output_folder = "")
+sc_atac_remove_duplicates(inbam, samtools_path = NULL, output_folder = "")
 }
 \value{
 
