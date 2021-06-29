@@ -35,8 +35,7 @@ sc_atac_create_sce <- function(input_folder = NULL,
   }
   
   if (!dir.exists(input_folder)){
-    cat("Default input folder could not be found at " , file.path(getwd()),  "Please enter the full input path to proceed \n");
-    break;
+    cat("Default input folder could not be found at " , input_folder,  "\nPlease enter the full input path to proceed \n");
   } else {
     input_stats_folder <- file.path(input_folder, "scPipe_atac_stats")
   }
@@ -66,6 +65,16 @@ sc_atac_create_sce <- function(input_folder = NULL,
     feature_type(sce) <- feature_type
   }
   
+  # Saving demultiplexing stats to sce object
+  stats_file = file.path(input_stats_folder, "mapping_stats_per_barcode.csv")
+  raw <- read.csv(stats_file)
+  colnames(raw) <- c("barcode", "flag", "type", "reads")
+  
+  filtered <- aggregate(raw$reads, by=list(type=raw$type), FUN=length)
+  colnames(filtered) <- c("status", "count")
+  
+  demultiplex_info(sce) <- filtered
+  
   QC_metrics(sce) <- cell_stats
   
   if(!is.null(pheno_data)){
@@ -76,8 +85,8 @@ sc_atac_create_sce <- function(input_folder = NULL,
   saveRDS(sce, file = paste(input_folder,"/scPipe_atac_SCEobject.rds",sep = ""))
 
   if(report){
-    sc_atac_create_report(input_folder = file.path(getwd(), "scPipe-atac-output/scPipe_atac_stats"),
-                          output_folder= input_folder,
+    sc_atac_create_report(input_folder = file.path(input_folder),
+                          output_folder= file.path(input_folder, "scPipe_atac_stats"),
                           sample_name  = NULL,
                           organism     = organism,
                           feature_type = feature_type)

@@ -69,6 +69,10 @@ sc_atac_cell_calling <- function(mat,
   cat(length(barcodes))
   cat("\n")
   
+  if (length(barcodes) == 0) {
+    stop("No cells were called...")
+  }
+  
   # Store output matrix
   Matrix::writeMM(Matrix::Matrix(out_mat), file = paste0(output_folder, '/cell_called_matrix.mtx'))
   cat("cell called and stored in ", output_folder, "\n")

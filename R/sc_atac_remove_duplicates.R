@@ -61,7 +61,7 @@ sc_atac_remove_duplicates <- function(inbam, samtools_path = NULL, output_folder
           dir.create(output_folder,recursive=TRUE)
           cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
         }
-        
+        log_and_stats_folder <- paste0(output_folder, "/scPipe_atac_stats/")
         inbam.name <- substr(inbam, 0, nchar(inbam)-4)
         
         system2(samtools, c("collate", "-o", paste(inbam.name, "namecollate.bam", sep="_"), inbam))
@@ -77,7 +77,9 @@ sc_atac_remove_duplicates <- function(inbam, samtools_path = NULL, output_folder
         
         # Note: the output bam file is originally created in the same directory as the input bam file
         
+        # system2(samtools, c("markdup", "-s", "-f", paste(log_and_stats_folder, "duplicate_removal_stats.txt"), "-r", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "markdup.bam", sep="_")))
         system2(samtools, c("markdup", "-s", "-r", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "markdup.bam", sep="_")))
+        
         Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"))
         
         system2("rm", paste(inbam.name, "namecollate.bam", sep="_"))

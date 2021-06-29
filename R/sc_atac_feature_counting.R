@@ -14,7 +14,9 @@
 #' @param organism
 #' @param cell_calling
 #' @param genome_size
-#' @param qc_per_bc_file
+#' @param promoters_file
+#' @param tss_file
+#' @param enhs_file
 #' @param bin_size
 #' @param yieldsize
 #' @param mapq
@@ -37,13 +39,15 @@ sc_atac_feature_counting <- function(
   organism       = NULL,
   cell_calling   = FALSE, # either c("cellranger", "emptydrops", "filter")
   genome_size    = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
-  # qc_per_bc_file = NULL, # this is optional but needed if the cell_calling option is cellranger
+  promoters_file = NULL,
+  tss_file = NULL,
+  enhs_file = NULL,
   bin_size       = NULL, 
   yieldsize      = 1000000,
   mapq           = 30,
   exclude_regions= FALSE, 
   excluded_regions_filename = NULL,
-  output_folder  = "",
+  output_folder  = NULL,
   fix_chr        = "none" # should be either one of these: c("none", "excluded_regions", "feature", "both")
 ){
   
@@ -57,7 +61,7 @@ sc_atac_feature_counting <- function(
   
   stopifnot(fix_chr %in% c("none", "excluded_regions", "feature", "both"))
   
-  if(output_folder == ''){
+  if(is.null(output_folder)) {
     output_folder <- file.path(getwd(), "scPipe-atac-output")
     cat("Output directory has not been provided. Saving output in\n", output_folder, "\n")
   }
@@ -383,16 +387,28 @@ sc_atac_feature_counting <- function(
   cat("Raw feature matrix generated: ", paste(output_folder,"/unfiltered_feature_matrix.rds",sep = "") , "\n")
   Matrix::writeMM(Matrix::Matrix(matrixData), file = paste(output_folder,"/unfiltered_feature_matrix.mtx",sep = ""))
   
+  # Check if organism is pre-recognized and if so then use the package's annotation files
+  if (organism %in% c("hg19", "hg38", "mm10")) {
+    cat(organism, "is a recognized organism. Using annotation files in repository.\n")
+    anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
+    promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed"))
+    tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed"))
+    enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed"))
+  }
+  else if (!all(file.exists(c(promoters_file, tss_file, enhs_file)))) {
+    stop("One of the annotation files could not be located. Please make sure their paths are valid.")
+  }
+  
   # generate qc_per_bc_file
   sc_atac_create_qc_per_bc_file(inbam = insortedbam, 
-                                frags_file = here("scPipe-atac-output", "fragments.bed"),
-                                peaks_file = here("scPipe-atac-output", "NA_peaks.narrowPeak"),
-                                promoters_file = here("inst", "extdata", "annotations", "hg38_promoter.bed"),
-                                tss_file = here("inst", "extdata", "annotations", "hg38_tss.bed"),
-                                enhs_file = here("inst", "extdata", "annotations", "hg38_enhancer.bed"),
+                                frags_file = file.path(output_folder, "fragments.bed"),
+                                peaks_file = file.path(output_folder, "NA_peaks.narrowPeak"),
+                                promoters_file = promoters_file,
+                                tss_file = tss_file,
+                                enhs_file = enhs_file,
                                 output_folder = output_folder)
   
-  qc_per_bc_file <- here("scPipe-atac-output", "qc_per_bc_file.txt")
+  qc_per_bc_file <- file.path(output_folder, "qc_per_bc_file.txt")
   
   # Cell calling
   matrixData <- sc_atac_cell_calling(mat = matrixData, cell_calling = cell_calling, output_folder = output_folder, genome_size = genome_size, qc_per_bc_file = qc_per_bc_file, lower = NULL)
@@ -459,10 +475,10 @@ sc_atac_feature_counting <- function(
 
   
   # Generate QC plots
-  sc_atac_generate_qc_plots(frags_file = here("scPipe-atac-output", "fragments.bed"),
-                            peaks_file = here("scPipe-atac-output", "NA_peaks.narrowPeak"),
-                            qc_per_bc_file = here("scPipe-atac-output", "qc_per_bc_file.txt"),
-                            output_folder = output_folder)
+  # sc_atac_generate_qc_plots(frags_file = file.path(output_folder, "fragments.bed"),
+  #                           peaks_file = file.path(output_folder, "NA_peaks.narrowPeak"),
+  #                           qc_per_bc_file = file.path(output_folder, "qc_per_bc_file.txt"),
+  #                           output_folder = output_folder)
   
   end_time = Sys.time()
   
@@ -486,7 +502,12 @@ sc_atac_feature_counting <- function(
 #' @param peaks_file
 #' @param output_folder
 #' 
-#' @import ggplot2 grid here kableExtra RColorBrewer data.table
+#' @import ggplot2 
+#' @import grid 
+#' @import here 
+#' @import kableExtra 
+#' @import RColorBrewer 
+#' @import data.table
 #' @export
 #' 
 sc_atac_generate_qc_plots <- function(
@@ -505,7 +526,7 @@ sc_atac_generate_qc_plots <- function(
   sum(bc_stat$total_frags)
   
   # read in called cellular barcodes
-  cell_barcode_file <- here("scPipe-atac-output", "non_empty_barcodes.txt")
+  cell_barcode_file <- file.path(output_folder, "non_empty_barcodes.txt")
   cell_barcodes <- fread(cell_barcode_file, header=F)$V1
   
   qc_sele <- bc_stat[bc %in% cell_barcodes, ]
@@ -731,7 +752,7 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
   }    
   ')
   
-  out.frag.overlap.file = paste0(output_folder, "/qc_per_bc_file.txt")
+  out.frag.overlap.file = file.path(output_folder, "qc_per_bc_file.txt")
   
   frags = fread(frags_file, select=1:4, header = F)
   names(frags) = c('chr', 'start', 'end', 'bc')
