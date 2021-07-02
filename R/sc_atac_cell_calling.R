@@ -42,48 +42,54 @@ sc_atac_cell_calling <- function(mat,
   cat("calling `", cell_calling, "` function for cell calling ... \n")
   
   selected_cells <- NULL
-  if(cell_calling == "emptydrops"){
+  if(cell_calling == "emptydrops") {
     selected_cells <- sc_atac_emptydrops_cell_calling(mat = mat, output_folder = output_folder, lower = lower)
   }
-  else if(cell_calling == 'cellranger'){
+  else if(cell_calling == 'cellranger') {
     selected_cells <- sc_atac_cellranger_cell_calling(mat = mat, genome_size = genome_size, qc_per_bc_file = qc_per_bc_file)
   } 
-  else if(cell_calling == 'filter'){
+  else if(cell_calling == 'filter') {
     selected_cells <- sc_atac_filter_cell_calling(mtx = mat, qc_per_bc_file = qc_per_bc_file)
   } 
+  else if(isFALSE(cell_calling)) {
+    cat("No cell calling method was selected.\n")
+  }
   else { # no legitimate cell calling method chosen, so just return the original matrix
-    cat(cell_calling, " was not an implemented cell calling method\n")
-    return(mat)
+    cat(cell_calling, "was not an implemented cell calling method\n")
   }
   
-  cat("Number of called barcodes: ")
-  cat(length(selected_cells))
-  cat("\n")
-  
-  # Only keep selected cells in matrix
-  out_mat      <- mat[, colnames(mat) %in% selected_cells]
+  out_mat <- mat
   barcodes     <- colnames(out_mat)
   features     <- rownames(out_mat)
-  
-  cat("Number of columns: ")
-  cat(length(barcodes))
-  cat("\n")
-  
-  if (length(barcodes) == 0) {
-    stop("No cells were called...")
+  if (cell_calling %in% c("emptydrops", "cellranger", "filter")) {
+    # Only keep selected cells in matrix
+    out_mat      <- mat[, colnames(mat) %in% selected_cells]
+    barcodes     <- colnames(out_mat)
+    features     <- rownames(out_mat)
+    
+    cat("Number of called barcodes: ")
+    cat(length(selected_cells))
+    cat("\n")
+    cat("Number of columns: ")
+    cat(length(barcodes))
+    cat("\n")
+    if (length(barcodes) == 0) {
+      stop("No cells were called...")
+    }
   }
   
+
+  
   # Store output matrix
-  Matrix::writeMM(Matrix::Matrix(out_mat), file = paste0(output_folder, '/cell_called_matrix.mtx'))
+  Matrix::writeMM(Matrix::Matrix(out_mat), file =file.path(output_folder, 'cell_called_matrix.mtx'))
   cat("cell called and stored in ", output_folder, "\n")
-  write.table(barcodes, file = paste0(output_folder, '/non_empty_barcodes.txt'), sep = '\t',
+  write.table(barcodes, file = file.path(output_folder, 'non_empty_barcodes.txt'), sep = '\t',
               row.names = FALSE, quote = FALSE, col.names = FALSE)
-  write.table(features, file = paste0(output_folder, '/non_empty_features.txt'), sep = '\t',
+  write.table(features, file = file.path(output_folder, 'non_empty_features.txt'), sep = '\t',
               row.names = FALSE, quote = FALSE, col.names = FALSE)
 
   
   return(out_mat)
-  
 }
 
 

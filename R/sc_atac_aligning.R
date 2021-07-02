@@ -100,7 +100,8 @@ sc_atac_aligning <- function (ref,
     readfile1   = readFile1,
     readfile2   = readFile2,
     sortReadsByCoordinates = TRUE,
-    output_file = outbam)
+    output_file = outbam,
+    nthreads = nthreads)
   
   write.csv(align_output_df, file = stats_file, row.names = TRUE, quote = FALSE)
   

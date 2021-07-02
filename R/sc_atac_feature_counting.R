@@ -40,8 +40,8 @@ sc_atac_feature_counting <- function(
   cell_calling   = FALSE, # either c("cellranger", "emptydrops", "filter")
   genome_size    = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
   promoters_file = NULL,
-  tss_file = NULL,
-  enhs_file = NULL,
+  tss_file       = NULL,
+  enhs_file      = NULL,
   bin_size       = NULL, 
   yieldsize      = 1000000,
   mapq           = 30,
@@ -49,7 +49,7 @@ sc_atac_feature_counting <- function(
   excluded_regions_filename = NULL,
   output_folder  = NULL,
   fix_chr        = "none" # should be either one of these: c("none", "excluded_regions", "feature", "both")
-){
+) {
   
   init_time = Sys.time()
   
@@ -469,10 +469,6 @@ sc_atac_feature_counting <- function(
   write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
   
   cat("Performing QC\n")
-  
-  # Generate qc_per_bc_file
-  # Should check that the files are present
-
   
   # Generate QC plots
   # sc_atac_generate_qc_plots(frags_file = file.path(output_folder, "fragments.bed"),

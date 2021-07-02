@@ -6,7 +6,7 @@
 \usage{
 sc_atac_create_report(
   input_folder,
-  output_folder,
+  output_folder = NULL,
   sample_name = NULL,
   organism = NULL,
   feature_type = NULL

@@ -7,9 +7,18 @@
 sc_atac_peak_calling(
   inbam,
   ref = NULL,
-  output_folder = NULL,
-  genome_size = NULL
+  genome_size = NULL,
+  output_folder = NULL
 )
+}
+\arguments{
+\item{inbam}{The input tagged, sorted, duplicate-free input BAM file}
+
+\item{ref}{The reference genome file}
+
+\item{genome_size}{The size of the genome}
+
+\item{output_folder}{The path of the output folder}
 }
 \value{
 

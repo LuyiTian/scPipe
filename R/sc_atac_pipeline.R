@@ -1,4 +1,17 @@
-#' sc_atac_pipeline()
+
+#' @name sc_atac_pipeline
+#' @title A convenient function for running the whole pieline
+#' 
+#' @param r1 The first read fastq file
+#' @param r2 The second read fastq file
+#' @param barcode_fastq The barcode fastq file
+#' @param organism The name of the organism e.g. hg38
+#' @param reference The reference genome file
+#' @param feature_type The feature type (either `genome_bin` or `peak`)
+#' @param remove_duplicates Whether or not to remove duplicates (samtools is required) 
+#' @param samtools_path A custom path of samtools to use for duplicate removal
+#' @param cell_calling The desired cell calling method (either `emptydrops`, `filter`, or `cellranger`)
+#' @param output_folder The path of the output folder
 #'
 #' @return 
 #'
@@ -30,30 +43,30 @@ sc_atac_pipeline <- function(r1,
   r1_name <- get_filename_without_extension(r1, extension_length = 2)
   r2_name <- get_filename_without_extension(r2, extension_length = 2)
 
-  sc_atac_trim_barcode (r1            = r1,
-                        r2            = r2,
-                        bc_file       = barcode_fastq,
-                        rmN           = TRUE,
-                        rmlow         = TRUE,
-                        output_folder = output_folder)
+  # sc_atac_trim_barcode (r1            = r1,
+  #                       r2            = r2,
+  #                       bc_file       = barcode_fastq,
+  #                       rmN           = TRUE,
+  #                       rmlow         = TRUE,
+  #                       output_folder = output_folder)
 
   demux_r1        <- file.path(output_folder, paste0("demux_", r1_name, ".fastq.gz"))
   demux_r2        <- file.path(output_folder, paste0("demux_", r2_name, ".fastq.gz"))
 
   reference       <- reference
-
-  sc_atac_aligning(ref       = reference,
-                   readFile1 = demux_r1,
-                   readFile2 = demux_r2,
-                   nthreads  = 6,
-                   output_folder = output_folder)
+  
+  # sc_atac_aligning(ref       = reference,
+  #                  readFile1 = demux_r1,
+  #                  readFile2 = demux_r2,
+  #                  nthreads  = 12,
+  #                  output_folder = output_folder)
 
   bam_to_tag  <- file.path(output_folder, paste0("demux_", r1_name, "_aligned.bam"))
 
   sc_atac_bam_tagging(inbam         = bam_to_tag,
                       output_folder = output_folder,
                       bam_tags      = list(bc="CB", mb="OX"),
-                      nthreads      =  6)
+                      nthreads      =  12)
 
   sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 

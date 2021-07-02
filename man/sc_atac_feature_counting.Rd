@@ -12,12 +12,15 @@ sc_atac_feature_counting(
   organism = NULL,
   cell_calling = FALSE,
   genome_size = NULL,
+  promoters_file = NULL,
+  tss_file = NULL,
+  enhs_file = NULL,
   bin_size = NULL,
   yieldsize = 1e+06,
   mapq = 30,
   exclude_regions = FALSE,
   excluded_regions_filename = NULL,
-  output_folder = "",
+  output_folder = NULL,
   fix_chr = "none"
 )
 }

@@ -7,7 +7,7 @@
 sc_atac_filter_cell_calling(
   mtx,
   qc_per_bc_file,
-  min_uniq_frags = 100,
+  min_uniq_frags = 0,
   max_uniq_frags = 50000,
   min_frac_peak = 0.05,
   min_frac_tss = 0,

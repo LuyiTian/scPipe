@@ -53,23 +53,40 @@ knitr::kable(trimbarcode_stats,
 # Alignment statistics
 
 ```{r}
-alignment_stats_filename <- file.path(params$input_folder, "scPipe_atac_stats", "/stats_file_align.txt")
-alignment_stats          <- readr::read_csv(alignment_stats_filename, col_names = FALSE) %>% as.data.frame()
+alignment_stats_filename <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_align.txt")
+alignment_stats          <- readr::read_csv(alignment_stats_filename, col_names = FALSE, skip = 1) %>% as.data.frame()
 knitr::kable(alignment_stats, 
              col.names = c('Statistic', 'Value'), 
              caption = "Global alignment statistics") %>%
     kable_styling()
 ```
 
+```{r}
+alignment_stats$count <- alignment_stats$X2 / sum(alignment_stats$X2)
+colnames(alignment_stats)[1] <- "Statistic"
+ggplot2::ggplot(alignment_stats, ggplot2::aes(x=Statistic, y=count, fill=Statistic)) +
+  scale_fill_brewer(palette="Paired") +
+  ggplot2::geom_col() +
+  theme(axis.text.x = element_text(angle = 30,
+                                     hjust = 1)) +
+  ggtitle("Alignment Statistics") +
+  xlab("Statistic") +
+  ylab("Count")
+```
+
+
 ## Alignment statistics per chromosome
 
 ```{r}
 alignment_stats_chrom_filename <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_align_per_chrom.csv")
 alignment_stats_chrom          <- readr::read_csv(alignment_stats_chrom_filename)
-knitr::kable(alignment_stats_chrom, 
-             col.names = c('Chromosome', 'Chrom_length', 'Mapped_reads', "Unmapped_reads"), 
-             caption = "Chromosome level alignment statistics") %>%
-    kable_styling()
+
+# knitr::kable(alignment_stats_chrom, 
+#              col.names = c('Chromosome', 'Chrom_length', 'Mapped_reads', "Unmapped_reads"), 
+#              caption = "Chromosome level alignment statistics") %>%
+#     kable_styling()
+
+DT::datatable(alignment_stats_chrom)
 ```
 
 # Demultiplexing statistics
@@ -91,6 +108,8 @@ filtered$count <- filtered$count / sum(filtered$count)
 ggplot2::ggplot(filtered, ggplot2::aes(x=status, y=count, fill=status)) +
   scale_fill_brewer(palette="Dark2") +
   ggplot2::geom_col() +
+  theme(axis.text.x = element_text(angle = 30,
+                                     hjust = 1)) +
   ggtitle("Demultiplex Statistics") +
   xlab("Status") +
   ylab("Count")
