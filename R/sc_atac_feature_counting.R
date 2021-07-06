@@ -7,26 +7,25 @@
 #' @title generating the feature by cell matrix 
 #' @description feature matrix is created using a given demultiplexed BAM file and 
 #' a selected feature type
-#' @param insorredbam
-#' @param feature_input
-#' @param bam_tags
-#' @param feature_type
-#' @param organism
-#' @param cell_calling
-#' @param genome_size
-#' @param promoters_file
-#' @param tss_file
-#' @param enhs_file
-#' @param bin_size
-#' @param yieldsize
-#' @param mapq
-#' @param exclude_regions
-#' @param exclude_regions_filename
-#' @param output_folder
-#' @param fix_chr
+#' @param insortedbam The input bam
+#' @param feature_input The feature input data
+#' @param bam_tags The BAM tags
+#' @param feature_type The type of feature
+#' @param organism The organism type
+#' @param cell_calling The desired cell calling method
+#' @param genome_size The size of the genome
+#' @param promoters_file The path of the promoter annotation file (if the specified organism isn't recognised)
+#' @param tss_file The path of the tss annotation file (if the specified organism isn't recognised)
+#' @param enhs_file The path of the enhs annotation file (if the specified organism isn't recognised)
+#' @param bin_size The size of the bins
+#' @param yieldsize The yield size
+#' @param mapq The minimum MAPQ score
+#' @param exclude_regions Whether or not the regions should be excluded
+#' @param exclude_regions_filename The filename of the file containing the regionsn to be excluded
+#' @param output_folder The output folder
+#' @param fix_chr Whether chr should be fixed or not
 #' 
 #' @import data.table
-#' @import rtracklayer
 #' 
 #' @export
 #' 
@@ -468,9 +467,10 @@ sc_atac_feature_counting <- function(
   write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
   write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
   
-  cat("Performing QC\n")
   
   # Generate QC plots
+  
+  # cat("Performing QC\n")
   # sc_atac_generate_qc_plots(frags_file = file.path(output_folder, "fragments.bed"),
   #                           peaks_file = file.path(output_folder, "NA_peaks.narrowPeak"),
   #                           qc_per_bc_file = file.path(output_folder, "qc_per_bc_file.txt"),
@@ -493,17 +493,13 @@ sc_atac_feature_counting <- function(
 #' @name sc_atac_generate_qc_plots
 #' @title generating qc plots
 #' @description qc plots are produced using fragment file and peak file for features
-#' @param inbam
-#' @param frags_file
-#' @param peaks_file
-#' @param output_folder
+#' @param inbam The input BAM file
+#' @param frags_file The fragment file
+#' @param peaks_file The peak file 
+#' @param output_folder The path of the output folder
 #' 
 #' @import ggplot2 
 #' @import grid 
-#' @import here 
-#' @import kableExtra 
-#' @import RColorBrewer 
-#' @import data.table
 #' @export
 #' 
 sc_atac_generate_qc_plots <- function(
@@ -594,8 +590,8 @@ sc_atac_generate_qc_plots <- function(
   # --------------------------------------------------------------------
   # PLOT 4 Overlapping with sequence annotated regions
 
-  qc_sele_df = data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 'type' = rep(c('Peaks', 'Tss', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))
-  
+  qc_sele_df = data.table::data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 'type' = rep(c('Peaks', 'Tss', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))
+
   qc_sele_df$type = factor(qc_sele_df$type, levels = c('Peaks', 'Tss', 'Promoter', 'Enhancer', 'Mito'))
   
   ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
@@ -634,12 +630,12 @@ sc_atac_generate_qc_plots <- function(
 #' @name sc_atac_generate_per_ber_pc_file
 #' @title generating a file useful for producing the qc plots
 #' @description uses the peak file and annotation files for features
-#' @param inbam
-#' @param frags_file
-#' @param peaks_file
-#' @param promoters_file
-#' @param tss_file
-#' @param enhs_file
+#' @param inbam The input bam file
+#' @param frags_file The fragment file
+#' @param peaks_file The peak file
+#' @param promoters_file The path of the promoter annotation file 
+#' @param tss_file The path of the tss annotation file 
+#' @param enhs_file The path of the enhs annotation file 
 #' @param output_folder
 #' 
 #' 

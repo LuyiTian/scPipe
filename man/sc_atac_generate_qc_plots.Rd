@@ -12,7 +12,13 @@ sc_atac_generate_qc_plots(
 )
 }
 \arguments{
-\item{output_folder}{}
+\item{frags_file}{The fragment file}
+
+\item{peaks_file}{The peak file}
+
+\item{output_folder}{The path of the output folder}
+
+\item{inbam}{The input BAM file}
 }
 \description{
 qc plots are produced using fragment file and peak file for features

@@ -9,7 +9,9 @@ sc_atac_emptydrops_cell_calling(mat, output_folder, lower = NULL)
 \arguments{
 \item{mat}{The input matrix}
 
-\item{lower}{}
+\item{output_folder}{The path of the output folder}
+
+\item{lower}{Lower}
 }
 \description{
 The empty drops cell calling method

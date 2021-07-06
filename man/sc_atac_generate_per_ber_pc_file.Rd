@@ -16,6 +16,18 @@ sc_atac_create_qc_per_bc_file(
 )
 }
 \arguments{
+\item{inbam}{The input bam file}
+
+\item{frags_file}{The fragment file}
+
+\item{peaks_file}{The peak file}
+
+\item{promoters_file}{The path of the promoter annotation file}
+
+\item{tss_file}{The path of the tss annotation file}
+
+\item{enhs_file}{The path of the enhs annotation file}
+
 \item{output_folder}{}
 }
 \description{

@@ -63,10 +63,10 @@ sc_atac_pipeline <- function(r1,
 
   bam_to_tag  <- file.path(output_folder, paste0("demux_", r1_name, "_aligned.bam"))
 
-  sc_atac_bam_tagging(inbam         = bam_to_tag,
-                      output_folder = output_folder,
-                      bam_tags      = list(bc="CB", mb="OX"),
-                      nthreads      =  12)
+  # sc_atac_bam_tagging(inbam         = bam_to_tag,
+  #                     output_folder = output_folder,
+  #                     bam_tags      = list(bc="CB", mb="OX"),
+  #                     nthreads      =  12)
 
   sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
@@ -113,25 +113,4 @@ sc_atac_pipeline <- function(r1,
   return(sce)
 }
 
-# sce <- sc_atac_pipeline(r1 = here::here("data","testfastq_S1_L001_R1_001.fastq.gz"),
-#                  r2 = here::here("data","testfastq_S1_L001_R3_001.fastq.gz"),
-#                  barcode_fastq = here::here("data","testfastq_S1_L001_R2_001.fastq.gz"),
-#                  organism = "hg38",
-#                  reference = here::here("data", "genome.fa"),
-#                  remove_duplicates = TRUE,
-#                  samtools_path = "/stornext/Home/data/allstaff/y/yang.p/myapps/samtools-1.9/samtools",
-#                  feature_type = "peak",
-#                  cell_calling = "filter",
-#                  output_folder = here::here("output"))
 
-# sce <- sc_atac_pipeline(r1 = "/stornext/General/data/user_managed/grpu_mritchie_1/HaoyuYang/scPipe_workflow/data/pbmc_granulocyte_sorted_3k/atac/pbmc_granulocyte_sorted_3k_S12_L001_R1_001.fastq.gz",
-#                  r2 = "/stornext/General/data/user_managed/grpu_mritchie_1/HaoyuYang/scPipe_workflow/data/pbmc_granulocyte_sorted_3k/atac/pbmc_granulocyte_sorted_3k_S12_L001_R3_001.fastq.gz",
-#                  barcode_fastq = "/stornext/General/data/user_managed/grpu_mritchie_1/HaoyuYang/scPipe_workflow/data/pbmc_granulocyte_sorted_3k/atac/pbmc_granulocyte_sorted_3k_S12_L001_R2_001.fastq.gz",
-#                  organism = "hg38",
-#                  # reference = here::here("data", "genome.fa"),
-#                  reference = "/stornext/General/data/user_managed/grpu_mritchie_1/PhilYang/genome_data/hg38.fa",
-#                  remove_duplicates = TRUE,
-#                  samtools_path = "/stornext/Home/data/allstaff/y/yang.p/myapps/samtools-1.9/samtools",
-#                  feature_type = "peak",
-#                  cell_calling = "filter",
-#                  output_folder = "/stornext/General/data/user_managed/grpu_mritchie_1/PhilYang/pbmc_granulocyte_output")

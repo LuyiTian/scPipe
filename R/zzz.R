@@ -3,8 +3,8 @@
   
   
   # Check if required packages are installed
-  list_of_packages <- c("tools", "tidyr", "locStra", "grid", "dplyr", "Matrix", "ggpubr", "reticulate")
-  bioconductor_packages <- c("BiocParallel", "Rsubread", "rtracklayer", "GenomicAlignments", "GenomicRanges", "GenomicFeatures", "Rsamtools", "SingleCellExperiment")
+  list_of_packages <- c("tools", "tidyr", "locStra", "grid", "dplyr", "Matrix", "ggpubr", "countreg", "flexmix", "kableExtra")
+  bioconductor_packages <- c("BiocParallel", "DropletUtils", "Rsubread", "rtracklayer", "GenomicAlignments", "GenomicRanges", "GenomicFeatures", "Rsamtools", "SingleCellExperiment")
   
   if (!requireNamespace("BiocManager", quietly = TRUE)) 
     install.packages("BiocManager")
@@ -12,6 +12,8 @@
   req_bioc_packages <- bioconductor_packages[!(bioconductor_packages %in% installed.packages()[,"Package"])]
   req_packages <- list_of_packages[!(list_of_packages %in% installed.packages()[,"Package"])]
   
+  if (!requireNamespace("countreg", quietly = TRUE)) 
+    install.packages("countreg", repos="http://R-Forge.R-project.org")
   if(length(req_bioc_packages)) BiocManager::install(req_bioc_packages)
   if(length(req_packages)) install.packages(req_packages, repo="http://cran.rstudio.com/")
   

@@ -25,7 +25,39 @@ sc_atac_feature_counting(
 )
 }
 \arguments{
-\item{fix_chr}{}
+\item{insortedbam}{The input bam}
+
+\item{feature_input}{The feature input data}
+
+\item{bam_tags}{The BAM tags}
+
+\item{feature_type}{The type of feature}
+
+\item{organism}{The organism type}
+
+\item{cell_calling}{The desired cell calling method}
+
+\item{genome_size}{The size of the genome}
+
+\item{promoters_file}{The path of the promoter annotation file (if the specified organism isn't recognised)}
+
+\item{tss_file}{The path of the tss annotation file (if the specified organism isn't recognised)}
+
+\item{enhs_file}{The path of the enhs annotation file (if the specified organism isn't recognised)}
+
+\item{bin_size}{The size of the bins}
+
+\item{yieldsize}{The yield size}
+
+\item{mapq}{The minimum MAPQ score}
+
+\item{exclude_regions}{Whether or not the regions should be excluded}
+
+\item{output_folder}{The output folder}
+
+\item{fix_chr}{Whether chr should be fixed or not}
+
+\item{exclude_regions_filename}{The filename of the file containing the regionsn to be excluded}
 }
 \description{
 feature matrix is created using a given demultiplexed BAM file and 

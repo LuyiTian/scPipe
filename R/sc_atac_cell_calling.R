@@ -178,9 +178,6 @@ sc_atac_cell_calling <- function(mat,
 #' @param genome_size The size of the genome
 #' 
 #' @import data.table 
-#' @import Matrix 
-#' @import flexmix 
-#' @import countreg
 #' 
 #' @export
 #' 
@@ -270,10 +267,10 @@ sc_atac_filter_cell_calling <- function(
 #' @description The empty drops cell calling method
 #' 
 #' @param mat The input matrix
-#' @param output_folder
-#' @param lower
+#' @param output_folder The path of the output folder
+#' @param lower Lower
 #'
-#' @import DropletUtils data.table Matrix
+#' @import data.table
 #' 
 #' @export
 #' 
