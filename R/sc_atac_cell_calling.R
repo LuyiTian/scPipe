@@ -6,14 +6,14 @@
 #' @title identifying true vs empty cells
 #' @description the methods to call true cells are of various ways. \code{emptyDrops} function from 
 #' \code{DropletUtils} package is one of them that is fully implemented here. There are two more that we anticipate to 
-#' implement (i.e. \code{filtering} from \core{scATACSeq-Pro} and \code{cellranger approach}).
+#' implement (i.e. \code{filtering} from \code{scATAC-Pro} and \code{cellranger approach}).
 #' @param mat the feature by cell matrix. 
 #' @param cell_calling the cell calling approach, possible options are "emptydrops" , "cellranger" and "filter".
 #' @param output_folder output directory for the cell called matrix.
 #' @param frag_file the fragment file generated from the alignment data file. \code{sc_atac_create_fragments()} can be
 #' used to generate the fragment file.
 #' @param genome_size genome size for the data in feature by cell matrix.
-#' @param qc_per_bc_file quality per barcode file for the barcodes in the matrix if using the \code{celranger} or \code{filter} options.
+#' @param qc_per_bc_file quality per barcode file for the barcodes in the matrix if using the \code{cellranger} or \code{filter} options.
 #' @param lower the lower threshold for the data if using the \code{emptydrops} function for cell calling.
 #' @return 
 #'
@@ -177,8 +177,6 @@ sc_atac_cell_calling <- function(mat,
 #' @param qc_per_bc_file A file containing qc statistics for each cell
 #' @param genome_size The size of the genome
 #' 
-#' @import data.table 
-#' 
 #' @export
 #' 
 sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
@@ -231,9 +229,6 @@ sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
 #' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial
 #' 
-#' @import data.table 
-#' @import Matrix
-#' 
 #' @export
 #' 
 sc_atac_filter_cell_calling <- function(
@@ -249,7 +244,7 @@ sc_atac_filter_cell_calling <- function(
   
   # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/filter_barcodes.R
   
-  qc_bc_stat <- fread(qc_per_bc_file)
+  qc_bc_stat <- data.table::fread(qc_per_bc_file)
 
   qc_sele <- qc_bc_stat[total_frags >= min_uniq_frags & total_frags <= max_uniq_frags &
                          frac_mito <= max_frac_mito &
@@ -269,8 +264,6 @@ sc_atac_filter_cell_calling <- function(
 #' @param mat The input matrix
 #' @param output_folder The path of the output folder
 #' @param lower Lower
-#'
-#' @import data.table
 #' 
 #' @export
 #' 
@@ -282,7 +275,7 @@ sc_atac_emptydrops_cell_calling <- function(
   set.seed(2019)
   
   # generating the knee plot
-  my.counts <- Matrix(mat)
+  my.counts <- Matrix::Matrix(mat)
   br.out    <- DropletUtils::barcodeRanks(my.counts)
   
   # Making a plot

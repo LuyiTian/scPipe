@@ -55,7 +55,7 @@
       },
       
       warning = function(w) {
-        packageStartupMessage("samtools was not located. Please make sure it is installed and in path to run sc_atac_remove_duplicates()")
+        packageStartupMessage("samtools was not located. Please specify the path of it when running sc_atac_remove_duplicates()")
       }
     )
   }

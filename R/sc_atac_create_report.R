@@ -45,7 +45,7 @@ sc_atac_create_report <- function(input_folder,
   }
   
   rmarkdown::render(
-    input  = here::here("R", "rmd_report_skeleton.Rmd"),
+    input  = system.file("R/rmd_report_skeleton.Rmd", package = "scPipe", mustWork = TRUE),
     params = list(
       input_folder = input_folder,
       organism = organism

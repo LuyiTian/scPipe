@@ -19,7 +19,6 @@
 #'
 #' @export
 #' 
-#' @importFrom reticulate import
 #' @importFrom basilisk basiliskStart basiliskStop
 sc_atac_peak_calling <- function(inbam, 
                                  ref = NULL, 

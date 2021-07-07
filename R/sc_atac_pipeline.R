@@ -43,30 +43,30 @@ sc_atac_pipeline <- function(r1,
   r1_name <- get_filename_without_extension(r1, extension_length = 2)
   r2_name <- get_filename_without_extension(r2, extension_length = 2)
 
-  # sc_atac_trim_barcode (r1            = r1,
-  #                       r2            = r2,
-  #                       bc_file       = barcode_fastq,
-  #                       rmN           = TRUE,
-  #                       rmlow         = TRUE,
-  #                       output_folder = output_folder)
+  sc_atac_trim_barcode (r1            = r1,
+                        r2            = r2,
+                        bc_file       = barcode_fastq,
+                        rmN           = TRUE,
+                        rmlow         = TRUE,
+                        output_folder = output_folder)
 
   demux_r1        <- file.path(output_folder, paste0("demux_", r1_name, ".fastq.gz"))
   demux_r2        <- file.path(output_folder, paste0("demux_", r2_name, ".fastq.gz"))
 
   reference       <- reference
   
-  # sc_atac_aligning(ref       = reference,
-  #                  readFile1 = demux_r1,
-  #                  readFile2 = demux_r2,
-  #                  nthreads  = 12,
-  #                  output_folder = output_folder)
+  sc_atac_aligning(ref       = reference,
+                   readFile1 = demux_r1,
+                   readFile2 = demux_r2,
+                   nthreads  = 12,
+                   output_folder = output_folder)
 
   bam_to_tag  <- file.path(output_folder, paste0("demux_", r1_name, "_aligned.bam"))
 
-  # sc_atac_bam_tagging(inbam         = bam_to_tag,
-  #                     output_folder = output_folder,
-  #                     bam_tags      = list(bc="CB", mb="OX"),
-  #                     nthreads      =  12)
+  sc_atac_bam_tagging(inbam         = bam_to_tag,
+                      output_folder = output_folder,
+                      bam_tags      = list(bc="CB", mb="OX"),
+                      nthreads      =  12)
 
   sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
