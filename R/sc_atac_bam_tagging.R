@@ -124,7 +124,7 @@ sc_atac_bam_tagging <- function(inbam,
     file = log_file, append = TRUE)
 
   # generate the logs_and_stats graph and table of mapping_stats_per_barcode
-  generate_table_graph(log_and_stats_folder)
+  # generate_table_graph(log_and_stats_folder)
 
 }
 
