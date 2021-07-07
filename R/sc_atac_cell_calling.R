@@ -10,11 +10,18 @@
 #' @param mat the feature by cell matrix. 
 #' @param cell_calling the cell calling approach, possible options are "emptydrops" , "cellranger" and "filter".
 #' @param output_folder output directory for the cell called matrix.
-#' @param frag_file the fragment file generated from the alignment data file. \code{sc_atac_create_fragments()} can be
-#' used to generate the fragment file.
 #' @param genome_size genome size for the data in feature by cell matrix.
 #' @param qc_per_bc_file quality per barcode file for the barcodes in the matrix if using the \code{cellranger} or \code{filter} options.
+#'
 #' @param lower the lower threshold for the data if using the \code{emptydrops} function for cell calling.
+#' 
+#' @param min_uniq_frags The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param max_uniq_frags The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param min_frac_peak The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)
+#' @param min_frac_tss The minimum proportion of fragments in a cell to overlap with a tss (used for \code{filter} cell calling)
+#' @param min_frac_enhancer The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)
+#' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
+#' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
 #' @return 
 #'
 #' @examples
@@ -22,7 +29,6 @@
 #' sc_atac_cell_calling <- function(mat, 
 #'  cell_calling, 
 #'  output_folder, 
-#'  frag_file      = NULL,
 #'  genome_size    = NULL, 
 #'  qc_per_bc_file = NULL, 
 #'  lower          = NULL)
@@ -34,10 +40,16 @@
 sc_atac_cell_calling <- function(mat, 
                                  cell_calling, 
                                  output_folder, 
-                                 frag_file      = NULL,
                                  genome_size    = NULL, 
                                  qc_per_bc_file = NULL, 
-                                 lower          = NULL){
+                                 lower          = NULL,
+                                 min_uniq_frags = 0,
+                                 max_uniq_frags = 50000,
+                                 min_frac_peak = 0.05,
+                                 min_frac_tss = 0,
+                                 min_frac_enhancer = 0,
+                                 min_frac_promoter = 0,
+                                 max_frac_mito = 0.2){
   
   cat("calling `", cell_calling, "` function for cell calling ... \n")
   
@@ -49,7 +61,15 @@ sc_atac_cell_calling <- function(mat,
     selected_cells <- sc_atac_cellranger_cell_calling(mat = mat, genome_size = genome_size, qc_per_bc_file = qc_per_bc_file)
   } 
   else if(cell_calling == 'filter') {
-    selected_cells <- sc_atac_filter_cell_calling(mtx = mat, qc_per_bc_file = qc_per_bc_file)
+    selected_cells <- sc_atac_filter_cell_calling(mtx = mat, 
+                                                  qc_per_bc_file = qc_per_bc_file,
+                                                  min_uniq_frags = 0,
+                                                  max_uniq_frags = 50000,
+                                                  min_frac_peak = 0.05,
+                                                  min_frac_tss = 0,
+                                                  min_frac_enhancer = 0,
+                                                  min_frac_promoter = 0,
+                                                  max_frac_mito = 0.2)
   } 
   else if(isFALSE(cell_calling)) {
     cat("No cell calling method was selected.\n")
@@ -263,7 +283,7 @@ sc_atac_filter_cell_calling <- function(
 #' 
 #' @param mat The input matrix
 #' @param output_folder The path of the output folder
-#' @param lower Lower
+#' @param lower The lower threshold for the data if using the \code{emptydrops} function for cell calling.
 #' 
 #' @export
 #' 

@@ -13,8 +13,6 @@
 #' 
 #' }
 #'
-#' @import data.table
-#'
 #' @export
 #'
 
@@ -45,7 +43,7 @@ sc_atac_create_report <- function(input_folder,
   }
   
   rmarkdown::render(
-    input  = system.file("R/rmd_report_skeleton.Rmd", package = "scPipe", mustWork = TRUE),
+    input  = system.file("inst/extdata/rmd_report_skeleton.Rmd", package = "scPipe", mustWork = TRUE),
     params = list(
       input_folder = input_folder,
       organism = organism

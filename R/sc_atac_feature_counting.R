@@ -25,7 +25,15 @@
 #' @param output_folder The output folder
 #' @param fix_chr Whether chr should be fixed or not
 #' 
-#' @import data.table
+#' @param lower the lower threshold for the data if using the \code{emptydrops} function for cell calling.
+#'
+#' @param min_uniq_frags The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param max_uniq_frags The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param min_frac_peak The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)
+#' @param min_frac_tss The minimum proportion of fragments in a cell to overlap with a tss (used for \code{filter} cell calling)
+#' @param min_frac_enhancer The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)
+#' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
+#' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
 #' 
 #' @export
 #' 
@@ -47,7 +55,15 @@ sc_atac_feature_counting <- function(
   exclude_regions= FALSE, 
   excluded_regions_filename = NULL,
   output_folder  = NULL,
-  fix_chr        = "none" # should be either one of these: c("none", "excluded_regions", "feature", "both")
+  fix_chr        = "none", # should be either one of these: c("none", "excluded_regions", "feature", "both")
+  lower = NULL,
+  min_uniq_frags = 0,
+  max_uniq_frags = 50000,
+  min_frac_peak = 0.05,
+  min_frac_tss = 0,
+  min_frac_enhancer = 0,
+  min_frac_promoter = 0,
+  max_frac_mito = 0.2
 ) {
   
   init_time = Sys.time()
@@ -410,7 +426,19 @@ sc_atac_feature_counting <- function(
   qc_per_bc_file <- file.path(output_folder, "qc_per_bc_file.txt")
   
   # Cell calling
-  matrixData <- sc_atac_cell_calling(mat = matrixData, cell_calling = cell_calling, output_folder = output_folder, genome_size = genome_size, qc_per_bc_file = qc_per_bc_file, lower = NULL)
+  matrixData <- sc_atac_cell_calling(mat = matrixData, 
+                                     cell_calling = cell_calling, 
+                                     output_folder = output_folder, 
+                                     genome_size = genome_size, 
+                                     qc_per_bc_file = qc_per_bc_file, 
+                                     lower = lower,
+                                     min_uniq_frags = min_uniq_frags,
+                                     max_uniq_frags = max_uniq_frags,
+                                     min_frac_peak = min_frac_peak,
+                                     min_frac_tss = min_frac_tss,
+                                     min_frac_enhancer = min_frac_enhancer,
+                                     min_frac_promoter = min_frac_promoter,
+                                     max_frac_mito = max_frac_mito)
   
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
@@ -492,6 +520,17 @@ sc_atac_feature_counting <- function(
 #' @param enhs_file The path of the enhs annotation file 
 #' @param output_folder
 #' 
+#' @param lower the lower threshold for the data if using the \code{emptydrops} function for cell calling.
+#' 
+#' @param min_uniq_frags The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param max_uniq_frags The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param min_frac_peak The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)
+#' @param min_frac_tss The minimum proportion of fragments in a cell to overlap with a tss (used for \code{filter} cell calling)
+#' @param min_frac_enhancer The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)
+#' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
+#' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
+#' 
+#' @importFrom data.table fread setkey copy
 #' 
 #' @export
 #' 
@@ -501,7 +540,15 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
                                           promoters_file,
                                           tss_file,
                                           enhs_file,
-                                          output_folder) {
+                                          output_folder,
+                                          lower = NULL,
+                                          min_uniq_frags = 0,
+                                          max_uniq_frags = 50000,
+                                          min_frac_peak = 0.05,
+                                          min_frac_tss = 0,
+                                          min_frac_enhancer = 0,
+                                          min_frac_promoter = 0,
+                                          max_frac_mito = 0.2) {
   
   
   sourceCpp(code='
