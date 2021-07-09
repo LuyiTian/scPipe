@@ -11,7 +11,7 @@ sc_atac_emptydrops_cell_calling(mat, output_folder, lower = NULL)
 
 \item{output_folder}{The path of the output folder}
 
-\item{lower}{Lower}
+\item{lower}{The lower threshold for the data if using the \code{emptydrops} function for cell calling.}
 }
 \description{
 The empty drops cell calling method

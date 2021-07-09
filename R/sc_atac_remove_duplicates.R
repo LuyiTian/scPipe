@@ -77,8 +77,16 @@ sc_atac_remove_duplicates <- function(inbam, samtools_path = NULL, output_folder
         
         # Note: the output bam file is originally created in the same directory as the input bam file
         
-        # system2(samtools, c("markdup", "-s", "-f", paste(log_and_stats_folder, "duplicate_removal_stats.txt"), "-r", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "markdup.bam", sep="_")))
-        system2(samtools, c("markdup", "-s", "-r", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "markdup.bam", sep="_")))
+        # Check if the version of samtools is 1.10 or greater (to have the stats functionality)
+        version.text <- strsplit(strsplit(system2(samtools, "--version", stdout=TRUE)[1], " ")[[1]][2], "\\.")[[1]]
+        if (as.numeric(version.text[1]) < 1 || (as.numeric(version.text[1]) >= 1 && as.numeric(version.text[2]) < 10)) {
+          cat("Version of samtools isn't greater or equal to 1.10. Can't produce duplicate removal stats file.\n")
+          system2(samtools, c("markdup", "-s", "-r", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "markdup.bam", sep="_")))
+        } else {
+          cat("Detected samtools with version greater or equal to 1.10. Producing duplicate removal stats file.\n")
+          system2(samtools, c("markdup", "-s", "-f", file.path(log_and_stats_folder, "duplicate_removal_stats.txt"), "-r", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "markdup.bam", sep="_")))
+        }
+
         
         Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"))
         

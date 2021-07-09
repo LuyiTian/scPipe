@@ -24,7 +24,6 @@ knitr::opts_chunk$set(echo = FALSE,
 library(data.table)
 library(dplyr)
 library(here)
-library(readr) 
 library(ggplot2)
 library(kableExtra)
 library(RColorBrewer)
@@ -38,23 +37,22 @@ theme_set(theme_bw())
 # Global quality statistics
 
 ```{r}
-# trimbarcode_stats_filename    <- file.path("/stornext/Home/data/allstaff/y/yang.p/repos/final_repos/scPipe/output", "scPipe_atac_stats", "stats_file_trimbarcode.txt")
-trimbarcode_stats_filename    <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_trimbarcode.txt")
-trimbarcode_stats             <- readr::read_csv(trimbarcode_stats_filename, col_names = FALSE) %>% as.data.frame()
+trimbarcode_stats_filename    <- file.path("/stornext/Home/data/allstaff/y/yang.p/repos/final_repos/scPipe/scPipe-atac-output", "scPipe_atac_stats", "stats_file_trimbarcode.txt")
+trimbarcode_stats             <- read.csv(trimbarcode_stats_filename, header=FALSE) %>% as.data.frame()
 trimbarcode_stats             <- stringr::str_replace_all(trimbarcode_stats[,1], "\\: +", "\\,") %>% as.data.frame()
 trimbarcode_stats             <- stringr::str_split_fixed(trimbarcode_stats[,1], ",", n=2) %>% as.data.frame()
 
 knitr::kable(trimbarcode_stats,
              col.names = c('Statistic', 'Value'),
              caption = "Global quality statistics") %>%
-    kable_styling()
+    kableExtra::kable_styling()
 ```
 
 # Alignment statistics
 
 ```{r}
 alignment_stats_filename <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_align.txt")
-alignment_stats          <- readr::read_csv(alignment_stats_filename, col_names = FALSE, skip = 1) %>% as.data.frame()
+alignment_stats          <- read.csv(alignment_stats_filename, header = FALSE, skip = 1) %>% as.data.frame()
 knitr::kable(alignment_stats, 
              col.names = c('Statistic', 'Value'), 
              caption = "Global alignment statistics") %>%
@@ -62,11 +60,11 @@ knitr::kable(alignment_stats,
 ```
 
 ```{r}
-alignment_stats$count <- alignment_stats$X2 / sum(alignment_stats$X2)
+alignment_stats$count <- alignment_stats$V2 / sum(alignment_stats$V2)
 colnames(alignment_stats)[1] <- "Statistic"
-ggplot2::ggplot(alignment_stats, ggplot2::aes(x=Statistic, y=count, fill=Statistic)) +
+ggplot(alignment_stats, aes(x=Statistic, y=count, fill=Statistic)) +
   scale_fill_brewer(palette="Paired") +
-  ggplot2::geom_col() +
+  geom_col() +
   theme(axis.text.x = element_text(angle = 30,
                                      hjust = 1)) +
   ggtitle("Alignment Statistics") +
@@ -79,7 +77,7 @@ ggplot2::ggplot(alignment_stats, ggplot2::aes(x=Statistic, y=count, fill=Statist
 
 ```{r}
 alignment_stats_chrom_filename <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_align_per_chrom.csv")
-alignment_stats_chrom          <- readr::read_csv(alignment_stats_chrom_filename)
+alignment_stats_chrom          <- read.csv(alignment_stats_chrom_filename)
 
 # knitr::kable(alignment_stats_chrom, 
 #              col.names = c('Chromosome', 'Chrom_length', 'Mapped_reads', "Unmapped_reads"), 
@@ -92,7 +90,7 @@ DT::datatable(alignment_stats_chrom)
 # Demultiplexing statistics
 ```{r}
 stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-raw <- readr::read_csv(stats_file)
+raw <- read.csv(stats_file)
 colnames(raw) <- c("barcode", "flag", "type", "reads")
 
 filtered <- aggregate(raw$reads, by=list(type=raw$type), FUN=length)
@@ -105,9 +103,9 @@ DT::datatable(filtered, options=list(paging=FALSE, searching=FALSE))
 
 ```{r demux-stats-graph, fig.wide = TRUE, fig.asp = 0.9}
 filtered$count <- filtered$count / sum(filtered$count)
-ggplot2::ggplot(filtered, ggplot2::aes(x=status, y=count, fill=status)) +
+ggplot(filtered, aes(x=status, y=count, fill=status)) +
   scale_fill_brewer(palette="Dark2") +
-  ggplot2::geom_col() +
+  geom_col() +
   theme(axis.text.x = element_text(angle = 30,
                                      hjust = 1)) +
   ggtitle("Demultiplex Statistics") +
@@ -121,7 +119,7 @@ A bar plot showing the distribution of read counts across a random sample of 100
 ```{r barcode-counts-dist, fig.wide = TRUE, fig.asp = 0.9}
 
 n_reads_barcode_filename    <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-number_of_reads_per_barcode <- readr::read_csv(n_reads_barcode_filename)
+number_of_reads_per_barcode <- read.csv(n_reads_barcode_filename)
 
 number_of_reads_per_barcode <- number_of_reads_per_barcode %>% 
   dplyr::select(barcode, number_of_reads) %>%
@@ -131,7 +129,7 @@ number_of_reads_per_barcode <- number_of_reads_per_barcode %>%
 
 number_of_reads_per_barcode$log2_number_of_reads <- log2(number_of_reads_per_barcode$number_of_reads)
 
-ggplot2::ggplot(number_of_reads_per_barcode, 
+ggplot(number_of_reads_per_barcode, 
                 aes(x=reorder(barcode, number_of_reads), 
                     y=log2_number_of_reads)) +
   geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") + 
@@ -155,10 +153,25 @@ ggplot2::ggplot(number_of_reads_per_barcode,
 #                     )
 ```
 
+## Duplicate removal statistics 
+
+A table showing the duplicate removal statistics (requires samtools 1.10 or greater).
+```{r}
+
+duplicate_stats.file <- file.path(params$input_folder, "scPipe_atac_stats", "duplicate_removal_stats.txt")
+if (file.exists(duplicate_stats.file)) {
+  duplicate.stats <- read.table(duplicate_stats.file, sep=":", skip=1)
+  DT::datatable(duplicate.stats)
+} else {
+  cat("duplicate_removals_stats.txt couldn't be located in the stats folder. Did you run the duplicate removal function with samtools >= 1.10?\n")
+}
+
+```
+
 # Per cell statistics
 
 ```{r}
-cell_stats    <- readr::read_csv(file.path(params$input_folder, "scPipe_atac_stats", "filtered_stats_per_cell.csv"))
+cell_stats    <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "filtered_stats_per_cell.csv"))
 ```
 
 <!-- Figures \@ref(fig:percell-counts) and \@ref(fig:percell-features) -->
@@ -209,7 +222,7 @@ ggpubr::gghistogram(cell_stats,
 
 # Per feature statistics
 ```{r}
-feature_stats <- readr::read_csv(file.path(params$input_folder, "scPipe_atac_stats", "filtered_stats_per_feature.csv"))
+feature_stats <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "filtered_stats_per_feature.csv"))
 ```
 
 ## Counts per feature
@@ -255,6 +268,7 @@ ggpubr::gghistogram(feature_stats,
 
 #hist(log(feature_stats$cells_per_feature+1), main='counts per feature', col='black')
 ```
+
 
 ## Counts vs. features per cell
 

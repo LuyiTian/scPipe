@@ -87,6 +87,8 @@ sc_atac_cell_calling <- function(mat,
     barcodes     <- colnames(out_mat)
     features     <- rownames(out_mat)
     
+    print(dim(out_mat))
+    
     cat("Number of called barcodes: ")
     cat(length(selected_cells))
     cat("\n")
@@ -216,7 +218,12 @@ sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
   # fit two NB mixture model & using signal to noisy ratio to select cells
   n_in_peak <- Matrix::colSums(mat)
   n_in_peak <- n_in_peak[names(n_in_peak) %in% qc_sele_bc$bc]
-  fm0 <- flexmix::flexmix(n_in_peak ~ 1, k = 2, model = countreg::FLXMRnegbin())
+  
+  # Need coutnreg for FLXMRnegbin
+  if (!requireNamespace("countreg", quietly = TRUE)) 
+      install.packages("countreg", repos="http://R-Forge.R-project.org")
+
+    fm0 <- flexmix::flexmix(n_in_peak ~ 1, k = 2, model = countreg::FLXMRnegbin())
   prob1 <- flexmix::posterior(fm0)[, 1]
   prob2 <- flexmix::posterior(fm0)[, 2]
   mus <- flexmix::parameters(fm0)[1, ]

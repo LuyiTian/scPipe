@@ -55,7 +55,9 @@ get_filename_without_extension <- function(path, extension_length = 1) {
 
 r1_name <- get_filename_without_extension(r1, extension_length = 2)
 r2_name <- get_filename_without_extension(r2, extension_length = 2)
-  
+
+reference       <- here::here("data", "genome.fa")
+
 # barcodes in fastq format
 barcode_fastq      <- here::here("data","testfastq_S1_L001_R2_001.fastq.gz") 
 
@@ -111,7 +113,7 @@ Next, we align reads to the genome. This example uses `Rsubread` but any aligner
 demux_r1        <- file.path(output_folder, paste0("demux_", r1_name, ".fastq.gz"))
 demux_r2        <- file.path(output_folder, paste0("demux_", r2_name, ".fastq.gz"))
 
-reference       <- here::here("data", "genome.fa")
+
 
 sc_atac_aligning(ref       = reference, 
                  readFile1 = demux_r1, 
@@ -141,7 +143,7 @@ Next, PCR duplicate reads are removed from the BAM file. If `samtools` is instal
 sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
 sc_atac_remove_duplicates(sorted_tagged_bam,
-                          samtools_path = "/stornext/Home/data/allstaff/y/yang.p/myapps/samtools-1.9/samtools",
+                          samtools_path = "/stornext/System/data/apps/samtools/samtools-1.12/bin/samtools",
                           output_folder = output_folder)
 
 sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
@@ -165,6 +167,7 @@ sc_atac_create_fragments(inbam = sorted_tagged_bam,
 Similar to many other tools, the the ability to call peaks on a pseudo-bulk level on the demultiplexed reads has also been incorporated. `MACS3` is used underneath to achieve this functionality. If the genome size is not provided then it will be roughly estimated.
 
 ```{r}
+# sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 sc_atac_peak_calling(inbam = sorted_tagged_bam, 
                      ref = reference,
                      genome_size = NULL,
@@ -232,7 +235,7 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           bam_tags      = list(bc="CB", mb="OX"), 
                           feature_type  = "peak",
                           organism      = "hg38",
-                          cell_calling  = "filter",
+                          cell_calling  = "cellranger",
                           genome_size   = NULL,
                           bin_size      = NULL, 
                           yieldsize     = 1000000,

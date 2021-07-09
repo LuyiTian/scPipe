@@ -21,7 +21,15 @@ sc_atac_feature_counting(
   exclude_regions = FALSE,
   excluded_regions_filename = NULL,
   output_folder = NULL,
-  fix_chr = "none"
+  fix_chr = "none",
+  lower = NULL,
+  min_uniq_frags = 0,
+  max_uniq_frags = 50000,
+  min_frac_peak = 0.05,
+  min_frac_tss = 0,
+  min_frac_enhancer = 0,
+  min_frac_promoter = 0,
+  max_frac_mito = 0.2
 )
 }
 \arguments{
@@ -56,6 +64,22 @@ sc_atac_feature_counting(
 \item{output_folder}{The output folder}
 
 \item{fix_chr}{Whether chr should be fixed or not}
+
+\item{lower}{the lower threshold for the data if using the \code{emptydrops} function for cell calling.}
+
+\item{min_uniq_frags}{The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)}
+
+\item{max_uniq_frags}{The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)}
+
+\item{min_frac_peak}{The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)}
+
+\item{min_frac_tss}{The minimum proportion of fragments in a cell to overlap with a tss (used for \code{filter} cell calling)}
+
+\item{min_frac_enhancer}{The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)}
+
+\item{min_frac_promoter}{The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)}
+
+\item{max_frac_mito}{The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)}
 
 \item{exclude_regions_filename}{The filename of the file containing the regionsn to be excluded}
 }

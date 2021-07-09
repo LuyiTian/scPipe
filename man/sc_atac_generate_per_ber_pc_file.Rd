@@ -12,7 +12,15 @@ sc_atac_create_qc_per_bc_file(
   promoters_file,
   tss_file,
   enhs_file,
-  output_folder
+  output_folder,
+  lower = NULL,
+  min_uniq_frags = 0,
+  max_uniq_frags = 50000,
+  min_frac_peak = 0.05,
+  min_frac_tss = 0,
+  min_frac_enhancer = 0,
+  min_frac_promoter = 0,
+  max_frac_mito = 0.2
 )
 }
 \arguments{
@@ -29,6 +37,22 @@ sc_atac_create_qc_per_bc_file(
 \item{enhs_file}{The path of the enhs annotation file}
 
 \item{output_folder}{}
+
+\item{lower}{the lower threshold for the data if using the \code{emptydrops} function for cell calling.}
+
+\item{min_uniq_frags}{The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)}
+
+\item{max_uniq_frags}{The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)}
+
+\item{min_frac_peak}{The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)}
+
+\item{min_frac_tss}{The minimum proportion of fragments in a cell to overlap with a tss (used for \code{filter} cell calling)}
+
+\item{min_frac_enhancer}{The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)}
+
+\item{min_frac_promoter}{The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)}
+
+\item{max_frac_mito}{The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)}
 }
 \description{
 uses the peak file and annotation files for features

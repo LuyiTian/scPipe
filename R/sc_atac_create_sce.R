@@ -73,14 +73,15 @@ sc_atac_create_sce <- function(input_folder = NULL,
   filtered <- aggregate(raw$reads, by=list(type=raw$type), FUN=length)
   colnames(filtered) <- c("status", "count")
   
+  QC_metrics(sce) <- cell_stats
+  
   demultiplex_info(sce) <- filtered
   
-  QC_metrics(sce) <- cell_stats
   
   if(!is.null(pheno_data)){
     colData(sce) <- cbind(colData(sce), pheno_data[order(rownames(pheno_data)),])
   }
-  
+
   feature_info(sce) <- feature_stats
   saveRDS(sce, file = paste(input_folder,"/scPipe_atac_SCEobject.rds",sep = ""))
 
