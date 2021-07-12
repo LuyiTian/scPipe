@@ -37,7 +37,7 @@ theme_set(theme_bw())
 # Global quality statistics
 
 ```{r}
-trimbarcode_stats_filename    <- file.path("/stornext/Home/data/allstaff/y/yang.p/repos/final_repos/scPipe/scPipe-atac-output", "scPipe_atac_stats", "stats_file_trimbarcode.txt")
+trimbarcode_stats_filename    <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_trimbarcode.txt")
 trimbarcode_stats             <- read.csv(trimbarcode_stats_filename, header=FALSE) %>% as.data.frame()
 trimbarcode_stats             <- stringr::str_replace_all(trimbarcode_stats[,1], "\\: +", "\\,") %>% as.data.frame()
 trimbarcode_stats             <- stringr::str_split_fixed(trimbarcode_stats[,1], ",", n=2) %>% as.data.frame()
