@@ -42,8 +42,12 @@ sc_atac_create_report <- function(input_folder,
     dir.create(output_folder, recursive=TRUE)
   }
   
+  report.file <- system.file("extdata/rmd_report_skeleton.Rmd", package = "scPipe") 
+  if (report.file == "") # Used if installed via the repo
+    report.file <- system.file("inst/extdata/rmd_report_skeleton.Rmd", package = "scPipe", mustWork = TRUE)
+  
   rmarkdown::render(
-    input  = system.file("inst/extdata/rmd_report_skeleton.Rmd", package = "scPipe", mustWork = TRUE),
+    input  = report.file,
     params = list(
       input_folder = input_folder,
       organism = organism

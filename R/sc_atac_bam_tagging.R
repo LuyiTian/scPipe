@@ -94,15 +94,15 @@ sc_atac_bam_tagging <- function(inbam,
       c(73, 133, 89, 121, 165, 181, 101, 117, 153, 185, 69, 137, 77, 141, 99, 147, 83, 163, 67, 131, 115, 179, 81, 161, 97, 145, 65, 129, 113, 177))
 
 
-  bam0 <- scanBam(inbam)
+  bam0 <- Rsamtools::scanBam(inbam)
   barcodes <- substr(bam0[[1]]$qname, 1, bc_length)
 
 
   barcode_info <- tibble(
     barcode = barcodes,
     flag    = bam0[[1]]$flag) %>%
-    left_join(flag_defs, by = "flag") %>%
-    left_join(as.data.frame(table(barcodes)) %>%
+    dplyr::left_join(flag_defs, by = "flag") %>%
+    dplyr::left_join(as.data.frame(table(barcodes)) %>%
                 purrr::set_names(c("barcode", "number_of_reads")),
               by = "barcode")
 

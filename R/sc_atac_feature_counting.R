@@ -442,7 +442,7 @@ sc_atac_feature_counting <- function(
   
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
-  sparseM <- Matrix(matrixData, sparse=TRUE)
+  sparseM <- Matrix::Matrix(matrixData, sparse=TRUE)
   # add dimensions of the sparse matrix if available
   if(cell_calling != FALSE){
     barcodes <- read.table(paste0(output_folder, '/non_empty_barcodes.txt'))$V1
@@ -456,7 +456,7 @@ sc_atac_feature_counting <- function(
   cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
   
   # generate and save jaccard matrix
-  jaccardM <- jaccardMatrix(sparseM)
+  jaccardM <- locStra::jaccardMatrix(sparseM)
   cat("Jaccard matrix generated", "\n")
   saveRDS(jaccardM, file = paste(output_folder,"/jaccard_matrix.rds",sep = ""))
   cat("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")

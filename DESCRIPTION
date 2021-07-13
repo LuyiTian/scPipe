@@ -58,6 +58,7 @@ Imports:
     grid,
     Matrix,
     ggpubr,
+    tibble,
     DropletUtils,
     Biostrings,
     Rsamtools,
