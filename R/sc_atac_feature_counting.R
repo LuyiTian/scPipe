@@ -35,6 +35,10 @@
 #' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
 #' 
+#' @import BiocGenerics
+#' @import dplyr
+#' @import tidyr
+#' 
 #' @export
 #' 
 
@@ -325,7 +329,7 @@ sc_atac_feature_counting <- function(
     
     if(!is.null(excluded_regions_filename)){
       excluded_regions.gr               <- rtracklayer::import(excluded_regions_filename)
-      overlaps_excluded_regions_feature <- findOverlaps(excluded_regions.gr, feature.gr, maxgap = -1L, minoverlap = 0L) # Find overlaps
+      overlaps_excluded_regions_feature <- IRanges::findOverlaps(excluded_regions.gr, feature.gr, maxgap = -1L, minoverlap = 0L) # Find overlaps
       lines_to_remove                   <- as.data.frame(overlaps_excluded_regions_feature)$subjectHits # Lines to remove in feature file
       number_of_lines_to_remove         <- length(lines_to_remove)
       
@@ -372,18 +376,18 @@ sc_atac_feature_counting <- function(
   mcols(yld.gr)[subjectHits(overlaps), "peakEnd"]   <- end(ranges(feature.gr)[queryHits(overlaps)])
   
   #is removing NAs here the right thing to do?
-  overlap.df <- data.frame(yld.gr) %>% dplyr::filter(!is.na(peakStart)) %>% dplyr::select(seqnames, peakStart, peakEnd, CB)
+  overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% select(seqnames, peakStart, peakEnd, CB)
   
   overlap.df <- overlap.df %>% 
-    dplyr::group_by(seqnames, peakStart, peakEnd, CB) %>% 
-    dplyr::summarise(count = n()) %>% 
+    group_by(seqnames, peakStart, peakEnd, CB) %>% 
+    summarise(count = n()) %>% 
     purrr::set_names(c("chromosome","start","end","barcode","count")) %>% 
-    tidyr::unite("chrS", chromosome:start, sep=":") %>%
-    tidyr::unite("feature", chrS:end, sep="-")
+    unite("chrS", chromosome:start, sep=":") %>%
+    unite("feature", chrS:end, sep="-")
   
   matrixData <- overlap.df %>%
-    dplyr::group_by(feature,barcode) %>% 
-    tidyr::spread(barcode, count)
+    group_by(feature,barcode) %>% 
+    spread(barcode, count)
   
   matrixData           <- as.data.frame(matrixData)
   rownames(matrixData) <- matrixData$feature
@@ -452,7 +456,7 @@ sc_atac_feature_counting <- function(
   
   cat("Sparse matrix generated", "\n")
   saveRDS(sparseM, file = paste(output_folder, "/sparse_matrix.rds", sep = ""))
-  writeMM(obj = sparseM, file=paste(output_folder, "/sparse_matrix.mtx", sep =""))
+  Matrix::writeMM(obj = sparseM, file=paste(output_folder, "/sparse_matrix.mtx", sep =""))
   cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
   
   # generate and save jaccard matrix

@@ -1,5 +1,5 @@
 ---
-title: 'scPipe_atac report `r params$organism` scPipe `r package.version("scPipe")`'
+title: 'scPipe_atac report `r params$organism` scPipe `r Biobase::package.version("scPipe")`'
 date: "`r Sys.Date()`"
 output:
   html_document:
