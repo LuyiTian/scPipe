@@ -86,7 +86,7 @@ sc_atac_bam_tagging <- function(inbam,
   }
 
 
-  flag_defs <- tibble(
+  flag_defs <- tibble::tibble(
     type =
       c("one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "both_reads_unmapped", "both_reads_unmapped", "mapped", "mapped", "mapped", "mapped", "mapped_wrong_orientation", "mapped_wrong_orientation", "mapped_wrong_orientation", "mapped_wrong_orientation", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously")
     ,
@@ -98,7 +98,7 @@ sc_atac_bam_tagging <- function(inbam,
   barcodes <- substr(bam0[[1]]$qname, 1, bc_length)
 
 
-  barcode_info <- tibble(
+  barcode_info <- tibble::tibble(
     barcode = barcodes,
     flag    = bam0[[1]]$flag) %>%
     dplyr::left_join(flag_defs, by = "flag") %>%
