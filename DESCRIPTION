@@ -9,7 +9,7 @@ Authors@R: c(person("Luyi", "Tian", role=c("aut", "cre"), email="tian.l@wehi.edu
         person("Shian", "Su", role=c("aut"), email="su.s@wehi.edu.au"), 
         person("Shalin", "Naik", role=c("ctb"), email="naik.s@wehi.edu.au"), 
         person("Shani", "Amarasinghe", role=c("aut"), email="amarasinghe.s@wehi.edu.au"), 
-        person("Oliver", "Voogd", role=c("aut), email="voogd.o@wehi.edu.au"), 
+        person("Oliver", "Voogd", role=c("aut"), email="voogd.o@wehi.edu.au"), 
         person("Phil", "Yang", role=c("aut"), email="yang.p@wehi.edu.au"), 
         person("Matthew", "Ritchie", role=c("ctb"), email="mritchie@wehi.edu.au"))
 biocViews: ImmunoOncology, Software, Sequencing, RNASeq, GeneExpression, SingleCell, Visualization,
