@@ -2,7 +2,7 @@
 % Please edit documentation in R/sc_atac_pipeline.R
 \name{sc_atac_pipeline}
 \alias{sc_atac_pipeline}
-\title{A convenient function for running the whole pieline}
+\title{A convenient function for running the whole pipeline}
 \usage{
 sc_atac_pipeline(
   r1,
@@ -42,7 +42,7 @@ sc_atac_pipeline(
 
 }
 \description{
-A convenient function for running the whole pieline
+A convenient function for running the whole pipeline
 }
 \examples{
 \dontrun{

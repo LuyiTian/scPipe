@@ -3,7 +3,7 @@ Title: pipeline for single cell RNA-seq data analysis
 Date: 2019-10-12
 Version: 1.9.4
 Type: Package
-Maintainer: Luyi Tian <tian.l@wehi.edu.au>
+Maintainer: Phil Yang <yang.p@wehi.edu.au>
 Author: Luyi Tian
 Authors@R: c(person("Luyi", "Tian", role=c("aut", "cre"), email="tian.l@wehi.edu.au"), 
         person("Shian", "Su", role=c("aut"), email="su.s@wehi.edu.au"), 

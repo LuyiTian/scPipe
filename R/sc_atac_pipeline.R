@@ -1,6 +1,6 @@
 
 #' @name sc_atac_pipeline
-#' @title A convenient function for running the whole pieline
+#' @title A convenient function for running the whole pipeline
 #' 
 #' @param r1 The first read fastq file
 #' @param r2 The second read fastq file
@@ -113,4 +113,30 @@ sc_atac_pipeline <- function(r1,
   return(sce)
 }
 
-
+#' @name sc_atac_pipeline_quick_test
+#' @title A quick test for running the pipeline
+#' 
+#' @return 
+#'
+#' @examples
+#' \dontrun{
+#' 
+#' 
+#' }
+#'
+#' @export
+#' 
+sc_atac_pipeline_quick_test <- function() {
+  data.folder <- system.file("data", package = "scPipe", mustWork = TRUE)
+  sce <- sc_atac_pipeline(r1 = file.path(data.folder, "testfastq_S1_L001_R1_001.fastq.gz"),
+                          r2 = file.path(data.folder, "testfastq_S1_L001_R3_001.fastq.gz"),
+                          barcode_fastq = file.path(data.folder, "testfastq_S1_L001_R2_001.fastq.gz"),
+                          organism = "hg38",
+                          reference = file.path(data.folder, "genome.fa"),
+                          remove_duplicates = FALSE,
+                          feature_type = "peak",
+                          cell_calling = "filter",
+                          output_folder = file.path(data.folder, "scPipe-atac-output"))
+  cat("Successfully ran pipeline. Now deleting output folder.\n")
+  system2("rm", file.path(data.folder, "scPipe-atac-output"))
+}

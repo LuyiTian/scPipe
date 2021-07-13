@@ -35,7 +35,7 @@
 #' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
 #' 
-#' @import BiocGenerics
+#' @importFrom BiocGenerics start end which
 #' @import dplyr
 #' @import tidyr
 #' 
