@@ -26,15 +26,14 @@ It is not mandatory to specify an output folder even though it can be specified.
 We begin by loading the library.
 
 ```{r, message=FALSE}
-setwd("/stornext/Home/data/allstaff/y/yang.p/repos/final_repos/scPipe")
-
-devtools::load_all()
-library(here)
-
+library(scPipe)
+data.folder <- system.file("data", package = "scPipe", mustWork = TRUE)
 ```
 
+Specify the output folder
+
 ```{r}
-output_folder <- here::here("scPipe-atac-output")
+output_folder <- file.path(data.folder, "scPipe-atac-output")
 
 ```
 
@@ -44,8 +43,8 @@ To process the data, we need the `fastq` files (both compressed anad uncompresse
 
 ```{r,eval=TRUE}
 # data fastq files
-r1      <- here::here("data","testfastq_S1_L001_R1_001.fastq.gz") 
-r2      <- here::here("data","testfastq_S1_L001_R3_001.fastq.gz") 
+r1      <- file.path(data.folder, "testfastq_S1_L001_R1_001.fastq.gz") 
+r2      <- file.path(data.folder, "testfastq_S1_L001_R3_001.fastq.gz") 
 
 get_filename_without_extension <- function(path, extension_length = 1) {
   vec <- strsplit(basename(path), "\\.")[[1]]
@@ -56,13 +55,13 @@ get_filename_without_extension <- function(path, extension_length = 1) {
 r1_name <- get_filename_without_extension(r1, extension_length = 2)
 r2_name <- get_filename_without_extension(r2, extension_length = 2)
 
-reference       <- here::here("data", "genome.fa")
+reference       <- file.path(data.folder, "genome.fa")
 
 # barcodes in fastq format
-barcode_fastq      <- here::here("data","testfastq_S1_L001_R2_001.fastq.gz") 
+barcode_fastq      <- file.path(data.folder, "testfastq_S1_L001_R2_001.fastq.gz") 
 
 # barcodes in .csv format
-barcode_1000       <- here::here("data", "testfastq_modified_barcode_1000.csv")
+barcode_1000       <- file.path(data.folder, "testfastq_modified_barcode_1000.csv")
 
 ```
 
@@ -143,10 +142,12 @@ Next, PCR duplicate reads are removed from the BAM file. If `samtools` is instal
 sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
 sc_atac_remove_duplicates(sorted_tagged_bam,
-                          samtools_path = "/stornext/System/data/apps/samtools/samtools-1.12/bin/samtools",
                           output_folder = output_folder)
 
 sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
+
+if (!file.exists(sorted_tagged_bam))
+  sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
 ```
 
@@ -167,7 +168,7 @@ sc_atac_create_fragments(inbam = sorted_tagged_bam,
 Similar to many other tools, the the ability to call peaks on a pseudo-bulk level on the demultiplexed reads has also been incorporated. `MACS3` is used underneath to achieve this functionality. If the genome size is not provided then it will be roughly estimated.
 
 ```{r}
-# sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
+sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 sc_atac_peak_calling(inbam = sorted_tagged_bam, 
                      ref = reference,
                      genome_size = NULL,
@@ -205,7 +206,7 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
 If genome_bin approach is selected, following can be used:
 
 ```{r}
-reference <- here::here("data", "genome.fa")
+reference <- file.path(data.folder, "genome.fa")
 
 sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           feature_input = reference,
@@ -267,7 +268,6 @@ dplyr::glimpse(sparseM)
 Easiest way to generate a *SCE* object is to run `sc_atac_create_sce` with the `input_folder` parameter. However, if the default dir name was used for previous steps simply running `sc_atac_create_sce()` would produce a `sce` object in the default location (i.e. `scPipe-atac-output`)
 
 ```{r, eval=FALSE}
-# output_folder <- "/stornext/General/data/ser_managed/grpu_mritchie_1/PhilYang/scPipe_testing/pbmc_granulocyte_output_full_genome"
 sce <- sc_atac_create_sce(input_folder = output_folder,
                    organism     = "hg38",
                    feature_type = "peak",

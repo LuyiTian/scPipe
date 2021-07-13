@@ -4,7 +4,7 @@ author: "Luyi Tian"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{scPipe: flexible data preprocessing pipeline for 3' end scRNA-seq data}
+  %\VignetteIndexEntry{scPipe: a flexible data preprocessing pipeline for 3' end scRNA-seq data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
