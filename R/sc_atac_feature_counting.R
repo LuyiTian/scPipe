@@ -35,7 +35,7 @@
 #' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
 #' 
-#' @importFrom BiocGenerics start end which strand
+#' @importFrom BiocGenerics start end which strand start<- end<-
 #' @import dplyr
 #' @import tidyr
 #' 
@@ -359,7 +359,7 @@ sc_atac_feature_counting <- function(
       file = log_file, append = TRUE)
   
   ############### Overlaps
-  median_feature_overlap <- median(ranges(feature.gr)@width)
+  median_feature_overlap <- median(GenomicAlignments::ranges(feature.gr)@width)
   minoverlap             <- 0.51*median_feature_overlap
   maxgap                 <- 0.51*median_feature_overlap
   
@@ -372,8 +372,8 @@ sc_atac_feature_counting <- function(
   
   # generate the matrix using this overlap results above.
   
-  mcols(yld.gr)[subjectHits(overlaps), "peakStart"] <- start(ranges(feature.gr)[queryHits(overlaps)])
-  mcols(yld.gr)[subjectHits(overlaps), "peakEnd"]   <- end(ranges(feature.gr)[queryHits(overlaps)])
+  mcols(yld.gr)[subjectHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(feature.gr)[queryHits(overlaps)])
+  mcols(yld.gr)[subjectHits(overlaps), "peakEnd"]   <- end(GenomicAlignments::ranges(feature.gr)[queryHits(overlaps)])
   
   #is removing NAs here the right thing to do?
   overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% select(seqnames, peakStart, peakEnd, CB)

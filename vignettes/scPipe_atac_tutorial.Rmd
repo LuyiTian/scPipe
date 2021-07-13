@@ -26,6 +26,7 @@ It is not mandatory to specify an output folder even though it can be specified.
 We begin by loading the library.
 
 ```{r, message=FALSE}
+devtools::load_all()
 library(scPipe)
 data.folder <- system.file("data", package = "scPipe", mustWork = TRUE)
 ```
