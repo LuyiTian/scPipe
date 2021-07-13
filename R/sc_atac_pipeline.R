@@ -128,15 +128,21 @@ sc_atac_pipeline <- function(r1,
 #' 
 sc_atac_pipeline_quick_test <- function() {
   data.folder <- system.file("data", package = "scPipe", mustWork = TRUE)
-  sce <- sc_atac_pipeline(r1 = file.path(data.folder, "testfastq_S1_L001_R1_001.fastq.gz"),
-                          r2 = file.path(data.folder, "testfastq_S1_L001_R3_001.fastq.gz"),
-                          barcode_fastq = file.path(data.folder, "testfastq_S1_L001_R2_001.fastq.gz"),
-                          organism = "hg38",
-                          reference = file.path(data.folder, "genome.fa"),
-                          remove_duplicates = FALSE,
-                          feature_type = "peak",
-                          cell_calling = "filter",
-                          output_folder = file.path(data.folder, "scPipe-atac-output"))
-  cat("Successfully ran pipeline. Now deleting output folder.\n")
-  system2("rm", file.path(data.folder, "scPipe-atac-output"))
+  out <- tryCatch(
+    {
+      sce <- sc_atac_pipeline(r1 = file.path(data.folder, "testfastq_S1_L001_R1_001.fastq.gz"),
+                              r2 = file.path(data.folder, "testfastq_S1_L001_R3_001.fastq.gz"),
+                              barcode_fastq = file.path(data.folder, "testfastq_S1_L001_R2_001.fastq.gz"),
+                              organism = "hg38",
+                              reference = file.path(data.folder, "genome.fa"),
+                              remove_duplicates = FALSE,
+                              feature_type = "peak",
+                              cell_calling = "filter",
+                              output_folder = file.path(data.folder, "scPipe-atac-output"))
+      cat("Successfully ran pipeline.\n")
+    },
+    finally = {
+      system2("rm", c("-rf", file.path(data.folder, "scPipe-atac-output")))
+    }
+  )
 }
