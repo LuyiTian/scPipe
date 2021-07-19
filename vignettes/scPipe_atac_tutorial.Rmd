@@ -35,7 +35,6 @@ Specify the output folder.
 
 ```{r}
 output_folder <- tempdir()
-output_folder <- file.path("/stornext/Home/data/allstaff/y/yang.p/repos/final_repos/scPipe/scPipe-atac-output")
 
 ```
 
