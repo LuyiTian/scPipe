@@ -36,7 +36,7 @@ used to generate the fragment file.}
 \description{
 the methods to call true cells are of various ways. \code{emptyDrops} function from 
 \code{DropletUtils} package is one of them that is fully implemented here. There are two more that we anticipate to 
-implement (i.e. \code{filtering} from \core{scATACSeq-Pro} and \code{cellranger approach}).
+implement (i.e. \code{filtering} from \code{scATACSeq-Pro} and \code{cellranger approach}).
 }
 \examples{
 \dontrun{

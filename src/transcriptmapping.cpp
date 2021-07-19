@@ -160,15 +160,15 @@ void GeneAnnotation::parse_anno_entry(
 )
 {
   const vector<string> fields = split(line, '\t');
-  const vector<string> attributes = split(fields[ATTRIBUTES], ';');
+  const vector<string> attributes = split(fields[AnnotationEnum::ATTRIBUTES], ';');
   
-  string chr_name = fields[SEQID];
+  string chr_name = fields[AnnotationEnum::SEQID];
   const string parent = get_parent(attributes);
-  const string type = fields[TYPE];
+  const string type = fields[AnnotationEnum::TYPE];
   const string ID = get_ID(attributes);
-  const int strand = get_strand(fields[STRAND][0]);
-  const int interval_start = atoi(fields[START].c_str());
-  const int interval_end = atoi(fields[END].c_str());
+  const int strand = get_strand(fields[AnnotationEnum::STRAND][0]);
+  const int interval_start = atoi(fields[AnnotationEnum::START].c_str());
+  const int interval_end = atoi(fields[AnnotationEnum::END].c_str());
   
   if (fix_chrname)
   {
