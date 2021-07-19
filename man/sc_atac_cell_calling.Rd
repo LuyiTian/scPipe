@@ -47,9 +47,6 @@ sc_atac_cell_calling(
 
 \item{max_frac_mito}{The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)}
 }
-\value{
-
-}
 \description{
 the methods to call true cells are of various ways. \code{emptyDrops} function from 
 \code{DropletUtils} package is one of them that is fully implemented here. There are two more that we anticipate to 

@@ -63,7 +63,10 @@ Imports:
     Biostrings,
     Rsamtools,
     purrr,
-    data.table
+    data.table,
+    GenomicAlignments,
+    IRanges, 
+    reticulate
 SystemRequirements: C++11, GNU make
 License: GPL (>= 2)
 Encoding: UTF-8
@@ -77,7 +80,7 @@ Suggests:
     rmarkdown,
     testthat,
     xml2,
-    countreg, 
+    countreg,
     flexmix, 
     kableExtra, 
     RColorBrewer

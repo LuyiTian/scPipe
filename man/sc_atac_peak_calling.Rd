@@ -20,16 +20,6 @@ sc_atac_peak_calling(
 
 \item{output_folder}{The path of the output folder}
 }
-\value{
-
-}
 \description{
 sc_atac_peak_calling()
-}
-\examples{
-\dontrun{
-
-
-}
-
 }

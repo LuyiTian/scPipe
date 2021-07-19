@@ -1,20 +1,22 @@
-#' sc_atac_remove_duplicates()
-#'
-#' @return 
-#'
-#' @examples
-#' \dontrun{
+
+
+#' @name sc_atac_remove_duplicates
+#' @title Removing PCR duplicates using samtools
+#' @description Takes in a BAM file and removes the PCR duplicates using the samtools markdup function. Requires samtools 1.10 or newer. 
 #' 
-#' 
-#' }
+#' @param inbam The tagged, sorted and duplicate-free input BAM file 
+#' @param samtools_path The path of the samtools executable (if a custom installation is to be specified)
+#' @param output_folder The path of the output folder 
 #'
 #' @export
 #' 
 
-sc_atac_remove_duplicates <- function(inbam, samtools_path = NULL, output_folder = ""){
+sc_atac_remove_duplicates <- function(inbam, 
+                                      samtools_path = NULL, 
+                                      output_folder = NULL) {
   
   # Check if samtools is installed
-  samtools.installed <<- TRUE
+  samtools.installed <- TRUE
   
   
   if (!is.null(samtools_path)) {
@@ -31,7 +33,7 @@ sc_atac_remove_duplicates <- function(inbam, samtools_path = NULL, output_folder
     },
     
     warning = function(w) {
-      samtools.installed <<- FALSE
+      samtools.installed <- FALSE
       if (is.null(samtools_path)) {
         message("samtools was not located, so can't remove duplicates. Please make sure it is installed.")
       } else {
@@ -53,7 +55,7 @@ sc_atac_remove_duplicates <- function(inbam, samtools_path = NULL, output_folder
         
         
         # Check if output directory exists
-        if(output_folder == ''){
+        if (is.null(output_folder)) {
           output_folder = file.path(getwd(), "scPipe-atac-output")
         }
         

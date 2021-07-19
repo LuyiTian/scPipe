@@ -2,20 +2,17 @@
 % Please edit documentation in R/sc_atac_remove_duplicates.R
 \name{sc_atac_remove_duplicates}
 \alias{sc_atac_remove_duplicates}
-\title{sc_atac_remove_duplicates()}
+\title{Removing PCR duplicates using samtools}
 \usage{
 sc_atac_remove_duplicates(inbam, samtools_path = NULL, output_folder = "")
 }
-\value{
+\arguments{
+\item{inbam}{The tagged, sorted and duplicate-free input BAM file}
 
+\item{samtools_path}{The path of the samtools executable (if a custom installation is to be specified)}
+
+\item{output_folder}{The path of the output folder}
 }
 \description{
-sc_atac_remove_duplicates()
-}
-\examples{
-\dontrun{
-
-
-}
-
+Takes in a BAM file and removes the PCR duplicates using the samtools markdup function. Requires samtools 1.10 or newer.
 }

@@ -8,15 +8,9 @@
 #' 
 #' @param inbam The tagged, sorted and duplicate-free input BAM file 
 #' @param output_folder The path of the output folder 
-#'
-#' @examples
-#' \dontrun{
-#' 
-#' 
-#' }
+#' @importFrom basilisk basiliskStart basiliskStop basiliskRun
 #'
 #' @export
-#' @importFrom basilisk basiliskStart basiliskStop basiliskRun
 sc_atac_create_fragments <- function(inbam, output_folder = "") {
     # Check if output directory exists
     if(output_folder == ''){

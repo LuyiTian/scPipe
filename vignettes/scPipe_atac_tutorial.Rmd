@@ -26,15 +26,16 @@ It is not mandatory to specify an output folder even though it can be specified.
 We begin by loading the library.
 
 ```{r, message=FALSE}
-devtools::load_all()
 library(scPipe)
-data.folder <- system.file("data", package = "scPipe", mustWork = TRUE)
+data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
+
 ```
 
-Specify the output folder
+Specify the output folder.
 
 ```{r}
-output_folder <- file.path(data.folder, "scPipe-atac-output")
+output_folder <- tempdir()
+output_folder <- file.path("/stornext/Home/data/allstaff/y/yang.p/repos/final_repos/scPipe/scPipe-atac-output")
 
 ```
 
@@ -133,6 +134,9 @@ sc_atac_bam_tagging (inbam         = bam_to_tag,
                      output_folder =  output_folder, 
                      bam_tags      = list(bc="CB", mb="OX"), 
                      nthreads      =  12)
+
+sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
+
 ```
 
 # Remove duplicates
@@ -169,7 +173,6 @@ sc_atac_create_fragments(inbam = sorted_tagged_bam,
 Similar to many other tools, the the ability to call peaks on a pseudo-bulk level on the demultiplexed reads has also been incorporated. `MACS3` is used underneath to achieve this functionality. If the genome size is not provided then it will be roughly estimated.
 
 ```{r}
-sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 sc_atac_peak_calling(inbam = sorted_tagged_bam, 
                      ref = reference,
                      genome_size = NULL,
@@ -184,9 +187,9 @@ After the read alignment and BAM file demultiplexing, a feature set can be used 
 
 Accepted format of the `feature_input` should be either a BED format (i.e. format should have three main columns; chromosome, feature start and feature end, extension of the file is not considered) or a `genome.fasta` file. If using a BED format as the 'feature_input`, the `feature_type` should be either "peak" or "tss". If using a `.fasta` for the `feature_input`, the `feature_type` needs to be defined as `genome_bin`. This `genome.fasta` file will be used within the function to generate a `genome_bin` that defines the array of features. The size of the bins can be set using the `bin_size` parameter (default: 2000). 
 
-```{r,eval=TRUE}
-sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
+```{r,eval=FALSE}
 features          <- file.path(output_folder, "NA_peaks.narrowPeak")
+sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
 sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           feature_input = features, 
@@ -206,7 +209,7 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
 
 If genome_bin approach is selected, following can be used:
 
-```{r}
+```{r,eval=FALSE}
 reference <- file.path(data.folder, "genome.fa")
 
 sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
@@ -228,7 +231,7 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
 
 Call calling is performed on the data prior to finding overlaps. The cell calling methods available are the `emptyDrops` method from \code{DropletUtils}, `filter` which filters the cells based on various QC cutoffs, and `cellranger` which models the signal and noise as a mixture of two negative binomial distributions.
 
-```{r}
+```{r,eval=FALSE}
 sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 features          <- file.path(output_folder, "NA_peaks.narrowPeak")
 

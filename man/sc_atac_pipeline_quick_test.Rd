@@ -6,16 +6,6 @@
 \usage{
 sc_atac_pipeline_quick_test()
 }
-\value{
-
-}
 \description{
 A quick test for running the pipeline
-}
-\examples{
-\dontrun{
-
-
-}
-
 }

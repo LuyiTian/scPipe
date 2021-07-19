@@ -14,10 +14,3 @@ sc_atac_create_fragments(inbam, output_folder = "")
 \description{
 Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
 }
-\examples{
-\dontrun{
-
-
-}
-
-}

@@ -189,7 +189,7 @@ ggpubr::gghistogram(cell_stats,
                     fill = "#D95F02",
                     bins = 10,
                     rug = TRUE,
-                    add = "mean",
+                    # add = "mean",
                     add_density = TRUE
                     )
 
@@ -212,7 +212,7 @@ ggpubr::gghistogram(cell_stats,
                     fill = "#7570B3",
                     bins = 10,
                     rug = TRUE,
-                    add = "mean",
+                    # add = "mean",
                     add_density = TRUE
                     )
 
@@ -239,7 +239,7 @@ ggpubr::gghistogram(feature_stats,
                     fill = "#D95F02",
                     bins = 10,
                     rug = TRUE,
-                    add = "mean",
+                    # add = "mean",
                     add_density = TRUE
                     )
 
@@ -261,7 +261,7 @@ ggpubr::gghistogram(feature_stats,
                     fill = "#7570B3",
                     bins = 10,
                     rug = TRUE,
-                    add = "mean",
+                    # add = "mean",
                     add_density = TRUE
                     )
 
@@ -319,11 +319,14 @@ plot(sort(cell_stats$features_per_cell),
 # Quality control plots
 
 ```{r}
+
+anno.folder <- system.file("extdata/annotations", package = "scPipe", mustWork = TRUE) 
+
 frags_file <- file.path(params$input_folder, "fragments.bed")
 peaks_file <- file.path(params$input_folder, "NA_peaks.narrowPeak")
-promoters_file <- here::here("inst", "extdata", "annotations", "hg38_promoter.bed")
-tss_file <- here::here("inst", "extdata", "annotations", "hg38_tss.bed")
-enhs_file <- here::here("inst", "extdata", "annotations", "hg38_enhancer.bed")
+promoters_file <- file.path(anno.folder, "hg38_promoter.bed")
+tss_file <- file.path(anno.folder, "hg38_tss.bed")
+enhs_file <- file.path(anno.folder, "hg38_enhancer.bed")
 qc_per_bc_file <- file.path(params$input_folder, "qc_per_bc_file.txt")
 
 frags <- fread(frags_file)

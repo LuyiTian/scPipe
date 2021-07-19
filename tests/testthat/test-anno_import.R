@@ -34,7 +34,7 @@ test_that("Errors are properly reported", {
     anno <- rtracklayer::import(system.file("extdata", "ensembl_y_tiny.gtf.gz", package = "scPipe"))
 
     anno_missing_gene_id <- anno
-    mcols(anno_missing_gene_id) <- subset(mcols(anno_missing_gene_id), select = -gene_id) # delete gene_id column
+    GenomicRanges::mcols(anno_missing_gene_id) <- subset(GenomicRanges::mcols(anno_missing_gene_id), select = -gene_id) # delete gene_id column
     expect_error(anno_to_saf(anno_missing_gene_id), "'gene_id' column missing from GRanges metadata and could not be inferred")
 })
 

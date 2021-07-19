@@ -1,17 +1,12 @@
-#' sc_atac_create_report()
+#' @name sc_atac_create_report
+#' @title HTML report generation
+#' @description Generates a HTML report using the output folder produced by the pipeline
 #'
-#' @return 
-#'
-#' @examples
-#' sc_atac_create_report(log_and_stats_folder = here::here("out/test_out_bam/log_and_stats/"))
-# 
-#  sc_atac_create_report(
-#    log_and_stats_folder = here::here("out/test_out_bam/log_and_stats/"),
-#    output_folder = here::here("out/test_out_bam/log_and_stats/"))
-#' \dontrun{
-#' 
-#' 
-#' }
+#' @param input_folder The path of the folder produced by the pipeline
+#' @param output_folder The path of the output folder to store the HTML report in
+#' @param sample_name A string indicating the name of the sample
+#' @param organism A string indicating the name of the organism being analysed
+#' @param feature_type A string indicating the type of the feature (`genome_bin` or `peak`)
 #'
 #' @export
 #'
@@ -55,11 +50,3 @@ sc_atac_create_report <- function(input_folder,
     output_file = file.path(output_folder, "scPipe_atac_report.html")  
   )
 }
-
-# # Example:
-# 
-# sc_atac_create_report(log_and_stats_folder = here::here("out/test_out_bam/log_and_stats/"))
-# 
-# sc_atac_create_report(
-#   log_and_stats_folder = here::here("out/test_out_bam/log_and_stats/"),
-#   output_folder = here::here("out/test_out_bam/log_and_stats/"))

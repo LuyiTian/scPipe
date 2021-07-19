@@ -3,18 +3,18 @@
 #############################
 
 #' sc_atac_bam_tagging()
-#'
-#' @return
-#'
-#' @examples
-#' \dontrun{
-#'
-#'
-#' }
-#'
+#' @name sc_atac_bam_tagging
+#' @title BAM tagging
+#' @description Demultiplexes the reads
+#' 
+#' @param inbam The input BAM file
+#' @param output_folder The path of the output folder
+#' @param bc_length The length of the cellular barcodes
+#' @param bam_tags The BAM tags
+#' @param nthreads The number of threads
+#' 
 #' @export
-#'
-
+#' 
 sc_atac_bam_tagging <- function(inbam,
                                 output_folder = NULL,
                                 bc_length = NULL,
@@ -108,12 +108,7 @@ sc_atac_bam_tagging <- function(inbam,
 
   barcode_stats_filename <- file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv")
   cat("Saving csv file with barcode stats in", barcode_stats_filename, "\n")
-  write.csv(barcode_info, barcode_stats_filename, row.names = FALSE)
-
-
-  # generate the fragment file for the BAM file
-  # need bedtools v2.26.0 or later
-  # system2("bedtools", c("bamToBed", "i", outsortedbam), "|", "awk", c(-F"#" '{print $1"\t"$2}'), stdout = paste(output_folder,"/fragments.bed",sep = ""))
+  utils::write.csv(barcode_info, barcode_stats_filename, row.names = FALSE)
 
   cat(
     paste0(
@@ -122,35 +117,4 @@ sc_atac_bam_tagging <- function(inbam,
       "\n\n"
     ),
     file = log_file, append = TRUE)
-
-  # generate the logs_and_stats graph and table of mapping_stats_per_barcode
-  # generate_table_graph(log_and_stats_folder)
-
-}
-
-#' importFrom ggplot2 ggplot geom_col aes ggsave
-generate_table_graph <- function(logs_and_stats_folder) {
-  stats_file <- file.path(logs_and_stats_folder, "mapping_stats_per_barcode.csv")
-  raw <- read.csv(stats_file)
-  colnames(raw) <- c("barcode", "flag", "type", "reads")
-
-  filtered <- aggregate(raw$reads, by=list(type=raw$type), FUN=length)
-  colnames(filtered) <- c("status", "count")
-  
-  saveRDS(filtered, paste0(logs_and_stats_folder, "mapping_stats_data.rds"))
-  # can use readRDS(paste0(logs_and_stats_folder, "/mapping_stats_data.rds")) to
-  # to retrive the data
-  #output_table <- datatable(filtered, options=list(paging=FALSE, searching=FALSE))
-  #htmlwidgets::saveWidget(output_table, paste0(logs_and_stats_folder, "/mapping_stats_datatable.html"))
-
-  # generate the ggplot2 graph to save as png
-  filtered$prop <- filtered$count / sum(filtered$count)
-  gg <- ggplot2::ggplot(filtered, ggplot2::aes(x=status, y=prop, fill=status)) +
-    ggplot2::geom_col() +
-    theme(axis.text.x = element_text(angle = 30,
-                                     hjust = 1)) +
-    ggtitle("Demultiplex Statistics") +
-    xlab("Status") +
-    ylab("Count")
-  ggsave("mapping_stats_graph.png", plot=gg, path=logs_and_stats_folder)
 }

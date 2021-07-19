@@ -61,6 +61,8 @@ sc_atac_feature_counting(
 
 \item{exclude_regions}{Whether or not the regions should be excluded}
 
+\item{excluded_regions_filename}{The filename of the file containing the regions to be excluded}
+
 \item{output_folder}{The output folder}
 
 \item{fix_chr}{Whether chr should be fixed or not}
@@ -80,8 +82,6 @@ sc_atac_feature_counting(
 \item{min_frac_promoter}{The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)}
 
 \item{max_frac_mito}{The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)}
-
-\item{exclude_regions_filename}{The filename of the file containing the regionsn to be excluded}
 }
 \description{
 feature matrix is created using a given demultiplexed BAM file and 

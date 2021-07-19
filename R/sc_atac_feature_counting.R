@@ -21,7 +21,7 @@
 #' @param yieldsize The yield size
 #' @param mapq The minimum MAPQ score
 #' @param exclude_regions Whether or not the regions should be excluded
-#' @param exclude_regions_filename The filename of the file containing the regionsn to be excluded
+#' @param excluded_regions_filename The filename of the file containing the regions to be excluded
 #' @param output_folder The output folder
 #' @param fix_chr Whether chr should be fixed or not
 #' 
@@ -35,7 +35,8 @@
 #' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
 #' 
-#' @importFrom BiocGenerics start end which strand start<- end<-
+#' @importFrom BiocGenerics start end which strand start<- end<- as.data.frame
+#' @importFrom rlang .data
 #' @import dplyr
 #' @import tidyr
 #' 
@@ -69,6 +70,8 @@ sc_atac_feature_counting <- function(
   min_frac_promoter = 0,
   max_frac_mito = 0.2
 ) {
+  
+  . <- V1 <- V2 <- V3 <- init <- peakStart <- seqnames <- peakEnd <- CB <- chromosome <- chrS <- feature <- barcode <- NULL
   
   init_time = Sys.time()
   
@@ -155,7 +158,7 @@ sc_atac_feature_counting <- function(
         
         sizes_filename <- system.file(paste0("extdata/annotations/", sizes_filename_aux), package = "scPipe", mustWork = TRUE)
         
-        sizes_df <- read.table(sizes_filename, header = FALSE, col.names = c("V1", "V2"))
+        sizes_df <- utils::read.table(sizes_filename, header = FALSE, col.names = c("V1", "V2"))
         
         sizes_df_aux <- sizes_df %>% 
           dplyr::group_by(V1) %>% 
@@ -188,7 +191,7 @@ sc_atac_feature_counting <- function(
           return(out_df)
         })
         
-        write.table(out_bed, file = out_bed_filename, row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
+        utils::write.table(out_bed, file = out_bed_filename, row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
         
         # Check if file was created
         if(file.exists(out_bed_filename)) {
@@ -220,7 +223,7 @@ sc_atac_feature_counting <- function(
       ) # remove extension and append output folder
       
       # Try to read first 5 rows of feature_input file to see if the format is correct
-      feature_head <- read.table(feature_input, nrows = 5)
+      feature_head <- utils::read.table(feature_input, nrows = 5)
       if(ncol(feature_head) < 3){
         warning("Feature file provided does not contain 3 columns. Cannot append chr")
         break;
@@ -252,7 +255,7 @@ sc_atac_feature_counting <- function(
         ) # remove extension and append output folder
         
         # Try to read first 5 rows of excluded_regions file to see if the format is correct
-        excluded_regions_head <- read.table(excluded_regions_filename, nrows = 5)
+        excluded_regions_head <- utils::read.table(excluded_regions_filename, nrows = 5)
         if(ncol(excluded_regions_head) < 3){
           warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
           break
@@ -359,7 +362,7 @@ sc_atac_feature_counting <- function(
       file = log_file, append = TRUE)
   
   ############### Overlaps
-  median_feature_overlap <- median(GenomicAlignments::ranges(feature.gr)@width)
+  median_feature_overlap <- stats::median(GenomicAlignments::ranges(feature.gr)@width)
   minoverlap             <- 0.51*median_feature_overlap
   maxgap                 <- 0.51*median_feature_overlap
   
@@ -372,8 +375,8 @@ sc_atac_feature_counting <- function(
   
   # generate the matrix using this overlap results above.
   
-  mcols(yld.gr)[subjectHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(feature.gr)[queryHits(overlaps)])
-  mcols(yld.gr)[subjectHits(overlaps), "peakEnd"]   <- end(GenomicAlignments::ranges(feature.gr)[queryHits(overlaps)])
+  GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
+  GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakEnd"]   <- end(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
   
   #is removing NAs here the right thing to do?
   overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% select(seqnames, peakStart, peakEnd, CB)
@@ -386,7 +389,7 @@ sc_atac_feature_counting <- function(
     unite("feature", chrS:end, sep="-")
   
   matrixData <- overlap.df %>%
-    group_by(feature,barcode) %>% 
+    group_by(feature, barcode) %>% 
     spread(barcode, count)
   
   matrixData           <- as.data.frame(matrixData)
@@ -411,8 +414,8 @@ sc_atac_feature_counting <- function(
     cat(organism, "is a recognized organism. Using annotation files in repository.\n")
     anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
     promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed"))
-    tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed"))
-    enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed"))
+    tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed.gz"))
+    enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed.gz"))
   }
   else if (!all(file.exists(c(promoters_file, tss_file, enhs_file)))) {
     stop("One of the annotation files could not be located. Please make sure their paths are valid.")
@@ -449,8 +452,8 @@ sc_atac_feature_counting <- function(
   sparseM <- Matrix::Matrix(matrixData, sparse=TRUE)
   # add dimensions of the sparse matrix if available
   if(cell_calling != FALSE){
-    barcodes <- read.table(paste0(output_folder, '/non_empty_barcodes.txt'))$V1
-    features <- read.table(paste0(output_folder, '/non_empty_features.txt'))$V1
+    barcodes <- utils::read.table(paste0(output_folder, '/non_empty_barcodes.txt'))$V1
+    features <- utils::read.table(paste0(output_folder, '/non_empty_features.txt'))$V1
     dimnames(sparseM) <- list(features, barcodes)
   }
   
@@ -496,8 +499,8 @@ sc_atac_feature_counting <- function(
   
 
 
-  write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
-  write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
+  utils::write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
+  utils::write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
   
   end_time = Sys.time()
   
@@ -513,7 +516,7 @@ sc_atac_feature_counting <- function(
   
 }
   
-#' @name sc_atac_generate_per_ber_pc_file
+#' @name sc_atac_create_per_ber_pc_file
 #' @title generating a file useful for producing the qc plots
 #' @description uses the peak file and annotation files for features
 #' @param inbam The input bam file
@@ -533,8 +536,9 @@ sc_atac_feature_counting <- function(
 #' @param min_frac_enhancer The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)
 #' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
+#' @param output_folder A string indicating the path of the output folder
 #' 
-#' @importFrom data.table fread setkey copy
+#' @importFrom data.table fread setkey copy :=
 #' 
 #' @export
 #' 
@@ -555,99 +559,9 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
                                           max_frac_mito = 0.2) {
   
   
-  sourceCpp(code='
-    #include <Rcpp.h>
-    using namespace Rcpp;
-    // for each read, return 1 if it overlap with any region, otherwise 0;
-    // should sort both reads and regions
-    // [[Rcpp::export]]
-    IntegerVector getOverlaps_read2AnyRegion(DataFrame reads, DataFrame regions) {
-      NumericVector start1 = reads["start"];
-      NumericVector end1 = reads["end"];
-      NumericVector start2 = regions["start"];
-      NumericVector end2 = regions["end"];
-          
-      int n1 = start1.size(), n2 = start2.size();
-      NumericVector midP1(n1), len1(n1), len2(n2), midP2(n2);
-      IntegerVector over1(n1);
-          
-      len1 = (end1 - start1 + 1)/2;
-      midP1 = (end1 + start1)/2;
-          
-      len2 = (end2 - start2 + 1)/2;
-      midP2 = (end2 + start2)/2;
-      int k = 0;
-      for(int i=0; i<n1; i++){
-        over1[i] = 0;
-        for(int j=k; j<n2; j++){
-         if((fabs(midP1[i] - midP2[j]) <= (len1[i]+len2[j]))){
-            over1[i] = 1;
-            k = j;
-            break;
-          }
-        }
-      }
-          
-      return(over1);
-    }
-    
-    // [[Rcpp::export]]
-    NumericVector getOverlaps_read2AllRegion(DataFrame reads, DataFrame regions) {
-      NumericVector start1 = reads["start"];
-      NumericVector end1 = reads["end"];
-          
-      NumericVector start2 = regions["start"];
-      NumericVector end2 = regions["end"];
-          
-      int n1 = start1.size(), n2 = start2.size();
-      NumericVector midP1(n1), len1(n1), len2(n2), midP2(n2);
-      NumericVector over1(n1);
-          
-      len1 = (end1 - start1 + 1)/2;
-      midP1 = (end1 + start1)/2;
-          
-      len2 = (end2 - start2 + 1)/2;
-      midP2 = (end2 + start2)/2;
-      int j = 0;
-      int k = 0;
- 
-      if(start1[0] > end2[n2-1] || end1[n1-1] < start2[0]) {
-          return(over1);
-      }
-      
-      for(int i=0; i<n1; i++){
-        while (k<n2 && fabs(midP1[i] - midP2[k]) > (len1[i]+len2[k])){
-          k++;
-        }
-        // the kth element is the first element overlapped with the current fragment
-        // take advantage of sorted fragments and regions, for next fragment,
-        // it will start searching from kth region
-        j=k;
-        
-        // current frag not overlapped any region then search from beginning
-        if(j >= n2 -1) k = 0, j = 0;  
-        while (j<n2 && fabs(midP1[i] - midP2[j]) <= (len1[i]+len2[j])){
-          over1[i] = over1[i] + 1;
-          j++;
-        }
-      }
-          
-      return(over1);
-    }
+  # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/get_qc_per_barcode.R
   
-  // [[Rcpp::export]]
-  NumericVector getOverlaps_tss2Reads(DataFrame regions, DataFrame left_flank, DataFrame reads) {
-    NumericVector start1 = regions["start"];
-        
-    int n = start1.size();
-    NumericVector over(n), left_over(n);
-    NumericVector tss_enrich_score(n);
-    over = getOverlaps_read2AllRegion(regions, reads);
-    left_over = getOverlaps_read2AllRegion(left_flank, reads);
-    tss_enrich_score = (over+1.0) / (left_over+1.0) ;
-    return(tss_enrich_score);
-  }    
-  ')
+  chr <- .N <- bc <- total_frags <- isMito <- NULL
   
   out.frag.overlap.file <- file.path(output_folder, "qc_per_bc_file.txt")
   
@@ -676,49 +590,10 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
   
   chrs <- unique(frags$chr)
   
-  ## calculate tss enrichment score
-  if(T){
-    set.seed(2021)
-    tss4escore <- copy(tss)
-    if(nrow(tss) > 40000) tss4escore <- tss[sort(sample(1:nrow(tss), 40000))]
-    setkey(tss4escore, chr, start)
-    
-    tss4escore <- unique(tss4escore)
-    tss4escore.left <- copy(tss4escore)
-    tss4escore[, 'start' := start - 50]
-    tss4escore[, 'end' := start + 100]
-    tss4escore.left[, 'start' := start - 1950]
-    tss4escore.left[, 'end' := start + 100]
-    
-    bcs <- unique(frags$bc)
-    escores <- rep(1, length(bcs))
-    names(escores) <- bcs
-    frags4escore <- frags[total_frags >= 1000] ## only caculate tss_escore for selected bc
-    
-    for(bc0 in unique(frags4escore$bc)){
-      frags0 <- frags4escore[bc == bc0]
-      chrs0 <- unique(frags0$chr)
-      tss4escore0 <- tss4escore[chr %in% chrs0]
-      tss4escore0.left <- tss4escore.left[chr %in% chrs0]
-      chrs <- unique(frags0$chr)
-      escores_chrs <- NULL
-      for(chr0 in chrs0){
-        if(nrow(frags0[chr==chr0]) <= 50) next
-        escores_chrs[chr0] <- max(getOverlaps_tss2Reads(tss4escore0[chr==chr0], 
-                                                       tss4escore0.left[chr==chr0],
-                                                       frags0[chr==chr0]))
-      }
-      
-      escores[bc0] <- max(escores_chrs)
-    }
-    escores <- escores + runif(length(escores), 0, 0.1)
-    rm(frags4escore, frags0, tss4escore, tss4escore.left)
-  }
-  
-  
   tss[, 'start' := start - 1000]
   tss[, 'end' := end + 1000]
   fragsInRegion <- NULL
+  
   for(chr0 in chrs){
     peaks0 <- peaks[chr == chr0]
     promoters0 <- promoters[chr == chr0]
@@ -730,25 +605,25 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
     if(nrow(peaks0) == 0){
       frags0[, 'peaks' := 0]
     }else{
-      frags0[, 'peaks' := getOverlaps_read2AnyRegion(frags0, peaks0)]
+      frags0[, 'peaks' := sc_atac_getOverlaps_read2AnyRegion(frags0, peaks0)]
     }
     
     if(nrow(promoters0) == 0){
       frags0[, 'promoters' := 0]
     }else{
-      frags0[, 'promoters' := getOverlaps_read2AnyRegion(frags0, promoters0)]
+      frags0[, 'promoters' := sc_atac_getOverlaps_read2AnyRegion(frags0, promoters0)]
     }
     
     if(nrow(tss0) == 0){
       frags0[, 'tss' := 0]
     }else{
-      frags0[, 'tss' := getOverlaps_read2AnyRegion(frags0, tss0)]
+      frags0[, 'tss' := sc_atac_getOverlaps_read2AnyRegion(frags0, tss0)]
     }
     
     if(nrow(enhs0) == 0){
       frags0[, 'enhs' := 0]
     }else{
-      frags0[, 'enhs' := getOverlaps_read2AnyRegion(frags0, enhs0)]
+      frags0[, 'enhs' := sc_atac_getOverlaps_read2AnyRegion(frags0, enhs0)]
     }
     
     
@@ -771,9 +646,8 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
   fragsInRegion[, 'frac_enhancer' := sum(enhs)/total_frags, by = bc]
   fragsInRegion[, 'enhs' := NULL]
   fragsInRegion <- unique(fragsInRegion)
-  fragsInRegion$tss_enrich_score <- escores[fragsInRegion$bc]
-  
-  write.table(fragsInRegion, file = out.frag.overlap.file, sep = '\t',
+
+  utils::write.table(fragsInRegion, file = out.frag.overlap.file, sep = '\t',
               row.names = F, quote = F)
 }
 

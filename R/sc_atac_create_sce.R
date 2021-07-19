@@ -4,13 +4,11 @@
 
 #' sc_atac_create_sce()
 #'
-#' @return 
-#'
-#' @examples
-#' \dontrun{
-#' 
-#' 
-#' }
+#' @param input_folder The output folder produced by the pipeline
+#' @param organism The type of the organism
+#' @param feature_type The type of the feature
+#' @param pheno_data The pheno data
+#' @param report Whether or not a HTML report should be produced
 #'
 #' @export
 #'
@@ -70,7 +68,7 @@ sc_atac_create_sce <- function(input_folder = NULL,
   raw <- read.csv(stats_file)
   colnames(raw) <- c("barcode", "flag", "type", "reads")
   
-  filtered <- aggregate(raw$reads, by=list(type=raw$type), FUN=length)
+  filtered <- stats::aggregate(raw$reads, by=list(type=raw$type), FUN=length)
   colnames(filtered) <- c("status", "count")
   
   QC_metrics(sce) <- cell_stats

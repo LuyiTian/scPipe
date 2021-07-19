@@ -5,6 +5,14 @@ check_barcode_reads <- function(fastq, barcodeseqs, barcode_start, barcode_lengt
     .Call(`_scPipe_check_barcode_reads`, fastq, barcodeseqs, barcode_start, barcode_length, lines_to_search, threshold)
 }
 
+sc_atac_getOverlaps_read2AnyRegion <- function(reads, regions) {
+    .Call(`_scPipe_sc_atac_getOverlaps_read2AnyRegion`, reads, regions)
+}
+
+sc_atac_getOverlaps_tss2Reads <- function(regions, left_flank, reads) {
+    .Call(`_scPipe_sc_atac_getOverlaps_tss2Reads`, regions, left_flank, reads)
+}
+
 rcpp_sc_trim_barcode_paired <- function(outfq, r1, r2, bs1, bl1, bs2, bl2, us, ul, rmlow, rmN, minq, numbq, write_gz) {
     invisible(.Call(`_scPipe_rcpp_sc_trim_barcode_paired`, outfq, r1, r2, bs1, bl1, bs2, bl2, us, ul, rmlow, rmN, minq, numbq, write_gz))
 }

@@ -5,7 +5,6 @@ Open RStudio
 Load the project
 
 ```r
-library(here)
 devtools::load_all()
 ```
 
@@ -14,23 +13,26 @@ devtools::load_all()
 ## define inputs
 
 ```r
+data.folder <- system.file("data", package = "scPipe", mustWork = TRUE)
+
 # original read files
-r1 <- here("data","testfastq_S1_L001_R1_001.fastq.gz") 
-r2 <- here("data","testfastq_S1_L001_R3_001.fastq.gz") 
+r1 <- file.path(data.folder,"testfastq_S1_L001_R1_001.fastq.gz") 
+r2 <- file.path(data.folder,"testfastq_S1_L001_R3_001.fastq.gz") 
   
 # read files with barcode starting from 1st position
-r1_barcode <- here("data","testfastq_S1_L001_R1_001_withbarcode.fastq.gz") 
-r2_barcode <- here("data","testfastq_S1_L001_R3_001_withbarcode.fastq.gz") 
+r1_barcode <- file.path(data.folder,"testfastq_S1_L001_R1_001_withbarcode.fastq.gz") 
+r2_barcode <- file.path(data.folder,"testfastq_S1_L001_R3_001_withbarcode.fastq.gz") 
 
 # barcodes in fastq format
-barcode_fastq      <- here(
-  "data","testfastq_S1_L001_R2_001.fastq.gz") 
+barcode_fastq      <- file.path(data.folder, "testfastq_S1_L001_R2_001.fastq.gz") 
 
 # barcodes in .csv format
-barcode_csv_sample <- here("data","barcode.csv")
-barcode_csv        <- here("data", "testfastq_modified_barcode.csv") 
-barcode_csv_small  <- here("data", "testfastq_modified_barcode_small.csv") 
-barcode_csv_incorr <- here("data", "testfastq_modified_barcode_corrupt.csv") 
+barcode_csv_sample <- file.path(data.folder,"barcode.csv")
+barcode_csv        <- file.path(data.folder, "testfastq_modified_barcode.csv") 
+barcode_csv_small  <- file.path(data.folder, "testfastq_modified_barcode_small.csv") 
+barcode_csv_incorr <- file.path(data.folder, "testfastq_modified_barcode_corrupt.csv") 
+
+output_folder <- NULL
 
 ```
 ### if using a barcode fastq file 
@@ -39,7 +41,7 @@ barcode_csv_incorr <- here("data", "testfastq_modified_barcode_corrupt.csv")
 sc_atac_trim_barcode (r1            = r1, 
                       r2            = r2, 
                       bc_file       = barcode_fastq, 
-                      output_folder = here("scPipe-atac-output"))
+                      output_folder = output_folder)
 ```
 ### if using a barcode .csv file 
 
@@ -50,7 +52,7 @@ sc_atac_trim_barcode(r1 = r1_barcode,
                      r2 = r2_barcode, 
                      bc_file = barcode_csv_small, 
                      bc_start = 3, bc_length = 16, 
-                     output_folder = here("scPipe-atac-output"), 
+                     output_folder = output_folder, 
                      rmN = FALSE)
 ```
 # Aligning to reference 
@@ -58,9 +60,9 @@ sc_atac_trim_barcode(r1 = r1_barcode,
 ## define inputs
 
 ```r
-reference       <- here("data", "genome.fa")
-demux_r1        <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001.fastq.gz")
-demux_r2        <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R3_001.fastq.gz")
+reference       <- file.path(data.folder, "genome.fa")
+demux_r1        <- file.path(output_folder, "demux_testfastq_S1_L001_R1_001.fastq.gz")
+demux_r2        <- file.path(output_folder, "demux_testfastq_S1_L001_R3_001.fastq.gz")
 ```
 ## run function
 
@@ -68,35 +70,35 @@ demux_r2        <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R3_001.fa
 sc_atac_aligning(ref = reference, 
                  readFile1 = demux_r1, 
                  readFile2 = demux_r2, 
-                 output_folder = here("scPipe-atac-output"),
+                 output_folder = output_folder,
                  nthreads = 6)
 ```
 # Tagging the aligned BAM file
 
 ```r
-bam_to_tag  <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001_aligned.bam")
+bam_to_tag  <- file.path(output_folder, "demux_testfastq_S1_L001_R1_001_aligned.bam")
 
 sc_atac_bam_tagging (inbam         = bam_to_tag, 
-                     output_folder = here("scPipe-atac-output"), 
+                     output_folder = output_folder, 
                      bam_tags      = list(bc="CB", mb="OX"), 
                      nthreads      = 6)
 ```
 
 # Remove PCR duplicates (requires samtools)
 ```r
-sorted_tagged_bam <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam")
+sorted_tagged_bam <- file.path(output_folder, "demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam")
 
 sc_atac_remove_duplicates(inbam         = sorted_tagged_bam,
                           samtools_path = NULL, # can specify custom path here
-                          output_folder = here("scPipe-atac-output"))
+                          output_folder = output_folder)
 
-sorted_tagged_bam <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted_markdup.bam")
+sorted_tagged_bam <- file.path(output_folder, "demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted_markdup.bam")
 ```
 
 # Gemerating a fragment file
 ```r
 sc_atac_create_fragments(inbam = sorted_tagged_bam,
-                         output_folder = here("scPipe-atac-output"))
+                         output_folder = output_folder)
 ```
 
 # Peak calling
@@ -104,14 +106,14 @@ sc_atac_create_fragments(inbam = sorted_tagged_bam,
 sc_atac_peak_calling(inbam = sorted_tagged_bam, 
                      ref = reference,
                      genome_size = NULL,
-                     output_folder = here("scPipe-atac-output"))
+                     output_folder = output_folder)
 ```
 
 # Feature counting
 
 ```r
-sorted_tagged_bam <- here("scPipe-atac-output", "demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam")
-features          <- here("data", "extdata", "NA_peaks.narrowPeak")
+sorted_tagged_bam <- file.path(output_folder, "demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam")
+features          <- file.path(data.folder, "extdata", "NA_peaks.narrowPeak")
 
 sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           feature_input = features, 
@@ -124,7 +126,7 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           yieldsize     = 1000000,
                           mapq          = 30,
                           exclude_regions = TRUE,
-                          output_folder = here("scPipe-atac-output"),
+                          output_folder = output_folder,
                           fix_chr       = "none"
                           )
 ```
@@ -132,7 +134,7 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
 # Generating the *Single-cell Experiment (SCE)* object
 
 ```r
-sce <- sc_atac_create_sce(input_folder = here("scPipe-atac-output"),
+sce <- sc_atac_create_sce(input_folder = output_folder,
                           organism     = "hg38",
                           feature_type = "peak",
                           pheno_data   = NULL,

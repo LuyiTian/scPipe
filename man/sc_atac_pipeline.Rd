@@ -38,16 +38,6 @@ sc_atac_pipeline(
 
 \item{output_folder}{The path of the output folder}
 }
-\value{
-
-}
 \description{
 A convenient function for running the whole pipeline
-}
-\examples{
-\dontrun{
-
-
-}
-
 }

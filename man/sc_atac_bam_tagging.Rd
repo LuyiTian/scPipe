@@ -2,7 +2,7 @@
 % Please edit documentation in R/sc_atac_bam_tagging.R
 \name{sc_atac_bam_tagging}
 \alias{sc_atac_bam_tagging}
-\title{sc_atac_bam_tagging()}
+\title{BAM tagging}
 \usage{
 sc_atac_bam_tagging(
   inbam,
@@ -12,16 +12,20 @@ sc_atac_bam_tagging(
   nthreads = 1
 )
 }
-\value{
+\arguments{
+\item{inbam}{The input BAM file}
 
+\item{output_folder}{The path of the output folder}
+
+\item{bc_length}{The length of the cellular barcodes}
+
+\item{bam_tags}{The BAM tags}
+
+\item{nthreads}{The number of threads}
 }
 \description{
+Demultiplexes the reads
+}
+\details{
 sc_atac_bam_tagging()
-}
-\examples{
-\dontrun{
-
-
-}
-
 }

@@ -21,6 +21,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sc_atac_getOverlaps_read2AnyRegion
+IntegerVector sc_atac_getOverlaps_read2AnyRegion(DataFrame reads, DataFrame regions);
+RcppExport SEXP _scPipe_sc_atac_getOverlaps_read2AnyRegion(SEXP readsSEXP, SEXP regionsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type reads(readsSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type regions(regionsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sc_atac_getOverlaps_read2AnyRegion(reads, regions));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sc_atac_getOverlaps_tss2Reads
+NumericVector sc_atac_getOverlaps_tss2Reads(DataFrame regions, DataFrame left_flank, DataFrame reads);
+RcppExport SEXP _scPipe_sc_atac_getOverlaps_tss2Reads(SEXP regionsSEXP, SEXP left_flankSEXP, SEXP readsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type regions(regionsSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type left_flank(left_flankSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type reads(readsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sc_atac_getOverlaps_tss2Reads(regions, left_flank, reads));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_sc_trim_barcode_paired
 void rcpp_sc_trim_barcode_paired(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::CharacterVector r2, Rcpp::NumericVector bs1, Rcpp::NumericVector bl1, Rcpp::NumericVector bs2, Rcpp::NumericVector bl2, Rcpp::NumericVector us, Rcpp::NumericVector ul, Rcpp::NumericVector rmlow, Rcpp::NumericVector rmN, Rcpp::NumericVector minq, Rcpp::NumericVector numbq, Rcpp::LogicalVector write_gz);
 RcppExport SEXP _scPipe_rcpp_sc_trim_barcode_paired(SEXP outfqSEXP, SEXP r1SEXP, SEXP r2SEXP, SEXP bs1SEXP, SEXP bl1SEXP, SEXP bs2SEXP, SEXP bl2SEXP, SEXP usSEXP, SEXP ulSEXP, SEXP rmlowSEXP, SEXP rmNSEXP, SEXP minqSEXP, SEXP numbqSEXP, SEXP write_gzSEXP) {
@@ -251,6 +276,8 @@ RcppExport SEXP run_testthat_tests(SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_check_barcode_reads", (DL_FUNC) &_scPipe_check_barcode_reads, 6},
+    {"_scPipe_sc_atac_getOverlaps_read2AnyRegion", (DL_FUNC) &_scPipe_sc_atac_getOverlaps_read2AnyRegion, 2},
+    {"_scPipe_sc_atac_getOverlaps_tss2Reads", (DL_FUNC) &_scPipe_sc_atac_getOverlaps_tss2Reads, 3},
     {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 14},
     {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 13},
     {"_scPipe_rcpp_sc_exon_mapping_df_anno", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping_df_anno, 13},

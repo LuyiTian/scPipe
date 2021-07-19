@@ -25,6 +25,7 @@
 #' \code{bc_file} is in a \code{.csv} format.
 #' @param umi_start if available, the start position of the molecular identifier.
 #' @param umi_length if available, the start position of the molecular identifier.  
+#' @param umi_in umi_in
 #' @param rmN logical, whether to remove reads that contains N in UMI or cell barcode.
 #' @param rmlow logical, whether to remove the low quality reads.
 #' @param min_qual the minimum base pair quality that is allowed.

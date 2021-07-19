@@ -9,14 +9,6 @@
 #' @param genome_size The size of the genome
 #' @param output_folder The path of the output folder
 #'
-#' @return 
-#'
-#' @examples
-#' \dontrun{
-#' 
-#' 
-#' }
-#'
 #' @export
 #' 
 #' @importFrom basilisk basiliskStart basiliskStop

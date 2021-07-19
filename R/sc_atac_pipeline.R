@@ -13,14 +13,6 @@
 #' @param cell_calling The desired cell calling method (either `emptydrops`, `filter`, or `cellranger`)
 #' @param output_folder The path of the output folder
 #'
-#' @return 
-#'
-#' @examples
-#' \dontrun{
-#' 
-#' 
-#' }
-#'
 #' @export
 #' 
 sc_atac_pipeline <- function(r1,
@@ -115,19 +107,9 @@ sc_atac_pipeline <- function(r1,
 
 #' @name sc_atac_pipeline_quick_test
 #' @title A quick test for running the pipeline
-#' 
-#' @return 
 #'
-#' @examples
-#' \dontrun{
-#' 
-#' 
-#' }
-#'
-#' @export
-#' 
 sc_atac_pipeline_quick_test <- function() {
-  data.folder <- system.file("data", package = "scPipe", mustWork = TRUE)
+  data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
   out <- tryCatch(
     {
       sce <- sc_atac_pipeline(r1 = file.path(data.folder, "testfastq_S1_L001_R1_001.fastq.gz"),

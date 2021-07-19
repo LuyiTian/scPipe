@@ -333,11 +333,7 @@ setReplaceMethod("gene_id_type",signature="SingleCellExperiment",
 #' @param value Value to be assigned to corresponding object.
 #'
 #' @return A DataFrame of feature information
-#' @author 
-#'
 #' @export
-#'
-#' @examples
 #'
 feature_info.sce <- function(object) {
   if(!("scPipe" %in% names(object@metadata))){
@@ -363,6 +359,7 @@ setMethod("feature_info", signature(object = "SingleCellExperiment"),
 #' @export
 setReplaceMethod("feature_info",signature="SingleCellExperiment",
                  function(object, value) {
+                   feature <- NULL
                    value <- subset(value, select = -c(feature))
                    if (!("scPipe" %in% names(object@metadata))) {
                      object@metadata[["scPipe"]] = list(feature_cols=colnames(value))
@@ -379,11 +376,8 @@ setReplaceMethod("feature_info",signature="SingleCellExperiment",
 #' @param value Value to be assigned to corresponding object.
 #'
 #' @return A string representing the feature type
-#' @author 
-#'
+#' 
 #' @export
-#'
-#' @examples
 #'
 feature_type.sce <- function(object) {
   return(object@metadata$scPipe$feature_type)
