@@ -5,6 +5,10 @@
 
 using namespace Rcpp;
 
+#ifndef INIT_KSEQ
+#define INIT_KSEQ
+KSEQ_INIT(gzFile, gzread)
+#endif
 
 
 bool check_qual(char *qual_s, int trim_n, int thr, int below_thr)
@@ -548,6 +552,9 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         int umi_len
 ) {
     
+    // // get rid of kseq.h warnings
+    // REMOVE_KSEQ_WARNINGS();
+
     std::vector<int> out_vect(4, 0);  // output vector of length 4 filled with zeroes
     
     // Input parameters when rmlow is true

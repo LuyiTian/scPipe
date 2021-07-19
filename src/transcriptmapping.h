@@ -97,6 +97,18 @@ private:
     const unsigned int bin_size = 64;
 };
 
+enum AnnotationEnum {
+    SEQID=0,
+    SOURCE=1,
+    TYPE=2,
+    START=3,
+    END=4,
+    SCORE=5,
+    STRAND=6,
+    PHASE=7,
+    ATTRIBUTES=8
+};
+
 // parse gff3 genome annotation
 class GeneAnnotation
 {
@@ -135,16 +147,16 @@ public:
     friend std::ostream& operator<< (std::ostream& out, const GeneAnnotation& obj);
 
 private:
-    // index variables for gff3 fields
-    const int SEQID      = 0;
-    const int SOURCE     = 1;
-    const int TYPE       = 2;
-    const int START      = 3;
-    const int END        = 4;
-    const int SCORE      = 5;
-    const int STRAND     = 6;
-    const int PHASE      = 7;
-    const int ATTRIBUTES = 8;
+    // // index variables for gff3 fields
+    // const int SEQID      = 0;
+    // const int SOURCE     = 1;
+    // const int TYPE       = 2;
+    // const int START      = 3;
+    // const int END        = 4;
+    // const int SCORE      = 5;
+    // const int STRAND     = 6;
+    // const int PHASE      = 7;
+    // const int ATTRIBUTES = 8;
 
     // get attribute from gff3 standard columns
     std::string get_attribute(const std::vector<std::string> &all_attributes, const std::string &target_attribute);

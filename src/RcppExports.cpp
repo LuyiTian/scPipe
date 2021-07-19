@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // check_barcode_reads
 bool check_barcode_reads(String fastq, String barcodeseqs, int barcode_start, int barcode_length, int lines_to_search, double threshold);
 RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcode_startSEXP, SEXP barcode_lengthSEXP, SEXP lines_to_searchSEXP, SEXP thresholdSEXP) {

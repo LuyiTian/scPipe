@@ -412,7 +412,7 @@ Box plots which show the proportion of fragments in called cells that overlap wi
 ```{r anno-overlap-boxes, fig.wide = TRUE, fig.asp = 0.9}
 qc_sele_df = data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 'type' = rep(c('Peaks', 'Tss', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))
   
-qc_sele_df$type = factor(qc_sele_df$type, levels = c('Peaks', 'Tss', 'Promoter', 'Enhancer', 'Mito'))
+qc_sele_df$type = factor(qc_sele_df$type, levels = c('Peaks', 'TSS', 'Promoter', 'Enhancer', 'Mito'))
 
 ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
   geom_boxplot(outlier.size = 0.01, show.legend = FALSE) + 
