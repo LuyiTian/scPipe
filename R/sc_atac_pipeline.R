@@ -112,15 +112,15 @@ sc_atac_pipeline_quick_test <- function() {
   data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
   out <- tryCatch(
     {
-      sce <- sc_atac_pipeline(r1 = file.path(data.folder, "testfastq_S1_L001_R1_001.fastq.gz"),
-                              r2 = file.path(data.folder, "testfastq_S1_L001_R3_001.fastq.gz"),
-                              barcode_fastq = file.path(data.folder, "testfastq_S1_L001_R2_001.fastq.gz"),
+      sce <- sc_atac_pipeline(r1 = file.path(data.folder, "small_R1.fastq.gz"),
+                              r2 = file.path(data.folder, "small_R3.fastq.gz"),
+                              barcode_fastq = file.path(data.folder, "small_R2.fastq.gz"),
                               organism = "hg38",
                               reference = file.path(data.folder, "genome.fa"),
                               remove_duplicates = FALSE,
                               feature_type = "peak",
                               cell_calling = "filter",
-                              output_folder = file.path(data.folder, "scPipe-atac-output"))
+                              output_folder = file.path(tempdir(), "scPipe-atac-output"))
       cat("Successfully ran pipeline.\n")
     },
     finally = {
