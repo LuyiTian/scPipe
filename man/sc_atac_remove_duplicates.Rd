@@ -4,7 +4,7 @@
 \alias{sc_atac_remove_duplicates}
 \title{Removing PCR duplicates using samtools}
 \usage{
-sc_atac_remove_duplicates(inbam, samtools_path = NULL, output_folder = "")
+sc_atac_remove_duplicates(inbam, samtools_path = NULL, output_folder = NULL)
 }
 \arguments{
 \item{inbam}{The tagged, sorted and duplicate-free input BAM file}

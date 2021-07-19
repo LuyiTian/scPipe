@@ -50,11 +50,7 @@ sc_atac_cell_calling(
 \description{
 the methods to call true cells are of various ways. \code{emptyDrops} function from 
 \code{DropletUtils} package is one of them that is fully implemented here. There are two more that we anticipate to 
-<<<<<<< HEAD
 implement (i.e. \code{filtering} from \code{scATAC-Pro} and \code{cellranger approach}).
-=======
-implement (i.e. \code{filtering} from \code{scATACSeq-Pro} and \code{cellranger approach}).
->>>>>>> 47480e3a5bc52a11a0a8508151ab53fc71c5fedb
 }
 \examples{
 \dontrun{
