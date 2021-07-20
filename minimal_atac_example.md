@@ -68,8 +68,8 @@ demux_r2        <- file.path(output_folder, "demux_testfastq_S1_L001_R3_001.fast
 
 ```r
 sc_atac_aligning(ref = reference, 
-                 readFile1 = demux_r1, 
-                 readFile2 = demux_r2, 
+                 R1 = demux_r1, 
+                 R2 = demux_r2, 
                  output_folder = output_folder,
                  nthreads = 6)
 ```
