@@ -115,7 +115,7 @@ demux_r2        <- file.path(output_folder, paste0("demux_", r2_name, ".fastq.gz
 
 
 
-sc_atac_aligning(ref       = reference, 
+sc_aligning(ref       = reference, 
                  readFile1 = demux_r1, 
                  readFile2 = demux_r2, 
                  nthreads  = 12,
