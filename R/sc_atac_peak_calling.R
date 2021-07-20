@@ -4,19 +4,19 @@
 
 #' sc_atac_peak_calling()
 #'
-#' @return 
-#'
-#' @examples
-#' \dontrun{
-#' 
-#' 
-#' }
+#' @param inbam The input tagged, sorted, duplicate-free input BAM file
+#' @param ref The reference genome file
+#' @param genome_size The size of the genome
+#' @param output_folder The path of the output folder
 #'
 #' @export
 #' 
-#' @importFrom reticulate import
 #' @importFrom basilisk basiliskStart basiliskStop
-sc_atac_peak_calling <- function(inbam, ref = NULL, output_folder = NULL, genome_size = NULL){
+sc_atac_peak_calling <- function(inbam, 
+                                 ref = NULL, 
+                                 genome_size = NULL,
+                                 output_folder = NULL) {
+  
   if (is.null(ref) && is.null(genome_size)) {
     stop("No genome or genome size was specified. Must specify at least one!")
   } else if (is.null(genome_size)) {

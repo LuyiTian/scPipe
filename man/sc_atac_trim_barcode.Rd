@@ -39,6 +39,8 @@ Files ending in \code{.gz} will be automatically compressed.}
 
 \item{umi_length}{if available, the start position of the molecular identifier.}
 
+\item{umi_in}{umi_in}
+
 \item{rmN}{logical, whether to remove reads that contains N in UMI or cell barcode.}
 
 \item{rmlow}{logical, whether to remove the low quality reads.}

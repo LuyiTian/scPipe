@@ -24,10 +24,19 @@ sc_atac_aligning(
 
 \item{readFile2}{the second fastq file, which is required if the data is paired-end}
 
-\item{index_path}{if the Rsubread genome build is available user can enter the path here}
-}
-\value{
+\item{output_folder}{a string indicating the path of the output folder}
 
+\item{output_file}{a string indicating the path of the output file}
+
+\item{input_format}{a string indicating the input format}
+
+\item{output_format}{a string indicating the output format}
+
+\item{index_path}{if the Rsubread genome build is available user can enter the path here}
+
+\item{type}{a string indicating the type of the data ('dna' by default)}
+
+\item{nthreads}{the number of threads to be used}
 }
 \description{
 after we run the \code{sc_atac_trim_barcode} to demultiplex the fastq files, we are using this

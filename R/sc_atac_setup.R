@@ -37,10 +37,10 @@ library("seqinr")
 
 # Set the paths for subsequent usees ------
 # need to change this to work only if the OS is not windows...
-set_paths = function(macs2path,bedToolsPath){
+set_paths = function(macs2path, bedToolsPath){
   
   old_path <- Sys.getenv("PATH")
-  new_path = paste(old_path, macs2Path, sep = ":")
+  new_path = paste(old_path, macs2path, sep = ":")
   new_path = paste(old_path, bedToolsPath, sep = ":")
   
   Sys.setenv(PATH = new_path)
