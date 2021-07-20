@@ -37,6 +37,7 @@ sc_aligning <- function (
   output_file   = NULL,
   input_format  = "FASTQ",
   output_format = "BAM",
+  type          = "dna",
   nthreads      = 1){
   
   
@@ -129,18 +130,22 @@ sc_aligning <- function (
   
   #execute Rsubread align()
   
-  if(!is.null(R2) && !all(file.exists(R2))){ # paired-end
+  if(!is.null(R2) && file.exists(R2)){ # paired-end
     align_output_df <- Rsubread::align(
       index       = indexPath,
       readfile1          = R1,
       readfile2          = R2,
       sortReadsByCoordinates = TRUE,
+      type = type,
+      nthreads = nthreads,
       output_file = outbam)
   } else {                                   # single-end
     align_output_df <- Rsubread::align(
       index       = indexPath,
       readfile1          = R1,
       sortReadsByCoordinates = TRUE,
+      type = type,
+      nthreads = nthreads,
       output_file = outbam)
     
   }

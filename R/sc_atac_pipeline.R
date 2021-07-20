@@ -47,11 +47,11 @@ sc_atac_pipeline <- function(r1,
 
   reference       <- reference
   
-  sc_atac_aligning(ref       = reference,
-                   readFile1 = demux_r1,
-                   readFile2 = demux_r2,
-                   nthreads  = 12,
-                   output_folder = output_folder)
+  sc_aligning(ref = reference,
+              R1 = demux_r1,
+              R2 = demux_r2,
+              nthreads  = 12,
+              output_folder = output_folder)
 
   bam_to_tag  <- file.path(output_folder, paste0("demux_", r1_name, "_aligned.bam"))
 
