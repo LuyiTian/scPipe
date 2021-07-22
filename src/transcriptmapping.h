@@ -39,11 +39,11 @@ public:
         }
         genes.push_back(gene);
         // extend boundaries of bin to fully include bin
-        if (gene.st < start)
+        if ((ull_int) gene.st < start)
         {
             start = gene.st;
         }
-        if (gene.en > end)
+        if ((ull_int) gene.en > end)
         {
             end = gene.en;
         }
@@ -51,7 +51,7 @@ public:
 
     // check if interval overlaps bin
     const bool overlaps(const Interval &it) {
-        return !(start > it.en) && !(end < it.st);
+        return !(start > (ull_int) it.en) && !(end < (ull_int) it.st);
     }
 };
 
