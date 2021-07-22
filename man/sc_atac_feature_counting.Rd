@@ -12,15 +12,76 @@ sc_atac_feature_counting(
   organism = NULL,
   cell_calling = FALSE,
   genome_size = NULL,
-  qc_per_bc_file = NULL,
+  promoters_file = NULL,
+  tss_file = NULL,
+  enhs_file = NULL,
   bin_size = NULL,
   yieldsize = 1e+06,
   mapq = 30,
   exclude_regions = FALSE,
   excluded_regions_filename = NULL,
-  output_folder = "",
-  fix_chr = "none"
+  output_folder = NULL,
+  fix_chr = "none",
+  lower = NULL,
+  min_uniq_frags = 0,
+  max_uniq_frags = 50000,
+  min_frac_peak = 0.05,
+  min_frac_tss = 0,
+  min_frac_enhancer = 0,
+  min_frac_promoter = 0,
+  max_frac_mito = 0.2
 )
+}
+\arguments{
+\item{insortedbam}{The input bam}
+
+\item{feature_input}{The feature input data}
+
+\item{bam_tags}{The BAM tags}
+
+\item{feature_type}{The type of feature}
+
+\item{organism}{The organism type}
+
+\item{cell_calling}{The desired cell calling method}
+
+\item{genome_size}{The size of the genome}
+
+\item{promoters_file}{The path of the promoter annotation file (if the specified organism isn't recognised)}
+
+\item{tss_file}{The path of the tss annotation file (if the specified organism isn't recognised)}
+
+\item{enhs_file}{The path of the enhs annotation file (if the specified organism isn't recognised)}
+
+\item{bin_size}{The size of the bins}
+
+\item{yieldsize}{The yield size}
+
+\item{mapq}{The minimum MAPQ score}
+
+\item{exclude_regions}{Whether or not the regions should be excluded}
+
+\item{excluded_regions_filename}{The filename of the file containing the regions to be excluded}
+
+\item{output_folder}{The output folder}
+
+\item{fix_chr}{Whether chr should be fixed or not}
+
+\item{lower}{the lower threshold for the data if using the \code{emptydrops} function for cell calling.}
+
+\item{min_uniq_frags}{The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)}
+
+\item{max_uniq_frags}{The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)}
+
+\item{min_frac_peak}{The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)}
+
+\item{min_frac_tss}{The minimum proportion of fragments in a cell to overlap with a tss (used for \code{filter} cell calling)}
+
+\item{min_frac_enhancer}{The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)}
+
+\item{min_frac_promoter}{The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)}
+
+\item{max_frac_mito}{The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)}
 }
 \description{
 feature matrix is created using a given demultiplexed BAM file and 

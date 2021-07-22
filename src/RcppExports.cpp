@@ -5,11 +5,6 @@
 
 using namespace Rcpp;
 
-#ifdef RCPP_USE_GLOBAL_ROSTREAM
-Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
-Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
-#endif
-
 // check_barcode_reads
 bool check_barcode_reads(String fastq, String barcodeseqs, int barcode_start, int barcode_length, int lines_to_search, double threshold);
 RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcode_startSEXP, SEXP barcode_lengthSEXP, SEXP lines_to_searchSEXP, SEXP thresholdSEXP) {
@@ -23,6 +18,31 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type lines_to_search(lines_to_searchSEXP);
     Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
     rcpp_result_gen = Rcpp::wrap(check_barcode_reads(fastq, barcodeseqs, barcode_start, barcode_length, lines_to_search, threshold));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sc_atac_getOverlaps_read2AnyRegion
+IntegerVector sc_atac_getOverlaps_read2AnyRegion(DataFrame reads, DataFrame regions);
+RcppExport SEXP _scPipe_sc_atac_getOverlaps_read2AnyRegion(SEXP readsSEXP, SEXP regionsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type reads(readsSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type regions(regionsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sc_atac_getOverlaps_read2AnyRegion(reads, regions));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sc_atac_getOverlaps_tss2Reads
+NumericVector sc_atac_getOverlaps_tss2Reads(DataFrame regions, DataFrame left_flank, DataFrame reads);
+RcppExport SEXP _scPipe_sc_atac_getOverlaps_tss2Reads(SEXP regionsSEXP, SEXP left_flankSEXP, SEXP readsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type regions(regionsSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type left_flank(left_flankSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type reads(readsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sc_atac_getOverlaps_tss2Reads(regions, left_flank, reads));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -256,6 +276,8 @@ RcppExport SEXP run_testthat_tests(SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_check_barcode_reads", (DL_FUNC) &_scPipe_check_barcode_reads, 6},
+    {"_scPipe_sc_atac_getOverlaps_read2AnyRegion", (DL_FUNC) &_scPipe_sc_atac_getOverlaps_read2AnyRegion, 2},
+    {"_scPipe_sc_atac_getOverlaps_tss2Reads", (DL_FUNC) &_scPipe_sc_atac_getOverlaps_tss2Reads, 3},
     {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 14},
     {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 13},
     {"_scPipe_rcpp_sc_exon_mapping_df_anno", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping_df_anno, 13},

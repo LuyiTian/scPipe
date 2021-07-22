@@ -7,21 +7,39 @@
 #' @title generating the feature by cell matrix 
 #' @description feature matrix is created using a given demultiplexed BAM file and 
 #' a selected feature type
-#' @param insorredbam
-#' @param feature_input
-#' @param bam_tags
-#' @param feature_type
-#' @param organism
-#' @param cell_calling
-#' @param genome_size
-#' @param qc_per_bc_file
-#' @param bin_size
-#' @param yieldsize
-#' @param mapq
-#' @param exclude_regions
-#' @param exclude_regions_filename
-#' @param output_folder
-#' @param fix_chr
+#' @param insortedbam The input bam
+#' @param feature_input The feature input data
+#' @param bam_tags The BAM tags
+#' @param feature_type The type of feature
+#' @param organism The organism type
+#' @param cell_calling The desired cell calling method
+#' @param genome_size The size of the genome
+#' @param promoters_file The path of the promoter annotation file (if the specified organism isn't recognised)
+#' @param tss_file The path of the tss annotation file (if the specified organism isn't recognised)
+#' @param enhs_file The path of the enhs annotation file (if the specified organism isn't recognised)
+#' @param bin_size The size of the bins
+#' @param yieldsize The yield size
+#' @param mapq The minimum MAPQ score
+#' @param exclude_regions Whether or not the regions should be excluded
+#' @param excluded_regions_filename The filename of the file containing the regions to be excluded
+#' @param output_folder The output folder
+#' @param fix_chr Whether chr should be fixed or not
+#' 
+#' @param lower the lower threshold for the data if using the \code{emptydrops} function for cell calling.
+#'
+#' @param min_uniq_frags The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param max_uniq_frags The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param min_frac_peak The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)
+#' @param min_frac_tss The minimum proportion of fragments in a cell to overlap with a tss (used for \code{filter} cell calling)
+#' @param min_frac_enhancer The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)
+#' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
+#' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
+#' 
+#' @importFrom BiocGenerics start end which strand start<- end<- as.data.frame
+#' @importFrom rlang .data
+#' @import dplyr
+#' @import tidyr
+#' 
 #' @export
 #' 
 
@@ -33,15 +51,27 @@ sc_atac_feature_counting <- function(
   organism       = NULL,
   cell_calling   = FALSE, # either c("cellranger", "emptydrops", "filter")
   genome_size    = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
-  qc_per_bc_file = NULL, # this is optional but needed if the cell_calling option is cellranger
+  promoters_file = NULL,
+  tss_file       = NULL,
+  enhs_file      = NULL,
   bin_size       = NULL, 
   yieldsize      = 1000000,
   mapq           = 30,
   exclude_regions= FALSE, 
   excluded_regions_filename = NULL,
-  output_folder  = "",
-  fix_chr        = "none" # should be either one of these: c("none", "excluded_regions", "feature", "both")
-){
+  output_folder  = NULL,
+  fix_chr        = "none", # should be either one of these: c("none", "excluded_regions", "feature", "both")
+  lower = NULL,
+  min_uniq_frags = 0,
+  max_uniq_frags = 50000,
+  min_frac_peak = 0.05,
+  min_frac_tss = 0,
+  min_frac_enhancer = 0,
+  min_frac_promoter = 0,
+  max_frac_mito = 0.2
+) {
+  
+  . <- V1 <- V2 <- V3 <- init <- peakStart <- seqnames <- peakEnd <- CB <- chromosome <- chrS <- feature <- barcode <- NULL
   
   init_time = Sys.time()
   
@@ -53,7 +83,7 @@ sc_atac_feature_counting <- function(
   
   stopifnot(fix_chr %in% c("none", "excluded_regions", "feature", "both"))
   
-  if(output_folder == ''){
+  if(is.null(output_folder)) {
     output_folder <- file.path(getwd(), "scPipe-atac-output")
     cat("Output directory has not been provided. Saving output in\n", output_folder, "\n")
   }
@@ -128,7 +158,7 @@ sc_atac_feature_counting <- function(
         
         sizes_filename <- system.file(paste0("extdata/annotations/", sizes_filename_aux), package = "scPipe", mustWork = TRUE)
         
-        sizes_df <- read.table(sizes_filename, header = FALSE, col.names = c("V1", "V2"))
+        sizes_df <- utils::read.table(sizes_filename, header = FALSE, col.names = c("V1", "V2"))
         
         sizes_df_aux <- sizes_df %>% 
           dplyr::group_by(V1) %>% 
@@ -161,7 +191,7 @@ sc_atac_feature_counting <- function(
           return(out_df)
         })
         
-        write.table(out_bed, file = out_bed_filename, row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
+        utils::write.table(out_bed, file = out_bed_filename, row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
         
         # Check if file was created
         if(file.exists(out_bed_filename)) {
@@ -193,7 +223,7 @@ sc_atac_feature_counting <- function(
       ) # remove extension and append output folder
       
       # Try to read first 5 rows of feature_input file to see if the format is correct
-      feature_head <- read.table(feature_input, nrows = 5)
+      feature_head <- utils::read.table(feature_input, nrows = 5)
       if(ncol(feature_head) < 3){
         warning("Feature file provided does not contain 3 columns. Cannot append chr")
         break;
@@ -225,7 +255,7 @@ sc_atac_feature_counting <- function(
         ) # remove extension and append output folder
         
         # Try to read first 5 rows of excluded_regions file to see if the format is correct
-        excluded_regions_head <- read.table(excluded_regions_filename, nrows = 5)
+        excluded_regions_head <- utils::read.table(excluded_regions_filename, nrows = 5)
         if(ncol(excluded_regions_head) < 3){
           warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
           break
@@ -242,7 +272,7 @@ sc_atac_feature_counting <- function(
           stop("File ", out_bed_filename_excluded_regions, "file was not created.")
         }
       }
-      
+    
     } # end if excluded_regions
   }
   
@@ -259,7 +289,7 @@ sc_atac_feature_counting <- function(
   open(bamfl)
   
   yld                            <- GenomicAlignments::readGAlignments(bamfl,use.names = TRUE, param = param)
-  yld.gr                         <- makeGRangesFromDataFrame(yld,keep.extra.columns=TRUE) 
+  yld.gr                         <- GenomicRanges::makeGRangesFromDataFrame(yld,keep.extra.columns=TRUE) 
   average_number_of_lines_per_CB <- length(yld.gr$CB)/length(unique(yld.gr$CB))
   
   ############# Adjusting for the Tn5 cut site
@@ -302,7 +332,7 @@ sc_atac_feature_counting <- function(
     
     if(!is.null(excluded_regions_filename)){
       excluded_regions.gr               <- rtracklayer::import(excluded_regions_filename)
-      overlaps_excluded_regions_feature <- findOverlaps(excluded_regions.gr, feature.gr, maxgap = -1L, minoverlap = 0L) # Find overlaps
+      overlaps_excluded_regions_feature <- IRanges::findOverlaps(excluded_regions.gr, feature.gr, maxgap = -1L, minoverlap = 0L) # Find overlaps
       lines_to_remove                   <- as.data.frame(overlaps_excluded_regions_feature)$subjectHits # Lines to remove in feature file
       number_of_lines_to_remove         <- length(lines_to_remove)
       
@@ -332,7 +362,7 @@ sc_atac_feature_counting <- function(
       file = log_file, append = TRUE)
   
   ############### Overlaps
-  median_feature_overlap <- median(ranges(feature.gr)@width)
+  median_feature_overlap <- stats::median(GenomicAlignments::ranges(feature.gr)@width)
   minoverlap             <- 0.51*median_feature_overlap
   maxgap                 <- 0.51*median_feature_overlap
   
@@ -345,22 +375,22 @@ sc_atac_feature_counting <- function(
   
   # generate the matrix using this overlap results above.
   
-  mcols(yld.gr)[subjectHits(overlaps), "peakStart"] <- start(ranges(feature.gr)[queryHits(overlaps)])
-  mcols(yld.gr)[subjectHits(overlaps), "peakEnd"]   <- end(ranges(feature.gr)[queryHits(overlaps)])
+  GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
+  GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakEnd"]   <- end(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
   
   #is removing NAs here the right thing to do?
-  overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% dplyr::select(seqnames, peakStart, peakEnd, CB)
+  overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% select(seqnames, peakStart, peakEnd, CB)
   
   overlap.df <- overlap.df %>% 
-    dplyr::group_by(seqnames, peakStart, peakEnd, CB) %>% 
-    dplyr::summarise(count = n()) %>% 
+    group_by(seqnames, peakStart, peakEnd, CB) %>% 
+    summarise(count = n()) %>% 
     purrr::set_names(c("chromosome","start","end","barcode","count")) %>% 
     unite("chrS", chromosome:start, sep=":") %>%
     unite("feature", chrS:end, sep="-")
   
   matrixData <- overlap.df %>%
-    dplyr::group_by(feature,barcode) %>% 
-    tidyr::spread(barcode, count)
+    group_by(feature, barcode) %>% 
+    spread(barcode, count)
   
   matrixData           <- as.data.frame(matrixData)
   rownames(matrixData) <- matrixData$feature
@@ -369,7 +399,7 @@ sc_atac_feature_counting <- function(
   matrixData           <- matrixData %>%
     dplyr::select(-1) %>%
     data.table::as.data.table() %>%
-    as.matrix() %>%
+    Biostrings::as.matrix() %>%
     replace(is.na(.), 0)
   
   # add dimensions of the matrix
@@ -379,28 +409,61 @@ sc_atac_feature_counting <- function(
   cat("Raw feature matrix generated: ", paste(output_folder,"/unfiltered_feature_matrix.rds",sep = "") , "\n")
   Matrix::writeMM(Matrix::Matrix(matrixData), file = paste(output_folder,"/unfiltered_feature_matrix.mtx",sep = ""))
   
-  # call sc_atac_cell_callling.R here : emptyDrops() function currently implemented
-  if(cell_calling =="emptydrops" || cell_calling =="cellranger" || cell_calling =="filter"){
-    cat("calling `EmptyDrops` function for cell calling ... \n")
-    matrixData <- sc_atac_cell_calling(mat = matrixData, cell_calling = 'emptydrops', output_folder = output_folder)
+  # Check if organism is pre-recognized and if so then use the package's annotation files
+  if (organism %in% c("hg19", "hg38", "mm10")) {
+    cat(organism, "is a recognized organism. Using annotation files in repository.\n")
+    anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
+    promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed"))
+    tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed.gz"))
+    enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed.gz"))
+  }
+  else if (!all(file.exists(c(promoters_file, tss_file, enhs_file)))) {
+    stop("One of the annotation files could not be located. Please make sure their paths are valid.")
   }
   
+  # generate qc_per_bc_file
+  sc_atac_create_qc_per_bc_file(inbam = insortedbam, 
+                                frags_file = file.path(output_folder, "fragments.bed"),
+                                peaks_file = file.path(output_folder, "NA_peaks.narrowPeak"),
+                                promoters_file = promoters_file,
+                                tss_file = tss_file,
+                                enhs_file = enhs_file,
+                                output_folder = output_folder)
+  
+  qc_per_bc_file <- file.path(output_folder, "qc_per_bc_file.txt")
+  
+  # Cell calling
+  matrixData <- sc_atac_cell_calling(mat = matrixData, 
+                                     cell_calling = cell_calling, 
+                                     output_folder = output_folder, 
+                                     genome_size = genome_size, 
+                                     qc_per_bc_file = qc_per_bc_file, 
+                                     lower = lower,
+                                     min_uniq_frags = min_uniq_frags,
+                                     max_uniq_frags = max_uniq_frags,
+                                     min_frac_peak = min_frac_peak,
+                                     min_frac_tss = min_frac_tss,
+                                     min_frac_enhancer = min_frac_enhancer,
+                                     min_frac_promoter = min_frac_promoter,
+                                     max_frac_mito = max_frac_mito)
+  
+  
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
-  sparseM <- Matrix(matrixData, sparse=TRUE)
+  sparseM <- Matrix::Matrix(matrixData, sparse=TRUE)
   # add dimensions of the sparse matrix if available
   if(cell_calling != FALSE){
-    barcodes <- file.path(paste0(output_folder, '/non_empty_barcodes.txt'))
-    features <- read.table(paste0(output_folder, '/non_empty_features.txt'))
-    dimnames(sparseM)  <-  list(features, barcodes)
+    barcodes <- utils::read.table(paste0(output_folder, '/non_empty_barcodes.txt'))$V1
+    features <- utils::read.table(paste0(output_folder, '/non_empty_features.txt'))$V1
+    dimnames(sparseM) <- list(features, barcodes)
   }
   
   cat("Sparse matrix generated", "\n")
-  saveRDS(sparseM, file = paste(output_folder,"/sparse_matrix.rds",sep = ""))
-  writeMM(obj = sparseM, file=paste(output_folder,"/sparse_matrix.mtx", sep =""))
+  saveRDS(sparseM, file = paste(output_folder, "/sparse_matrix.rds", sep = ""))
+  Matrix::writeMM(obj = sparseM, file=paste(output_folder, "/sparse_matrix.mtx", sep =""))
   cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
   
   # generate and save jaccard matrix
-  jaccardM <- jaccardMatrix(sparseM)
+  jaccardM <- locStra::jaccardMatrix(sparseM)
   cat("Jaccard matrix generated", "\n")
   saveRDS(jaccardM, file = paste(output_folder,"/jaccard_matrix.rds",sep = ""))
   cat("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")
@@ -434,9 +497,10 @@ sc_atac_feature_counting <- function(
       by = "feature"
     )
   
-  
-  write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
-  write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
+
+
+  utils::write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
+  utils::write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
   
   end_time = Sys.time()
   
@@ -451,4 +515,140 @@ sc_atac_feature_counting <- function(
     file = log_file, append = TRUE)
   
 }
+  
+#' @name sc_atac_create_per_ber_pc_file
+#' @title generating a file useful for producing the qc plots
+#' @description uses the peak file and annotation files for features
+#' @param inbam The input bam file
+#' @param frags_file The fragment file
+#' @param peaks_file The peak file
+#' @param promoters_file The path of the promoter annotation file 
+#' @param tss_file The path of the tss annotation file 
+#' @param enhs_file The path of the enhs annotation file 
+#' @param output_folder
+#' 
+#' @param lower the lower threshold for the data if using the \code{emptydrops} function for cell calling.
+#' 
+#' @param min_uniq_frags The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param max_uniq_frags The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param min_frac_peak The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)
+#' @param min_frac_tss The minimum proportion of fragments in a cell to overlap with a tss (used for \code{filter} cell calling)
+#' @param min_frac_enhancer The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)
+#' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
+#' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
+#' @param output_folder A string indicating the path of the output folder
+#' 
+#' @importFrom data.table fread setkey copy :=
+#' 
+#' @export
+#' 
+sc_atac_create_qc_per_bc_file <- function(inbam, 
+                                          frags_file,
+                                          peaks_file,
+                                          promoters_file,
+                                          tss_file,
+                                          enhs_file,
+                                          output_folder,
+                                          lower = NULL,
+                                          min_uniq_frags = 0,
+                                          max_uniq_frags = 50000,
+                                          min_frac_peak = 0.05,
+                                          min_frac_tss = 0,
+                                          min_frac_enhancer = 0,
+                                          min_frac_promoter = 0,
+                                          max_frac_mito = 0.2) {
+  
+  
+  # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/get_qc_per_barcode.R
+  
+  chr <- .N <- bc <- total_frags <- isMito <- NULL
+  
+  out.frag.overlap.file <- file.path(output_folder, "qc_per_bc_file.txt")
+  
+  frags <- fread(frags_file, select=1:4, header = F)
+  names(frags) <- c('chr', 'start', 'end', 'bc')
+  setkey(frags, chr, start)
+  
+  frags[, 'total_frags' := .N, by = bc]
+  frags <- frags[total_frags > 5]
+  
+  frags <- frags[!grepl(chr, pattern = 'random', ignore.case = T)]
+  frags <- frags[!grepl(chr, pattern ='un', ignore.case = T)]
+  
+  peaks <- fread(peaks_file, select=1:3, header = F)
+  promoters <- fread(promoters_file, select=1:3, header = F)
+  tss <- fread(tss_file, select=1:3, header = F)
+  enhs <- fread(enhs_file, select=1:3, header = F)
+  names(peaks) = names(promoters) = names(tss) =
+    names(enhs) = c('chr', 'start', 'end')
+  
+  
+  setkey(peaks, chr, start)
+  setkey(promoters, chr, start)
+  setkey(tss, chr, start)
+  setkey(enhs, chr, start)
+  
+  chrs <- unique(frags$chr)
+  
+  tss[, 'start' := start - 1000]
+  tss[, 'end' := end + 1000]
+  fragsInRegion <- NULL
+  
+  for(chr0 in chrs){
+    peaks0 <- peaks[chr == chr0]
+    promoters0 <- promoters[chr == chr0]
+    
+    tss0 <- tss[chr == chr0]
+    enhs0 <- enhs[chr == chr0]
+    frags0 <- frags[chr == chr0]
+    frags <- frags[chr != chr0]
+    if(nrow(peaks0) == 0){
+      frags0[, 'peaks' := 0]
+    }else{
+      frags0[, 'peaks' := sc_atac_getOverlaps_read2AnyRegion(frags0, peaks0)]
+    }
+    
+    if(nrow(promoters0) == 0){
+      frags0[, 'promoters' := 0]
+    }else{
+      frags0[, 'promoters' := sc_atac_getOverlaps_read2AnyRegion(frags0, promoters0)]
+    }
+    
+    if(nrow(tss0) == 0){
+      frags0[, 'tss' := 0]
+    }else{
+      frags0[, 'tss' := sc_atac_getOverlaps_read2AnyRegion(frags0, tss0)]
+    }
+    
+    if(nrow(enhs0) == 0){
+      frags0[, 'enhs' := 0]
+    }else{
+      frags0[, 'enhs' := sc_atac_getOverlaps_read2AnyRegion(frags0, enhs0)]
+    }
+    
+    
+    fragsInRegion <- rbind(fragsInRegion, frags0)
+    message(paste(chr0, 'Done!'))
+  }
+  rm(frags)
+  
+  # get barcode region count matrix
+  fragsInRegion[, 'isMito' := ifelse(chr %in% c('chrM'), 1, 0)]
+  fragsInRegion[, c('chr', 'start', 'end') := NULL]
+  fragsInRegion[, 'frac_mito' := sum(isMito)/total_frags, by = bc]
+  fragsInRegion[, 'isMito' := NULL]
+  fragsInRegion[, 'frac_peak' := sum(peaks)/total_frags, by = bc]
+  fragsInRegion[, 'peaks' := NULL]
+  fragsInRegion[, 'frac_promoter' := sum(promoters)/total_frags, by = bc]
+  fragsInRegion[, 'promoters' := NULL]
+  fragsInRegion[, 'frac_tss' := sum(tss)/total_frags, by = bc]
+  fragsInRegion[, 'tss' := NULL]
+  fragsInRegion[, 'frac_enhancer' := sum(enhs)/total_frags, by = bc]
+  fragsInRegion[, 'enhs' := NULL]
+  fragsInRegion <- unique(fragsInRegion)
+
+  utils::write.table(fragsInRegion, file = out.frag.overlap.file, sep = '\t',
+              row.names = F, quote = F)
+}
+
 

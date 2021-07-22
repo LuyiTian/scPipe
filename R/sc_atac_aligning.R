@@ -9,8 +9,13 @@
 #' @param ref the reference genome file (.fasta, .fa format)
 #' @param readFile1 the first fastq file which is mandatory
 #' @param readFile2 the second fastq file, which is required if the data is paired-end
+#' @param output_folder a string indicating the path of the output folder
+#' @param output_file a string indicating the path of the output file
+#' @param input_format a string indicating the input format
+#' @param output_format a string indicating the output format
 #' @param index_path if the Rsubread genome build is available user can enter the path here
-#' @return 
+#' @param type a string indicating the type of the data ('dna' by default)
+#' @param nthreads the number of threads to be used
 #'
 #' @examples
 #' \dontrun{
@@ -75,9 +80,9 @@ sc_atac_aligning <- function (ref,
     cat("Genome index location not specified. Looking for the index in", output_folder, "\n")
     indexPath <-  file.path(output_folder, "genome_index") 
     if (file.exists(paste0(indexPath, ".log"))) {
-      cat("Genome index foound in ", output_folder, "...\n")
+      cat("Genome index found in ", output_folder, "...\n")
     } else {
-      cat("Genome index not foound. Creating one in ", output_folder, ". This will take a while ...\n")
+      cat("Genome index not found. Creating one in ", output_folder, ". This will take a while ...\n")
       Rsubread::buildindex(basename=indexPath, reference=ref)
     }
   }
@@ -100,9 +105,10 @@ sc_atac_aligning <- function (ref,
     readfile1   = readFile1,
     readfile2   = readFile2,
     sortReadsByCoordinates = TRUE,
-    output_file = outbam)
+    output_file = outbam,
+    nthreads = nthreads)
   
-  write.csv(align_output_df, file = stats_file, row.names = TRUE, quote = FALSE)
+  utils::write.csv(align_output_df, file = stats_file, row.names = TRUE, quote = FALSE)
   
   #generating the bam index
   #Rsamtools::indexBam(paste0(output_folder, "/", fileNameWithoutExtension, "_aligned.bam"))
@@ -111,7 +117,7 @@ sc_atac_aligning <- function (ref,
   # get the unmapped mapped stats to be output and stored in a log file
   #bamstats <- Rsamtools::idxstatsBam(paste0(output_folder, "/",fileNameWithoutExtension, "_aligned.bam"))
   bamstats <- Rsamtools::idxstatsBam(paste0(fileNameWithoutExtension, "_aligned.bam"))
-  write.csv(bamstats, file = paste0(log_and_stats_folder, "stats_file_align_per_chrom.csv"), row.names = FALSE, quote = FALSE)
+  utils::write.csv(bamstats, file = paste0(log_and_stats_folder, "stats_file_align_per_chrom.csv"), row.names = FALSE, quote = FALSE)
   
   cat(
     paste0(

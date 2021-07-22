@@ -4,13 +4,11 @@
 
 #' sc_atac_create_sce()
 #'
-#' @return 
-#'
-#' @examples
-#' \dontrun{
-#' 
-#' 
-#' }
+#' @param input_folder The output folder produced by the pipeline
+#' @param organism The type of the organism
+#' @param feature_type The type of the feature
+#' @param pheno_data The pheno data
+#' @param report Whether or not a HTML report should be produced
 #'
 #' @export
 #'
@@ -21,17 +19,21 @@ sc_atac_create_sce <- function(input_folder = NULL,
                                pheno_data   = NULL, 
                                report       = FALSE) {
   
+  # if(is.null(input_folder)){
+  #   input_folder <- file.path(getwd(), "scPipe-atac-output")
+  #   input_stats_folder <- file.path(getwd(), "scPipe-atac-output/scPipe_atac_stats")
+  # } else {
+  #   cat("input location ", input_folder, " is not valid. Please enter the full path to proceed. \n")
+  #   break;
+  # }
+  
   if(is.null(input_folder)){
     input_folder <- file.path(getwd(), "scPipe-atac-output")
     input_stats_folder <- file.path(getwd(), "scPipe-atac-output/scPipe_atac_stats")
-  } else {
-    cat("input location ", input_folder, " is not valid. Please enter the full path to proceed. \n")
-    break;
   }
   
   if (!dir.exists(input_folder)){
-    cat("Default input folder could not be found at " , file.path(getwd()),  "Please enter the full input path to proceed \n");
-    break;
+    cat("Default input folder could not be found at " , input_folder,  "\nPlease enter the full input path to proceed \n");
   } else {
     input_stats_folder <- file.path(input_folder, "scPipe_atac_stats")
   }
@@ -41,12 +43,14 @@ sc_atac_create_sce <- function(input_folder = NULL,
   cell_stats    <- read.csv(file.path(input_stats_folder, "filtered_stats_per_cell.csv"), row.names=1)
   feature_stats <- read.csv(file.path(input_stats_folder, "filtered_stats_per_feature.csv"))
   
+  
   # need to change from here.... (check whether I need to filter before saving to the SCE object)
   
   # can I order a matrix like a csv file like below? test...
   feature_cnt      <- feature_cnt[, order(colnames(feature_cnt))]
+
   cell_stats       <- cell_stats[order(rownames(cell_stats)), ]
-  
+
   # generating the SCE object
   sce                         <- SingleCellExperiment(assays = list(counts = as.matrix(feature_cnt)))
   sce@metadata$scPipe$version <- packageVersion("scPipe")  # set version information
@@ -54,23 +58,34 @@ sc_atac_create_sce <- function(input_folder = NULL,
   if(!is.null(organism)){
     organism(sce) <- organism
   }
+  
   if(!is.null(feature_type)){
     feature_type(sce) <- feature_type
   }
   
+  # Saving demultiplexing stats to sce object
+  stats_file = file.path(input_stats_folder, "mapping_stats_per_barcode.csv")
+  raw <- read.csv(stats_file)
+  colnames(raw) <- c("barcode", "flag", "type", "reads")
+  
+  filtered <- stats::aggregate(raw$reads, by=list(type=raw$type), FUN=length)
+  colnames(filtered) <- c("status", "count")
+  
   QC_metrics(sce) <- cell_stats
+  
+  demultiplex_info(sce) <- filtered
+  
   
   if(!is.null(pheno_data)){
     colData(sce) <- cbind(colData(sce), pheno_data[order(rownames(pheno_data)),])
   }
-  
-  #feature_info(sce) <- feature_stats
-  
+
+  feature_info(sce) <- feature_stats
   saveRDS(sce, file = paste(input_folder,"/scPipe_atac_SCEobject.rds",sep = ""))
-  
+
   if(report){
-    sc_atac_create_report(input_folder = file.path(getwd(), "scPipe-atac-output/scPipe_atac_stats"),
-                          output_folder= input_folder,
+    sc_atac_create_report(input_folder = file.path(input_folder),
+                          output_folder= file.path(input_folder, "scPipe_atac_stats"),
                           sample_name  = NULL,
                           organism     = organism,
                           feature_type = feature_type)
@@ -80,3 +95,7 @@ sc_atac_create_sce <- function(input_folder = NULL,
   return(sce)
   
 }
+
+
+
+

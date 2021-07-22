@@ -2,26 +2,27 @@
 % Please edit documentation in R/sc_atac_create_report.R
 \name{sc_atac_create_report}
 \alias{sc_atac_create_report}
-\title{sc_atac_create_report()}
+\title{HTML report generation}
 \usage{
 sc_atac_create_report(
   input_folder,
-  output_folder,
+  output_folder = NULL,
   sample_name = NULL,
   organism = NULL,
   feature_type = NULL
 )
 }
-\value{
+\arguments{
+\item{input_folder}{The path of the folder produced by the pipeline}
 
+\item{output_folder}{The path of the output folder to store the HTML report in}
+
+\item{sample_name}{A string indicating the name of the sample}
+
+\item{organism}{A string indicating the name of the organism being analysed}
+
+\item{feature_type}{A string indicating the type of the feature (`genome_bin` or `peak`)}
 }
 \description{
-sc_atac_create_report()
-}
-\examples{
-\dontrun{
-
-
-}
-
+Generates a HTML report using the output folder produced by the pipeline
 }

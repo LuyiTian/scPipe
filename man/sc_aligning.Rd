@@ -32,10 +32,11 @@ sc_aligning(
 
 \item{output_file}{a character vector specifying names of output files. By default, names of output files are set as the file names provided in R1 added with an suffix string}
 
-\item{nthreads}{numeric value giving the number of threads used for mapping.}
-}
-\value{
+\item{input_format}{a string indicating the input format}
 
+\item{output_format}{a string indicating the output format}
+
+\item{nthreads}{numeric value giving the number of threads used for mapping.}
 }
 \description{
 after we run the \code{sc_trim_barcode} or \code{sc_atac_trim_barcode} to demultiplex the fastq files, we are using this
