@@ -192,6 +192,8 @@ def getFragments(
     x = 0
     if readname_barcode is not None:
         readname_barcode = re.compile(readname_barcode)
+	
+	# bam_fetch(fetch_call) (inside for loop == fetch_call)
     for i in inputBam.fetch(interval[0], 0, interval[1]):
         fragment_dict = updateFragmentDict(
             fragments=fragment_dict,
@@ -316,6 +318,8 @@ def updateFragmentDict(
     if cells is not None and cell_barcode is not None:
         if cell_barcode not in cells:
             return fragments
+
+
     mapq = segment.mapping_quality
     if mapq < min_mapq:
         return fragments

@@ -5,9 +5,9 @@
 #' @name sc_atac_create_fragments
 #' @title Generating the popular fragments for scATAC-Seq data using sinto
 #' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
-#' 
-#' @param inbam The tagged, sorted and duplicate-free input BAM file 
-#' @param output_folder The path of the output folder 
+#'
+#' @param inbam The tagged, sorted and duplicate-free input BAM file
+#' @param output_folder The path of the output folder
 #' @importFrom basilisk basiliskStart basiliskStop basiliskRun
 #'
 #' @export
@@ -23,7 +23,7 @@ sc_atac_create_fragments <- function(inbam, output_folder = "") {
     }
 
     output = paste0(output_folder, "/fragments.bed")
-    
+
     # Need to use sinto to generate fragment file
     proc <- basiliskStart(scPipe_env)
     on.exit(basiliskStop(proc))
@@ -32,15 +32,61 @@ sc_atac_create_fragments <- function(inbam, output_folder = "") {
         sin <- reticulate::import("sinto")
         #sin$fragments(inbam, out)
         system2("sinto", c("fragments", "-b", inbam, "-f", out))
-    }, inbam=inbam, out=output) 
+    }, inbam=inbam, out=output)
+}
+
+#' @export
+test_fragments <- function(server=FALSE,
+	min_mapq=30,
+	nproc=1,
+	cellbarcode="CB",
+	chromosomes="^chr",
+	readname_barcode=NULL,
+	cells=NULL,
+	max_distance=5000,
+	min_distance=10,
+	chunksize=500000) {
+
+	if (server) {
+		inbam<- "/stornext/General/data/user_managed/grpu_mritchie_1/Oliver/scPipe/sc_atac_create_fragments/demux_testfastq_S1_L001_R1_001_aligned.bam"
+		output<-"/stornext/Home/data/allstaff/v/voogd.o/sc_atac_create_fragments/outputminimal"
+	} else {
+		inbam <- "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/demux_testfastq_S1_L001_R1_001_aligned.bam"
+		output <- "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/output"
+	}
+
+
+    output = paste0(output, "/testfragfile.txt")
+
+	if (is.null(readname_barcode)) readname_barcode = ""
+
+	# what are the types of both of these?
+	chrom = get_chromosomes(inbam, keep_contigs=chromosomes) # List with names as contigs and elements as lengths
+	cells = read_cells(cells) # character vector / StringVector
+
+	sc_atac_create_fragments_cpp(inbam,
+	                             output,
+	                             names(chrom),
+	                             as.integer(chrom),
+	                             min_mapq,
+	                             nproc,
+	                             cellbarcode,
+	                             chromosomes,
+	                             readname_barcode,
+	                             cells,
+	                             max_distance,
+	                             min_distance,
+	                             chunksize)
+
+	invisible()
 }
 
 #' @name sc_atac_create_fragments_new
 #' @title Generating the popular fragments for scATAC-Seq data using sinto
 #' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
-#' 
-#' @param inbam The tagged, sorted and duplicate-free input BAM file 
-#' @param output_folder The path of the output folder 
+#'
+#' @param inbam The tagged, sorted and duplicate-free input BAM file
+#' @param output_folder The path of the output folder
 #' @param bam : str
 #'    Path to BAM file
 #' @param fragment_path : str
@@ -56,15 +102,15 @@ sc_atac_create_fragments <- function(inbam, output_folder = "") {
 #'    output file. Default is "(?i)^chr" (starts with "chr", case-insensitive).
 #'    If None, use all chromosomes in the BAM file.
 #' @param readname_barcode : str, optional
-#'    Regular expression used to match cell barocde stored in read name. 
-#'    If None (default), use read tags instead. Use "[^:]*" to match all characters 
+#'    Regular expression used to match cell barocde stored in read name.
+#'    If None (default), use read tags instead. Use "[^:]*" to match all characters
 #'    before the first colon (":").
 #' @param cells : str
 #'    File containing list of cell barcodes to retain. If None (default), use all cell barcodes
 #'    found in the BAM file.
 #' @param max_distance : int, optional
 #'    Maximum distance between integration sites for the fragment to be retained.
-#'    Allows filtering of implausible fragments that likely result from incorrect 
+#'    Allows filtering of implausible fragments that likely result from incorrect
 #'    mapping positions. Default is 5000 bp.
 #' @param min_distance : int, optional
 #'    Minimum distance between integration sites for the fragment to be retained.
@@ -72,13 +118,16 @@ sc_atac_create_fragments <- function(inbam, output_folder = "") {
 #'    mapping positions. Default is 10 bp.
 #' @param chunksize : int
 #'    Number of BAM entries to read through before collapsing and writing
-#'    fragments to disk. Higher chunksize will use more memory but will be 
+#'    fragments to disk. Higher chunksize will use more memory but will be
 #'    faster.
 #'
 #' @return ???
+#' @useDynLib scPipeFragments, .registration=TRUE
+#' @import Rhtslib
+#' @import Rcpp
 #' @export
 sc_atac_create_fragments_new <- function(
-	inbam, 
+	inbam,
 	output_folder="",
 	min_mapq=30,
 	nproc=1,
@@ -101,18 +150,18 @@ sc_atac_create_fragments_new <- function(
     output = paste0(output_folder, "/fragments.bed")
 
 	if (is.null(readname_barcode)) readname_barcode = ""
-	
+
 	# what are the types of both of these?
 	chrom = get_chromosomes(inbam, keep_contigs=chromosomes) # List with names as contigs and elements as lengths
 	cells = read_cells(cells) # character vector / StringVector
 
-	sc_atac_create_fragments_cpp(inbam, 
-								output, 
+	sc_atac_create_fragments_cpp(inbam,
+								output,
 								names(chrom),
 								as.integer(chrom),
-								min_mapq, 
-								nproc, 
-								cellbarcode, 
+								min_mapq,
+								nproc,
+								cellbarcode,
 								chromosomes,
 								readname_barcode,
 								cells,
@@ -124,13 +173,13 @@ sc_atac_create_fragments_new <- function(
 }
 
 #' Get Chromosomes
-#' 
+#'
 #' Gets a list of NamedList of chromosomes and the reference length
 #' acquired through the bam index file.
-#' 
+#'
 #' @param bam file path to the bam file to get data from
 #' @param keep_contigs regular expression used with grepl to filter reference names
-#' 
+#'
 #' @return a named list where element names are chromosomes reference names and elemnents are integer lengths
 #' @importFrom Rsamtools indexBam idxstatsBam
 get_chromosomes <- function(bam, keep_contigs="^chr") {
@@ -138,10 +187,10 @@ get_chromosomes <- function(bam, keep_contigs="^chr") {
 		keep_contigs="."
 	}
 	if (!file.exists(paste0(bam, ".bai"))) {
-		indexBam(bam)
+		Rsamtools::indexBam(bam)
 	}
 
-	idxstats = idxstatsBam(bam)
+	idxstats = Rsamtools::idxstatsBam(bam)
 	# regex = (?i)^chr
 	# above matches chr at start of string ignoring case ((?i) means ignore case)
 	# R version: grepl("^chr", ignore.case=TRUE)
@@ -154,7 +203,7 @@ get_chromosomes <- function(bam, keep_contigs="^chr") {
 }
 
 #' Read Cell barcode file
-#' 
+#'
 #' @param cells the file path to the barcode file. Assumes
 #' one barcode per line or barcode csv.
 #' Or, cells can be a comma delimited string of barcodes

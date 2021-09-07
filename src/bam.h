@@ -118,7 +118,7 @@ typedef bam_hdr_t bam_header_t;
 
 typedef hts_itr_t *bam_iter_t;
 
-#define bam1_strand(b) (bam_is_rev((b)))
+#define bam1_strand(b) (bam_is_rev((b))) // bool for if read is on reverse strand
 #define bam1_mstrand(b) (bam_is_mrev((b)))
 
 /*! @function
