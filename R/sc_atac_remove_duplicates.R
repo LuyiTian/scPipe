@@ -1,18 +1,18 @@
-
-
 #' @name sc_atac_remove_duplicates
+#'
 #' @title Removing PCR duplicates using samtools
 #' @description Takes in a BAM file and removes the PCR duplicates using the samtools markdup function. Requires samtools 1.10 or newer. 
 #' 
 #' @param inbam The tagged, sorted and duplicate-free input BAM file 
 #' @param samtools_path The path of the samtools executable (if a custom installation is to be specified)
+#' @param max_memory The maximum amount of memory able to be used by the function in GB
 #' @param output_folder The path of the output folder 
 #'
 #' @export
 #' 
 
 sc_atac_remove_duplicates <- function(inbam, 
-                                      samtools_path = NULL, 
+                                      samtools_path = NULL,
                                       output_folder = NULL) {
   
   # Check if samtools is installed
@@ -63,7 +63,21 @@ sc_atac_remove_duplicates <- function(inbam,
           dir.create(output_folder,recursive=TRUE)
           cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
         }
-        log_and_stats_folder <- paste0(output_folder, "/scPipe_atac_stats/")
+        
+        # Create log folder/file
+        log_and_stats_folder <- file.path(output_folder, "scPipe_atac_stats")
+        dir.create(log_and_stats_folder, showWarnings = FALSE)
+        log_file <- file.path(log_and_stats_folder, "log_file.txt")
+        if(!file.exists(log_file)) file.create(log_file)
+        cat(
+          paste0(
+            "sc_atac_remove_duplicates starts at ",
+            as.character(Sys.time()),
+            "\n"
+          ),
+          file = log_file, append = TRUE)
+        
+        
         inbam.name <- substr(inbam, 0, nchar(inbam)-4)
         
         system2(samtools, c("collate", "-o", paste(inbam.name, "namecollate.bam", sep="_"), inbam))
@@ -75,8 +89,8 @@ sc_atac_remove_duplicates <- function(inbam,
           system2("rm", output.bam)
         }
         
-        system2(samtools, c("sort", "-o", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "fixmate.bam", sep="_")))
-        
+        Rsamtools::sortBam(paste(inbam.name, "fixmate.bam", sep="_"), paste(inbam.name, "positionsort", sep="_"), indexDestination = TRUE)
+
         # Note: the output bam file is originally created in the same directory as the input bam file
         
         # Check if the version of samtools is 1.10 or greater (to have the stats functionality)
@@ -90,7 +104,7 @@ sc_atac_remove_duplicates <- function(inbam,
         }
 
         
-        Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"))
+        Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"), max_memory = 1024*max_memory)
         
         system2("rm", paste(inbam.name, "namecollate.bam", sep="_"))
         system2("rm", paste(inbam.name, "positionsort.bam", sep="_"))
@@ -106,7 +120,13 @@ sc_atac_remove_duplicates <- function(inbam,
         } else {
           message("Couldn't remove duplicates from the input BAM file. Make sure it is a valid BAM file.")
         }
-        
+        cat(
+          paste0(
+            "sc_atac_remove_duplicates finishes at ",
+            as.character(Sys.time()),
+            "\n\n"
+          ),
+          file = log_file, append = TRUE)
       },
       warning = function(w) {w
         message(w)

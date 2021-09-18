@@ -19,7 +19,8 @@ sc_atac_bam_tagging <- function(inbam,
                                 output_folder = NULL,
                                 bc_length = NULL,
                                 bam_tags = list(bc="CB", mb="OX"),
-                                nthreads = 1
+                                nthreads = 1,
+                                max_memory = 64
 ) {
 
   if (any(!file.exists(inbam))) {
@@ -44,7 +45,7 @@ sc_atac_bam_tagging <- function(inbam,
   }
   fileNameWithoutExtension <- get_filename_without_extension(inbam)
   
-  outbam                   <- file.path(output_folder, paste0(fileNameWithoutExtension, "_tagged.bam"))
+  outbam                   <- file.path(output_folder, paste0(fileNameWithoutExtension, "_tagged_sorted.bam"))
   outsortedbam             <- file.path(output_folder, paste0(fileNameWithoutExtension, "_tagged_sorted")) # don't want extension
 
   log_and_stats_folder       <- file.path(output_folder, "scPipe_atac_stats")
@@ -64,18 +65,18 @@ sc_atac_bam_tagging <- function(inbam,
   outbam <- path.expand(outbam)
   if(!file.exists(outbam)){
     file.create(outbam)
-  }
 
-  rcpp_sc_atac_bam_tagging(inbam, outbam, bam_tags$bc, bam_tags$mb,nthreads)
+  rcpp_sc_atac_bam_tagging(inbam, outbam, bam_tags$bc, bam_tags$mb, nthreads)
 
   cat("Tagged BAM file is located in: \n")
   cat(outbam)
   cat("\n")
 
-  Rsamtools::sortBam(outbam, outsortedbam, indexDestination = TRUE)
-  Rsamtools::indexBam(paste0(outsortedbam, ".bam"))
+  # Rsamtools::sortBam(outbam, outsortedbam, indexDestination = TRUE, maxMemory = 1024/32*max_memory)
+  Rsamtools::indexBam(paste0(outsortedbam, ".bam"), maxMemory = 1024*max_memory)
 
   cat("Sorted & indexed tagged BAM file is located in: \n")
+  }
   cat(paste0(outsortedbam, ".bam"))
   cat("\n")
 
@@ -96,7 +97,6 @@ sc_atac_bam_tagging <- function(inbam,
 
   bam0 <- Rsamtools::scanBam(inbam)
   barcodes <- substr(bam0[[1]]$qname, 1, bc_length)
-
 
   barcode_info <- tibble::tibble(
     barcode = barcodes,

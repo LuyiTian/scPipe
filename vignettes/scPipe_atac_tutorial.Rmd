@@ -35,7 +35,7 @@ Specify the output folder.
 
 ```{r}
 output_folder <- tempdir()
-
+output_folder <- file.path("/stornext/Home/data/allstaff/y/yang.p/repos/final_repos/scPipe", "scPipe-atac-output-test")
 ```
 
 # Fastq reformatting
@@ -56,7 +56,7 @@ get_filename_without_extension <- function(path, extension_length = 1) {
 r1_name <- get_filename_without_extension(r1, extension_length = 2)
 r2_name <- get_filename_without_extension(r2, extension_length = 2)
 
-reference       <- file.path(data.folder, "genome.fa")
+reference       <- file.path(data.folder, "genome_original.fa")
 
 # barcodes in fastq format
 barcode_fastq      <- file.path(data.folder, "testfastq_S1_L001_R2_001.fastq.gz") 
@@ -146,6 +146,7 @@ Next, PCR duplicate reads are removed from the BAM file. If `samtools` is instal
 sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
 sc_atac_remove_duplicates(sorted_tagged_bam,
+                          samtools_path = "/stornext/System/data/apps/samtools/samtools-1.12/bin/samtools",
                           output_folder = output_folder)
 
 sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
@@ -195,21 +196,22 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           bam_tags      = list(bc="CB", mb="OX"), 
                           feature_type  = "peak", 
                           organism      = "hg38",
-                          cell_calling  = FALSE,
+                          cell_calling  = "filter",
                           genome_size   = NULL,
                           bin_size      = NULL, 
                           yieldsize     = 1000000,
-                          mapq          = 20,
+                          mapq          = 30,
                           exclude_regions = TRUE,
                           output_folder = output_folder,
-                          fix_chr       = "none"
+                          fix_chr       = "none",
+                          gene_anno_file = "/stornext/General/data/user_managed/grpu_mritchie_1/PhilYang/genome_data/gencode.v38.annotation.gtf.gz"
                           )
 ```
 
 If genome_bin approach is selected, following can be used:
 
 ```{r,eval=FALSE}
-reference <- file.path(data.folder, "genome.fa")
+reference <- file.path(data.folder, "genome_original.fa")
 
 sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           feature_input = reference,
@@ -259,8 +261,8 @@ The discrepancy of `chr` between the alignment file and the feature file/exclude
 The `sc_atac_feature_counting` function generates a matrix format of the feature by cell matrix (features as rows, cell barcodes as columns) in several formats (raw, sparse, binary, jaccard) that can be used downstream to generate a `singleCellExperiment, SCE` object.
 
 ```{r,eval=FALSE}
-feature_matrix <- readRDS(file.path(output_folder, "feature_matrix.rds"))
-dplyr::giimpse(feature_matrix)
+feature_matrix <- readRDS(file.path(output_folder, "unfiltered_matrix.rds"))
+dplyr::glimpse(feature_matrix)
 
 sparseM <- readMM(file.path(output_folder, "sparse_matrix.mtx"))
 dplyr::glimpse(sparseM)
@@ -275,7 +277,7 @@ sce <- sc_atac_create_sce(input_folder = output_folder,
                    organism     = "hg38",
                    feature_type = "peak",
                    pheno_data   = NULL,
-                   report       = TRUE)
+                   report       = FALSE)
 ```
 
 We have now completed the preprocessing steps. The feature count matrix is available as a `.rds` file in `scPipe-atac-output/feature_matrix.rds` and quality control statistics are saved in the `scPipe-atac-output/scPipe_atac_stats` folder. These data are useful for later quality control as well (QC).
