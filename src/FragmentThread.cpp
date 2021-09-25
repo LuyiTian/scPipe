@@ -51,12 +51,14 @@ int
 	FragmentThread::fetchCall(const bam1_t *b, void *data) {
 		FragmentThread *frag = (FragmentThread *)data;
 
+		// update the fragment map with this segments data 
+		// retrived from the bam1_t aligned segment
 		frag->updateFragmentDict(b);
 
 		if (frag->updateFragmentCount()) {
 			// Find the complete fragments, remove from the fragment dict,
 			// collapse them and then write to file
-			frag->writeFragments(b);
+			frag->writeFragments(bam_alignment_start(b));
 		}
 
 		return 1; // safe return value
@@ -231,7 +233,8 @@ void
 		bam_fetch(bam, index, this->tid, 0, this->end, this, &FragmentThread::fetchCall);
 		
 		
-		//this->writeFragments(); wtf do we do here?
+		// for the final writeFragments call, pass in inf 
+		//this->writeFragments(infinity); 
 
 		bam_close(bam); // bam.h
 	}
@@ -240,9 +243,7 @@ void
 
 //////////////////////////// utility functions for writing //////////////////
 void
-FragmentThread::writeFragments(const bam1_t *b) {
-	int32_t current_position = bam_alignment_start(b);
-
+FragmentThread::writeFragments(int32_t current_position) {
 	std::map<std::string, FragmentStruct> *complete = FragmentThread::findCompleteFragments(
 		this->fragment_dict,
 		this->max_distance,
@@ -323,6 +324,9 @@ static std::map<std::string, FragmentStruct> *collapseFragments(std::map<std::st
 	return fragments;
 }
 
+/// Increment the fragment_count member on this FragmentThread
+/// If the count is greater than the chunksize, reset the count and return true to indicate
+/// that the fragment dictionary needs to be written to the file
 bool
 FragmentThread::updateFragmentCount() {
 	if (++(this->fragment_count) > this->chunksize) {

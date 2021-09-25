@@ -77,7 +77,8 @@ def collapseFragments(fragments):
     """Collapse duplicate fragments
     """
     fraglist = list(fragments.values())
-    fragcoords_with_bc = ["|".join(map(str, x)) for x in fraglist]
+    fragcoords_with_bc = ["|".join(map(str, x)) for x in fraglist] 
+	# list of values in fraglist as strings joined by |
     counts = Counter(fragcoords_with_bc)
 
     if len(fraglist) == 0:
@@ -139,7 +140,7 @@ def collapseFragments(fragments):
 def id_lookup(l):
     """Create dictionary where each unique item is key, value is the item numerical ID"""
     temp = defaultdict(lambda: len(temp))
-    idx = [temp[x] for x in l]
+    idx = [temp[x] for x in l] # idx is a list of the order in which each value was recived for the first time
     lookup = dict(zip(set(l), set(idx)))
     return lookup
 
@@ -215,6 +216,7 @@ def getFragments(
                 max_collapse_dist=20,
             )
             collapsed = collapseFragments(fragments=complete)
+			# writeFragmentsToFile
             writeFragments(fragments=collapsed, filepath=outname)
             x = 0
             gc.collect()
