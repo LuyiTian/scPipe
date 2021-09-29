@@ -3,13 +3,17 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
+#include <map>
+#include <forward_list>
 #include "bam.h"
 #include <htslib/bgzf.h>
 #include <htslib/sam.h>
 #include <htslib/hts.h>
 
 #include "FragmentThread.hpp"
+#include "FragmentUtils.hpp"
 
+// Done Not Tested
 FragmentThread::FragmentThread(
 	std::string _outname,
 	std::string _contig,
@@ -42,7 +46,7 @@ FragmentThread::FragmentThread(
 	this->fragment_count = 0;
 }
 
-
+// Done Not Tested
 // fetchCall gets called for every segment in the bam file,
 // so multiple times for one FragmentThread
 // the parent FragmentThread class is passed in through data?
@@ -247,11 +251,10 @@ FragmentThread::writeFragments(int32_t current_position) {
 	std::map<std::string, FragmentStruct> *complete = FragmentThread::findCompleteFragments(
 		this->fragment_dict,
 		this->max_distance,
-		current_position
-	)
+		current_position);
 	// 	std::map<std::string, FragmentStruct> *collapsed = FragmentThread::collapseFragments(complete);
 	
-	FragmentThread::writeFragmentsToFile(collapsed, this->outmame);
+	//FragmentThread::writeFragmentsToFile(collapsed, this->outmame);
 
 	// gc
 	delete complete;
@@ -259,71 +262,158 @@ FragmentThread::writeFragments(int32_t current_position) {
 }
 
 
+// Done Not Tested
 void 
 FragmentThread::writeFragmentsToFile(
-		const std::map<std::string, FragmentStruct> *fragments,
+		std::map<std::string, FragmentStruct> &fragments,
 		std::string filepath
 ) {
 	std::ofstream fragfile;
 	fragfile.open(filepath, std::ofstream::app);
 
-	for (auto frag = fragments->begin(); frag != fragments->end(); frag++) {
+	// print all the fragments to the file, 
+	// concatenating each attribute (except for complete flag)
+	// and joining with tab characters
+	for (auto frag = fragments.begin(); frag != fragments.end(); frag++) {
 		fragfile << frag->second.chromosome << "\t"
 			 << frag->second.start << "\t"
 			 << frag->second.end << "\t"
-			 << frag->second.cell_barcode << "\n";
+			 << frag->second.cell_barcode << "\t"
+			 << frag->second.sum << "\n";
 		
 	}
 
 	fragfile.close();
 }
 
-// Find complete fragments that are > max_dist bp away from the current BAM file position
-// @param fragments the dictionary containing ATAC fragment information
-// @param max_distance maximum allowed distance between fragment start and end postions
-// @param current_position the current_position being looked at in the position-sorted BAM file
-// @param max_collapse_dist maximum allowed distance for fragments from the same clel
-// barcode that share one Tn5 integration site to be collapsed into a single fragment
-// 
-// @description Creates a new std::map of completed fragments and removes the completed ones from the original
-std::map<std::string, FragmentStruct> *findCompleteFragments(
-	const std::map<std::string, FragmentStruct>& fragments,
-	unsigned int max_distance,
-	int32_t current_position
-) {
-	unsigned int max_collapse_dist = 20;
 
-	std::map<std::string, FragmentStruct> *completed = new std::map<std::string, FragmentStruct>;
-	unsigned int d = max_distance + max_collapse_dist;
-	for (auto frag = fragments.begin(); frag != fragments.end(); frag++) {
-		if (frag->second.complete) { 
-			// if we have a complete fragment, add it to completed and delete from old
-			if ((frag->second.end + d) < current_position) {
-				(*completed)[frag->first] = frag->second;
-				fragments.erase(frag->first);
+// Done Not Tested
+/// Collapse fragment counts that share a common start
+/// or end coordinate and are from the same cell
+// @param counts map of fragmentstructs as strings with a count value for each
+// @param fragments FragmentMap of all fragments to build position map of fragments
+// @param start bool flag if we are checking fragments at same start position, or same end position
+// setting start=true includes the FragmentStruct.start field
+std::map<std::string, int>
+FragmentThread::collapseOverlapFragments(std::map<std::string, int> &counts, FragmentMap &fragments, bool start) {
+	std::map<std::string, int> out_counts;
+
+	// startFrags is a map of keys (where key is "chromosome+start|end+cell_barcode")
+	// and where value is a list of FragmentStructs at that position
+	std::map<std::string, std::vector<FragmentStruct>> startFrags = 
+		FragmentThread::createPositionLookup(fragments, start);
+	
+	for (auto frag : startFrags) {
+		// frag.first is string key
+		// frag.second is forward list of FragmentStructs (fullfrags)
+		int windex = -1; // keep track of the index with the highest count
+		int i = 0;
+		std::vector<int> countvec;
+		for (auto x : frag.second) {
+			int this_value = counts[FragToString(x, true, true, true, true)];
+			countvec.push_back(this_value);
+
+			if (windex == -1 || this_value > countvec[windex]) {
+				windex = i;
 			}
-		} else {
-			if (frag->second.start < 0) {
-				if ((frag->second.end + d) < current_position) {
-					fragments.erase(frag->first);
-				}
-			} else if (frag->second.end < 0) {
-				if ((frag->second.start + d) < current_position) {
-					fragments.erase(frag->first);
-				}
-			} else {
-				fragments.erase(frag->first);
-			}
+
+			i++;
 		}
+
+		std::string winner = FragToString(frag.second[windex], true, true, true, true);
+
+		out_counts[winner] = std::accumulate(countvec.begin(), countvec.end(), 0);
 	}
 
-	return completed;
+	return out_counts;
 }
 
-static std::map<std::string, FragmentStruct> *collapseFragments(std::map<std::string, FragmentStruct> *fragments) {
-	return fragments;
+
+
+// FragmentStruct:
+// struct FragmentStruct {
+// 	std::string chromosome;			// 0
+// 	int32_t start;					// 1
+// 	int32_t end;					// 2
+// 	std::string cell_barcode;		// 3
+// 	bool complete;					// 4
+// };
+FragmentMap
+FragmentThread::collapseFragments(FragmentMap &fragments) {
+	// counts is a map where each key is the FragmentStruct information joined into a string
+	// separated by '|'
+	std::map<std::string, int> counts = FragmentThread::CounterMapFragment(fragments, FragToString);
+
+	// map of fragment information associated with indices
+	std::map<std::string, int> *frag_id_lookup = 
+		id_lookup<FragmentStruct, std::string>(fragments, 
+					[](FragmentStruct frag)->std::string { 
+						std::stringstream ss;
+						ss << frag.chromosome << "|" << frag.start << "|" << frag.end;
+						return ss.str();
+					}
+	);
+	// map of barcode information associated with indices
+	std::map<std::string, int> *bc_id_lookup = 
+		id_lookup<FragmentStruct, std::string>(fragments,
+					[](FragmentStruct frag)->std::string {
+						return frag.cell_barcode;
+					}
+	); 
+
+	counts = collapseOverlapFragments(counts, fragments, true);
+	counts = collapseOverlapFragments(counts, fragments, false);
+
+	std::map<int, int> row_sum;
+	std::map<int, int> row_max;
+	int max_row = 0;
+	for (auto item : counts) {
+		// rowstr contains a string of "chromosome|start|end"
+		FragmentStruct temp_s1 = StringToFrag(item.first);
+		std::string rowstr = FragToString(temp_s1, true, true, true, false);
+		// bcstr contains "cell_barcode"
+		std::string bcstr = FragToString(StringToFrag(item.first), false, false, false, true);
+
+		int this_row = frag_id_lookup->at(rowstr);
+		if (this_row > max_row) {
+			max_row = this_row;
+		}
+
+		row_sum[this_row] += item.second;
+		if (row_max[this_row] < item.second) {
+			row_max[this_row] = item.second;
+		}
+
+	}
+	
+	// free up a bit of space?
+	// counts.clear();
+	std::map<int, std::string> frag_inverse = invertMap(frag_id_lookup);
+	std::map<int, std::string> bc_inverse = invertMap(bc_id_lookup);
+	std::vector<std::string> collapsed_frags;
+	for (int i = 0; i < max_row; i++) {
+		collapsed_frags.push_back(frag_inverse[i]);
+	}
+	std::vector<std::string> collapsed_barcodes;
+	for (auto it : row_max) {
+		collapsed_barcodes.push_back(bc_inverse[it.second]);
+	}
+
+// need to test all this crap
+	std::vector<FragmentStruct> collapsed;
+	for (int i = 0; i < collapsed_barcodes.size(); i++) {
+
+	}
+
+
+	
+
+	delete frag_id_lookup;
+	delete bc_id_lookup;
+	return fragments; // temp return
 }
 
+// Done
 /// Increment the fragment_count member on this FragmentThread
 /// If the count is greater than the chunksize, reset the count and return true to indicate
 /// that the fragment dictionary needs to be written to the file

@@ -1,5 +1,6 @@
 #include <string>
 #include <map>
+#include <vector>
 #include <Rcpp.h>
 #include "bam.h"
 #include <htslib/sam.h>
@@ -45,7 +46,11 @@ struct FragmentStruct {
 	int32_t end;					// 2
 	std::string cell_barcode;		// 3
 	bool complete;					// 4
+	int sum;
 };
+
+typedef std::map<std::string, FragmentStruct> FragmentMap;
+
 
 // Class for a single FragmentThread
 // holds input information as well as result information
@@ -86,7 +91,7 @@ public:
 	unsigned int chunksize;
 	unsigned int fragment_count;
 
-	std::map<std::string, FragmentStruct> fragment_dict;
+	FragmentMap fragment_dict;
 	
 	// fetchCall is given as callback to samfetch to call for every segment
 	// the parent FragmentThread is passed in through second arg
@@ -94,12 +99,19 @@ public:
 	// typedef for int function called bam_fetch_f which takes a bam1_t and void *
 	static int fetchCall(const bam1_t *, void *);
 
-	static std::map<std::string, FragmentStruct> 
-		*findCompleteFragments(std::map<std::string, FragmentStruct> *, unsigned int, int32_t);
-	
-	static void writeFragmentsToFile(std::map<std::string, FragmentStruct> *, std::string);
+	static FragmentMap collapseFragments(FragmentMap &);
 
-	static std::map<std::string, FragmentStruct> *collapseFragments(std::map<std::string, FragmentStruct> *);
+	static FragmentMap *findCompleteFragments(FragmentMap &, unsigned int, int32_t);
+
+	static std::map<std::string, int> collapseOverlapFragments(std::map<std::string, int> &, FragmentMap &, bool start);
+	
+	static void writeFragmentsToFile(FragmentMap &, std::string);
+
+	static std::map<std::string, int> CounterMapFragment(
+		FragmentMap &, std::function<std::string(FragmentStruct&, bool, bool, bool, bool)>);
+
+	static std::map<std::string, std::vector<FragmentStruct>> createPositionLookup(
+		FragmentMap &, bool);
 
 	// equivalent to  getFragments in sinto_fragments.py
 	void operator() ();
@@ -119,7 +131,7 @@ public:
 	// we need to write to file, otherwise false
 	bool updateFragmentCount();
 
-	void writeFragments(const bam1_t *);
+	void writeFragments(const int32_t);
 
 
 

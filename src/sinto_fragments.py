@@ -110,6 +110,11 @@ def collapseFragments(fragments):
     gc.collect()
 
     # create sparse matrix of fragment counts from fraglist (column, row, value)
+    # so looks like data is indexed by row and column.
+	# so mat[row[i]][col[j]] is data[i][j]
+	# in this case, columns are barcodes
+	# and rows are fragment (chromosome|start|end)
+	# only purpose of this matrix is to get rowmax and row sums
     mat = sparse.coo_matrix(
         (data, (np.array(row), np.array(col))),
         shape=(max(frag_id_lookup.values()) + 1, max(bc_id_lookup.values()) + 1),
@@ -134,7 +139,7 @@ def collapseFragments(fragments):
             frag.append(collapsed_barcodes[i])
             frag.append(rowsum[i][0])
             collapsed.append(frag)
-    return collapsed
+    return collapsed # return [chromosome, start, end, barcode, rowsum]
 
 
 def id_lookup(l):
