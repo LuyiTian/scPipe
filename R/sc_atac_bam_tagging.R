@@ -19,9 +19,7 @@ sc_atac_bam_tagging <- function(inbam,
                                 output_folder = NULL,
                                 bc_length = NULL,
                                 bam_tags = list(bc="CB", mb="OX"),
-                                nthreads = 1,
-                                max_memory = 64
-) {
+                                nthreads = 1) {
 
   if (any(!file.exists(inbam))) {
     stop("At least one input bam file should be present")
@@ -73,7 +71,7 @@ sc_atac_bam_tagging <- function(inbam,
   cat("\n")
 
   # Rsamtools::sortBam(outbam, outsortedbam, indexDestination = TRUE, maxMemory = 1024/32*max_memory)
-  Rsamtools::indexBam(paste0(outsortedbam, ".bam"), maxMemory = 1024*max_memory)
+  Rsamtools::indexBam(paste0(outsortedbam, ".bam"))
 
   cat("Sorted & indexed tagged BAM file is located in: \n")
   }

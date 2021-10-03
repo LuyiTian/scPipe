@@ -122,7 +122,7 @@ sc_atac_cell_calling <- function(mat,
   }
   
   # Store output matrix
-  Matrix::writeMM(Matrix::Matrix(out_mat), file =file.path(output_folder, 'cell_called_matrix.mtx'))
+  # Matrix::writeMM(Matrix::Matrix(out_mat), file =file.path(output_folder, 'cell_called_matrix.mtx'))
   cat("cell called and stored in ", output_folder, "\n")
   utils::write.table(barcodes, file = file.path(output_folder, 'non_empty_barcodes.txt'), sep = '\t',
               row.names = FALSE, quote = FALSE, col.names = FALSE)

@@ -5,7 +5,6 @@
 #' 
 #' @param inbam The tagged, sorted and duplicate-free input BAM file 
 #' @param samtools_path The path of the samtools executable (if a custom installation is to be specified)
-#' @param max_memory The maximum amount of memory able to be used by the function in GB
 #' @param output_folder The path of the output folder 
 #'
 #' @export
@@ -104,7 +103,7 @@ sc_atac_remove_duplicates <- function(inbam,
         }
 
         
-        Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"), max_memory = 1024*max_memory)
+        Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"))
         
         system2("rm", paste(inbam.name, "namecollate.bam", sep="_"))
         system2("rm", paste(inbam.name, "positionsort.bam", sep="_"))
