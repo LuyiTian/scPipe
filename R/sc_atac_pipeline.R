@@ -10,8 +10,19 @@
 #' @param feature_type The feature type (either `genome_bin` or `peak`)
 #' @param remove_duplicates Whether or not to remove duplicates (samtools is required) 
 #' @param samtools_path A custom path of samtools to use for duplicate removal
-#' @param cell_calling The desired cell calling method (either `emptydrops`, `filter`, or `cellranger`)
-#' @param output_folder The path of the output folder
+#' @param bin_size The size of the bins for feature counting with the `genome_bin` feature type
+#' @param yieldsize The number of reads to read in for feature counting
+#' @param mapq The minimum MAPQ score
+#' @param exclude_regions Whether or not the regions should be excluded
+#' @param excluded_regions_filename The filename of the file containing the regions to be excluded
+#' @param cell_calling The desired cell calling method either \code{cellranger}, \code{emptydrops} or  \code{filter}
+#' @param promoters_file The path of the promoter annotation file (if the specified organism isn't recognised)
+#' @param tss_file The path of the tss annotation file (if the specified organism isn't recognised)
+#' @param enhs_file The path of the enhs annotation file (if the specified organism isn't recognised)
+#' @param gene_anno_file The path of the gene annotation file (gtf or gff3 format)
+#' @param fix_chr Specify `none`, `exclude_regions`, `feature` or `both` to prepend the string "chr" to the start of the associated file
+#' @param lower the lower threshold for the data if using the \code{emptydrops} function for cell calling.
+#' @param genome_size The size of the genome (used for the \code{cellranger} cell calling method)
 #' @param min_uniq_frags The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)
 #' @param max_uniq_frags The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)
 #' @param min_frac_peak The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)
@@ -20,7 +31,8 @@
 #' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
 #' @param report Whether or not a HTML report should be produced
-#' @param nthreads The number of threads to use for the alignment and demultiplexing
+#' @param nthreads The number of threads to use for alignment (sc_align) and demultiplexing (sc_atac_bam_tagging)
+#' @param output_folder The path of the output folder
 #'
 #' @export
 #' 
@@ -34,11 +46,17 @@ sc_atac_pipeline <- function(r1,
                              samtools_path = NULL,
                              genome_size   = NULL,
                              bin_size      = NULL,
-                             yieldsize     = 1000000,
+                             yieldsize     = 10000000,
                              mapq          = 30,
                              exclude_regions = TRUE,
+                             excluded_regions_filename = NULL,
                              fix_chr = "none",
+                             lower = NULL,
                              cell_calling = "filter",
+                             promoters_file = NULL,
+                             tss_file       = NULL,
+                             enhs_file      = NULL,
+                             gene_anno_file = NULL,
                              min_uniq_frags = 0,
                              max_uniq_frags = 50000,
                              min_frac_peak = 0,
@@ -114,12 +132,18 @@ sc_atac_pipeline <- function(r1,
                             organism      = organism,
                             cell_calling  = cell_calling,
                             genome_size   = genome_size,
+                            promoters_file = promoters_file,
+                            tss_file       = tss_file,
+                            enhs_file      = enhs_file,
+                            gene_anno_file = gene_anno_file,
                             bin_size      = bin_size,
                             yieldsize     = yieldsize,
                             mapq          = mapq,
                             exclude_regions = exclude_regions,
+                            excluded_regions_filename = excluded_regions_filename,
                             output_folder = output_folder,
                             fix_chr       = fix_chr,
+                            lower         = lower,
                             min_uniq_frags = min_uniq_frags,
                             max_uniq_frags = max_uniq_frags,
                             min_frac_peak = min_frac_peak,
@@ -158,7 +182,7 @@ sc_atac_pipeline_quick_test <- function() {
       message(e)
     },
     finally = {
-      # system2("rm", c("-rf", output_folder))
+      system2("rm", c("-rf", output_folder))
     }
   )
 }

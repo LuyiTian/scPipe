@@ -89,27 +89,27 @@ DT::datatable(alignment_stats_chrom)
 # Demultiplexing statistics
 ```{r}
 stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-raw <- read.csv(stats_file)
-colnames(raw) <- c("barcode", "flag", "type", "reads")
+raw <- utils::read.csv(stats_file)
 
-filtered <- aggregate(raw$reads, by=list(type=raw$type), FUN=length)
-colnames(filtered) <- c("status", "count")
+sums <- data.frame(colSums(raw[,!(names(raw) %in% c("barcode", "count"))])) %>% tibble::rownames_to_column()
+colnames(sums) <- c("status", "count")
 ```
 
 ```{r demux-stats-table, fig.wide = TRUE, fig.asp = 0.9}
-DT::datatable(filtered, options=list(paging=FALSE, searching=FALSE))
+DT::datatable(sums, options=list(paging=FALSE, searching=FALSE))
 ```
 
 ```{r demux-stats-graph, fig.wide = TRUE, fig.asp = 0.9}
-filtered$count <- filtered$count / sum(filtered$count)
-ggplot(filtered, aes(x=status, y=count, fill=status)) +
+sums$count <- sums$count / sum(sums$count)
+ggplot(sums, aes(x=status, y=count, fill=status)) +
   scale_fill_brewer(palette="Dark2") +
   geom_col() +
   theme(axis.text.x = element_text(angle = 30,
                                      hjust = 1)) +
-  ggtitle("Demultiplex Statistics") +
+  ggtitle("Mapping statistics") +
   xlab("Status") +
   ylab("Count")
+
 ```
 
 # Read count distribution across barcodes
@@ -117,20 +117,13 @@ ggplot(filtered, aes(x=status, y=count, fill=status)) +
 A bar plot showing the distribution of read counts across a random sample of 100 barcodes, ordered by the read count.
 ```{r barcode-counts-dist, fig.wide = TRUE, fig.asp = 0.9}
 
-n_reads_barcode_filename    <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-number_of_reads_per_barcode <- read.csv(n_reads_barcode_filename)
+stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
+raw <- utils::read.csv(stats_file) %>% sample_n(100) %>% dplyr::arrange(count)
+raw$log2_count <- log2(raw$count)
 
-number_of_reads_per_barcode <- number_of_reads_per_barcode %>%
-  dplyr::select(barcode, number_of_reads) %>%
-  dplyr::distinct() %>%
-  sample_n(100) %>%
-  dplyr::arrange(number_of_reads)
-
-number_of_reads_per_barcode$log2_number_of_reads <- log2(number_of_reads_per_barcode$number_of_reads)
-
-ggplot(number_of_reads_per_barcode,
-                aes(x=reorder(barcode, number_of_reads),
-                    y=log2_number_of_reads)) +
+ggplot(raw,
+  aes(x=reorder(barcode, count),
+      y=log2_count)) +
   geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") +
   xlab("barcode") +
   ylab("log_2 number_of_reads") +
@@ -138,18 +131,6 @@ ggplot(number_of_reads_per_barcode,
         axis.ticks.x = element_blank()) +
   scale_y_continuous(limits = c(0, NA),
                      expand = expansion(mult = c(0, 0.1)))
-
-ggpubr::gghistogram(number_of_reads_per_barcode,
-                    x = "log2_number_of_reads",
-                    y = "..count..",
-                    title = "Counts per cell",
-                    color = "#00AFBB",
-                    fill = "#00AFBB",
-                    bins = 30,
-                    rug = TRUE,
-                    add = "mean",
-                    add_density = TRUE
-                    )
 ```
 
 # Duplicate removal statistics 

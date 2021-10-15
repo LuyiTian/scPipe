@@ -14,6 +14,7 @@ sc_aligning(
   output_file = NULL,
   input_format = "FASTQ",
   output_format = "BAM",
+  type = "dna",
   nthreads = 1
 )
 }
@@ -35,6 +36,8 @@ sc_aligning(
 \item{input_format}{a string indicating the input format}
 
 \item{output_format}{a string indicating the output format}
+
+\item{type}{type of sequencing data (`RNA` or `DNA`)}
 
 \item{nthreads}{numeric value giving the number of threads used for mapping.}
 }

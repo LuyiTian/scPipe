@@ -5,7 +5,6 @@
 #' 
 #' @param inbam The tagged, sorted and duplicate-free input BAM file 
 #' @param samtools_path The path of the samtools executable (if a custom installation is to be specified)
-#' @param max_memory The maximum amount of memory able to be used by the function in GB
 #' @param output_folder The path of the output folder 
 #'
 #' @export
@@ -79,10 +78,11 @@ sc_atac_remove_duplicates <- function(inbam,
         
         
         inbam.name <- substr(inbam, 0, nchar(inbam)-4)
-        
-        system2(samtools, c("collate", "-o", paste(inbam.name, "namecollate.bam", sep="_"), inbam))
-        system2(samtools, c("fixmate", "-m", paste(inbam.name, "namecollate.bam", sep="_"), paste(inbam.name, "fixmate.bam", sep="_")))
-        
+        cat("Sorting the BAM file by name\n")
+        system2(samtools, c("sort", "-n", "-o", paste(inbam.name, "namesorted.bam", sep="_"), inbam))
+        cat("Running fixmate on the sorted BAM File\n")
+        system2(samtools, c("fixmate", "-m", paste(inbam.name, "namesorted.bam", sep="_"), paste(inbam.name, "fixmate.bam", sep="_")))
+        cat("Sorting the BAM file by coordinates\n")
         # Remove existing copy if one exists
         output.bam <- paste0(output_folder, "/", basename(inbam.name), "_markdup.bam")
         if (file.exists(output.bam)) {
@@ -93,6 +93,7 @@ sc_atac_remove_duplicates <- function(inbam,
 
         # Note: the output bam file is originally created in the same directory as the input bam file
         
+        cat("Running samtools markdup now")
         # Check if the version of samtools is 1.10 or greater (to have the stats functionality)
         version.text <- strsplit(strsplit(system2(samtools, "--version", stdout=TRUE)[1], " ")[[1]][2], "\\.")[[1]]
         if (as.numeric(version.text[1]) < 1 || (as.numeric(version.text[1]) >= 1 && as.numeric(version.text[2]) < 10)) {
@@ -103,10 +104,10 @@ sc_atac_remove_duplicates <- function(inbam,
           system2(samtools, c("markdup", "-s", "-f", file.path(log_and_stats_folder, "duplicate_removal_stats.txt"), "-r", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "markdup.bam", sep="_")))
         }
 
-        
-        Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"), max_memory = 1024*max_memory)
-        
-        system2("rm", paste(inbam.name, "namecollate.bam", sep="_"))
+        cat("Indexing the BAM file\n")
+        Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"))
+        cat("step 6\n")
+        system2("rm", paste(inbam.name, "namesorted.bam", sep="_"))
         system2("rm", paste(inbam.name, "positionsort.bam", sep="_"))
         system2("rm", paste(inbam.name, "fixmate.bam", sep="_"))
         
