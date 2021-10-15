@@ -349,13 +349,18 @@ sc_atac_feature_counting <- function(
       b <- as(as(m, "dgCMatrix"), "dgTMatrix")
       s <- cbind.data.frame(i = b@i + 1, j = b@j + 1, x = b@x)
      
-      
+
       i <- match(rownames(m), rows)[s$i]
       j <- match(colnames(m), cols)[s$j]
-      ilj <- i<j
+      # ilj <- i<j
 
-      sparseMatrix(i=ifelse(ilj, i, j),
-                   j=ifelse(ilj, j, i),
+      # sparseMatrix(i=ifelse(ilj, i, j),
+      #              j=ifelse(ilj, j, i),
+      #              x=s$x,
+      #              dims=c(nrows, ncols),
+      #              dimnames=list(rows, cols))
+      sparseMatrix(i=i,
+                   j=j,
                    x=s$x,
                    dims=c(nrows, ncols),
                    dimnames=list(rows, cols))
@@ -374,6 +379,7 @@ sc_atac_feature_counting <- function(
   total_reads <- 0 # total reads in BAM file in that satisfy the specified parameter
   all_bcs <- c() # all the unique barcodes in the BAm file
   last_time <- NULL
+
   while(length(yld <- GenomicAlignments::readGAlignments(bamfl, use.names = TRUE, param = param))) {
     yld.gr                         <- GenomicRanges::makeGRangesFromDataFrame(yld, keep.extra.columns=TRUE) 
     cat("Chunk", iter)

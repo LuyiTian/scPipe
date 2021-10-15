@@ -91,22 +91,32 @@ sc_atac_bam_tagging <- function(inbam,
     ,
     flag =
       c(73, 133, 89, 121, 165, 181, 101, 117, 153, 185, 69, 137, 77, 141, 99, 147, 83, 163, 67, 131, 115, 179, 81, 161, 97, 145, 65, 129, 113, 177))
-
-
-  bam0 <- Rsamtools::scanBam(inbam)
-  barcodes <- substr(bam0[[1]]$qname, 1, bc_length)
-
-  barcode_info <- tibble::tibble(
-    barcode = barcodes,
-    flag    = bam0[[1]]$flag) %>%
-    dplyr::left_join(flag_defs, by = "flag") %>%
-    dplyr::left_join(as.data.frame(table(barcodes)) %>%
-                purrr::set_names(c("barcode", "number_of_reads")),
-              by = "barcode")
-
-  barcode_stats_filename <- file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv")
-  cat("Saving csv file with barcode stats in", barcode_stats_filename, "\n")
-  utils::write.csv(barcode_info, barcode_stats_filename, row.names = FALSE)
+  
+  cat("Generating mapping statistics per barcode\n")
+  cat("Iterating through 5,000,000 reads at a time\n")
+  bamfl <- open(Rsamtools::BamFile(outbam, yieldSize = 5000000))
+  params <- Rsamtools::ScanBamParam(what=c("flag"), tag=c("CB"))
+  iter <- 1
+  full_matrix = NULL
+  
+  while(length((bam0 <- Rsamtools::scanBam(bamfl, param = params)[[1]])$flag)) {
+    cat("chunk", iter, "\n")
+    df <- data.table::setDT(data.frame(bam0$tag$CB, bam0$flag) %>% `names<-`(c("barcode", "flag")) %>% dplyr::left_join(flag_defs, by = "flag"))[, !"flag"]
+    x <- df[, list(count=.N), names(df)]
+    x <- data.table::dcast(x, barcode ~ type, value.var = "count")
+    for (i in seq_along(x)) set(x, i=which(is.na(x[[i]])), j=i, value=0)
+    if (is.null(full_matrix)) {
+      full_matrix <- as.matrix(x, rownames=TRUE)
+    } else {
+      full_matrix <- add_matrices(full_matrix, as.matrix(x, rownames=TRUE))
+    }
+    iter <- iter+1
+  }
+  df <- setnames(data.table::setDT(as.data.frame(full_matrix), keep.rownames = TRUE), "rn", "barcode")
+  df[ ,count := rowSums(.SD), .SDcols = names(df[,!"barcode"])]
+  data.table::fwrite(df, file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv"))
+  
+  print(df)
 
   cat(
     paste0(

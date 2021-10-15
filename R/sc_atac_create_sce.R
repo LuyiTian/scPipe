@@ -54,11 +54,8 @@ sc_atac_create_sce <- function(input_folder = NULL,
   
 
   # generating the SCE object
-  cat("test\n")
-  
   sce                         <- SingleCellExperiment(assays = list(counts = feature_cnt))
-  cat('test2\n')
-  
+
   sce@metadata$scPipe$version <- packageVersion("scPipe")  # set version information
   
   if(!is.null(organism)){
@@ -70,16 +67,12 @@ sc_atac_create_sce <- function(input_folder = NULL,
   }
   
   # Saving demultiplexing stats to sce object
-  # stats_file = file.path(input_stats_folder, "mapping_stats_per_barcode.csv")
-  # 
-  # raw <- read.csv(stats_file)
-  # colnames(raw) <- c("barcode", "flag", "type", "reads")
-  # 
-  # filtered <- stats::aggregate(raw$reads, by=list(type=raw$type), FUN=length)
-  # colnames(filtered) <- c("status", "count")
-  # demultiplex_info(sce) <- filtered
+  stats_file <- file.path(input_stats_folder, "mapping_stats_per_barcode.csv")
+  raw <- read.csv(stats_file, row.names = "barcode")
+  
   
   QC_metrics(sce) <- cell_stats
+  demultiplex_info(sce) <- raw
   
   
   
