@@ -35,7 +35,6 @@ Specify the output folder.
 
 ```{r}
 output_folder <- tempdir()
-output_folder <- "/stornext/Home/data/allstaff/y/yang.p/scPipe_testing/scPipe_atac_output_1"
 ```
 
 # Fastq reformatting

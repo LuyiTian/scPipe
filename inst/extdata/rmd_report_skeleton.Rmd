@@ -86,7 +86,7 @@ knitr::kable(alignment_stats_chrom,
 DT::datatable(alignment_stats_chrom)
 ```
 
-# Demultiplexing statistics
+# Aggregate alignment statistics of demultiplexed reads
 ```{r}
 stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
 raw <- utils::read.csv(stats_file)
@@ -111,6 +111,34 @@ ggplot(sums, aes(x=status, y=count, fill=status)) +
   ylab("Count")
 
 ```
+
+# Alignment statistics of demultiplexed reads per barcode
+```{r barcode-alignment-dist, fig.wide = TRUE, fig.asp = 0.9}
+stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
+data <- read.csv(stats_file, row.names = "barcode")[-5] %>% sample_n(500) 
+
+mapping_stat <- data %>% arrange(mapped)
+mapping_stat$barcode <- stats::reorder(rownames(mapping_stat), mapping_stat$mapped)
+mapping_stat_prop <- as.data.frame(prop.table(as.matrix(mapping_stat[, sapply(mapping_stat, is.numeric)]), 1))
+mapping_stat_prop$barcode <- mapping_stat$barcode
+dat.m <- melt(mapping_stat, id.vars="barcode")
+dat.m1 <- melt(mapping_stat_prop, id.vars="barcode")
+colnames(dat.m)[2] <- "type"
+colnames(dat.m1)[2] <- "type"
+
+ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_brewer(palette="Set1")+
+  geom_bar(stat="identity", width=1)+
+  xlab("barcode") +
+  ylab("percentage of reads")+
+  scale_y_continuous(labels=percent_format()) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.x = element_text(vjust = 5),
+        plot.title = element_text(vjust = -2)) +
+  ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads")) 
+
+```
+
 
 # Read count distribution across barcodes
 

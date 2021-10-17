@@ -116,8 +116,6 @@ sc_atac_bam_tagging <- function(inbam,
   df[ ,count := rowSums(.SD), .SDcols = names(df[,!"barcode"])]
   data.table::fwrite(df, file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv"))
   
-  print(df)
-
   cat(
     paste0(
       "sc_atac_tagging finishes at ",
