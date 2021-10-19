@@ -14,6 +14,7 @@ sc_aligning(
   output_file = NULL,
   input_format = "FASTQ",
   output_format = "BAM",
+  type = "dna",
   nthreads = 1
 )
 }

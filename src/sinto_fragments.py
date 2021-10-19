@@ -1,5 +1,5 @@
 import pysam
-from sinto import utils
+import utils # from sinto import utils
 from scipy import sparse
 import numpy as np
 from collections import Counter, defaultdict
@@ -424,7 +424,16 @@ def addToFragments(
             fragments[qname][1] = rstart
     return fragments
 
-
+def test():
+	fragments(
+		"/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/demux_testfastq_S1_L001_R1_001_aligned.bam",
+		"/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/sinto_output/sinto.frag",
+		min_mapq=30,
+		nproc=1,
+		cellbarcode="CB",
+		
+	)
+	
 def fragments(
     bam,
     fragment_path,

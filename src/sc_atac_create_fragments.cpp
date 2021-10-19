@@ -13,7 +13,7 @@ using namespace Rcpp;
 //' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
 //'
 //' @param inbam The tagged, sorted and duplicate-free input BAM file
-//' @param output_folder The path of the output folder
+//' @param output The path of the output folder
 //' @param contigs character vector of chromosome names from get_chromosomes()
 //' @param ends integer vector of reference lengths acquired from get_chromosomes()
 //' @param fragment_path : str
@@ -49,7 +49,7 @@ using namespace Rcpp;
 //'    faster.
 //' @import Rhtslib
 //' @import Rcpp
-//' @useDynLib scPipeFragments, .registration=TRUE
+//' @useDynLib scPipe, .registration=TRUE
 //' @export
 // [[Rcpp::export]]
 void sc_atac_create_fragments_cpp(
@@ -79,12 +79,12 @@ void sc_atac_create_fragments_cpp(
 
 
 	Rcpp::Rcout << "Output file name is: " << output << "\n";
-	int i = 0;
+	//int i = 0;
 	for (int i = 0; i < nproc; i++) {
 		// setup fragment thread objects
 		std::string outname = output + "/tempFragmentFile" + std::to_string(i);
 
-		outnames.push_back(output);
+		outnames.push_back(outname);
 		std::string contig = String(contigs[i]).get_cstring();
 
 		// create the bam_header_t and find the tid for this contig
@@ -94,8 +94,8 @@ void sc_atac_create_fragments_cpp(
 		bam_close(bam);
 
 		FragmentThread frag (
-			output,
-			String(contigs[i]).get_cstring(),
+			outname,
+			contig,
 			tid,
 			ends[i],
 			inbam,
@@ -117,7 +117,7 @@ void sc_atac_create_fragments_cpp(
 		th.join();
 	}
 
-	// now we can access the files
+	// now we can access the files to merge together??
 
 	Rcout << "Finished threading\n";
 }

@@ -2,9 +2,12 @@
 #include <Rcpp.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <regex>
 #include <map>
 #include <forward_list>
+#include <numeric>
+
 #include "bam.h"
 #include <htslib/bgzf.h>
 #include <htslib/sam.h>
@@ -46,27 +49,6 @@ FragmentThread::FragmentThread(
 	this->fragment_count = 0;
 }
 
-// Done Not Tested
-// fetchCall gets called for every segment in the bam file,
-// so multiple times for one FragmentThread
-// the parent FragmentThread class is passed in through data?
-// bam1_t is struct containing the info for this specific segment
-int
-	FragmentThread::fetchCall(const bam1_t *b, void *data) {
-		FragmentThread *frag = (FragmentThread *)data;
-
-		// update the fragment map with this segments data 
-		// retrived from the bam1_t aligned segment
-		frag->updateFragmentDict(b);
-
-		if (frag->updateFragmentCount()) {
-			// Find the complete fragments, remove from the fragment dict,
-			// collapse them and then write to file
-			frag->writeFragments(bam_alignment_start(b));
-		}
-
-		return 1; // safe return value
-	}
 
 //' Update dictionary of ATAC fragments
 //'
@@ -220,7 +202,6 @@ void
 	}
 
 
-
 //' FragmentThread() is equivalent to old getFragments
 //'
 //' Execution thread to iterate over paired reads in BAM file and extract
@@ -230,7 +211,11 @@ void
 //' All required parameters are in class constructor and private variables
 void
 	FragmentThread::operator() () {
-		Rcpp::Rcout << "This is a fragment thread with contig : " << this->contig << "\n";
+		Rcpp::Rcout << "This is inside FragmentThread with contig: " << this->contig << "\n";
+		std::ofstream fragfile;
+		fragfile.open(this->outname, std::ofstream::app);
+		fragfile << "THIS IS A FRAG FILE\n";
+		fragfile.close();
 
 		bamFile bam = bam_open(this->bam.c_str(), "r"); // bam.h
 		bam_index_t *index = bam_index_load(this->bam.c_str()); // bam.h
@@ -238,48 +223,76 @@ void
 		
 		
 		// for the final writeFragments call, pass in inf 
-		//this->writeFragments(infinity); 
+		this->writeFragments(4294967295); // 4294967295 is max unsigned int
 
 		bam_close(bam); // bam.h
 	}
 
 
-
-//////////////////////////// utility functions for writing //////////////////
 void
-FragmentThread::writeFragments(int32_t current_position) {
-	std::map<std::string, FragmentStruct> *complete = FragmentThread::findCompleteFragments(
-		this->fragment_dict,
-		this->max_distance,
-		current_position);
-	// 	std::map<std::string, FragmentStruct> *collapsed = FragmentThread::collapseFragments(complete);
-	
-	//FragmentThread::writeFragmentsToFile(collapsed, this->outmame);
+FragmentThread::writeFragments(unsigned int current_position) {
+	FragmentMap complete = this->findCompleteFragments(current_position);
 
-	// gc
-	delete complete;
-	// delete collapsed???????
+	std::vector<FragmentStruct> collapsed = FragmentThread::collapseFragments(complete);
+	
+	FragmentThread::writeFragmentsToFile(collapsed, this->outname);
 }
 
 
-// Done Not Tested
+/// Increment the fragment_count member on this FragmentThread
+/// If the count is greater than the chunksize, reset the count and return true to indicate
+/// that the fragment dictionary needs to be written to the file
+bool
+FragmentThread::updateFragmentCount() {
+	if (++(this->fragment_count) > this->chunksize) {
+		this->fragment_count = 0;
+		return true;
+	}
+	return false;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+/////       Below contains all static utility functions for the FragmentThread class   /////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+// fetchCall gets called for every segment in the bam file,
+// so multiple times for one FragmentThread
+// the parent FragmentThread class is passed in through data?
+// bam1_t is struct containing the info for this specific segment
+int
+FragmentThread::fetchCall(const bam1_t *b, void *data) {
+	FragmentThread *frag = (FragmentThread *)data;
+
+	// update the fragment map with this segments data 
+	// retrived from the bam1_t aligned segment
+	frag->updateFragmentDict(b);
+
+	if (frag->updateFragmentCount()) {
+		// Find the complete fragments, remove from the fragment dict,
+		// collapse them and then write to file
+		frag->writeFragments((unsigned int) bam_alignment_start(b));
+	}
+
+	return 1; // safe return value
+}
+
 void 
 FragmentThread::writeFragmentsToFile(
-		std::map<std::string, FragmentStruct> &fragments,
-		std::string filepath
-) {
+		std::vector<FragmentStruct> &fragments,
+		std::string filepath) {
 	std::ofstream fragfile;
 	fragfile.open(filepath, std::ofstream::app);
 
 	// print all the fragments to the file, 
 	// concatenating each attribute (except for complete flag)
 	// and joining with tab characters
-	for (auto frag = fragments.begin(); frag != fragments.end(); frag++) {
-		fragfile << frag->second.chromosome << "\t"
-			 << frag->second.start << "\t"
-			 << frag->second.end << "\t"
-			 << frag->second.cell_barcode << "\t"
-			 << frag->second.sum << "\n";
+	for (auto frag : fragments) {
+		fragfile << frag.chromosome << "\t"
+			 << frag.start << "\t"
+			 << frag.end << "\t"
+			 << frag.cell_barcode << "\t"
+			 << frag.sum << "\n";
 		
 	}
 
@@ -287,66 +300,17 @@ FragmentThread::writeFragmentsToFile(
 }
 
 
-// Done Not Tested
-/// Collapse fragment counts that share a common start
-/// or end coordinate and are from the same cell
-// @param counts map of fragmentstructs as strings with a count value for each
-// @param fragments FragmentMap of all fragments to build position map of fragments
-// @param start bool flag if we are checking fragments at same start position, or same end position
-// setting start=true includes the FragmentStruct.start field
-std::map<std::string, int>
-FragmentThread::collapseOverlapFragments(std::map<std::string, int> &counts, FragmentMap &fragments, bool start) {
-	std::map<std::string, int> out_counts;
-
-	// startFrags is a map of keys (where key is "chromosome+start|end+cell_barcode")
-	// and where value is a list of FragmentStructs at that position
-	std::map<std::string, std::vector<FragmentStruct>> startFrags = 
-		FragmentThread::createPositionLookup(fragments, start);
-	
-	for (auto frag : startFrags) {
-		// frag.first is string key
-		// frag.second is forward list of FragmentStructs (fullfrags)
-		int windex = -1; // keep track of the index with the highest count
-		int i = 0;
-		std::vector<int> countvec;
-		for (auto x : frag.second) {
-			int this_value = counts[FragToString(x, true, true, true, true)];
-			countvec.push_back(this_value);
-
-			if (windex == -1 || this_value > countvec[windex]) {
-				windex = i;
-			}
-
-			i++;
-		}
-
-		std::string winner = FragToString(frag.second[windex], true, true, true, true);
-
-		out_counts[winner] = std::accumulate(countvec.begin(), countvec.end(), 0);
-	}
-
-	return out_counts;
-}
-
-
-
-// FragmentStruct:
-// struct FragmentStruct {
-// 	std::string chromosome;			// 0
-// 	int32_t start;					// 1
-// 	int32_t end;					// 2
-// 	std::string cell_barcode;		// 3
-// 	bool complete;					// 4
-// };
-FragmentMap
+std::vector<FragmentStruct>
 FragmentThread::collapseFragments(FragmentMap &fragments) {
 	// counts is a map where each key is the FragmentStruct information joined into a string
 	// separated by '|'
 	std::map<std::string, int> counts = FragmentThread::CounterMapFragment(fragments, FragToString);
 
+	// early break if we have an empty map??
+
 	// map of fragment information associated with indices
 	std::map<std::string, int> *frag_id_lookup = 
-		id_lookup<FragmentStruct, std::string>(fragments, 
+		id_lookup(fragments, 
 					[](FragmentStruct frag)->std::string { 
 						std::stringstream ss;
 						ss << frag.chromosome << "|" << frag.start << "|" << frag.end;
@@ -355,14 +319,14 @@ FragmentThread::collapseFragments(FragmentMap &fragments) {
 	);
 	// map of barcode information associated with indices
 	std::map<std::string, int> *bc_id_lookup = 
-		id_lookup<FragmentStruct, std::string>(fragments,
+		id_lookup(fragments,
 					[](FragmentStruct frag)->std::string {
 						return frag.cell_barcode;
 					}
 	); 
 
-	counts = collapseOverlapFragments(counts, fragments, true);
-	counts = collapseOverlapFragments(counts, fragments, false);
+	counts = collapseOverlapFragments(counts, true);
+	counts = collapseOverlapFragments(counts, false);
 
 	std::map<int, int> row_sum;
 	std::map<int, int> row_max;
@@ -372,7 +336,7 @@ FragmentThread::collapseFragments(FragmentMap &fragments) {
 		FragmentStruct temp_s1 = StringToFrag(item.first);
 		std::string rowstr = FragToString(temp_s1, true, true, true, false);
 		// bcstr contains "cell_barcode"
-		std::string bcstr = FragToString(StringToFrag(item.first), false, false, false, true);
+		std::string bcstr = FragToString(temp_s1, false, false, false, true);
 
 		int this_row = frag_id_lookup->at(rowstr);
 		if (this_row > max_row) {
@@ -399,123 +363,180 @@ FragmentThread::collapseFragments(FragmentMap &fragments) {
 		collapsed_barcodes.push_back(bc_inverse[it.second]);
 	}
 
-// need to test all this crap
 	std::vector<FragmentStruct> collapsed;
 	for (int i = 0; i < collapsed_barcodes.size(); i++) {
+		if (row_sum[i] < 1) {
+			continue;
+		}
 
+		std::stringstream ss;
+		ss << collapsed_frags[i] << "|" << collapsed_barcodes[i];
+		FragmentStruct frag = StringToFrag(ss.str());
+		frag.sum = row_sum[i];
+		collapsed.push_back(frag);
 	}
-
-
 	
-
 	delete frag_id_lookup;
 	delete bc_id_lookup;
-	return fragments; // temp return
+
+	return collapsed; 
 }
 
-// Done
-/// Increment the fragment_count member on this FragmentThread
-/// If the count is greater than the chunksize, reset the count and return true to indicate
-/// that the fragment dictionary needs to be written to the file
-bool
-FragmentThread::updateFragmentCount() {
-	if (++(this->fragment_count) > this->chunksize) {
-		this->fragment_count = 0;
-		return true;
+
+// Find Complete fragments that are >max_dist bp away from the current BAM file position
+// @param max_ist the maximum allowed distance between fragment start and end positions
+// @param current_position the current position being looked at in the position-sorted BAM file
+// @description moves completed fragments to a new dictinary, and deletes completed fragments from
+// this instance fragment_dict.
+FragmentMap
+FragmentThread::findCompleteFragments(unsigned int current_position){
+	FragmentMap completed;
+	std::vector<std::string> to_erase;
+	unsigned int d = this->max_distance + 20;
+	for (auto item : this->fragment_dict) {
+		// item.first is key
+		// item.second is FragmentStruct
+		if (item.second.complete) {
+			// if this fragment is complete
+			if (item.second.end + d < current_position) {
+				completed[item.first] = item.second;
+				to_erase.push_back(item.first);
+			}
+		} else {
+			// remove incomplete fragments that are 
+			// too far away to ever be complete
+			if (item.second.start == -1) {
+				if (item.second.end + d < current_position) {
+					to_erase.push_back(item.first);
+				}
+			} else if (item.second.end == -1) {
+				if (item.second.start + d < current_position) {
+					to_erase.push_back(item.first);
+				}
+			} else {
+				to_erase.push_back(item.first);
+			}
+		}
 	}
-	return false;
+
+	for (auto er : to_erase) {
+		this->fragment_dict.erase(er);
+	}
+
+
+	return completed;
 }
 
+/// Collapse fragment counts that share a common start
+/// or end coordinate and are from the same cell
+// @param counts map of fragmentstructs as strings with a count value for each
+// @param fragments FragmentMap of all fragments to build position map of fragments
+// @param start bool flag if we are checking fragments at same start position, or same end position
+// setting start=true includes the FragmentStruct.start field
+std::map<std::string, int>
+FragmentThread::collapseOverlapFragments(std::map<std::string, int> &counts, bool start) {
+	std::map<std::string, int> out_counts;
 
-/// Documentation for used types and functions:
-/*! @typedef
- @abstract Structure for core alignment information.
- @field  tid     chromosome ID, defined by bam_hdr_t
- @field  pos     0-based leftmost coordinate
- @field  bin     bin calculated by bam_reg2bin()
- @field  qual    mapping quality
- @field  l_qname length of the query name
- @field  flag    bitwise flag
- @field  l_extranul length of extra NULs between qname & cigar (for alignment)
- @field  n_cigar number of CIGAR operations
- @field  l_qseq  length of the query sequence (read)
- @field  mtid    chromosome ID of next read in template, defined by bam_hdr_t
- @field  mpos    0-based leftmost coordinate of next read in template
- */
-// typedef struct {
-//     int32_t tid;
-//     int32_t pos;
-//     uint16_t bin;
-//     uint8_t qual;
-//     uint8_t l_qname;
-//     uint16_t flag;
-//     uint8_t unused1;
-//     uint8_t l_extranul;
-//     uint32_t n_cigar;
-//     int32_t l_qseq;
-//     int32_t mtid;
-//     int32_t mpos;
-//     int32_t isize;
-// } bam1_core_t;
+	// startFrags is a map of keys (where key is "chromosome+start|end+cell_barcode")
+	// and where value is a list of FragmentStructs at that position
+	std::map<std::string, std::vector<std::string>> startFrags = 
+		FragmentThread::createPositionLookup(counts, start);
+	
+	for (auto frag : startFrags) {
+		// frag.first is string key
+		// frag.second is forward list of strings of full fragments (fullfrags)
+		int windex = -1; // keep track of the index with the highest count
+		int i = 0;
+		std::vector<int> countvec;
+		for (auto x : frag.second) {
+			int this_value = counts[x];
+			countvec.push_back(this_value);
 
-/*! @typedef
- @abstract Structure for one alignment.
- @field  core       core information about the alignment
- @field  l_data     current length of bam1_t::data
- @field  m_data     maximum length of bam1_t::data
- @field  data       all variable-length data, concatenated; structure: qname-cigar-seq-qual-aux
+			if (windex == -1 || this_value > countvec[windex]) {
+				windex = i;
+			}
 
- @discussion Notes:
+			i++;
+		}
 
- 1. qname is terminated by one to four NULs, so that the following
- cigar data is 32-bit aligned; core.l_qname includes these trailing NULs,
- while core.l_extranul counts the excess NULs (so 0 <= l_extranul <= 3).
- 2. l_qseq is calculated from the total length of an alignment block
- on reading or from CIGAR.
- 3. cigar data is encoded 4 bytes per CIGAR operation.
- 4. seq is nybble-encoded according to bam_nt16_table.
- */
-// typedef struct {
-//     bam1_core_t core;
-//     int l_data;
-//     uint32_t m_data; 
-//     uint8_t *data;
-// #ifndef BAM_NO_ID
-//     uint64_t id;
-// #endif
-// } bam1_t;
-//
-// typedef BGZF *bamFile;
-//
-// typedef hts_idx_t bam_index_t;
-// bam_index_t *bam_index_load(const chart *fn);
-//
-// typedef int (*bam_fetch_f)(const bam1_t *b, void *data)
+		std::string winner = frag.second[windex];
 
+		out_counts[winner] = std::accumulate(countvec.begin(), countvec.end(), 0);
+	}
 
-// void print_core(const bam1_core_t *core) {
-// 	Rcpp::Rcout << "Core:\n\ttid " << core->tid << "\n";
-// 	Rcpp::Rcout << "\tpos " << core->pos << "\n";
-// 	Rcpp::Rcout << "\tbin " << core->bin << "\n";
-// 	Rcpp::Rcout << "\tqual " << core->qual << "\n";
-// 	Rcpp::Rcout << "\tl_qname " << core->l_qname << "\n";
-// 	Rcpp::Rcout << "\tflag " << core->flag << "\n";
-// 	Rcpp::Rcout << "\tunused1 " << core->unused1 << "\n";
-// 	Rcpp::Rcout << "\tl_extranul " << core->l_extranul << "\n";
-// 	Rcpp::Rcout << "\tn_cigar" << core->n_cigar << "\n";
-// 	Rcpp::Rcout << "\tl_qseq " << core->l_qseq << "\n";
-// 	Rcpp::Rcout << "\tl_mtid " << core->mtid << "\n";
-// 	Rcpp::Rcout << "\tmpos " << core->mpos << "\n";
-// 	Rcpp::Rcout << "\tisize" << core->isize << "\n";
-// }
-// int
-// 	SimpleFragFunc(const bam1_t *b, void *data) {
-// 		FragmentThread *frag = (FragmentThread *)data;
+	for (auto frag : counts) {
+		if (startFrags.count(FragToString(StringToFrag(frag.first),true, start, !start, true)) == 0) {
+			out_counts[frag.first] = 1;
+		}
+	}
 
-// 		std::ofstream myfile;
-// 		myfile.open(frag->outname, std::ofstream::app);
-// 		myfile << "THIS IS AN OUTPUT FILE\n";
-// 		myfile.close();
+	return out_counts;
+}
 
-// 		return 1;
-// 	}
+/// create a map where key is subsetted fragment coords (no start or no stop)
+/// value is the list of full fragments that share the coordinates in the key
+/// only entries where >1 full fragments share the same coordinate are retained.
+/// @param fragments is the FragmentMap containing all fragments
+/// @param start indicates if start should be retained. If False, end is retained
+std::map<std::string, std::vector<std::string>> 
+FragmentThread::createPositionLookup(std::vector<std::string> &frags, bool start) {
+
+	std::vector<FragmentStruct> fragsplit;
+	for (auto it : frags) {
+		fragsplit.push_back(StringToFrag(it));
+	}
+	std::vector<std::string> posfrags;
+	for (auto it : fragsplit) {
+		posfrags.push_back(FragToString(it, true, start, !start, true));
+	}
+
+	std::map<std::string, int> counts = 
+		FragmentThread::CounterMapString(posfrags);
+
+	std::map<std::string, std::vector<std::string>> starts;
+
+	// iterate over all the fragments
+	// for each string version which has >1 counts
+	// add the full fragment to the forward list at that location.
+	for (int i = 0; i < frags.size(); i++) {
+		if (counts[posfrags[i]] > 1) {
+			starts[posfrags[i]].push_back(frags[i]);
+		}
+	}
+
+	return starts;
+}
+
+// Method overloadind for createPositionLookup to
+// enable passing a 'count' map instead of fragmentMap
+std::map<std::string, std::vector<std::string>>
+FragmentThread::createPositionLookup(std::map<std::string, int> &frags, bool start) {
+	std::vector<std::string> vec_frags;
+	for (auto it : frags) {
+		vec_frags.push_back(it.first);
+	}
+
+	return FragmentThread::createPositionLookup(vec_frags, start);
+}
+
+/// General purpose function for generating a Counter map such that
+/// each value is the number of times the given key appeared in the given map
+/// Keys are generated using the provided function f.
+std::map<std::string, int>
+FragmentThread::CounterMapFragment(FragmentMap &fragments, std::function<std::string(FragmentStruct&, bool, bool, bool, bool)> f) {
+	std::map<std::string, int> counts;
+	for (auto frag : fragments) {
+		counts[f(frag.second, true, true, true, true)] += 1;
+	}
+	return counts;
+}
+
+// Overloaded function for giving a vector of strings to save the manual conversion of fragment to string
+std::map<std::string, int>
+FragmentThread::CounterMapString(std::vector<std::string> &frags) {
+	std::map<std::string, int> counts;
+	for (auto frag : frags) {
+		counts[frag]++;
+	}
+	return counts;
+}

@@ -298,6 +298,15 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// test_whatever
+void test_whatever();
+RcppExport SEXP _scPipe_test_whatever() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    test_whatever();
+    return R_NilValue;
+END_RCPP
+}
 
 RcppExport SEXP run_testthat_tests(SEXP);
 
@@ -318,6 +327,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_fasta_bin_bed_file", (DL_FUNC) &_scPipe_rcpp_fasta_bin_bed_file, 3},
     {"_scPipe_rcpp_append_chr_to_bed_file", (DL_FUNC) &_scPipe_rcpp_append_chr_to_bed_file, 2},
     {"_scPipe_sc_atac_create_fragments_cpp", (DL_FUNC) &_scPipe_sc_atac_create_fragments_cpp, 13},
+    {"_scPipe_test_whatever", (DL_FUNC) &_scPipe_test_whatever, 0},
     {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 1},
     {NULL, NULL, 0}
 };

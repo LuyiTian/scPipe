@@ -1,7 +1,8 @@
 #include <string>
-#include "FragmentThread.hpp"
-#include "FragmentUtils.hpp"
-
+#include <map>
+#include <functional>
+#include <sstream>
+#include "Fragments.hpp"
 
 std::string
 FragToString(FragmentStruct frag, bool chrom=true, bool start=true, bool end=true, bool bc=true) {
@@ -38,20 +39,18 @@ StringToFrag(std::string s) {
 		start,
 		end,
 		s,
-		true
+		true,
+		0
 	};
 }
 
-////////////////////////////////
-// Generic typedefs
-////////////////////////////////
 // create a dictionary from an iterable
-template <typename T, typename U>
-std::map<U, int> *id_lookup(std::map<std::string, T> &list, std::function<U(T)> f) {
-	std::map<U, int> *lookup = new std::map<U, int>;
+// where each unique item is key, value is the order it was inserted into the map
+std::map<std::string, int> *id_lookup(FragmentMap &list, std::function<std::string(FragmentStruct)> f) {
+	std::map<std::string, int> *lookup = new std::map<std::string, int>;
 	int x = 1;
-	for (auto el : list) {
-		U cur = f(el.second);
+	for (FragmentMap::iterator el = list.begin(); el != list.end(); el++) {
+		std::string cur = f(el->second);
 
 		if ((*lookup)[cur] == 0) {
 			(*lookup)[cur] = x++;
@@ -61,11 +60,10 @@ std::map<U, int> *id_lookup(std::map<std::string, T> &list, std::function<U(T)> 
 	return lookup;
 }
 
-template <typename T, typename U>
-std::map<U, T> invertMap(std::map<T, U> *map) {
-	std::map<U, T> i_map;
+std::map<int, std::string> invertMap(std::map<std::string, int> *map) {
+	std::map<int, std::string> i_map;
 
-	for (auto item : map) {
+	for (std::map<std::string, int>::iterator item = map->begin(); item != map->end(); item++) {
 		i_map[item->second] = item->first;
 	}
 

@@ -35,52 +35,6 @@ sc_atac_create_fragments <- function(inbam, output_folder = "") {
     }, inbam=inbam, out=output)
 }
 
-#' @export
-test_fragments <- function(server=FALSE,
-	min_mapq=30,
-	nproc=1,
-	cellbarcode="CB",
-	chromosomes="^chr",
-	readname_barcode=NULL,
-	cells=NULL,
-	max_distance=5000,
-	min_distance=10,
-	chunksize=500000) {
-
-	if (server) {
-		inbam<- "/stornext/General/data/user_managed/grpu_mritchie_1/Oliver/scPipe/sc_atac_create_fragments/demux_testfastq_S1_L001_R1_001_aligned.bam"
-		output<-"/stornext/Home/data/allstaff/v/voogd.o/sc_atac_create_fragments/outputminimal"
-	} else {
-		inbam <- "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/demux_testfastq_S1_L001_R1_001_aligned.bam"
-		output <- "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/output"
-	}
-
-
-    output = paste0(output, "/testfragfile.txt")
-
-	if (is.null(readname_barcode)) readname_barcode = ""
-
-	# what are the types of both of these?
-	chrom = get_chromosomes(inbam, keep_contigs=chromosomes) # List with names as contigs and elements as lengths
-	cells = read_cells(cells) # character vector / StringVector
-
-	sc_atac_create_fragments_cpp(inbam,
-	                             output,
-	                             names(chrom),
-	                             as.integer(chrom),
-	                             min_mapq,
-	                             nproc,
-	                             cellbarcode,
-	                             chromosomes,
-	                             readname_barcode,
-	                             cells,
-	                             max_distance,
-	                             min_distance,
-	                             chunksize)
-
-	invisible()
-}
-
 #' @name sc_atac_create_fragments_new
 #' @title Generating the popular fragments for scATAC-Seq data using sinto
 #' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
@@ -122,7 +76,7 @@ test_fragments <- function(server=FALSE,
 #'    faster.
 #'
 #' @return ???
-#' @useDynLib scPipeFragments, .registration=TRUE
+#' @useDynLib scPipe, .registration=TRUE
 #' @import Rhtslib
 #' @import Rcpp
 #' @export
@@ -151,12 +105,11 @@ sc_atac_create_fragments_new <- function(
 
 	if (is.null(readname_barcode)) readname_barcode = ""
 
-	# what are the types of both of these?
 	chrom = get_chromosomes(inbam, keep_contigs=chromosomes) # List with names as contigs and elements as lengths
 	cells = read_cells(cells) # character vector / StringVector
 
 	sc_atac_create_fragments_cpp(inbam,
-								output,
+								output_folder,
 								names(chrom),
 								as.integer(chrom),
 								min_mapq,
