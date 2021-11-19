@@ -1,38 +1,38 @@
-#include <string>
 #include <Rcpp.h>
-#include <iostream>
-#include <fstream>
+#include <string>
 #include <sstream>
 #include <regex>
 #include <map>
 #include <forward_list>
 #include <numeric>
+#include <mutex>
+#include <memory>
+
 
 #include "bam.h"
 #include <htslib/bgzf.h>
 #include <htslib/sam.h>
 #include <htslib/hts.h>
 
+#include "ThreadOutputFile.hpp"
 #include "FragmentThread.hpp"
 #include "FragmentUtils.hpp"
 
-// Done Not Tested
 FragmentThread::FragmentThread(
-	std::string _outname,
+	std::shared_ptr<ThreadOutputFile> _fragfile,
 	std::string _contig,
 	int _tid,
 	unsigned int _end,
 	std::string _bam,
 	bam_header_t *_bam_header,
-	uint8_t _min_mapq,
+	unsigned int _min_mapq,
 	std::string _cellbarcode,
 	std::string _readname_barcode,
-	Rcpp::CharacterVector _cells,
+	Rcpp::StringVector _cells,
 	unsigned int _max_distance,
 	unsigned int _min_distance,
 	unsigned int _chunksize
 ) {
-	this->outname = _outname;
 	this->contig = _contig;
 	this->tid = _tid;
 	this->end = _end;
@@ -47,6 +47,29 @@ FragmentThread::FragmentThread(
 	this->chunksize = _chunksize;
 	
 	this->fragment_count = 0;
+
+	this->fragfile = _fragfile;
+}
+
+FragmentThread::FragmentThread(const FragmentThread &old) {
+	this->contig = old.contig;
+	this->tid = old.tid;
+	this->end = old.end;
+	this->bam = old.bam;
+	this->bam_header = old.bam_header;
+	this->min_mapq = old.min_mapq;
+	this->cellbarcode = old.cellbarcode;
+	this->readname_barcode = old.readname_barcode;
+	this->cells = old.cells;
+	this->max_distance = old.max_distance;
+	this->min_distance = old.min_distance;
+	this->chunksize = old.chunksize;
+	
+	this->fragment_count = old.fragment_count;
+
+	this->fragment_dict = FragmentMap(old.fragment_dict);
+
+	this->fragfile = old.fragfile;
 }
 
 
@@ -68,7 +91,7 @@ void
 			// holding the matches information
 			std::regex_search(qname, res, readname_regex);
 
-			cell_barcode = *(res.begin()); // begin() is first match, with other matches after
+			cell_barcode = *(res.begin()); // begin() is first match
 		
 		} else {
 			// get the tag data associated with the specified tag
@@ -98,7 +121,7 @@ void
 			}
 		}
 
-		uint8_t mapq = bam_mapping_qual(seqment); // FragmentThread.hpp
+		unsigned int mapq = (unsigned int) bam_mapping_qual(seqment); // FragmentThread.hpp
 		// recording a fragment requires a minimum mapping quality
 		if (mapq >= this->min_mapq) {
 			char *qname = bam1_qname(seqment); // bam.h
@@ -206,16 +229,8 @@ void
 //'
 //' Execution thread to iterate over paired reads in BAM file and extract
 //' ATAC fragment coordinates
-//' Multithreaded. Needs every argument to be thread safe???
-//' Only shared resource is inbam,
-//' All required parameters are in class constructor and private variables
 void
 	FragmentThread::operator() () {
-		Rcpp::Rcout << "This is inside FragmentThread with contig: " << this->contig << "\n";
-		std::ofstream fragfile;
-		fragfile.open(this->outname, std::ofstream::app);
-		fragfile << "THIS IS A FRAG FILE\n";
-		fragfile.close();
 
 		bamFile bam = bam_open(this->bam.c_str(), "r"); // bam.h
 		bam_index_t *index = bam_index_load(this->bam.c_str()); // bam.h
@@ -235,7 +250,7 @@ FragmentThread::writeFragments(unsigned int current_position) {
 
 	std::vector<FragmentStruct> collapsed = FragmentThread::collapseFragments(complete);
 	
-	FragmentThread::writeFragmentsToFile(collapsed, this->outname);
+	this->fragfile->write(collapsed);
 }
 
 
@@ -256,9 +271,9 @@ FragmentThread::updateFragmentCount() {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 /////       Below contains all static utility functions for the FragmentThread class   /////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
+
 // fetchCall gets called for every segment in the bam file,
 // so multiple times for one FragmentThread
-// the parent FragmentThread class is passed in through data?
 // bam1_t is struct containing the info for this specific segment
 int
 FragmentThread::fetchCall(const bam1_t *b, void *data) {
@@ -277,36 +292,15 @@ FragmentThread::fetchCall(const bam1_t *b, void *data) {
 	return 1; // safe return value
 }
 
-void 
-FragmentThread::writeFragmentsToFile(
-		std::vector<FragmentStruct> &fragments,
-		std::string filepath) {
-	std::ofstream fragfile;
-	fragfile.open(filepath, std::ofstream::app);
-
-	// print all the fragments to the file, 
-	// concatenating each attribute (except for complete flag)
-	// and joining with tab characters
-	for (auto frag : fragments) {
-		fragfile << frag.chromosome << "\t"
-			 << frag.start << "\t"
-			 << frag.end << "\t"
-			 << frag.cell_barcode << "\t"
-			 << frag.sum << "\n";
-		
-	}
-
-	fragfile.close();
-}
-
 
 std::vector<FragmentStruct>
 FragmentThread::collapseFragments(FragmentMap &fragments) {
 	// counts is a map where each key is the FragmentStruct information joined into a string
 	// separated by '|'
-	std::map<std::string, int> counts = FragmentThread::CounterMapFragment(fragments, FragToString);
+	std::map<std::string, int> counts = CounterMapFragment(fragments, FragToString);
 
-	// early break if we have an empty map??
+	// early break if we have an empty map
+	if (counts.size() == 0) return std::vector<FragmentStruct> {};
 
 	// map of fragment information associated with indices
 	std::map<std::string, int> *frag_id_lookup = 
@@ -329,7 +323,7 @@ FragmentThread::collapseFragments(FragmentMap &fragments) {
 	counts = collapseOverlapFragments(counts, false);
 
 	std::map<int, int> row_sum;
-	std::map<int, int> row_max;
+	std::map<int, std::pair <int, int> > row_max;
 	int max_row = 0;
 	for (auto item : counts) {
 		// rowstr contains a string of "chromosome|start|end"
@@ -339,40 +333,45 @@ FragmentThread::collapseFragments(FragmentMap &fragments) {
 		std::string bcstr = FragToString(temp_s1, false, false, false, true);
 
 		int this_row = frag_id_lookup->at(rowstr);
+
+		// save the size of the created sparse matrix
 		if (this_row > max_row) {
 			max_row = this_row;
 		}
 
 		row_sum[this_row] += item.second;
-		if (row_max[this_row] < item.second) {
-			row_max[this_row] = item.second;
+
+		int this_col = bc_id_lookup->at(bcstr);
+		if (row_max[this_row].second < item.second) {
+			row_max[this_row] = std::pair<int, int> {this_col, item.second};
 		}
 
 	}
 	
-	// free up a bit of space?
-	// counts.clear();
 	std::map<int, std::string> frag_inverse = invertMap(frag_id_lookup);
 	std::map<int, std::string> bc_inverse = invertMap(bc_id_lookup);
-	std::vector<std::string> collapsed_frags;
-	for (int i = 0; i < max_row; i++) {
-		collapsed_frags.push_back(frag_inverse[i]);
-	}
-	std::vector<std::string> collapsed_barcodes;
+
+	std::map<int, std::string> collapsed_frags;
 	for (auto it : row_max) {
-		collapsed_barcodes.push_back(bc_inverse[it.second]);
+		collapsed_frags[it.first] = frag_inverse[it.first];
+	}
+
+	std::map<int, std::string> collapsed_barcodes;
+	for (auto it : row_max) {
+		if (bc_inverse[it.second.first].size() == 0) continue;
+		collapsed_barcodes[it.first] = bc_inverse[it.second.first];
 	}
 
 	std::vector<FragmentStruct> collapsed;
-	for (int i = 0; i < collapsed_barcodes.size(); i++) {
-		if (row_sum[i] < 1) {
+	for (auto it : row_sum) {
+		if (it.second < 1) {
 			continue;
 		}
 
 		std::stringstream ss;
-		ss << collapsed_frags[i] << "|" << collapsed_barcodes[i];
+		ss << collapsed_frags[it.first] << "|" << collapsed_barcodes[it.first];
 		FragmentStruct frag = StringToFrag(ss.str());
-		frag.sum = row_sum[i];
+		frag.sum = row_sum[it.first];
 		collapsed.push_back(frag);
 	}
 	
@@ -466,7 +465,7 @@ FragmentThread::collapseOverlapFragments(std::map<std::string, int> &counts, boo
 
 	for (auto frag : counts) {
 		if (startFrags.count(FragToString(StringToFrag(frag.first),true, start, !start, true)) == 0) {
-			out_counts[frag.first] = 1;
+			out_counts[frag.first] = frag.second;
 		}
 	}
 

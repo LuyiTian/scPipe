@@ -2,11 +2,36 @@
 #include <R.h>
 #include <thread>
 #include <string>
+#include <fstream>
+#include <cstdio>
+#include <memory>
+
 #include "bam.h"
 #include "FragmentThread.hpp"
+#include "ThreadOutputFile.hpp"
 
 using namespace Rcpp;
 
+
+// void merge_files(std::vector<std::string> files, std::string outname) {
+// 	std::ofstream outfile;
+// 	outfile.open(outname, std::ios::out | std::ios::app);
+// 	for (auto i : files) {
+// 		std::ifstream infile(i);
+// 		std::string line;
+// 		if (infile.is_open()) {
+// 			while (std::getline(infile, line)) {
+// 				outfile << line << "\n";
+// 			}
+// 			infile.close();
+// 		}
+// 		if (remove(i.c_str())) {
+// 			// unsuccessful file removal
+// 			Rcout << "File " << i << " unsuccessfully deleted\n";
+// 		}
+// 	}
+// 	outfile.close();
+// }
 
 //' @name sc_atac_create_fragments_cpp
 //' @title Generating the popular fragments for scATAC-Seq data using sinto
@@ -49,7 +74,7 @@ using namespace Rcpp;
 //'    faster.
 //' @import Rhtslib
 //' @import Rcpp
-//' @useDynLib scPipe, .registration=TRUE
+//' @useDynLib scPipe, .registration = TRUE
 //' @export
 // [[Rcpp::export]]
 void sc_atac_create_fragments_cpp(
@@ -61,30 +86,24 @@ void sc_atac_create_fragments_cpp(
 		unsigned int nproc,
 		std::string cellbarcode,
 		std::string chromosomes,
-		String readname_barcode,
-		StringVector cells,
+		Nullable<String> readname_barcodeN,
+		Nullable<StringVector> cellsN,
 		unsigned int max_distance,
 		unsigned int min_distance,
 		unsigned int chunksize
 		) {
 
-	Rcout << "Inside CPP function\n";
+	StringVector cells = cellsN.isNotNull() ? StringVector(cellsN) : StringVector(0);
 
-	//pool of threads of length nproc to use for fragments
-	std::vector<std::string> outnames;
+	String readname_barcode = readname_barcodeN.isNotNull() ? String(readname_barcodeN) : String();
+
+	std::string output_filename (output + "/fragments.bed");
+	std::shared_ptr<ThreadOutputFile> threadOutputFile = std::make_shared<ThreadOutputFile>(output_filename);
+
 	std::vector<std::thread> pool;
-
-	//temp TODO: Figure output how to use worker pool
 	nproc = contigs.length();
-
-
-	Rcpp::Rcout << "Output file name is: " << output << "\n";
-	//int i = 0;
+	Rcpp::Rcout << "Output folder name is: " << output << "\n";
 	for (int i = 0; i < nproc; i++) {
-		// setup fragment thread objects
-		std::string outname = output + "/tempFragmentFile" + std::to_string(i);
-
-		outnames.push_back(outname);
 		std::string contig = String(contigs[i]).get_cstring();
 
 		// create the bam_header_t and find the tid for this contig
@@ -94,7 +113,7 @@ void sc_atac_create_fragments_cpp(
 		bam_close(bam);
 
 		FragmentThread frag (
-			outname,
+			threadOutputFile,
 			contig,
 			tid,
 			ends[i],
@@ -112,12 +131,9 @@ void sc_atac_create_fragments_cpp(
 		pool.push_back(std::thread(frag));
 	}
 
-
 	for (auto &th : pool) {
 		th.join();
 	}
 
-	// now we can access the files to merge together??
-
-	Rcout << "Finished threading\n";
+	Rcout << "Output BED file: " << output_filename << "\n";
 }

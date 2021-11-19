@@ -277,8 +277,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // sc_atac_create_fragments_cpp
-void sc_atac_create_fragments_cpp(std::string inbam, std::string output, CharacterVector contigs, IntegerVector ends, unsigned int min_mapq, unsigned int nproc, std::string cellbarcode, std::string chromosomes, String readname_barcode, StringVector cells, unsigned int max_distance, unsigned int min_distance, unsigned int chunksize);
-RcppExport SEXP _scPipe_sc_atac_create_fragments_cpp(SEXP inbamSEXP, SEXP outputSEXP, SEXP contigsSEXP, SEXP endsSEXP, SEXP min_mapqSEXP, SEXP nprocSEXP, SEXP cellbarcodeSEXP, SEXP chromosomesSEXP, SEXP readname_barcodeSEXP, SEXP cellsSEXP, SEXP max_distanceSEXP, SEXP min_distanceSEXP, SEXP chunksizeSEXP) {
+void sc_atac_create_fragments_cpp(std::string inbam, std::string output, CharacterVector contigs, IntegerVector ends, unsigned int min_mapq, unsigned int nproc, std::string cellbarcode, std::string chromosomes, Nullable<String> readname_barcodeN, Nullable<StringVector> cellsN, unsigned int max_distance, unsigned int min_distance, unsigned int chunksize);
+RcppExport SEXP _scPipe_sc_atac_create_fragments_cpp(SEXP inbamSEXP, SEXP outputSEXP, SEXP contigsSEXP, SEXP endsSEXP, SEXP min_mapqSEXP, SEXP nprocSEXP, SEXP cellbarcodeSEXP, SEXP chromosomesSEXP, SEXP readname_barcodeNSEXP, SEXP cellsNSEXP, SEXP max_distanceSEXP, SEXP min_distanceSEXP, SEXP chunksizeSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type inbam(inbamSEXP);
@@ -289,21 +289,12 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type nproc(nprocSEXP);
     Rcpp::traits::input_parameter< std::string >::type cellbarcode(cellbarcodeSEXP);
     Rcpp::traits::input_parameter< std::string >::type chromosomes(chromosomesSEXP);
-    Rcpp::traits::input_parameter< String >::type readname_barcode(readname_barcodeSEXP);
-    Rcpp::traits::input_parameter< StringVector >::type cells(cellsSEXP);
+    Rcpp::traits::input_parameter< Nullable<String> >::type readname_barcodeN(readname_barcodeNSEXP);
+    Rcpp::traits::input_parameter< Nullable<StringVector> >::type cellsN(cellsNSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type max_distance(max_distanceSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type min_distance(min_distanceSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type chunksize(chunksizeSEXP);
-    sc_atac_create_fragments_cpp(inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcode, cells, max_distance, min_distance, chunksize);
-    return R_NilValue;
-END_RCPP
-}
-// test_whatever
-void test_whatever();
-RcppExport SEXP _scPipe_test_whatever() {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    test_whatever();
+    sc_atac_create_fragments_cpp(inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize);
     return R_NilValue;
 END_RCPP
 }
@@ -327,7 +318,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_fasta_bin_bed_file", (DL_FUNC) &_scPipe_rcpp_fasta_bin_bed_file, 3},
     {"_scPipe_rcpp_append_chr_to_bed_file", (DL_FUNC) &_scPipe_rcpp_append_chr_to_bed_file, 2},
     {"_scPipe_sc_atac_create_fragments_cpp", (DL_FUNC) &_scPipe_sc_atac_create_fragments_cpp, 13},
-    {"_scPipe_test_whatever", (DL_FUNC) &_scPipe_test_whatever, 0},
     {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 1},
     {NULL, NULL, 0}
 };

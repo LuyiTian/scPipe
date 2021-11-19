@@ -54,10 +54,10 @@ context("Fragment Utility Tests") {
 				return ss.str();
 			}
 		);
-		expect_true(n->at("AATG|1|30|GG") == 1);
-		expect_true(n->at("AAGG|2|30|GC") == 2);
-		expect_true(n->at("AATG|3|30|GA") == 3);
-		expect_true(n->at("AAGG|4|30|GT") == 4);
+		expect_true(n->at("AATG|1|30|GG") == 0);
+		expect_true(n->at("AAGG|2|30|GC") == 1);
+		expect_true(n->at("AATG|3|30|GA") == 2);
+		expect_true(n->at("AAGG|4|30|GT") == 3);
 	}
 
 	test_that("invert_map correctly inverts") {
@@ -72,6 +72,16 @@ context("Fragment Utility Tests") {
 		expect_true(n[2].compare("2") == 0);
 		expect_true(n[3].compare("3") == 0);
 		expect_true(n[4].compare("4") == 0);
+	}
+
+	test_that("FragMapToString builds a good string") {
+		FragmentMap m;
+		m["AAT"] = {"AATG",3,25, "GG"};
+		m["AAG"] = {"AATG",3,60, "GG"}; 
+		m["AAC"] = {"AATG",3,60, "GG"};
+		m["ATA"] = {"AAGG",4,15, "GT"}; 
+		m["ACG"] = {"AAGG",4,25, "GT"};
+		m["ACA"] = {"AGTC",5,30, "GA"};
 	}
 }
 
@@ -153,7 +163,7 @@ context("FragmentThread tests") {
 		m["ACA"] = {"AGTC",5,30, "GA", true};
 		// frags = {'AAT': ['AATG', 3, 25, 'GG', True], 'AAG': ['AATG', 3, 60, 'GG', False], 'AAC': ['AATG', 3, 50, 'GG', True], 'ATA': ['AAGG', 4, 15, 'GT', False], 'ACG': ['AAGG', 4, 25, 'GT', False], 'ACA': ['AGTC', 5, 30, 'GA', True]}
 	
-		FragmentThread f ("fake", "A", 1, 30, "BAM", nullptr, 0, 
+		FragmentThread f (nullptr, "A", 1, 30, "BAM", nullptr, 0, 
 			"AA", "readname", Rcpp::CharacterVector(), 5, 0, 10);
 
 		f.fragment_dict = m;
@@ -166,7 +176,7 @@ context("FragmentThread tests") {
 		expect_true(complete["AAC"].chromosome.compare("AATG") == 0);
 		expect_true(complete["ACA"].chromosome.compare("AGTC") == 0);
 	}
-	
+
 	test_that("Collapsed overlapping fragments collapse correctly") {
 		FragmentMap m;
 		m["AAT"] = {"AATG",3,25, "GG"};
@@ -229,17 +239,9 @@ context("FragmentThread tests") {
 	}
 
 	test_that("Fragment Dict can be correctly added to") {
-		FragmentMap m;
-		m["AAT"] = {"AATG",3,25, "GG"};
-		m["AAG"] = {"AATG",3,60, "GG"}; 
-		m["AAC"] = {"AATG",3,50, "GG"};
-		m["ATA"] = {"AAGG",4,15, "GT"}; 
-		m["ACG"] = {"AAGG",4,25, "GT"};
-		m["ACA"] = {"AGTC",5,30, "GA"};
-		// frags={"AAT":["AATG",3,25, "GG"],"AAG":["AATG",3,60, "GG"], "AAC":["AATG",3,50, "GG"], "ATA":["AAGG",4,15, "GT"], "ACG":["AAGG",4,25, "GT"], "ACA":["AGTC",5,30, "GA"]}
+		FragmentThread f (nullptr, "A", 1, 30, "BAM", nullptr, 0, 
+			"CB", "readname", Rcpp::CharacterVector(), 5000, 10, 10);
 
-		FragmentThread f ("fake", "A", 1, 30, "BAM", nullptr, 0, 
-			"AA", "readname", Rcpp::CharacterVector(), 5, 0, 10);
 
 		// check default case of fragment does not exist in dictionary
 		f.addToFragments("CCG", "CGCG", 10, 60, "CC", false);
@@ -251,8 +253,6 @@ context("FragmentThread tests") {
 		f.addToFragments("CCG", "CGCG", 15, 60, "CC", true);
 		FragmentStruct res2 = {"CGCG", 10, 60, "CC", true};
 		expect_true(equalFragmentStruct(f.fragment_dict["CCG"], res2));
-
-		// check 
 	}
 
 	test_that("Fragment dict is updated") {
@@ -263,9 +263,6 @@ context("FragmentThread tests") {
 		m["ATA"] = {"AAGG",4,15, "GT"}; 
 		m["ACG"] = {"AAGG",4,25, "GT"};
 		m["ACA"] = {"AGTC",5,30, "GA"};
-		// frags={"AAT":["AATG",3,25, "GG"],"AAG":["AATG",3,60, "GG"], "AAC":["AATG",3,50, "GG"], "ATA":["AAGG",4,15, "GT"], "ACG":["AAGG",4,25, "GT"], "ACA":["AGTC",5,30, "GA"]}
-
-
 		// python:
 		// from sinto_fragments import *
 		// import pysam
@@ -276,68 +273,84 @@ context("FragmentThread tests") {
 		// fragments = updateFragmentDict(fragments=frags, segment=seg, min_mapq=10, cellbarcode="CB", readname_barcode=None, cells=None, max_dist=5000, min_dist=10)
 		// fragments should be :
 		// {'AAT': ['AATG', 3, 25, 'GG'], 'AAG': ['AATG', 3, 60, 'GG'], 'AAC': ['AATG', 3, 50, 'GG'], 'ATA': ['AAGG', 4, 15, 'GT'], 'ACG': ['AAGG', 4, 25, 'GT'], 'ACA': ['AGTC', 5, 30, 'GA'], 'TGAGTCACATTGTGAC#A00228:277:HFKLHDMXX:1:2167:2853:35336': ['chr21', 9411277, None, 'TGAGTCACATTGTGAC', False]}
+		const char *bamPath = "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/sinto_output/demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam";
+		bamFile bam = bam_open(bamPath, "r");
+		bam_header_t *header = bam_header_read(bam); // bam.h
+		
+		
+		FragmentThread f(
+			nullptr, "chr21", bam_get_tid(header, "chr21"), 48129895, 
+			bamPath, nullptr,
+			10, "CB", "", NULL, 5000, 10, 10
+		);
 
+		f.fragment_dict = m;
 
+		bam1_t *b = bam_init1();
+		bam_iter_t iter = bam_iter_query(bam_index_load(f.bam.c_str()), f.tid, 0, f.end);
+		int ret = bam_iter_read(bam, iter, b);
+
+		// b is the first segment
+		// updateFragmentDict
+		f.updateFragmentDict(b);
+
+		FragmentStruct res1 = {"chr21", 9411277, -1, "TGAGTCACATTGTGAC", false};
+		expect_true(equalFragmentStruct(f.fragment_dict["TGAGTCACATTGTGAC#A00228:277:HFKLHDMXX:1:2167:2853:35336"], res1));
+		
+		bam_iter_destroy(iter);
+		bam_destroy1(b);
+		bam_close(bam);
 	}
-}
 
+	test_that("FragmentCount can be incremented") {
+		FragmentThread f(
+			nullptr, "chr21", 0, 48129895, 
+			"BAM", nullptr,
+			10, "CB", "", NULL, 5000, 10, 10
+		);
 
-int testFetchCall(const bam1_t *b, void *data) {
-	int *i = (int *)data;
-	if (*i >= 1) {
-		return 1;
+		expect_true(f.fragment_count == 0);
+		expect_true(!f.updateFragmentCount());
+		expect_true(f.fragment_count == 1);
 	}
 
-	*i = 100;
+	test_that("fetchCall can be used for bam_fetch properly") {
+		FragmentMap m;
+		m["AAT"] = {"AATG",3,25, "GG"};
+		m["AAG"] = {"AATG",3,60, "GG"}; 
+		m["AAC"] = {"AATG",3,50, "GG"};
+		m["ATA"] = {"AAGG",4,15, "GT"}; 
+		m["ACG"] = {"AAGG",4,25, "GT"};
+		m["ACA"] = {"AGTC",5,30, "GA"};
 
-	// FragmentThread fragThread((
-	// 		outname,
-	// 		contig,
-	// 		tid,
-	// 		ends[i],
-	// 		inbam,
-	// 		header,
-	// 		min_mapq,
-	// 		cellbarcode,
-	// 		readname_barcode.get_cstring(),
-	// 		cells,
-	// 		max_distance,
-	// 		min_distance,
-	// 		chunksize
-	// 	);
+		const char *bamPath = "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/sinto_output/demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam";
+		bamFile bam = bam_open(bamPath, "r");
+		bam_header_t *header = bam_header_read(bam); // bam.h
+		
+		
+		FragmentThread *f = new FragmentThread (
+			nullptr, "chr21", bam_get_tid(header, "chr21"), 48129895, 
+			bamPath, nullptr,
+			10, "CB", "", NULL, 5000, 10, 10
+		);
 
-	std::string qname(bam1_qname(b));
-	uint8_t *raw_data = bam_aux_get(b, "CB");
-	std::string barcode_data = bam_aux2string(raw_data);
+		f->fragment_dict = m;
 
-	Rcpp::Rcout << "testing function\n";
-	
-	Rcpp::Rcout << qname << "\n";
-	Rcpp::Rcout << barcode_data << "\n";
+		bam1_t *b = bam_init1();
+		bam_iter_t iter = bam_iter_query(bam_index_load(f->bam.c_str()), f->tid, 0, f->end);
+		int ret = bam_iter_read(bam, iter, b);
+
+		// b is the first segment
+		// updateFragmentDict
+		FragmentThread::fetchCall(b, (void *)f);
+
+		FragmentStruct res1 = {"chr21", 9411277, -1, "TGAGTCACATTGTGAC", false};
+		expect_true(equalFragmentStruct(f->fragment_dict["TGAGTCACATTGTGAC#A00228:277:HFKLHDMXX:1:2167:2853:35336"], res1));
+		
+		bam_iter_destroy(iter);
+		bam_destroy1(b);
+		bam_close(bam);
+	}
 
 
-	int32_t rstart = bam_alignment_start(b);
-	int32_t rend = bam_endpos(b);
-	bool is_reverse = bam1_strand(b);
-
-	Rcpp::Rcout << "Start: " << rstart << " End: " << rend << " reverse: " << is_reverse << "\n";
-
-	return 1;
-}
-
-// a function to just chuck whatever in a test it
-// [[Rcpp::export]]
-void test_whatever() {
-
-	
-
-	bamFile bam = bam_open("/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/scPipe_output/demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam", "r"); // bam.h
-	
-	bam_header_t *header = bam_header_read(bam); // bam.h
-	int tid = bam_get_tid(header, "chr21"); // bam.h
-	int tval = 0;
-	bam_index_t *index = bam_index_load("/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/scPipe_output/demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam"); // bam.h
-	bam_fetch(bam, index, tid, 0, 48129895, &tval, &testFetchCall);
-
-	bam_close(bam);
 }

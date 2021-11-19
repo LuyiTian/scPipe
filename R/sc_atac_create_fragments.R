@@ -75,8 +75,7 @@ sc_atac_create_fragments <- function(inbam, output_folder = "") {
 #'    fragments to disk. Higher chunksize will use more memory but will be
 #'    faster.
 #'
-#' @return ???
-#' @useDynLib scPipe, .registration=TRUE
+#' @return return invisible
 #' @import Rhtslib
 #' @import Rcpp
 #' @export
@@ -101,9 +100,7 @@ sc_atac_create_fragments_new <- function(
         cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
     }
 
-    output = paste0(output_folder, "/fragments.bed")
-
-	if (is.null(readname_barcode)) readname_barcode = ""
+    # output = paste0(output_folder, "/fragments.bed")
 
 	chrom = get_chromosomes(inbam, keep_contigs=chromosomes) # List with names as contigs and elements as lengths
 	cells = read_cells(cells) # character vector / StringVector
@@ -163,7 +160,7 @@ get_chromosomes <- function(bam, keep_contigs="^chr") {
 #' @return a character vector of the provided barcodes
 #' @importFrom data.table fread
 read_cells <- function(cells) {
-	if (is.null(cells)) return(c(""))
+	if (is.null(cells)) return(NULL)
 
 	if (file.exists(cells)) {
 		barcodes <- data.table::fread(cells, header=FALSE, data.table=FALSE)[[1]]

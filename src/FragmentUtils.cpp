@@ -57,6 +57,10 @@ std::map<std::string, int> *id_lookup(FragmentMap &list, std::function<std::stri
 		}
 	}
 
+	for (auto it = lookup->begin(); it != lookup->end(); it++) {
+		it->second--;
+	}
+
 	return lookup;
 }
 
@@ -68,4 +72,14 @@ std::map<int, std::string> invertMap(std::map<std::string, int> *map) {
 	}
 
 	return i_map;
+}
+
+std::string FragMapToString(FragmentMap &fm) {
+	std::stringstream ss;
+
+	for (auto it : fm) {
+		ss << it.first << ": " << FragToString(it.second, true, true, true, true) << "\n";
+	}
+
+	return ss.str();
 }
