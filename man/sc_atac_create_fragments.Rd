@@ -2,7 +2,7 @@
 % Please edit documentation in R/sc_atac_create_fragments.R
 \name{sc_atac_create_fragments}
 \alias{sc_atac_create_fragments}
-\title{Generating the popular fragments for scATAC-Seq data using sinto}
+\title{DEPRECIATED. Generating the popular fragments for scATAC-Seq data using sinto}
 \usage{
 sc_atac_create_fragments(inbam, output_folder = "")
 }
@@ -12,5 +12,5 @@ sc_atac_create_fragments(inbam, output_folder = "")
 \item{output_folder}{The path of the output folder}
 }
 \description{
-Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
+DEPRECIATED. Use sc_atac_fragments instead. Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
 }

@@ -75,7 +75,6 @@ using namespace Rcpp;
 //' @import Rhtslib
 //' @import Rcpp
 //' @useDynLib scPipe, .registration = TRUE
-//' @export
 // [[Rcpp::export]]
 void sc_atac_create_fragments_cpp(
 		std::string inbam,

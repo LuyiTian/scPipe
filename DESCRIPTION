@@ -3,14 +3,12 @@ Title: pipeline for single cell RNA-seq data analysis
 Date: 2019-10-12
 Version: 1.9.4
 Type: Package
-Maintainer: Phil Yang <yang.p@wehi.edu.au>
-Author: Luyi Tian
 Authors@R: c(person("Luyi", "Tian", role=c("aut", "cre"), email="tian.l@wehi.edu.au"), 
         person("Shian", "Su", role=c("aut"), email="su.s@wehi.edu.au"), 
         person("Shalin", "Naik", role=c("ctb"), email="naik.s@wehi.edu.au"), 
         person("Shani", "Amarasinghe", role=c("aut"), email="amarasinghe.s@wehi.edu.au"), 
         person("Oliver", "Voogd", role=c("aut"), email="voogd.o@wehi.edu.au"), 
-        person("Phil", "Yang", role=c("aut"), email="yang.p@wehi.edu.au"), 
+        person("Phil", "Yang", role=c("aut", "cre"), email="yang.p@wehi.edu.au"), 
         person("Matthew", "Ritchie", role=c("ctb"), email="mritchie@wehi.edu.au"))
 biocViews: ImmunoOncology, Software, Sequencing, RNASeq, GeneExpression, SingleCell, Visualization,
         SequenceMatching, Preprocessing, QualityControl, GenomeAnnotation
@@ -26,6 +24,7 @@ Imports:
     ggplot2,
     methods,
     SingleCellExperiment,
+	SummarizedExperiment,
     Rhtslib,
     biomaRt,
     GGally,
@@ -39,7 +38,6 @@ Imports:
     utils,
     stats,
     S4Vectors,
-    SummarizedExperiment,
     AnnotationDbi,
     org.Hs.eg.db,
     org.Mm.eg.db,
@@ -47,7 +45,6 @@ Imports:
     rtracklayer,
     hash,
     dplyr,
-    GenomicRanges,
     magrittr,
     glue (>= 1.3.0),
     rlang,
@@ -65,8 +62,14 @@ Imports:
     purrr,
     data.table,
     GenomicAlignments,
+	GenomicFeatures,
+	GenomicRanges,
     IRanges, 
-    reticulate
+    reticulate,
+	tools,
+	Rsubread,
+	dplyr,
+	seqinr
 SystemRequirements: C++11, GNU make
 License: GPL (>= 2)
 Encoding: UTF-8
@@ -75,7 +78,6 @@ NeedsCompilation: yes
 URL: https://github.com/LuyiTian/scPipe
 BugReports: https://github.com/LuyiTian/scPipe
 Suggests: 
-    Rsubread,
     knitr,
     rmarkdown,
     testthat,

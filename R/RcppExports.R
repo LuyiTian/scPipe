@@ -103,7 +103,6 @@ rcpp_append_chr_to_bed_file <- function(in_filename, out_filename) {
 #' @import Rhtslib
 #' @import Rcpp
 #' @useDynLib scPipe, .registration = TRUE
-#' @export
 sc_atac_create_fragments_cpp <- function(inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize) {
     invisible(.Call(`_scPipe_sc_atac_create_fragments_cpp`, inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize))
 }

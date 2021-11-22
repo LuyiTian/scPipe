@@ -3,13 +3,14 @@
 #####################################################################
 
 #' @name sc_atac_create_fragments
-#' @title Generating the popular fragments for scATAC-Seq data using sinto
-#' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
+#' @title DEPRECIATED. Generating the popular fragments for scATAC-Seq data using sinto
+#' @description DEPRECIATED. Use sc_atac_fragments instead. Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
 #'
 #' @param inbam The tagged, sorted and duplicate-free input BAM file
 #' @param output_folder The path of the output folder
 #' @importFrom basilisk basiliskStart basiliskStop basiliskRun
 #'
+#' @return NULL
 #' @export
 sc_atac_create_fragments <- function(inbam, output_folder = "") {
     # Check if output directory exists
@@ -35,8 +36,8 @@ sc_atac_create_fragments <- function(inbam, output_folder = "") {
     }, inbam=inbam, out=output)
 }
 
-#' @name sc_atac_create_fragments_new
-#' @title Generating the popular fragments for scATAC-Seq data using sinto
+#' @name sc_atac_fragments
+#' @title Generating the popular fragments for scATAC-Seq data
 #' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
 #'
 #' @param inbam The tagged, sorted and duplicate-free input BAM file
@@ -75,11 +76,12 @@ sc_atac_create_fragments <- function(inbam, output_folder = "") {
 #'    fragments to disk. Higher chunksize will use more memory but will be
 #'    faster.
 #'
-#' @return return invisible
+#' @return returns NULL
+#'
 #' @import Rhtslib
 #' @import Rcpp
 #' @export
-sc_atac_create_fragments_new <- function(
+sc_atac_fragments <- function(
 	inbam,
 	output_folder="",
 	min_mapq=30,
@@ -132,6 +134,7 @@ sc_atac_create_fragments_new <- function(
 #'
 #' @return a named list where element names are chromosomes reference names and elemnents are integer lengths
 #' @importFrom Rsamtools indexBam idxstatsBam
+#' @importFrom stats setNames
 get_chromosomes <- function(bam, keep_contigs="^chr") {
 	if (is.null(keep_contigs)) {
 		keep_contigs="."
