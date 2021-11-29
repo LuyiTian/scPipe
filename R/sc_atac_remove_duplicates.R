@@ -1,6 +1,5 @@
-
-
 #' @name sc_atac_remove_duplicates
+#'
 #' @title Removing PCR duplicates using samtools
 #' @description Takes in a BAM file and removes the PCR duplicates using the samtools markdup function. Requires samtools 1.10 or newer. 
 #' 
@@ -12,7 +11,7 @@
 #' 
 
 sc_atac_remove_duplicates <- function(inbam, 
-                                      samtools_path = NULL, 
+                                      samtools_path = NULL,
                                       output_folder = NULL) {
   
   # Check if samtools is installed
@@ -63,22 +62,38 @@ sc_atac_remove_duplicates <- function(inbam,
           dir.create(output_folder,recursive=TRUE)
           cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
         }
-        log_and_stats_folder <- paste0(output_folder, "/scPipe_atac_stats/")
+        
+        # Create log folder/file
+        log_and_stats_folder <- file.path(output_folder, "scPipe_atac_stats")
+        dir.create(log_and_stats_folder, showWarnings = FALSE)
+        log_file <- file.path(log_and_stats_folder, "log_file.txt")
+        if(!file.exists(log_file)) file.create(log_file)
+        cat(
+          paste0(
+            "sc_atac_remove_duplicates starts at ",
+            as.character(Sys.time()),
+            "\n"
+          ),
+          file = log_file, append = TRUE)
+        
+        
         inbam.name <- substr(inbam, 0, nchar(inbam)-4)
-        
-        system2(samtools, c("collate", "-o", paste(inbam.name, "namecollate.bam", sep="_"), inbam))
-        system2(samtools, c("fixmate", "-m", paste(inbam.name, "namecollate.bam", sep="_"), paste(inbam.name, "fixmate.bam", sep="_")))
-        
+        cat("Sorting the BAM file by name\n")
+        system2(samtools, c("sort", "-n", "-o", paste(inbam.name, "namesorted.bam", sep="_"), inbam))
+        cat("Running fixmate on the sorted BAM File\n")
+        system2(samtools, c("fixmate", "-m", paste(inbam.name, "namesorted.bam", sep="_"), paste(inbam.name, "fixmate.bam", sep="_")))
+        cat("Sorting the BAM file by coordinates\n")
         # Remove existing copy if one exists
         output.bam <- paste0(output_folder, "/", basename(inbam.name), "_markdup.bam")
         if (file.exists(output.bam)) {
           system2("rm", output.bam)
         }
         
-        system2(samtools, c("sort", "-o", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "fixmate.bam", sep="_")))
-        
+        Rsamtools::sortBam(paste(inbam.name, "fixmate.bam", sep="_"), paste(inbam.name, "positionsort", sep="_"), indexDestination = TRUE)
+
         # Note: the output bam file is originally created in the same directory as the input bam file
         
+        cat("Running samtools markdup now")
         # Check if the version of samtools is 1.10 or greater (to have the stats functionality)
         version.text <- strsplit(strsplit(system2(samtools, "--version", stdout=TRUE)[1], " ")[[1]][2], "\\.")[[1]]
         if (as.numeric(version.text[1]) < 1 || (as.numeric(version.text[1]) >= 1 && as.numeric(version.text[2]) < 10)) {
@@ -89,10 +104,10 @@ sc_atac_remove_duplicates <- function(inbam,
           system2(samtools, c("markdup", "-s", "-f", file.path(log_and_stats_folder, "duplicate_removal_stats.txt"), "-r", paste(inbam.name, "positionsort.bam", sep="_"), paste(inbam.name, "markdup.bam", sep="_")))
         }
 
-        
+        cat("Indexing the BAM file\n")
         Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"))
-        
-        system2("rm", paste(inbam.name, "namecollate.bam", sep="_"))
+        cat("step 6\n")
+        system2("rm", paste(inbam.name, "namesorted.bam", sep="_"))
         system2("rm", paste(inbam.name, "positionsort.bam", sep="_"))
         system2("rm", paste(inbam.name, "fixmate.bam", sep="_"))
         
@@ -106,7 +121,13 @@ sc_atac_remove_duplicates <- function(inbam,
         } else {
           message("Couldn't remove duplicates from the input BAM file. Make sure it is a valid BAM file.")
         }
-        
+        cat(
+          paste0(
+            "sc_atac_remove_duplicates finishes at ",
+            as.character(Sys.time()),
+            "\n\n"
+          ),
+          file = log_file, append = TRUE)
       },
       warning = function(w) {w
         message(w)

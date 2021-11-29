@@ -37,6 +37,19 @@ sc_atac_peak_calling <- function(inbam,
     cat("Output directory does not exist. Created: ", output_folder, "\n")
   }
   
+  # Create log folder/file
+  log_and_stats_folder <- file.path(output_folder, "scPipe_atac_stats")
+  dir.create(log_and_stats_folder, showWarnings = FALSE)
+  log_file <- file.path(log_and_stats_folder, "log_file.txt")
+  if(!file.exists(log_file)) file.create(log_file)
+  cat(
+    paste0(
+      "sc_atac_peak_calling starts at ",
+      as.character(Sys.time()),
+      "\n"
+    ),
+    file = log_file, append = TRUE)
+  
   # MACSr::callpeak(inbam, 
   #                 nomodel         = TRUE, 
   #                 shift           = 100, 
@@ -65,4 +78,12 @@ sc_atac_peak_calling <- function(inbam,
                      "--cutoff-analysis",
                      "--call-summits"))
   }, inbam=inbam, genome_size=genome_size, output=output_folder)
+  
+  cat(
+    paste0(
+      "sc_atac_peak_calling finishes at ",
+      as.character(Sys.time()),
+      "\n"
+    ),
+    file = log_file, append = TRUE)
 }

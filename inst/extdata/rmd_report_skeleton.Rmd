@@ -78,81 +78,90 @@ ggplot(alignment_stats, aes(x=Statistic, y=count, fill=Statistic)) +
 alignment_stats_chrom_filename <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_align_per_chrom.csv")
 alignment_stats_chrom          <- read.csv(alignment_stats_chrom_filename)
 
-# knitr::kable(alignment_stats_chrom, 
-#              col.names = c('Chromosome', 'Chrom_length', 'Mapped_reads', "Unmapped_reads"), 
-#              caption = "Chromosome level alignment statistics") %>%
-#     kable_styling()
+knitr::kable(alignment_stats_chrom,
+             col.names = c('Chromosome', 'Chrom_length', 'Mapped_reads', "Unmapped_reads"),
+             caption = "Chromosome level alignment statistics") %>%
+    kable_styling()
 
 DT::datatable(alignment_stats_chrom)
 ```
 
-# Demultiplexing statistics
+# Aggregate alignment statistics of demultiplexed reads
 ```{r}
 stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-raw <- read.csv(stats_file)
-colnames(raw) <- c("barcode", "flag", "type", "reads")
+raw <- utils::read.csv(stats_file)
 
-filtered <- aggregate(raw$reads, by=list(type=raw$type), FUN=length)
-colnames(filtered) <- c("status", "count")
+sums <- data.frame(colSums(raw[,!(names(raw) %in% c("barcode", "count"))])) %>% tibble::rownames_to_column()
+colnames(sums) <- c("status", "count")
 ```
 
 ```{r demux-stats-table, fig.wide = TRUE, fig.asp = 0.9}
-DT::datatable(filtered, options=list(paging=FALSE, searching=FALSE))
+DT::datatable(sums, options=list(paging=FALSE, searching=FALSE))
 ```
 
 ```{r demux-stats-graph, fig.wide = TRUE, fig.asp = 0.9}
-filtered$count <- filtered$count / sum(filtered$count)
-ggplot(filtered, aes(x=status, y=count, fill=status)) +
+sums$count <- sums$count / sum(sums$count)
+ggplot(sums, aes(x=status, y=count, fill=status)) +
   scale_fill_brewer(palette="Dark2") +
   geom_col() +
   theme(axis.text.x = element_text(angle = 30,
                                      hjust = 1)) +
-  ggtitle("Demultiplex Statistics") +
+  ggtitle("Mapping statistics") +
   xlab("Status") +
   ylab("Count")
+
 ```
 
-## Read count distribution across barcodes
+# Alignment statistics of demultiplexed reads per barcode
+```{r barcode-alignment-dist, fig.wide = TRUE, fig.asp = 0.9}
+stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
+data <- read.csv(stats_file, row.names = "barcode")[-5] %>% sample_n(500) 
+
+mapping_stat <- data %>% arrange(mapped)
+mapping_stat$barcode <- stats::reorder(rownames(mapping_stat), mapping_stat$mapped)
+mapping_stat_prop <- as.data.frame(prop.table(as.matrix(mapping_stat[, sapply(mapping_stat, is.numeric)]), 1))
+mapping_stat_prop$barcode <- mapping_stat$barcode
+dat.m <- melt(mapping_stat, id.vars="barcode")
+dat.m1 <- melt(mapping_stat_prop, id.vars="barcode")
+colnames(dat.m)[2] <- "type"
+colnames(dat.m1)[2] <- "type"
+
+ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_brewer(palette="Set1")+
+  geom_bar(stat="identity", width=1)+
+  xlab("barcode") +
+  ylab("percentage of reads")+
+  scale_y_continuous(labels=percent_format()) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.x = element_text(vjust = 5),
+        plot.title = element_text(vjust = -2)) +
+  ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads")) 
+
+```
+
+
+# Read count distribution across barcodes
 
 A bar plot showing the distribution of read counts across a random sample of 100 barcodes, ordered by the read count.
 ```{r barcode-counts-dist, fig.wide = TRUE, fig.asp = 0.9}
 
-n_reads_barcode_filename    <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-number_of_reads_per_barcode <- read.csv(n_reads_barcode_filename)
+stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
+raw <- utils::read.csv(stats_file) %>% sample_n(100) %>% dplyr::arrange(count)
+raw$log2_count <- log2(raw$count)
 
-number_of_reads_per_barcode <- number_of_reads_per_barcode %>% 
-  dplyr::select(barcode, number_of_reads) %>%
-  dplyr::distinct() %>%
-  sample_n(100) %>%
-  dplyr::arrange(number_of_reads)
-
-number_of_reads_per_barcode$log2_number_of_reads <- log2(number_of_reads_per_barcode$number_of_reads)
-
-ggplot(number_of_reads_per_barcode, 
-                aes(x=reorder(barcode, number_of_reads), 
-                    y=log2_number_of_reads)) +
-  geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") + 
-  xlab("barcode") + 
+ggplot(raw,
+  aes(x=reorder(barcode, count),
+      y=log2_count)) +
+  geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") +
+  xlab("barcode") +
   ylab("log_2 number_of_reads") +
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank()) +
   scale_y_continuous(limits = c(0, NA),
                      expand = expansion(mult = c(0, 0.1)))
-
-# ggpubr::gghistogram(number_of_reads_per_barcode,
-#                     x = "log2_number_of_reads",
-#                     y = "..count..",
-#                     title = "Counts per cell",
-#                     color = "#00AFBB",
-#                     fill = "#00AFBB",
-#                     bins = 30,
-#                     rug = TRUE,
-#                     add = "mean",
-#                     add_density = TRUE
-#                     )
 ```
 
-## Duplicate removal statistics 
+# Duplicate removal statistics 
 
 A table showing the duplicate removal statistics (requires samtools 1.10 or greater).
 ```{r}
@@ -329,10 +338,13 @@ tss_file <- file.path(anno.folder, "hg38_tss.bed")
 enhs_file <- file.path(anno.folder, "hg38_enhancer.bed")
 qc_per_bc_file <- file.path(params$input_folder, "qc_per_bc_file.txt")
 
-frags <- fread(frags_file)
+unfiltered_mtx <- readRDS(file.path(params$input_folder, "unfiltered_feature_matrix.rds"))
+unfiltered_mtx_bcs <- colnames(unfiltered_mtx)
+
+frags <- fread(frags_file)[V4 %in% unfiltered_mtx_bcs, ]
 
 # read in qc_per_bc file
-bc_stat <- fread(qc_per_bc_file)
+bc_stat <- fread(qc_per_bc_file)[bc %in% unfiltered_mtx_bcs, ]
 
 # read in called cellular barcodes
 cell_barcode_file <- file.path(params$input_folder, "non_empty_barcodes.txt")
@@ -410,7 +422,7 @@ p + annotation_custom(text1) + annotation_custom(text2) +
 
 Box plots which show the proportion of fragments in called cells that overlap with various annotated regions.
 ```{r anno-overlap-boxes, fig.wide = TRUE, fig.asp = 0.9}
-qc_sele_df = data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 'type' = rep(c('Peaks', 'Tss', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))
+qc_sele_df = data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 'type' = rep(c('Peaks', 'TSS', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))
   
 qc_sele_df$type = factor(qc_sele_df$type, levels = c('Peaks', 'TSS', 'Promoter', 'Enhancer', 'Mito'))
 

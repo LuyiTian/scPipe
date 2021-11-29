@@ -13,6 +13,7 @@
 #' @param R2 a character vector, the second fastq file, which is required if the data is paired-end
 #' @param output_folder a character string, the name of the output folder
 #' @param output_file a character vector specifying names of output files. By default, names of output files are set as the file names provided in R1 added with an suffix string
+#' @param type type of sequencing data (`RNA` or `DNA`)
 #' @param input_format a string indicating the input format
 #' @param output_format a string indicating the output format
 #' @param nthreads numeric value giving the number of threads used for mapping. 

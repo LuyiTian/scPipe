@@ -15,6 +15,7 @@ sc_atac_feature_counting(
   promoters_file = NULL,
   tss_file = NULL,
   enhs_file = NULL,
+  gene_anno_file = NULL,
   bin_size = NULL,
   yieldsize = 1e+06,
   mapq = 30,
@@ -25,7 +26,7 @@ sc_atac_feature_counting(
   lower = NULL,
   min_uniq_frags = 0,
   max_uniq_frags = 50000,
-  min_frac_peak = 0.05,
+  min_frac_peak = 0,
   min_frac_tss = 0,
   min_frac_enhancer = 0,
   min_frac_promoter = 0,
@@ -43,15 +44,17 @@ sc_atac_feature_counting(
 
 \item{organism}{The organism type}
 
-\item{cell_calling}{The desired cell calling method}
+\item{cell_calling}{The desired cell calling method; either \code{cellranger}, \code{emptydrops} or  \code{filter}}
 
-\item{genome_size}{The size of the genome}
+\item{genome_size}{The size of the genome (used for the \code{cellranger} cell calling method)}
 
 \item{promoters_file}{The path of the promoter annotation file (if the specified organism isn't recognised)}
 
 \item{tss_file}{The path of the tss annotation file (if the specified organism isn't recognised)}
 
 \item{enhs_file}{The path of the enhs annotation file (if the specified organism isn't recognised)}
+
+\item{gene_anno_file}{The path of the gene annotation file (gtf or gff3 format)}
 
 \item{bin_size}{The size of the bins}
 

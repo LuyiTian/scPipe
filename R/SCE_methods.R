@@ -111,7 +111,7 @@ setReplaceMethod(
 
 #' @title demultiplex_info
 #' 
-#' @description Get or set cell barcode demultiplx results in a SingleCellExperiment object
+#' @description Get or set cell barcode demultiplex results in a SingleCellExperiment object
 #' @rdname demultiplex_info
 #' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
