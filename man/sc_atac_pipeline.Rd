@@ -2,7 +2,7 @@
 % Please edit documentation in R/sc_atac_pipeline.R
 \name{sc_atac_pipeline}
 \alias{sc_atac_pipeline}
-\title{A convenient function for running the whole pipeline}
+\title{A convenient function for running the entire pipeline}
 \usage{
 sc_atac_pipeline(
   r1,
@@ -13,7 +13,28 @@ sc_atac_pipeline(
   feature_type,
   remove_duplicates = FALSE,
   samtools_path = NULL,
-  cell_calling = FALSE,
+  genome_size = NULL,
+  bin_size = NULL,
+  yieldsize = 1e+07,
+  mapq = 30,
+  exclude_regions = TRUE,
+  excluded_regions_filename = NULL,
+  fix_chr = "none",
+  lower = NULL,
+  cell_calling = "filter",
+  promoters_file = NULL,
+  tss_file = NULL,
+  enhs_file = NULL,
+  gene_anno_file = NULL,
+  min_uniq_frags = 0,
+  max_uniq_frags = 50000,
+  min_frac_peak = 0,
+  min_frac_tss = 0,
+  min_frac_enhancer = 0,
+  min_frac_promoter = 0,
+  max_frac_mito = 0.2,
+  report = TRUE,
+  nthreads = 12,
   output_folder = NULL
 )
 }
@@ -34,10 +55,52 @@ sc_atac_pipeline(
 
 \item{samtools_path}{A custom path of samtools to use for duplicate removal}
 
-\item{cell_calling}{The desired cell calling method (either `emptydrops`, `filter`, or `cellranger`)}
+\item{genome_size}{The size of the genome (used for the \code{cellranger} cell calling method)}
+
+\item{bin_size}{The size of the bins for feature counting with the `genome_bin` feature type}
+
+\item{yieldsize}{The number of reads to read in for feature counting}
+
+\item{mapq}{The minimum MAPQ score}
+
+\item{exclude_regions}{Whether or not the regions should be excluded}
+
+\item{excluded_regions_filename}{The filename of the file containing the regions to be excluded}
+
+\item{fix_chr}{Specify `none`, `exclude_regions`, `feature` or `both` to prepend the string "chr" to the start of the associated file}
+
+\item{lower}{the lower threshold for the data if using the \code{emptydrops} function for cell calling.}
+
+\item{cell_calling}{The desired cell calling method either \code{cellranger}, \code{emptydrops} or  \code{filter}}
+
+\item{promoters_file}{The path of the promoter annotation file (if the specified organism isn't recognised)}
+
+\item{tss_file}{The path of the tss annotation file (if the specified organism isn't recognised)}
+
+\item{enhs_file}{The path of the enhs annotation file (if the specified organism isn't recognised)}
+
+\item{gene_anno_file}{The path of the gene annotation file (gtf or gff3 format)}
+
+\item{min_uniq_frags}{The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)}
+
+\item{max_uniq_frags}{The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)}
+
+\item{min_frac_peak}{The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)}
+
+\item{min_frac_tss}{The minimum proportion of fragments in a cell to overlap with a tss (used for \code{filter} cell calling)}
+
+\item{min_frac_enhancer}{The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)}
+
+\item{min_frac_promoter}{The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)}
+
+\item{max_frac_mito}{The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)}
+
+\item{report}{Whether or not a HTML report should be produced}
+
+\item{nthreads}{The number of threads to use for alignment (sc_align) and demultiplexing (sc_atac_bam_tagging)}
 
 \item{output_folder}{The path of the output folder}
 }
 \description{
-A convenient function for running the whole pipeline
+A convenient function for running the entire pipeline
 }

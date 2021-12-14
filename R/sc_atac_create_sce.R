@@ -43,16 +43,19 @@ sc_atac_create_sce <- function(input_folder = NULL,
   cell_stats    <- read.csv(file.path(input_stats_folder, "filtered_stats_per_cell.csv"), row.names=1)
   feature_stats <- read.csv(file.path(input_stats_folder, "filtered_stats_per_feature.csv"))
   
-  
   # need to change from here.... (check whether I need to filter before saving to the SCE object)
   
   # can I order a matrix like a csv file like below? test...
   feature_cnt      <- feature_cnt[, order(colnames(feature_cnt))]
-
+  
+  qc <- utils::read.table(file.path(input_folder, "qc_per_bc_file.txt"), header = TRUE, row.names = "bc")
+  cell_stats <- merge(x = cell_stats, y = qc, by = 0, all.x = TRUE) %>% tibble::column_to_rownames(var = "Row.names")
   cell_stats       <- cell_stats[order(rownames(cell_stats)), ]
+  
 
   # generating the SCE object
-  sce                         <- SingleCellExperiment(assays = list(counts = as.matrix(feature_cnt)))
+  sce                         <- SingleCellExperiment(assays = list(counts = feature_cnt))
+
   sce@metadata$scPipe$version <- packageVersion("scPipe")  # set version information
   
   if(!is.null(organism)){
@@ -64,16 +67,13 @@ sc_atac_create_sce <- function(input_folder = NULL,
   }
   
   # Saving demultiplexing stats to sce object
-  stats_file = file.path(input_stats_folder, "mapping_stats_per_barcode.csv")
-  raw <- read.csv(stats_file)
-  colnames(raw) <- c("barcode", "flag", "type", "reads")
+  stats_file <- file.path(input_stats_folder, "mapping_stats_per_barcode.csv")
+  raw <- read.csv(stats_file, row.names = "barcode")
   
-  filtered <- stats::aggregate(raw$reads, by=list(type=raw$type), FUN=length)
-  colnames(filtered) <- c("status", "count")
   
   QC_metrics(sce) <- cell_stats
+  demultiplex_info(sce) <- raw
   
-  demultiplex_info(sce) <- filtered
   
   
   if(!is.null(pheno_data)){
@@ -81,8 +81,8 @@ sc_atac_create_sce <- function(input_folder = NULL,
   }
 
   feature_info(sce) <- feature_stats
-  saveRDS(sce, file = paste(input_folder,"/scPipe_atac_SCEobject.rds",sep = ""))
-
+  saveRDS(sce, file = file.path(input_folder, "scPipe_atac_SCEobject.rds"))
+  
   if(report){
     sc_atac_create_report(input_folder = file.path(input_folder),
                           output_folder= file.path(input_folder, "scPipe_atac_stats"),

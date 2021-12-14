@@ -1,6 +1,6 @@
-
 #' @name sc_atac_pipeline
-#' @title A convenient function for running the whole pipeline
+#' 
+#' @title A convenient function for running the entire pipeline
 #' 
 #' @param r1 The first read fastq file
 #' @param r2 The second read fastq file
@@ -10,7 +10,28 @@
 #' @param feature_type The feature type (either `genome_bin` or `peak`)
 #' @param remove_duplicates Whether or not to remove duplicates (samtools is required) 
 #' @param samtools_path A custom path of samtools to use for duplicate removal
-#' @param cell_calling The desired cell calling method (either `emptydrops`, `filter`, or `cellranger`)
+#' @param bin_size The size of the bins for feature counting with the `genome_bin` feature type
+#' @param yieldsize The number of reads to read in for feature counting
+#' @param mapq The minimum MAPQ score
+#' @param exclude_regions Whether or not the regions should be excluded
+#' @param excluded_regions_filename The filename of the file containing the regions to be excluded
+#' @param cell_calling The desired cell calling method either \code{cellranger}, \code{emptydrops} or  \code{filter}
+#' @param promoters_file The path of the promoter annotation file (if the specified organism isn't recognised)
+#' @param tss_file The path of the tss annotation file (if the specified organism isn't recognised)
+#' @param enhs_file The path of the enhs annotation file (if the specified organism isn't recognised)
+#' @param gene_anno_file The path of the gene annotation file (gtf or gff3 format)
+#' @param fix_chr Specify `none`, `exclude_regions`, `feature` or `both` to prepend the string "chr" to the start of the associated file
+#' @param lower the lower threshold for the data if using the \code{emptydrops} function for cell calling.
+#' @param genome_size The size of the genome (used for the \code{cellranger} cell calling method)
+#' @param min_uniq_frags The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param max_uniq_frags The maximum number of required unique fragments required for a cell (used for \code{filter} cell calling)
+#' @param min_frac_peak The minimum proportion of fragments in a cell to overlap with a peak (used for \code{filter} cell calling)
+#' @param min_frac_tss The minimum proportion of fragments in a cell to overlap with a tss (used for \code{filter} cell calling)
+#' @param min_frac_enhancer The minimum proportion of fragments in a cell to overlap with a enhancer sequence (used for \code{filter} cell calling)
+#' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
+#' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
+#' @param report Whether or not a HTML report should be produced
+#' @param nthreads The number of threads to use for alignment (sc_align) and demultiplexing (sc_atac_bam_tagging)
 #' @param output_folder The path of the output folder
 #'
 #' @export
@@ -23,7 +44,28 @@ sc_atac_pipeline <- function(r1,
                              feature_type,
                              remove_duplicates = FALSE,
                              samtools_path = NULL,
-                             cell_calling = FALSE,
+                             genome_size   = NULL,
+                             bin_size      = NULL,
+                             yieldsize     = 10000000,
+                             mapq          = 30,
+                             exclude_regions = TRUE,
+                             excluded_regions_filename = NULL,
+                             fix_chr = "none",
+                             lower = NULL,
+                             cell_calling = "filter",
+                             promoters_file = NULL,
+                             tss_file       = NULL,
+                             enhs_file      = NULL,
+                             gene_anno_file = NULL,
+                             min_uniq_frags = 0,
+                             max_uniq_frags = 50000,
+                             min_frac_peak = 0,
+                             min_frac_tss = 0,
+                             min_frac_enhancer = 0,
+                             min_frac_promoter = 0,
+                             max_frac_mito = 0.2,
+                             report = TRUE,
+                             nthreads = 12,
                              output_folder = NULL) {
   
   get_filename_without_extension <- function(path, extension_length = 1) {
@@ -50,7 +92,7 @@ sc_atac_pipeline <- function(r1,
   sc_aligning(ref = reference,
               R1 = demux_r1,
               R2 = demux_r2,
-              nthreads  = 12,
+              nthreads  = nthreads,
               output_folder = output_folder)
 
   bam_to_tag  <- file.path(output_folder, paste0("demux_", r1_name, "_aligned.bam"))
@@ -58,7 +100,7 @@ sc_atac_pipeline <- function(r1,
   sc_atac_bam_tagging(inbam         = bam_to_tag,
                       output_folder = output_folder,
                       bam_tags      = list(bc="CB", mb="OX"),
-                      nthreads      =  12)
+                      nthreads      =  nthreads)
 
   sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
@@ -89,42 +131,58 @@ sc_atac_pipeline <- function(r1,
                             feature_type  = feature_type,
                             organism      = organism,
                             cell_calling  = cell_calling,
-                            genome_size   = NULL,
-                            bin_size      = NULL,
-                            yieldsize     = 1000000,
-                            mapq          = 30,
-                            exclude_regions = TRUE,
+                            genome_size   = genome_size,
+                            promoters_file = promoters_file,
+                            tss_file       = tss_file,
+                            enhs_file      = enhs_file,
+                            gene_anno_file = gene_anno_file,
+                            bin_size      = bin_size,
+                            yieldsize     = yieldsize,
+                            mapq          = mapq,
+                            exclude_regions = exclude_regions,
+                            excluded_regions_filename = excluded_regions_filename,
                             output_folder = output_folder,
-                            fix_chr       = "none")
+                            fix_chr       = fix_chr,
+                            lower         = lower,
+                            min_uniq_frags = min_uniq_frags,
+                            max_uniq_frags = max_uniq_frags,
+                            min_frac_peak = min_frac_peak,
+                            min_frac_tss = min_frac_tss,
+                            min_frac_enhancer = min_frac_enhancer,
+                            min_frac_promoter = min_frac_promoter,
+                            max_frac_mito = max_frac_mito)
   
   sce <- sc_atac_create_sce(input_folder = output_folder,
-                            organism     = "hg38",
-                            feature_type = "peak",
+                            organism     = organism,
+                            feature_type = feature_type,
                             pheno_data   = NULL,
-                            report       = TRUE)
+                            report       = report)
   return(sce)
 }
 
 #' @name sc_atac_pipeline_quick_test
-#' @title A quick test for running the pipeline
+#' @title A function that tests the pipeline on a small test sample
 #'
 sc_atac_pipeline_quick_test <- function() {
   data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
+  output_folder <- file.path(getwd(), "scPipe-atac-output")
   out <- tryCatch(
     {
-      sce <- sc_atac_pipeline(r1 = file.path(data.folder, "small_R1.fastq.gz"),
-                              r2 = file.path(data.folder, "small_R3.fastq.gz"),
-                              barcode_fastq = file.path(data.folder, "small_R2.fastq.gz"),
+      sce <- sc_atac_pipeline(r1 = file.path(data.folder, "small_chr21_R1.fastq.gz"),
+                              r2 = file.path(data.folder, "small_chr21_R3.fastq.gz"),
+                              barcode_fastq = file.path(data.folder, "small_chr21_R2.fastq.gz"),
                               organism = "hg38",
-                              reference = file.path(data.folder, "genome.fa"),
-                              remove_duplicates = FALSE,
+                              reference = file.path(data.folder, "small_chr21.fa"),
                               feature_type = "peak",
-                              cell_calling = "filter",
-                              output_folder = file.path(tempdir(), "scPipe-atac-output"))
+                              remove_duplicates = FALSE,
+                              output_folder = output_folder)
       cat("Successfully ran pipeline.\n")
     },
+    error = function(e) {
+      message(e)
+    },
     finally = {
-      system2("rm", c("-rf", file.path(data.folder, "scPipe-atac-output")))
+      system2("rm", c("-rf", output_folder))
     }
   )
 }

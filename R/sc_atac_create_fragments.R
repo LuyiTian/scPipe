@@ -12,10 +12,10 @@
 #'
 #' @return NULL
 #' @export
-sc_atac_create_fragments <- function(inbam, output_folder = "") {
+sc_atac_create_fragments <- function(inbam, output_folder = NULL) {
     # Check if output directory exists
-    if(output_folder == ''){
-        output_folder = file.path(getwd(), "scPipe-atac-output")
+    if(is.null(output_folder)) {
+        output_folder <- file.path(getwd(), "scPipe-atac-output")
     }
 
     if (!dir.exists(output_folder)){
@@ -23,8 +23,21 @@ sc_atac_create_fragments <- function(inbam, output_folder = "") {
         cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
     }
 
-    output = paste0(output_folder, "/fragments.bed")
-
+    # Create log folder/file
+    log_and_stats_folder <- file.path(output_folder, "scPipe_atac_stats")
+    dir.create(log_and_stats_folder, showWarnings = FALSE)
+    log_file <- file.path(log_and_stats_folder, "log_file.txt")
+    if(!file.exists(log_file)) file.create(log_file)
+    cat(
+      paste0(
+        "sc_atac_create_fragments starts at ",
+        as.character(Sys.time()),
+        "\n"
+      ),
+      file = log_file, append = TRUE)
+    
+    output <- file.path(output_folder, "fragments.bed")
+    
     # Need to use sinto to generate fragment file
     proc <- basiliskStart(scPipe_env)
     on.exit(basiliskStop(proc))
@@ -171,4 +184,15 @@ read_cells <- function(cells) {
 		cb = strsplit(cells, ",")[[1]]
 	}
 
+}
+    }, inbam=inbam, out=output) 
+    
+    cat(
+      paste0(
+        "sc_atac_create_fragments finishes at ",
+        as.character(Sys.time()),
+        "\n\n"
+      ),
+      file = log_file, append = TRUE)
+  
 }

@@ -37,6 +37,8 @@ sc_aligning(
 
 \item{output_format}{a string indicating the output format}
 
+\item{type}{type of sequencing data (`RNA` or `DNA`)}
+
 \item{nthreads}{numeric value giving the number of threads used for mapping.}
 }
 \description{

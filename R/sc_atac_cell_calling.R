@@ -83,7 +83,7 @@ sc_atac_cell_calling <- function(mat,
                                   max_frac_mito = max_frac_mito)
     }
   )
-
+  
   if(cell_calling == 'filter') {
     selected_cells <- sc_atac_filter_cell_calling(mtx = mat, 
                                                   qc_per_bc_file = qc_per_bc_file,
@@ -121,10 +121,8 @@ sc_atac_cell_calling <- function(mat,
     }
   }
   
-
-  
   # Store output matrix
-  Matrix::writeMM(Matrix::Matrix(out_mat), file =file.path(output_folder, 'cell_called_matrix.mtx'))
+  # Matrix::writeMM(Matrix::Matrix(out_mat), file =file.path(output_folder, 'cell_called_matrix.mtx'))
   cat("cell called and stored in ", output_folder, "\n")
   utils::write.table(barcodes, file = file.path(output_folder, 'non_empty_barcodes.txt'), sep = '\t',
               row.names = FALSE, quote = FALSE, col.names = FALSE)

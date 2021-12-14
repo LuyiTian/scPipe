@@ -30,7 +30,7 @@ a dataframe of cell barcode demultiplex information
 A DataFrame of cell barcode demultiplx results.
 }
 \description{
-Get or set cell barcode demultiplx results in a SingleCellExperiment object
+Get or set cell barcode demultiplex results in a SingleCellExperiment object
 }
 \examples{
 data("sc_sample_data")

@@ -4,7 +4,7 @@
 \alias{sc_atac_create_fragments}
 \title{DEPRECIATED. Generating the popular fragments for scATAC-Seq data using sinto}
 \usage{
-sc_atac_create_fragments(inbam, output_folder = "")
+sc_atac_create_fragments(inbam, output_folder = NULL)
 }
 \arguments{
 \item{inbam}{The tagged, sorted and duplicate-free input BAM file}
