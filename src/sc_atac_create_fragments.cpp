@@ -102,7 +102,7 @@ void sc_atac_create_fragments_cpp(
 	std::vector<std::thread> pool;
 	nproc = contigs.length();
 	Rcpp::Rcout << "Output folder name is: " << output << "\n";
-	for (int i = 0; i < nproc; i++) {
+	for (int i = 0; i < (int)nproc; i++) {
 		std::string contig = String(contigs[i]).get_cstring();
 
 		// create the bam_header_t and find the tid for this contig

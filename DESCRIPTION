@@ -3,7 +3,7 @@ Title: pipeline for single cell RNA-seq data analysis
 Date: 2019-10-12
 Version: 1.9.4
 Type: Package
-Authors@R: c(person("Luyi", "Tian", role=c("aut", "cre"), email="tian.l@wehi.edu.au"), 
+Authors@R: c(person("Luyi", "Tian", role=c("aut"), email="tian.l@wehi.edu.au"), 
         person("Shian", "Su", role=c("aut"), email="su.s@wehi.edu.au"), 
         person("Shalin", "Naik", role=c("ctb"), email="naik.s@wehi.edu.au"), 
         person("Shani", "Amarasinghe", role=c("aut"), email="amarasinghe.s@wehi.edu.au"), 

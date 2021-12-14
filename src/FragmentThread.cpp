@@ -177,8 +177,8 @@ void
 				if (current_coord == -1) {
 					// read aligned to the wrong strand
 					fragment_dict.erase(qname);
-				} else if (((rend - current_coord) > this->max_distance) ||
-					((rend - current_coord) < this->min_distance)) {
+				} else if (((rend - current_coord) > (int32_t)this->max_distance) ||
+					((rend - current_coord) < (int32_t)this->min_distance)) {
 					// too far away, don't include
 					fragment_dict.erase(qname);
 				} else {
@@ -197,8 +197,8 @@ void
 				int32_t current_coord = fragment_dict[qname].end;
 				if (current_coord == -1) {
 					fragment_dict.erase(qname);
-				} else if (((current_coord - rstart) > this->max_distance) ||
-					((current_coord - rstart) < this->min_distance)) {
+				} else if (((current_coord - rstart) > (int32_t)this->max_distance) ||
+					((current_coord - rstart) < (int32_t)this->min_distance)) {
 					fragment_dict.erase(qname);
 				} else {
 					if (cell_barcode.empty() && fragment_dict[qname].cell_barcode.empty()) {
@@ -497,7 +497,7 @@ FragmentThread::createPositionLookup(std::vector<std::string> &frags, bool start
 	// iterate over all the fragments
 	// for each string version which has >1 counts
 	// add the full fragment to the forward list at that location.
-	for (int i = 0; i < frags.size(); i++) {
+	for (int i = 0; i < (int)frags.size(); i++) {
 		if (counts[posfrags[i]] > 1) {
 			starts[posfrags[i]].push_back(frags[i]);
 		}
