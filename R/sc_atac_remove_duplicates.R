@@ -15,8 +15,6 @@ sc_atac_remove_duplicates <- function(inbam,
                                       output_folder = NULL) {
   
   # Check if samtools is installed
-  samtools.installed <- TRUE
-  
   
   if (!is.null(samtools_path)) {
     samtools <- samtools_path
@@ -25,19 +23,20 @@ sc_atac_remove_duplicates <- function(inbam,
   }
   
   # Check if samtools is installed
-  tryCatch(
+  samtools.installed <- tryCatch(
     {
       system2(samtools, stdout = NULL, stderr = NULL)
       message("samtools was located")
+      return(TRUE)
     },
     
     warning = function(w) {
-      samtools.installed <- FALSE
       if (is.null(samtools_path)) {
         message("samtools was not located, so can't remove duplicates. Please make sure it is installed.")
       } else {
         message("samtools was not located via the specified path. Please make sure it is correct.")
       }
+      return(FALSE)
     }
   )
   

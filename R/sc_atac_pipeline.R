@@ -89,11 +89,11 @@ sc_atac_pipeline <- function(r1,
 
   reference       <- reference
   
-  sc_aligning(ref = reference,
-              R1 = demux_r1,
-              R2 = demux_r2,
-              nthreads  = nthreads,
-              output_folder = output_folder)
+  # sc_aligning(ref = reference,
+  #             R1 = demux_r1,
+  #             R2 = demux_r2,
+  #             nthreads  = nthreads,
+  #             output_folder = output_folder)
 
   bam_to_tag  <- file.path(output_folder, paste0("demux_", r1_name, "_aligned.bam"))
 
@@ -110,7 +110,7 @@ sc_atac_pipeline <- function(r1,
                               output_folder = output_folder)
     sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
   }
-
+  cat("test\n")
   sc_atac_create_fragments(inbam = sorted_tagged_bam,
                            output_folder = output_folder)
 
@@ -161,7 +161,7 @@ sc_atac_pipeline <- function(r1,
 }
 
 #' @name sc_atac_pipeline_quick_test
-#' @title A function that tests the pipeline on a small test sample
+#' @title A function that tests the pipeline on a small test sample (without duplicate removal)
 #'
 sc_atac_pipeline_quick_test <- function() {
   data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
