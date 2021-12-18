@@ -123,9 +123,14 @@ sc_atac_bam_tagging <- function(inbam,
   iter <- 1
   full_matrix = NULL
   
+  # Iterate over the BAM file in chunks of 5 million reads
   while(length((bam0 <- Rsamtools::scanBam(bamfl, param = params)[[1]])$flag)) {
     cat("chunk", iter, "\n")
+    
+    # Create a data.table object with each row representing a read, and the columns as the barcode and flag
     df <- data.table::setDT(data.frame(bam0$tag$CB, bam0$flag) %>% data.table::setnames(c("barcode", "flag")) %>% dplyr::left_join(flag_defs, by = "flag"))[, !"flag"]
+    
+    # Count the reads per barcode 
     x <- df[, list(count=.N), names(df)]
     x <- data.table::dcast(x, barcode ~ type, value.var = "count")
     for (i in seq_along(x)) data.table::set(x, i=which(is.na(x[[i]])), j=i, value=0)

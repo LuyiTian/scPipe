@@ -105,12 +105,12 @@ sc_atac_pipeline <- function(r1,
   sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
   if (isTRUE(remove_duplicates)) {
-    sc_atac_remove_duplicates(inbam = sorted_tagged_bam,
+    removed <- sc_atac_remove_duplicates(inbam = sorted_tagged_bam,
                               samtools_path = samtools_path,
                               output_folder = output_folder)
+    if (!removed) return()
     sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
   }
-  cat("test\n")
   sc_atac_create_fragments(inbam = sorted_tagged_bam,
                            output_folder = output_folder)
 
