@@ -352,13 +352,7 @@ sc_atac_feature_counting <- function(
 
       i <- match(rownames(m), rows)[s$i]
       j <- match(colnames(m), cols)[s$j]
-      # ilj <- i<j
-
-      # sparseMatrix(i=ifelse(ilj, i, j),
-      #              j=ifelse(ilj, j, i),
-      #              x=s$x,
-      #              dims=c(nrows, ncols),
-      #              dimnames=list(rows, cols))
+     
       sparseMatrix(i=i,
                    j=j,
                    x=s$x,

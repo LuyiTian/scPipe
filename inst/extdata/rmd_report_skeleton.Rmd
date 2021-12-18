@@ -114,7 +114,8 @@ ggplot(sums, aes(x=status, y=count, fill=status)) +
 
 # Alignment statistics of demultiplexed reads per barcode
 ```{r barcode-alignment-dist, fig.wide = TRUE, fig.asp = 0.9}
-stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
+# stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
+stats_file <- file.path("/stornext/Home/data/allstaff/y/yang.p/scPipe_testing/scPipe", "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
 data <- read.csv(stats_file, row.names = "barcode")[-5] %>% sample_n(500) 
 
 mapping_stat <- data %>% arrange(mapped)
@@ -130,11 +131,11 @@ ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_bre
   geom_bar(stat="identity", width=1)+
   xlab("barcode") +
   ylab("percentage of reads")+
-  scale_y_continuous(labels=percent_format()) +
+  scale_y_continuous(labels = percent_format(), expand = expansion(mult = c(0, 0))) +
+  
   theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.x = element_text(vjust = 5),
-        plot.title = element_text(vjust = -2)) +
+        axis.ticks.x=element_blank()) +
+
   ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads")) 
 
 ```
