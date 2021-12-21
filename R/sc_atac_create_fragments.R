@@ -181,18 +181,9 @@ read_cells <- function(cells) {
 	if (file.exists(cells)) {
 		barcodes <- data.table::fread(cells, header=FALSE, data.table=FALSE)[[1]]
 	} else {
-		cb = strsplit(cells, ",")[[1]]
+		barcodes = strsplit(cells, ",")[[1]]
 	}
 
-}
-    }, inbam=inbam, out=output) 
-    
-    cat(
-      paste0(
-        "sc_atac_create_fragments finishes at ",
-        as.character(Sys.time()),
-        "\n\n"
-      ),
-      file = log_file, append = TRUE)
-  
+	return (barcodes)
+
 }
