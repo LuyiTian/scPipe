@@ -193,7 +193,7 @@ Remove low quality cells and plot highest expression genes.
 ```{r}
 sce_qc = remove_outliers(sce_qc)
 sce_qc = convert_geneid(sce_qc, returns="external_gene_name")
-sce_qc <- calculateQCMetrics(sce_qc)
+sce_qc <- perCellQCMetrics(sce_qc)
 plotHighestExprs(sce_qc, n=20)
 ```
 
