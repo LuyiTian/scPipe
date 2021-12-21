@@ -16,7 +16,7 @@ ensembl_to_db = list(ensembl_gene_id="ENSEMBL",
 #'
 #' @return a vector of gene ids.
 #'
-#' @importFrom biomaRt useDataset getBM
+#' @importFrom biomaRt useDataset getBM useMart
 #' @importFrom AnnotationDbi mapIds
 #'
 #' @export
