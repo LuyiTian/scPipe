@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // check_barcode_reads
 bool check_barcode_reads(String fastq, String barcodeseqs, int barcode_start, int barcode_length, int lines_to_search, double threshold);
 RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcode_startSEXP, SEXP barcode_lengthSEXP, SEXP lines_to_searchSEXP, SEXP thresholdSEXP) {
@@ -271,6 +276,28 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// sc_atac_create_fragments_cpp
+void sc_atac_create_fragments_cpp(std::string inbam, std::string output, CharacterVector contigs, IntegerVector ends, unsigned int min_mapq, unsigned int nproc, std::string cellbarcode, std::string chromosomes, Nullable<String> readname_barcodeN, Nullable<StringVector> cellsN, unsigned int max_distance, unsigned int min_distance, unsigned int chunksize);
+RcppExport SEXP _scPipe_sc_atac_create_fragments_cpp(SEXP inbamSEXP, SEXP outputSEXP, SEXP contigsSEXP, SEXP endsSEXP, SEXP min_mapqSEXP, SEXP nprocSEXP, SEXP cellbarcodeSEXP, SEXP chromosomesSEXP, SEXP readname_barcodeNSEXP, SEXP cellsNSEXP, SEXP max_distanceSEXP, SEXP min_distanceSEXP, SEXP chunksizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type inbam(inbamSEXP);
+    Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type contigs(contigsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ends(endsSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type min_mapq(min_mapqSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nproc(nprocSEXP);
+    Rcpp::traits::input_parameter< std::string >::type cellbarcode(cellbarcodeSEXP);
+    Rcpp::traits::input_parameter< std::string >::type chromosomes(chromosomesSEXP);
+    Rcpp::traits::input_parameter< Nullable<String> >::type readname_barcodeN(readname_barcodeNSEXP);
+    Rcpp::traits::input_parameter< Nullable<StringVector> >::type cellsN(cellsNSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type max_distance(max_distanceSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type min_distance(min_distanceSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type chunksize(chunksizeSEXP);
+    sc_atac_create_fragments_cpp(inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize);
+    return R_NilValue;
+END_RCPP
+}
 
 RcppExport SEXP run_testthat_tests(SEXP);
 
@@ -290,6 +317,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_atac_bam_tagging", (DL_FUNC) &_scPipe_rcpp_sc_atac_bam_tagging, 5},
     {"_scPipe_rcpp_fasta_bin_bed_file", (DL_FUNC) &_scPipe_rcpp_fasta_bin_bed_file, 3},
     {"_scPipe_rcpp_append_chr_to_bed_file", (DL_FUNC) &_scPipe_rcpp_append_chr_to_bed_file, 2},
+    {"_scPipe_sc_atac_create_fragments_cpp", (DL_FUNC) &_scPipe_sc_atac_create_fragments_cpp, 13},
     {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 1},
     {NULL, NULL, 0}
 };

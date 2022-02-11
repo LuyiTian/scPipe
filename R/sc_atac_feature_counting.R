@@ -692,20 +692,20 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
   
   out.frag.overlap.file <- file.path(output_folder, "qc_per_bc_file.txt")
   
-  frags <- fread(frags_file, select=1:4, header = F)
+  frags <- fread(frags_file, select=1:4, header = FALSE)
   names(frags) <- c('chr', 'start', 'end', 'bc')
   setkey(frags, chr, start)
   
   frags[, 'total_frags' := .N, by = bc]
   frags <- frags[total_frags > 5]
   
-  frags <- frags[!grepl(chr, pattern = 'random', ignore.case = T)]
-  frags <- frags[!grepl(chr, pattern ='un', ignore.case = T)]
+  frags <- frags[!grepl(chr, pattern = 'random', ignore.case = TRUE)]
+  frags <- frags[!grepl(chr, pattern ='un', ignore.case = TRUE)]
   
-  peaks <- fread(peaks_file, select=1:3, header = F)
-  promoters <- fread(promoters_file, select=1:3, header = F)
-  tss <- fread(tss_file, select=1:3, header = F)
-  enhs <- fread(enhs_file, select=1:3, header = F)
+  peaks <- fread(peaks_file, select=1:3, header = FALSE)
+  promoters <- fread(promoters_file, select=1:3, header = FALSE)
+  tss <- fread(tss_file, select=1:3, header = FALSE)
+  enhs <- fread(enhs_file, select=1:3, header = FALSE)
   names(peaks) = names(promoters) = names(tss) =
     names(enhs) = c('chr', 'start', 'end')
   
@@ -775,7 +775,7 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
   fragsInRegion <- unique(fragsInRegion)
 
   utils::write.table(fragsInRegion, file = out.frag.overlap.file, sep = '\t',
-              row.names = F, quote = F)
+              row.names = FALSE, quote = FALSE)
 }
 
 
