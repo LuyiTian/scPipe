@@ -2,10 +2,10 @@
 % Please edit documentation in R/sc_atac_pipeline.R
 \name{sc_atac_pipeline_quick_test}
 \alias{sc_atac_pipeline_quick_test}
-\title{A function that tests the pipeline on a small test sample}
+\title{A function that tests the pipeline on a small test sample (without duplicate removal)}
 \usage{
 sc_atac_pipeline_quick_test()
 }
 \description{
-A function that tests the pipeline on a small test sample
+A function that tests the pipeline on a small test sample (without duplicate removal)
 }
