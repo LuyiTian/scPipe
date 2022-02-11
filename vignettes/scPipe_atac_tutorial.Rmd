@@ -1,6 +1,6 @@
 ---
 title: "scPipe: a flexible data preprocessing pipeline for single-cell data"
-author: "Shani Amarasinghe"
+author: "Shani Amarasinghe, Phil Yang"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -23,7 +23,7 @@ The output fastq files from a `10X ATAC` experiment is paired-ended and data is 
 
 The pipeline is visually described via the workflow diagram depicted below. The functions will be explained in greater detail.
 
-```{r, warning=FALSE, message=FALSE, out.width="100%"}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, out.width="100%"}
 library(knitr)
 knitr::include_graphics(system.file("scATAC-seq_workflow.png", package = "scPipe"))
 
@@ -31,7 +31,7 @@ knitr::include_graphics(system.file("scATAC-seq_workflow.png", package = "scPipe
 
 # Getting started
 
-It is not mandatory to specify an output folder even though it can be specified. If no `output_folder` is defined a folder named `scPipe-atac-output`will get created in the working directory.
+It is not mandatory to specify an output folder even though it can be specified. If no `output_folder` is defined a folder named `scPipe-atac-output` will get created in the working directory.
 
 We begin by loading the library.
 
@@ -294,6 +294,11 @@ sce <- sc_atac_create_sce(input_folder = output_folder,
 
 We have now completed the preprocessing steps. The feature count matrix is available as a `.rds` file in `scPipe-atac-output/feature_matrix.rds` and quality control statistics are saved in the `scPipe-atac-output/scPipe_atac_stats` folder. This data is useful for later quality control as well (QC).
 
+If the report parameter is set to `TRUE` then an HTML report with various statistics and plots is generated. A partial screenshot of the report is shown below.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, out.width="100%"}
+knitr::include_graphics(system.file("report_example.png", package = "scPipe"))
+```
 
 # Downstream analysis
 

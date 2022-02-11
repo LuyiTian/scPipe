@@ -544,15 +544,15 @@ sc_atac_feature_counting <- function(
   cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
 
   # generate and save jaccard matrix
-  jaccardM <- locStra::jaccardMatrix(sparseM)
-  cat("Jaccard matrix generated", "\n")
-  saveRDS(jaccardM, file = paste(output_folder,"/jaccard_matrix.rds",sep = ""))
-  cat("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")
+  # jaccardM <- locStra::jaccardMatrix(sparseM)
+  # cat("Jaccard matrix generated", "\n")
+  # saveRDS(jaccardM, file = paste(output_folder,"/jaccard_matrix.rds",sep = ""))
+  # cat("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")
 
   # generate and save the binary matrix
   # matrixData[matrixData>0] <- 1
   # saveRDS(matrixData, file = paste(output_folder,"/binary_matrix.rds",sep = ""))
-  cat("Binary matrix is saved in:\n", paste(output_folder,"/binary_matrix.rds",sep = "") , "\n")
+  # cat("Binary matrix is saved in:\n", paste(output_folder,"/binary_matrix.rds",sep = "") , "\n")
 
   # following can be used to plot the stats and load it into sce object ########
   # (from https://broadinstitute.github.io/2020_scWorkshop/data-wrangling-scrnaseq.html)

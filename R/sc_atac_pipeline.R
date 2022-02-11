@@ -89,11 +89,11 @@ sc_atac_pipeline <- function(r1,
 
   reference       <- reference
   
-  # sc_aligning(ref = reference,
-  #             R1 = demux_r1,
-  #             R2 = demux_r2,
-  #             nthreads  = nthreads,
-  #             output_folder = output_folder)
+  sc_aligning(ref = reference,
+              R1 = demux_r1,
+              R2 = demux_r2,
+              nthreads  = nthreads,
+              output_folder = output_folder)
 
   bam_to_tag  <- file.path(output_folder, paste0("demux_", r1_name, "_aligned.bam"))
 
@@ -108,6 +108,7 @@ sc_atac_pipeline <- function(r1,
     removed <- sc_atac_remove_duplicates(inbam = sorted_tagged_bam,
                               samtools_path = samtools_path,
                               output_folder = output_folder)
+    removed <- TRUE
     if (!removed) return()
     sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
   }

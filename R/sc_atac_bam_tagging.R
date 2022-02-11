@@ -142,7 +142,7 @@ sc_atac_bam_tagging <- function(inbam,
     }
     iter <- iter+1
   }
-  df <- data.table::setnames(data.table::setDT(as.data.frame(full_matrix), keep.rownames = TRUE), "rn", "barcode")
+  df <- data.table::setnames(data.table::setDT(as.data.frame(as.matrix(full_matrix)), keep.rownames = TRUE), "rn", "barcode")
   df[ ,count := rowSums(.SD), .SDcols = names(df[,!"barcode"])]
   mapping_stats_path <- file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv")
   data.table::fwrite(df, mapping_stats_path)
