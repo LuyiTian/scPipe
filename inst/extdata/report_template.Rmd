@@ -143,7 +143,7 @@ if (any(colSums(counts(sce)) == 0)) {
 
 Datatable of all QC metrics:
 ```{r}
-sce = calculate_QC_metrics(sce)
+sce = perCellQCMetrics(sce)
 if(!all(colSums(as.data.frame(QC_metrics(sce)))>0)){
   QC_metrics(sce) = QC_metrics(sce)[, colSums(as.data.frame(QC_metrics(sce)))>0]
 }
