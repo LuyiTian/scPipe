@@ -57,13 +57,13 @@ sc_atac_pipeline <- function(r1,
                              tss_file       = NULL,
                              enhs_file      = NULL,
                              gene_anno_file = NULL,
-                             min_uniq_frags = 0,
+                             min_uniq_frags = 3000,
                              max_uniq_frags = 50000,
-                             min_frac_peak = 0,
+                             min_frac_peak = 0.3,
                              min_frac_tss = 0,
                              min_frac_enhancer = 0,
-                             min_frac_promoter = 0,
-                             max_frac_mito = 0.2,
+                             min_frac_promoter = 0.1,
+                             max_frac_mito = 0.15,
                              report = TRUE,
                              nthreads = 12,
                              output_folder = NULL) {
@@ -176,6 +176,9 @@ sc_atac_pipeline_quick_test <- function() {
                               reference = file.path(data.folder, "small_chr21.fa"),
                               feature_type = "peak",
                               remove_duplicates = FALSE,
+                              min_uniq_frags = 0,
+                              min_frac_peak = 0,
+                              min_frac_promoter = 0,
                               output_folder = output_folder)
       cat("Successfully ran pipeline.\n")
     },
@@ -183,7 +186,7 @@ sc_atac_pipeline_quick_test <- function() {
       message(e)
     },
     finally = {
-      system2("rm", c("-rf", output_folder))
+      # system2("rm", c("-rf", output_folder))
     }
   )
 }

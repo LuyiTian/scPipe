@@ -179,7 +179,7 @@ if (file.exists(duplicate_stats.file)) {
 # Per cell statistics
 
 ```{r}
-cell_stats    <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "filtered_stats_per_cell.csv"))
+sce <- readRDS(file.path(params$input_folder, "scPipe_atac_SCEobject.rds"))
 ```
 
 <!-- Figures \@ref(fig:percell-counts) and \@ref(fig:percell-features) -->
@@ -188,142 +188,60 @@ cell_stats    <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "f
 
 A histogram of the total number of fragments across all called cells.
 ```{r percell-counts, fig.wide = TRUE, fig.asp = 0.9}
-cell_stats$log_counts_per_cell <- log(cell_stats$counts_per_cell+1)
+sc_atac_plot_fragments_per_cell(sce)
 
-ggpubr::gghistogram(cell_stats,
-                    x = "log_counts_per_cell",
-                    y = "..count..",
-                    title = "Counts per cell",
-                    color = "#D95F02",
-                    fill = "#D95F02",
-                    bins = 10,
-                    rug = TRUE,
-                    # add = "mean",
-                    add_density = TRUE
-                    )
-
-# plot_grid( ,ncol = 2, align = "v")
-# hist(log(cell_stats$counts_per_cell+1),main='Counts per cell',col='black')
 ```
 
 ## Features per cell
 
 A histogram of the number of overlapping features across all called cells.
 ```{r percell-features, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_features_per_cell(sce)
 
-cell_stats$log_features_per_cell <- log(cell_stats$features_per_cell+1)
+```
 
-ggpubr::gghistogram(cell_stats,
-                    x = "log_features_per_cell",
-                    y = "..count..",
-                    title = "Features per cell",
-                    color = "#7570B3",
-                    fill = "#7570B3",
-                    bins = 10,
-                    rug = TRUE,
-                    # add = "mean",
-                    add_density = TRUE
-                    )
+Plot showing the number of overlapping features across all cells, ordered.
+```{r}
+sc_atac_plot_features_per_cell_ordered(sce)
 
-#hist(log(cell_stats$features_per_cell+1), main='Features per cell', col='black')
 ```
 
 # Per feature statistics
-```{r}
-feature_stats <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "filtered_stats_per_feature.csv"))
-```
 
 ## Counts per feature
 
 A histogram of the number of overlapping fragments across all features.
 ```{r perfeature-counts, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_fragments_per_feature(sce)
 
-feature_stats$log_counts_per_feature <- log(feature_stats$counts_per_feature+1)
-
-ggpubr::gghistogram(feature_stats,
-                    x = "log_counts_per_feature",
-                    y = "..count..",
-                    title = "Counts per feature",
-                    color = "#D95F02",
-                    fill = "#D95F02",
-                    bins = 10,
-                    rug = TRUE,
-                    # add = "mean",
-                    add_density = TRUE
-                    )
-
-#hist(log(feature_stats$counts_per_feature+1), main='counts per feature', col='black')
 ```
 
 ## Cells per feature
 
 A histogram of the number of associated cells for each feature.
 ```{r perfeature-cells, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_cells_per_feature(sce)
 
-feature_stats$log_cells_per_feature <- log(feature_stats$cells_per_feature+1)
-
-ggpubr::gghistogram(feature_stats,
-                    x = "log_cells_per_feature",
-                    y = "..count..",
-                    title = "Cells per feature",
-                    color = "#7570B3",
-                    fill = "#7570B3",
-                    bins = 10,
-                    rug = TRUE,
-                    # add = "mean",
-                    add_density = TRUE
-                    )
-
-#hist(log(feature_stats$cells_per_feature+1), main='counts per feature', col='black')
 ```
 
 
 ## Counts vs. features per cell
 
-A scatter plot showing the relationship between the number of fragments and number of overlapping features for all called cells.
+A scatter plot showing the relationship between the number of fragments and number of overlapping features for all selected cells.
 ```{r corr-cells, fig.wide = TRUE, fig.asp = 0.9}
-ggpubr::ggscatter(cell_stats,
-                  x = "log_counts_per_cell",
-                  y = "log_features_per_cell",
-                  title = "Relationship between counts and features per cell",
-                  color = "#D95F02",
-                  fill = "#D95F02",
-                  add = "reg.line",
-                  conf.int = TRUE, # Add confidence interval
-                  cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
-                  cor.coeff.args = list(method = "spearman", label.x = 1, label.sep = "\n"),
-                  rug = TRUE)
+sc_atac_plot_fragments_features_per_cell(sce)
 
-# plot(cell_stats$counts_per_cell, cell_stats$features_per_cell, log='xy', col='black')
-# title('counts vs features per cell')
 ```
 
 ## Counts vs. cells per feature
 
 A scatter plot showing the relationship between the number of overlapping fragments and associated cells for each feature.
 ```{r corr-features, fig.wide = TRUE, fig.asp = 0.9}
-ggpubr::ggscatter(feature_stats,
-                  x = "log_counts_per_feature",
-                  y = "log_cells_per_feature",
-                  title = "Relationship between counts and cells per feature",
-                  color = "#7570B3",
-                  fill = "#7570B3",
-                  add = "reg.line",
-                  conf.int = TRUE, # Add confidence interval
-                  cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
-                  cor.coeff.args = list(method = "spearman", label.x = 1, label.sep = "\n"),
-                  rug = TRUE)
+sc_atac_plot_fragments_cells_per_feature(sce)
+
 ```
 
-Plot showing the number of overlapping features across all cells, ordered.
-```{r}
-plot(sort(cell_stats$features_per_cell), 
-     xlab= 'cell', 
-     log= 'y', 
-     ylab = "features", 
-     main= 'features per cell (ordered)',
-     col = "#1B9E77")
-```
+
 
 # Quality control plots
 

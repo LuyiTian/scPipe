@@ -11,7 +11,7 @@
 #'
 #' @export
 #' 
-#' @importFrom basilisk basiliskStart basiliskStop
+#' @importFrom basilisk basiliskRun basiliskStart basiliskStop
 sc_atac_peak_calling <- function(inbam, 
                                  ref = NULL, 
                                  genome_size = NULL,

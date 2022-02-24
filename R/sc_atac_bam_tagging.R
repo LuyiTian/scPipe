@@ -107,7 +107,7 @@ sc_atac_bam_tagging <- function(inbam,
       i <- match(rownames(m), rows)[s$i]
       j <- match(colnames(m), cols)[s$j]
   
-      sparseMatrix(i=i,
+      Matrix::sparseMatrix(i=i,
                    j=j,
                    x=s$x,
                    dims=c(nrows, ncols),

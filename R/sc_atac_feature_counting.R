@@ -66,13 +66,13 @@ sc_atac_feature_counting <- function(
   output_folder  = NULL,
   fix_chr        = "none", # should be either one of these: c("none", "excluded_regions", "feature", "both")
   lower = NULL,
-  min_uniq_frags = 0,
+  min_uniq_frags = 3000,
   max_uniq_frags = 50000,
   min_frac_peak = 0.3,
   min_frac_tss = 0,
   min_frac_enhancer = 0,
-  min_frac_promoter = 0,
-  max_frac_mito = 0.2
+  min_frac_promoter = 0.1,
+  max_frac_mito = 0.15
 ) {
   
   . <- V1 <- V2 <- V3 <- init <- peakStart <- seqnames <- peakEnd <- CB <- chromosome <- chrS <- feature <- barcode <- NULL

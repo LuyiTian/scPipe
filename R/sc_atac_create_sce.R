@@ -96,6 +96,167 @@ sc_atac_create_sce <- function(input_folder = NULL,
   
 }
 
+#' @name sc_atac_plot_fragments_per_cell
+#' @title A histogram of the log-number of fragments per cell
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_fragments_per_cell <- function(sce) {
+  cell_stats <- as.data.frame(QC_metrics(sce))
+  cell_stats$log_counts_per_cell <- log(cell_stats$counts_per_cell+1)
+  ggpubr::gghistogram(cell_stats,
+                      x = "log_counts_per_cell",
+                      y = "..count..",
+                      title = "Counts per cell",
+                      color = "#D95F02",
+                      fill = "#D95F02",
+                      bins = 10,
+                      rug = TRUE,
+                      # add = "mean",
+                      add_density = TRUE
+  )
+}
+
+#' @name sc_atac_plot_fragments_per_feature
+#' @title A histogram of the log-number of fragments per feature
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_fragments_per_feature <- function(sce) {
+  feature_stats <- as.data.frame(feature_info(sce))
+  feature_stats$log_counts_per_feature <- log(feature_stats$counts_per_feature+1)
+  ggpubr::gghistogram(feature_stats,
+                      x = "log_counts_per_feature",
+                      y = "..count..",
+                      title = "Counts per feature",
+                      color = "#D95F02",
+                      fill = "#D95F02",
+                      bins = 10,
+                      rug = TRUE,
+                      # add = "mean",
+                      add_density = TRUE
+  )
+}
 
 
+#' @name sc_atac_plot_features_per_cell
+#' @title A histogram of the log-number of features per cell
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_features_per_cell <- function(sce) {
+  cell_stats <- as.data.frame(QC_metrics(sce))
+  cell_stats$log_features_per_cell <- log(cell_stats$features_per_cell+1)
+  ggpubr::gghistogram(as.data.frame(cell_stats),
+                      x = "log_features_per_cell",
+                      y = "..count..",
+                      title = "Features per cell",
+                      color = "#7570B3",
+                      fill = "#7570B3",
+                      bins = 10,
+                      rug = TRUE,
+                      # add = "mean",
+                      add_density = TRUE)
+}
+
+#' @name sc_atac_plot_features_per_cell_ordered
+#' @title Plot showing the number of features per cell in ascending order
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_features_per_cell_ordered <- function(sce) {
+  cell_stats <- QC_metrics(sce)
+  plot(sort(cell_stats$features_per_cell), 
+       xlab= 'cell', 
+       log= 'y', 
+       ylab = "features", 
+       main= 'features per cell (ordered)',
+       col = "#1B9E77")
+}
+
+#' @name sc_atac_plot_cells_per_feature
+#' @title A histogram of the log-number of cells per feature
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_cells_per_feature <- function(sce) {
+  feature_stats <- as.data.frame(feature_info(sce))
+  feature_stats$log_cells_per_feature <- log(feature_stats$cells_per_feature+1)
+  ggpubr::gghistogram(feature_stats,
+                      x = "log_cells_per_feature",
+                      y = "..count..",
+                      title = "Cells per feature",
+                      color = "#7570B3",
+                      fill = "#7570B3",
+                      bins = 10,
+                      rug = TRUE,
+                      # add = "mean",
+                      add_density = TRUE
+  )
+}
+
+#' @name sc_atac_plot_fragments_features_per_cell
+#' @title A scatter plot of the log-number of fragments and log-number of features per cell
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_fragments_features_per_cell <- function(sce) {
+  cell_stats <- as.data.frame(QC_metrics(sce))
+  cell_stats$log_counts_per_cell <- log(cell_stats$counts_per_cell+1)
+  cell_stats$log_features_per_cell <- log(cell_stats$features_per_cell+1)
+  ggpubr::ggscatter(cell_stats,
+                    x = "log_counts_per_cell",
+                    y = "log_features_per_cell",
+                    title = "Relationship between counts and features per cell",
+                    color = "#D95F02",
+                    fill = "#D95F02",
+                    add = "reg.line",
+                    conf.int = TRUE, # Add confidence interval
+                    cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
+                    cor.coeff.args = list(method = "spearman", label.x = 1, label.sep = "\n"),
+                    rug = TRUE)
+}
+
+#' @name sc_atac_plot_fragments_cells_per_feature
+#' @title A scatter plot of the log-number of fragments and log-number of cells per feature
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_fragments_cells_per_feature <- function(sce) {
+  feature_stats <- as.data.frame(feature_info(sce))
+  feature_stats$log_counts_per_feature <- log(feature_stats$counts_per_feature+1)
+  feature_stats$log_cells_per_feature <- log(feature_stats$cells_per_feature+1)
+  ggpubr::ggscatter(feature_stats,
+                    x = "log_counts_per_feature",
+                    y = "log_cells_per_feature",
+                    title = "Relationship between counts and cells per feature",
+                    color = "#7570B3",
+                    fill = "#7570B3",
+                    add = "reg.line",
+                    conf.int = TRUE, # Add confidence interval
+                    cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
+                    cor.coeff.args = list(method = "spearman", label.x = 1, label.sep = "\n"),
+                    rug = TRUE)
+}
 

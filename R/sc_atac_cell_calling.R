@@ -42,13 +42,13 @@ sc_atac_cell_calling <- function(mat,
                                  genome_size    = NULL, 
                                  qc_per_bc_file = NULL, 
                                  lower          = NULL,
-                                 min_uniq_frags = 0,
+                                 min_uniq_frags = 3000,
                                  max_uniq_frags = 50000,
-                                 min_frac_peak = 0.05,
+                                 min_frac_peak = 0.3,
                                  min_frac_tss = 0,
                                  min_frac_enhancer = 0,
-                                 min_frac_promoter = 0,
-                                 max_frac_mito = 0.2){
+                                 min_frac_promoter = 0.1,
+                                 max_frac_mito = 0.15){
   
   cat("calling `", cell_calling, "` function for cell calling ... \n")
 
