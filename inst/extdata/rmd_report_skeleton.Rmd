@@ -58,6 +58,48 @@ knitr::kable(alignment_stats,
     kable_styling()
 ```
 
+Below is a stacked bar plot showing the distribution of how the fragments have been mapped. The left plot shows the number of uniquely and multi-mapped fragments, while the right plot shows 
+
+```{r}
+as.1 <- alignment_stats[alignment_stats$V1 %in% c("Unmapped_fragments", 
+                                                  "Uniquely_mapped_fragments", 
+                                                  "Multi_mapping_fragments"),] %>% 
+  mutate(Type = "1") %>% rename(Mapping_type = "V1")
+
+as.2 <- alignment_stats[alignment_stats$V1 %in% c("Properly_paired_fragments", 
+                                                  "Singleton_fragments",
+                                                  "More_than_one_chr_fragments",
+                                                  "Unexpected_strandness_fragments",
+                                                  "Unexpected_template_length",
+                                                  "Inversed_mapping"),] %>% 
+  mutate(Type = "2") %>% rename(Mapping_type = "V1")
+
+as.1$Proportion <- as.1$V2/sum(as.1$V2)
+as.2$Proportion <- as.2$V2/sum(as.2$V2)
+
+as.combined <- rbind(as.1, as.2)
+g1 <- ggplot(as.1, aes(x = Type, y = Proportion, fill = Mapping_type)) + 
+  geom_bar(stat="identity", width=0.25) +
+  ylab("Proportion of total fragments") + 
+  ggtitle("Uniquely mapped, multimapped and \nunmapped fragments") +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.x=element_blank()) +
+  scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0)))
+
+g2<- ggplot(as.2, aes(x = Type, y = Proportion, fill = Mapping_type)) + 
+  geom_bar(stat="identity", width=0.25) +
+  ylab("Proportion of total fragments") + 
+  ggtitle("Breakdown of mapped fragments") +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.x=element_blank()) +
+  scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0))) 
+
+gridExtra::grid.arrange(g1, g2, ncol=2)
+```
+
+
 ```{r}
 alignment_stats$count <- alignment_stats$V2 / sum(alignment_stats$V2)
 colnames(alignment_stats)[1] <- "Statistic"
@@ -77,14 +119,40 @@ ggplot(alignment_stats, aes(x=Statistic, y=count, fill=Statistic)) +
 ```{r}
 alignment_stats_chrom_filename <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_align_per_chrom.csv")
 alignment_stats_chrom          <- read.csv(alignment_stats_chrom_filename)
-
-knitr::kable(alignment_stats_chrom,
-             col.names = c('Chromosome', 'Chrom_length', 'Mapped_reads', "Unmapped_reads"),
-             caption = "Chromosome level alignment statistics") %>%
-    kable_styling()
-
+alignment_stats_chrom <- alignment_stats_chrom[, !(names(alignment_stats_chrom) %in% c("unmapped"))]
 DT::datatable(alignment_stats_chrom)
 ```
+
+A plot showing the read count distribution across chromosomes is shown below. Note that the normalised metric used is TPM (transcripts per million), which also takes into account of chromosome sizes (also reflected in the bar widths).
+
+```{r}
+alignment_stats_chrom <- rename(read.csv(alignment_stats_chrom_filename), reads = "mapped") %>% 
+  filter(reads > 0) 
+alignment_stats_chrom <- alignment_stats_chrom[, !(names(alignment_stats_chrom) %in% c("unmapped"))]
+# Plot of reads per barcode 
+library(ggplot2)
+alignment_stats_chrom <- alignment_stats_chrom[!(alignment_stats_chrom$seqnames %in% c("chrM")), ] # Remove chrM
+RPK <- alignment_stats_chrom$reads/alignment_stats_chrom$seqlength # Reads per kilo-base (normalize by chromosome length)
+PMSF <- sum(RPK)/10^6 # Per million scaling factor (normalize by total RPK)
+alignment_stats_chrom$TPM <- RPK/PMSF # Transcripts per million
+alignment_stats_chrom <- alignment_stats_chrom %>% arrange(TPM)
+# Calculate widths
+alignment_stats_chrom$widths <- alignment_stats_chrom$seqlength/sum(alignment_stats_chrom$seqlength)
+alignment_stats_chrom$locs <- cumsum(alignment_stats_chrom$widths) - alignment_stats_chrom$widths/2
+ggplot(alignment_stats_chrom,
+       aes(x=locs,
+           y=TPM,
+           width=widths)) +
+  geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  scale_y_continuous(limits = c(0, NA),
+                     expand = expansion(mult = c(0, 0.1))) +
+  xlab("Chromosome") +
+  ylab("Transcripts per million") +
+  ggtitle("Read count (TPM) distribution across chromosomes")
+```
+
 
 # Aggregate alignment statistics of demultiplexed reads
 ```{r}
@@ -112,7 +180,10 @@ ggplot(sums, aes(x=status, y=count, fill=status)) +
 
 ```
 
-# Alignment statistics of demultiplexed reads per barcode
+# Barcode demultiplexing statistics
+
+Shows the alignment statistics for reads with a matched/unmatched barcodes. Note that if a fastq file with the barcodes was supplied then there will be no unmatched barcodes (they can only exist a csv file with barcodes was supplied).
+
 ```{r barcode-alignment-dist, fig.wide = TRUE, fig.asp = 0.9}
 stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
 data <- read.csv(stats_file, row.names = "barcode")[-5] %>% sample_n(500) 
@@ -135,7 +206,7 @@ ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_bre
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
 
-  ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads!")) 
+  ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads")) 
 
 ```
 
@@ -362,11 +433,12 @@ frac_promoter = sum(qc_sele$total_frags * qc_sele$frac_promoter)/sum(qc_sele$tot
 frac_enh = sum(qc_sele$total_frags * qc_sele$frac_enhancer)/sum(qc_sele$total_frags)
 frac_tss = sum(qc_sele$total_frags * qc_sele$frac_tss)/sum(qc_sele$total_frags)
 
-fracs = data.frame(c(frac_peak,  frac_promoter, frac_enh, frac_tss))
+fracs = data.frame(c(frac_peak,  frac_promoter, frac_enh, frac_tss, frac_mito))
 row.names(fracs) = c('Fraction in peaks', 
                      'Fraction in promoters', 
                      'Fraction in Enhancers(ENCODE)', 
-                     'Fraction in TSS')
+                     'Fraction in TSS',
+                     'Fraction in mitochondrial genome')
 colnames(fracs) = 'pr'
 fracs$pr = round(fracs$pr, 3)
 fracs$pr = paste0(100*fracs$pr, '%')

@@ -8,10 +8,10 @@
 #' @description feature matrix is created using a given demultiplexed BAM file and 
 #' a selected feature type
 #' @param insortedbam The input bam
-#' @param feature_input The feature input data
+#' @param feature_input The feature input data e.g. the .narrowPeak file for peaks
 #' @param bam_tags The BAM tags
 #' @param feature_type The type of feature
-#' @param organism The organism type
+#' @param organism The organism type (contains hg19, hg38, mm10)
 #' @param cell_calling The desired cell calling method; either \code{cellranger}, \code{emptydrops} or  \code{filter}
 #' 
 #' @param promoters_file The path of the promoter annotation file (if the specified organism isn't recognised)
@@ -51,8 +51,8 @@ sc_atac_feature_counting <- function(
   feature_input  = NULL, 
   bam_tags       = list(bc="CB", mb="OX"), 
   feature_type   = "peak", 
-  organism       = NULL,
-  cell_calling   = FALSE, # either c("cellranger", "emptydrops", "filter")
+  organism       = "hg38", 
+  cell_calling   = "filter", # either c("cellranger", "emptydrops", "filter")
   genome_size    = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
   promoters_file = NULL,
   tss_file       = NULL,
@@ -353,7 +353,7 @@ sc_atac_feature_counting <- function(
       i <- match(rownames(m), rows)[s$i]
       j <- match(colnames(m), cols)[s$j]
      
-      sparseMatrix(i=i,
+      Matrix::sparseMatrix(i=i,
                    j=j,
                    x=s$x,
                    dims=c(nrows, ncols),
