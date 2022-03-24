@@ -1117,19 +1117,19 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         memcpy( barcode, seq1->seq.s + id1_st, id1_len); 
         barcode[id1_len] = '\0'; 
         
-        int match_type = 2; // 0 for exact, 1 for partial, 2 for no
+        MatchType r1_match_type = NoMatch; // 0 for exact, 1 for partial, 2 for no
         // we want to check for an exact match first
         if (barcode_map.find(barcode) != barcode_map.end()) {
             // exact match
             exact_match ++;   
-            match_type = 0;
+            r1_match_type = Exact;
         } else {
             // inexact match, we need to iterate over all barcodes
-            match_type = 2; // if we never find a barcode, no match
+            match_type = NoMatch; // if we never find a barcode, no match
             for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
                 if(hamming_distance(it->first, barcode) <2){
                     approx_match++;
-                    match_type = 1;
+                    r1_match_type = Partial;
                     break;
                 } 
             }
@@ -1143,33 +1143,9 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         seq1->name.s[new_name_length1] = '\0'; // should we really add a 0 terminator?? this will get added every time, for every barcode
         
         // chop read to only be what has not been copied to header
-        memmove(seq1->seq.s, seq1->seq.s + bc1_end, seq1->name.l - bc1_end);
+        memmove(seq1->seq.s, seq1->seq.s + bc1_end, seq1->name.l - bc1_end);   
         
-
-        switch (match_type) {
-            case 0:
-                R1_outfile = &o_stream_R1;
-                R1_gz_outfile = &o_stream_gz_R1;
-                break;
-            case 1:
-                R1_outfile = &o_stream_R1_Partial;
-                R1_gz_outfile = &o_stream_gz_R1_Partial;
-                break;
-            case 2:
-            default:
-                R1_outfile = &o_stream_R1_No;
-                R1_gz_outfile = &o_stream_gz_R1_No;
-                break;
-        }
-
-        if (write_gz) {
-            fq_gz_write(*R1_gz_outfile, seq1, 0); // write to gzipped fastq file
-        } else {
-            fq_write(*R1_outfile, seq1, 0); // write to fastq file
-        }
-         
-        
-        if(R3){
+        if(R3) {
             // allocate and copy second barcode and umi (if applicable) to subStr3, to copy to header
             char* subStr3;
             int bcUMIlen3 = 0;
@@ -1190,15 +1166,15 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             char *barcode3 = (char *)malloc((id2_len + 1) * sizeof(char));
             memcpy( barcode3, seq3->seq.s + id2_st, id2_len);
             barcode3[id2_len] = '\0';
-            int match_type = 2; // 0 for exact, 1 for partial, 2 for no
+			MatchType r2_match_type = NoMatch; // 0 for exact, 1 for partial, 2 for no
             
             if (barcode_map.find(subStr3) != barcode_map.end()) {
-                match_type = 0;
+                r2_match_type = Exact;
             } else {
-                match_type = 2; // assume there is no match
+                r2_match_type = NoMatch; // assume there is no match
                 for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
                     if(hamming_distance(it->first, barcode3) < 2){
-                        match_type = 1;
+                        match_type = Partial;
                         break;
                     }
                 }
@@ -1214,16 +1190,24 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             memmove(seq3->seq.s, seq3->seq.s + bc2_end, seq3->seq.l - bc2_end);           
             //seq3->seq.s[seq3->seq.l - bc2_end];
 
-            switch (match_type) {
-                case 0:
+			// both reads must belong to the same match type
+			// so both reads get output to the same category
+			if (r1_match_type > r2_match_type) {
+				r2_match_type = r1_match_type;
+			} else { // r2_match_type >= r1_match_type
+				r1_match_type = r2_match_type;
+			}
+
+            switch (r2_match_type) {
+                case Exact:
                     R3_outfile = &o_stream_R3;
                     R3_gz_outfile = &o_stream_gz_R3;
                     break;
-                case 3:
+                case Partial:
                     R3_outfile = &o_stream_R3_Partial;
                     R3_gz_outfile = &o_stream_gz_R3_Partial;
                     break;
-                case 2:
+                case NoMatch:
                 default:
                     R3_outfile = &o_stream_R3_No;
                     R3_gz_outfile = &o_stream_gz_R3_No;
@@ -1239,6 +1223,32 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             free(subStr3);
             
         }
+
+		// write to R1 output file
+		// if R3 exists, r1_match_type will have been adjusted to ensure both reads are
+		// output to the same file, which is determined by the best match
+		switch (r1_match_type) {
+            case Exact:
+                R1_outfile = &o_stream_R1;
+                R1_gz_outfile = &o_stream_gz_R1;
+                break;
+            case Partial:
+                R1_outfile = &o_stream_R1_Partial;
+                R1_gz_outfile = &o_stream_gz_R1_Partial;
+                break;
+            case NoMatch:
+            default:
+                R1_outfile = &o_stream_R1_No;
+                R1_gz_outfile = &o_stream_gz_R1_No;
+                break;
+        }
+
+        if (write_gz) {
+            fq_gz_write(*R1_gz_outfile, seq1, 0); // write to gzipped fastq file
+        } else {
+            fq_write(*R1_outfile, seq1, 0); // write to fastq file
+        }
+
         free(barcode);
         free(subStr1);
         
@@ -1281,19 +1291,3 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     
     return(out_vect);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

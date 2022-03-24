@@ -26,6 +26,8 @@
 
 static const char empty_header[] = "@HD\tVN:1.4\tSO:unknown\n";
 
+enum MatchType { Exact, Partial, NoMatch }
+
 // Read structure
 struct read_s
 {
