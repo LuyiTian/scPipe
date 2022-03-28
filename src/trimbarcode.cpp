@@ -1125,7 +1125,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             r1_match_type = Exact;
         } else {
             // inexact match, we need to iterate over all barcodes
-            match_type = NoMatch; // if we never find a barcode, no match
+            r1_match_type = NoMatch; // if we never find a barcode, no match
             for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
                 if(hamming_distance(it->first, barcode) <2){
                     approx_match++;
@@ -1174,7 +1174,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                 r2_match_type = NoMatch; // assume there is no match
                 for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
                     if(hamming_distance(it->first, barcode3) < 2){
-                        match_type = Partial;
+                        r2_match_type = Partial;
                         break;
                     }
                 }
