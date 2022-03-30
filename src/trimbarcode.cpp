@@ -19,6 +19,21 @@ using namespace Rcpp;
 KSEQ_INIT(gzFile, gzread)
 #endif
 
+
+std::vector<gzFile> open_gz_files(std::vector<std::string> files) {
+	std::vector<gzFile> fq2_list;
+    for(int i = 0; i < (int)files.size(); i++){
+        char* fq2_fn = (char *)files[i].c_str();
+        gzFile fq2 = gzopen(fq2_fn, "r");
+        if (!fq2) {
+            file_error(fq2_fn);
+        }
+        fq2_list.push_back(fq2);
+    }
+
+	return fq2_list;
+}
+
 // read the valid barcode file
 // expects a text file or a text file with gz compression
 // uses kseq stream processing to manage the gz file
@@ -624,20 +639,6 @@ bool sc_atac_check_qual(char *qual_s, int trim_n, int thr, int below_thr){
     return (not_pass > below_thr) ? false : true;
 }
 
-
-std::vector<gzFile> open_gz_files(std::vector<std::string> files) {
-	std::vector<gzFile> fq2_list;
-    for(int i = 0; i < (int)files.size(); i++){
-        char* fq2_fn = (char *)files[i].c_str();
-        gzFile fq2 = gzopen(fq2_fn, "r");
-        if (!fq2) {
-            file_error(fq2_fn);
-        }
-        fq2_list.push_back(fq2);
-    }
-
-	return fq2_list;
-}
 
 // sc_atac_paired_fastq_to_fastq ------------------
 
