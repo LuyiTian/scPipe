@@ -406,68 +406,71 @@ std::vector<int> rcpp_sc_atac_trim_barcode(
 
 // [[Rcpp::plugins(cpp11)]]
 // [[Rcpp::export]]
-
-std::vector<int> rcpp_sc_atac_trim_barcode_paired(Rcpp::CharacterVector outfq,
-                                      Rcpp::CharacterVector r1,
-                                      Rcpp::StringVector r2_list,
-                                      Rcpp::CharacterVector r3,
-                                      Rcpp::LogicalVector write_gz,
-                                      Rcpp::LogicalVector rmN,
-                                      Rcpp::LogicalVector rmlow,
-                                      Rcpp::IntegerVector min_qual,
-                                      Rcpp::IntegerVector num_below_min,
-                                      Rcpp::IntegerVector id1_st,
-                                      Rcpp::IntegerVector id1_len,
-                                      Rcpp::IntegerVector id2_st,
-                                      Rcpp::IntegerVector id2_len,
-                                      Rcpp::NumericVector umi_start,
-                                      Rcpp::NumericVector umi_len) {
+std::vector<int> rcpp_sc_atac_trim_barcode_paired(
+		Rcpp::CharacterVector outfq,
+		Rcpp::CharacterVector r1,
+		Rcpp::StringVector r2_list,
+		Rcpp::CharacterVector r3,
+		Rcpp::CharacterVector valid_barcode_file,
+		Rcpp::LogicalVector write_gz,
+		Rcpp::LogicalVector rmN,
+		Rcpp::LogicalVector rmlow,
+		Rcpp::IntegerVector min_qual,
+		Rcpp::IntegerVector num_below_min,
+		Rcpp::IntegerVector id1_st,
+		Rcpp::IntegerVector id1_len,
+		Rcpp::IntegerVector id2_st,
+		Rcpp::IntegerVector id2_len,
+		Rcpp::NumericVector umi_start,
+		Rcpp::NumericVector umi_len) {
   
-  std::string c_outfq = Rcpp::as<std::string>(outfq);
-  std::string c_r1 = Rcpp::as<std::string>(r1);
-  std::vector<std::string> c_r2_list; 
-  
-  for( int i=0; i < r2_list.size(); i++ ){
-    c_r2_list.push_back(Rcpp::as<std::string>(r2_list(i)));
-  }
-  
-  std::string c_r3 = Rcpp::as<std::string>(r3);
-  bool c_write_gz = Rcpp::as<bool>(write_gz);
-  bool c_rmN = Rcpp::as<bool>(rmN);
-  
-  bool c_rmlow = Rcpp::as<bool>(rmlow);
-  int c_min_qual = Rcpp::as<int>(min_qual);
-  int c_num_below_min = Rcpp::as<int>(num_below_min);
-  int c_id1_st = Rcpp::as<int>(id1_st);
-  int c_id1_len = Rcpp::as<int>(id1_len);
-  int c_id2_st = Rcpp::as<int>(id2_st);
-  int c_id2_len = Rcpp::as<int>(id2_len);
-  int c_umi_st = Rcpp::as<int>(umi_start);
-  int c_umi_len = Rcpp::as<int>(umi_len);
-  
-  Timer timer;
-  timer.start();
-  
-  std::vector<int> out_vec = sc_atac_paired_fastq_to_fastq(
-    (char *)c_r1.c_str(), 
-    c_r2_list, 
-    (char *)c_r3.c_str(), 
-    (char *)c_outfq.c_str(), 
-    c_write_gz, 
-    c_rmN,
-    c_rmlow,
-    c_min_qual,
-    c_num_below_min,
-    c_id1_st,
-    c_id1_len,
-    c_id2_st,
-    c_id2_len,
-    c_umi_st,
-    c_umi_len);
-  
-  Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
-  
-  return(out_vec);
+	std::string c_outfq = Rcpp::as<std::string>(outfq);
+	std::string c_r1 = Rcpp::as<std::string>(r1);
+	std::vector<std::string> c_r2_list; 
+	
+	for( int i=0; i < r2_list.size(); i++ ){
+		c_r2_list.push_back(Rcpp::as<std::string>(r2_list(i)));
+	}
+	
+	std::string c_r3 = Rcpp::as<std::string>(r3);
+	std::string c_valid_barcode = Rcpp::as<std::string>(valid_barcode_file);
+	bool c_write_gz = Rcpp::as<bool>(write_gz);
+	bool c_rmN = Rcpp::as<bool>(rmN);
+	
+	bool c_rmlow = Rcpp::as<bool>(rmlow);
+	int c_min_qual = Rcpp::as<int>(min_qual);
+	int c_num_below_min = Rcpp::as<int>(num_below_min);
+	int c_id1_st = Rcpp::as<int>(id1_st);
+	int c_id1_len = Rcpp::as<int>(id1_len);
+	int c_id2_st = Rcpp::as<int>(id2_st);
+	int c_id2_len = Rcpp::as<int>(id2_len);
+	int c_umi_st = Rcpp::as<int>(umi_start);
+	int c_umi_len = Rcpp::as<int>(umi_len);
+	
+	Timer timer;
+	timer.start();
+	
+	std::vector<int> out_vec = sc_atac_paired_fastq_to_fastq(
+		(char *)c_r1.c_str(), 
+		c_r2_list, 
+		(char *)c_r3.c_str(), 
+		(char *)c_valid_barcode.c_str(),
+		(char *)c_outfq.c_str(), 
+		c_write_gz, 
+		c_rmN,
+		c_rmlow,
+		c_min_qual,
+		c_num_below_min,
+		c_id1_st,
+		c_id1_len,
+		c_id2_st,
+		c_id2_len,
+		c_umi_st,
+		c_umi_len);
+	
+	Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
+	
+	return(out_vec);
 }
 
 
