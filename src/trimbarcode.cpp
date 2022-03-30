@@ -64,7 +64,7 @@ int count_unmatched_barcodes(std::vector<std::string> barcodes, const Trie &vali
 	int failed = 0;
 	for (int i = 0; i < total; i++) {
 		for (int j = 0; j < seq2_list.size(); j++) {
-			kseq_t* seq2 = seq2_list[i];
+			kseq_t* seq2 = seq2_list[j];
 			if (kseq_read(seq2) >= 0) {
 				std::string barcode (seq2->seq.s);
 				std::vector<MismatchResult> matches = valid_barcodes.Locate_Seq_Mismatches(barcode, 0, barcode.size());
@@ -76,9 +76,9 @@ int count_unmatched_barcodes(std::vector<std::string> barcodes, const Trie &vali
 	}
 
 	for (int j = 0; j < seq2_list.size(); j++) {
-		kseq_t* seq2 = seq2_list[i];
+		kseq_t* seq2 = seq2_list[j];
         kseq_destroy(seq2);// free seq
-        gzclose(fq2_list[i]);
+        gzclose(fq2_list[j]);
 	}
 
 	return failed;
