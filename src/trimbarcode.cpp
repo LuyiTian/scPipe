@@ -69,6 +69,8 @@ Trie preprocessBarcodes(const std::vector<const char *> &barcodes) {
 	return trie;
 }
 
+
+// find out why this isn't working.
 int count_unmatched_barcodes(std::vector<std::string> barcodes, const Trie &valid_barcodes, int total) {
 	std::vector<gzFile> fq2_list = open_gz_files(barcodes);
 	std::vector<kseq_t*> seq2_list;
