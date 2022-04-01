@@ -1,7 +1,16 @@
-//trim_barcode
 #include "trimbarcode.h"
+
 #include <string.h>
 #include <set>
+#include <zlib.h> // for reading compressed .fq file
+#include <stdio.h>
+#include <iostream>
+#include <fstream>
+#include <Rcpp.h>
+
+#include "config_hts.h"
+#include "utils.h"
+#include "Trie.h"
 
 using namespace Rcpp;
 
@@ -9,6 +18,107 @@ using namespace Rcpp;
 #define INIT_KSEQ
 KSEQ_INIT(gzFile, gzread)
 #endif
+
+
+std::vector<gzFile> open_gz_files(std::vector<std::string> files) {
+	std::vector<gzFile> fq2_list;
+    for(int i = 0; i < (int)files.size(); i++){
+        char* fq2_fn = (char *)files[i].c_str();
+        gzFile fq2 = gzopen(fq2_fn, "r");
+        if (!fq2) {
+            file_error(fq2_fn);
+        }
+        fq2_list.push_back(fq2);
+    }
+
+	return fq2_list;
+}
+
+// read the valid barcode file
+// expects a text file or a text file with gz compression
+// uses kseq stream processing to manage the gz file
+std::vector<const char *> readBarcodes(const char *barcode_fn) {
+	gzFile fp;
+	kstream_t *ks;
+	kstring_t str = {0,0,0};
+
+	fp = gzopen(barcode_fn, "r");
+	ks = ks_init(fp);
+
+	std::vector<const char *> out;
+
+	while (ks_getuntil(ks, '\n', &str, 0) >= 0) {
+		out.push_back(str.s);
+	}
+
+	ks_destroy(ks);
+	gzclose(fp);
+	free(str.s);
+	return out;
+}
+
+// handle the building of a Trie using a barcode file
+Trie preprocessBarcodes(const std::vector<const char *> &barcodes) {
+	Trie trie;
+
+	// add barcodes to the trie, using the barcode index as both original and new seq id (because these barcodes aren't sorted)
+	for (int i = 0; i < barcodes.size(); i++) {
+		trie.Add_String(std::string(barcodes[i]), i, i);
+	}
+
+	return trie;
+}
+
+
+// find out why this isn't working.
+int count_unmatched_barcodes(std::vector<std::string> barcodes, const Trie &valid_barcodes, int total) {
+	std::vector<gzFile> fq2_list = open_gz_files(barcodes);
+	std::vector<kseq_t*> seq2_list;
+	for (int i = 0; i < fq2_list.size(); i++) {
+		seq2_list.push_back(kseq_init(fq2_list[i]));
+	}
+
+	int failed = 0;
+	for (int i = 0; i < total; i++) {
+		for (int j = 0; j < seq2_list.size(); j++) {
+			kseq_t* seq2 = seq2_list[j];
+			if (kseq_read(seq2) >= 0) {
+				std::string barcode (seq2->seq.s);
+				std::vector<MismatchResult> matches = valid_barcodes.Locate_Seq_Mismatches(barcode, 0, barcode.size());
+				if (matches.size() == 0) {
+					failed++;
+				}
+			}
+		}
+	}
+
+	for (int j = 0; j < seq2_list.size(); j++) {
+		kseq_t* seq2 = seq2_list[j];
+        kseq_destroy(seq2);// free seq
+        gzclose(fq2_list[j]);
+	}
+
+	return failed;
+}
+
+
+const char *charComplement(char c) {
+    char out = 'C';
+	if (c == 'A') out = 'T';
+	if (c == 'T') out = 'A';
+	if (c == 'C') out = 'G';
+    
+    return new char(out);
+}
+
+std::string reverseComplement(const char *seq, size_t l) {
+	std::string res;
+	res.reserve(l);
+	for (int i = l - 1; i >= 0; i--) {
+		res.append(charComplement(seq[i]));
+	}
+	return res;
+}
 
 
 bool check_qual(char *qual_s, int trim_n, int thr, int below_thr)
@@ -538,6 +648,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         char *fq1_fn,
         std::vector<std::string> fq2_fn_list,
         char *fq3_fn,
+		char *valid_barcode_fn,
         char *fq_out,
         const bool write_gz,
         const bool rmN,
@@ -567,47 +678,56 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
     // int umi_st = 0; // us: starting position of UMI // umi_start
     // int umi_len = 0; // ul: length of UMI // umi_length
     
-    int passed_reads = 0;
-    int removed_Ns = 0;
-    int removed_low_qual = 0;
+    int passed_reads = 0, removed_Ns = 0, removed_low_qual = 0;
     
-    bool R3 = false;
+    bool R3 = strcmp(fq3_fn, "") != 0; // R3 exists if fq3_fn is not empty
     
-    if(!strcmp(fq3_fn,"")){
-        R3 = false;
-    }else{
-        R3 = true;
-    }
-    
-    int l1 = 0;
-    int l2 = 0;
-    int l3 = 0;
+    int l1 = 0, l2 = 0, l3 = 0;
     gzFile fq1 = gzopen(fq1_fn, "r"); // input fastq
     if (!fq1) {
         file_error(fq1_fn);
     }
     
-    std::vector<kseq_t*> seq2_list;
-    std::vector<gzFile> fq2_list;
-    for(int i=0;i<(int)fq2_fn_list.size();i++){
-        char* fq2_fn = (char *)fq2_fn_list[i].c_str();
-        gzFile fq2 = gzopen(fq2_fn, "r");
-        if (!fq2) {
-            file_error(fq2_fn);
-        }
-        fq2_list.push_back(fq2);
-        seq2_list.push_back(kseq_init(fq2));
-    }
+	// preprocess the fastq barcode file(s) so that we have a vector of gzFiles to deal with
+    std::vector<gzFile> fq2_list = open_gz_files(fq2_fn_list);
+	std::vector<kseq_t*> seq2_list;
+	for (int i = 0; i < fq2_list.size(); i++) {
+		seq2_list.push_back(kseq_init(fq2_list[i]));
+	}
     
+	// setup the read 1 output file
     gzFile o_stream_gz_R1;
     std::ofstream o_stream_R1;
+	kseq_t *seq1;
+    seq1 =  kseq_init(fq1);
+
+	const char* appendR1 = "/demux_";
+    char *fqoutR1 = (char*)malloc(strlen(fq_out) + strlen(appendR1) + strlen(getFileName(fq1_fn)) + 1);
+    strcpy(fqoutR1, fq_out);
+    strcat(fqoutR1,appendR1);
+    strcat(fqoutR1, getFileName(fq1_fn));
     
+    if (write_gz) {
+        o_stream_gz_R1 = gzopen(fqoutR1, "wb2"); // open gz file
+        if (!o_stream_gz_R1) {
+            file_error(fqoutR1);
+        }
+        
+    } else {
+        o_stream_R1.open(fqoutR1); // output file
+        if (!o_stream_R1.is_open()) {
+            file_error(fqoutR1);
+        }
+    }
+
+	// setup the paired read (R3) output file
     gzFile fq3;
     gzFile o_stream_gz_R3;
     std::ofstream o_stream_R3;
     kseq_t *seq3;
     
-    if(R3){
+	// open the paired read file, and setup a few variables
+    if(R3) {
         fq3 = gzopen(fq3_fn, "r");
         if (!fq3) {
             file_error(fq3_fn);
@@ -631,33 +751,28 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
             }
         }
     }
-    
-    kseq_t *seq1;
-    seq1 =  kseq_init(fq1);
-    
-    
-    const char* appendR1 = "/demux_";
-    char *fqoutR1 = (char*)malloc(strlen(fq_out) + strlen(appendR1) + strlen(getFileName(fq1_fn)) + 1);
-    strcpy(fqoutR1, fq_out);
-    strcat(fqoutR1,appendR1);
-    strcat(fqoutR1, getFileName(fq1_fn));
-    
-    
-    if (write_gz) {
-        o_stream_gz_R1 = gzopen(fqoutR1, "wb2"); // open gz file
-        if (!o_stream_gz_R1) {
-            file_error(fqoutR1);
-        }
-        
-    } else {
-        o_stream_R1.open(fqoutR1); // output file
-        if (!o_stream_R1.is_open()) {
-            file_error(fqoutR1);
-        }
-    }
-    
-    
-    
+
+	// preprocess the valid_barcode_file (csv) reads into a Trie, allowing for matching and mismatching.
+	bool checkBarcodeMismatch = false;
+	std::vector<const char *> validBarcodes;
+	Trie validBarcodeTrie;
+	bool useReverseComplement;
+	if (std::string(valid_barcode_fn) != "") {
+		validBarcodes = readBarcodes(valid_barcode_fn);
+		validBarcodeTrie = preprocessBarcodes(validBarcodes);
+		checkBarcodeMismatch = false;
+		
+		// check the validity of the barcodes in seq2_list
+		// if more than 60% don't match (and mismatch) with valid barcode list, then we need to use the reverse complements
+		useReverseComplement = false;
+		// int numToCheck = 1000;
+		// int unmatched = count_unmatched_barcodes(seq2_list, validBarcodeTrie, numToCheck);
+		// if (unmatched >= 0.6f * numToCheck) {
+		// 	Rcpp::Rcout << "Poor match between fastq barcodes and valid barcode file. Using reverse complement of found barcodes for error correction.\n";
+		// 	useReverseComplement = true;
+		// }
+	}
+
     // id1_st: bs1: starting position of barcode in read one. -1 if no barcode in read one.
     // id1_len: bl1: length of barcode in read one, if there is no barcode in read one this number is used for trimming beginning of read one.
     // id2_st: bs2: starting position of barcode in read two
@@ -668,7 +783,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
     
     // Define some variables. These are only used if rmlow = T
     int bc1_end, bc2_end; // get total length of index + UMI for read1 and read2
-    
     if (id1_st >= 0) // if we have plate index
     {
         bc1_end = id1_st + id1_len;
@@ -740,14 +854,55 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
             }
         } 
         
-        for(int i=0;i<(int)seq2_list.size();i++){
+		// append every barcode in the barcode fastq list 
+		// to the correct  position in the name of the current read (in both R1 and R3)
+        for (int i=0; i<(int)seq2_list.size(); i++) {
+			// grab the current kseq_t fastq read
             kseq_t* seq2 = seq2_list[i];
-            if ((l2 = kseq_read(seq2)) >= 0){
+            if ((l2 = kseq_read(seq2)) >= 0) {
                 //char * const seq2_name = seq2->name.s;
-                char * const seq2_seq = seq2->seq.s;
+                const char * seq2_seq = seq2->seq.s; // nonconst pointer to const char, important as we redirect the pointer
+				// if we match to a new barcode when doing barcode mismatch
+				const char * const seq2_qual = seq2->qual.s;
                 //int seq2_namelen = seq2->name.l;
                 int seq2_seqlen = seq2->seq.l;
                 
+
+				// verify that we have the correct  barcode sequence, by checking against the valid barcode trie
+				if (checkBarcodeMismatch) {
+					std::cout << "here1\n";
+					std::string seq2_seq_str = 
+						useReverseComplement ? 
+							reverseComplement(seq2_seq, seq2->seq.l) :
+							seq2_seq;
+					
+					// std::vector<MismatchResult> possibleBarcodes = validBarcodeTrie.Locate_Seq_Mismatches(seq2_seq_str, 0, seq2_seq_str.size());
+					std::vector<MismatchResult> possibleBarcodes;
+					// // find the barcode which matches best (highest chance of matching perfectly based quality score)
+					int highestScore = 0;
+					int barcodePosition = -1;
+					for (const MismatchResult &match : possibleBarcodes) {
+						if (match.mismatchPosition == -1) {
+							// we've found a perfect match
+							// ignore all other matches
+							barcodePosition = match.sequenceIndex;
+							break;
+						}
+						int thisQual = (int)seq2_qual[match.mismatchPosition] - 33; // fastq qscores are ASCII 33 to 126
+						if (thisQual > highestScore) {
+							highestScore = thisQual;
+							barcodePosition = match.sequenceIndex;
+						}
+					}
+					// if we didn't find any better barcodes, just use the one from the fastq file.
+					// this could result from a largers sequencing error.
+					// or from the valid barcode file not being provided.
+					if (barcodePosition != -1) {
+						seq2_seq = validBarcodes[barcodePosition];
+					} 
+				}
+
+
                 // Rcout << "seq2_seq: " << seq2_seq << std::endl << std::endl;
                 seq_2_set.insert(std::string{seq2_seq});
                 // Rcout << "seq_2_set size: " << seq_2_set.size() << std::endl << std::endl;
@@ -768,7 +923,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
                     seq3_name[new_name_length1] = '\0';
                     
                 }
-            }else{
+            } else {
                 Rcpp::Rcout << "read1 file is not the same length as the barcode fastq file: " << "\n";
             }
         }
@@ -868,16 +1023,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
     
     return(out_vect);
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1117,19 +1262,19 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         memcpy( barcode, seq1->seq.s + id1_st, id1_len); 
         barcode[id1_len] = '\0'; 
         
-        int match_type = 2; // 0 for exact, 1 for partial, 2 for no
+        MatchType r1_match_type = NoMatch; // 0 for exact, 1 for partial, 2 for no
         // we want to check for an exact match first
         if (barcode_map.find(barcode) != barcode_map.end()) {
             // exact match
             exact_match ++;   
-            match_type = 0;
+            r1_match_type = Exact;
         } else {
             // inexact match, we need to iterate over all barcodes
-            match_type = 2; // if we never find a barcode, no match
+            r1_match_type = NoMatch; // if we never find a barcode, no match
             for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
                 if(hamming_distance(it->first, barcode) <2){
                     approx_match++;
-                    match_type = 1;
+                    r1_match_type = Partial;
                     break;
                 } 
             }
@@ -1143,33 +1288,9 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         seq1->name.s[new_name_length1] = '\0'; // should we really add a 0 terminator?? this will get added every time, for every barcode
         
         // chop read to only be what has not been copied to header
-        memmove(seq1->seq.s, seq1->seq.s + bc1_end, seq1->name.l - bc1_end);
+        memmove(seq1->seq.s, seq1->seq.s + bc1_end, seq1->name.l - bc1_end);   
         
-
-        switch (match_type) {
-            case 0:
-                R1_outfile = &o_stream_R1;
-                R1_gz_outfile = &o_stream_gz_R1;
-                break;
-            case 1:
-                R1_outfile = &o_stream_R1_Partial;
-                R1_gz_outfile = &o_stream_gz_R1_Partial;
-                break;
-            case 2:
-            default:
-                R1_outfile = &o_stream_R1_No;
-                R1_gz_outfile = &o_stream_gz_R1_No;
-                break;
-        }
-
-        if (write_gz) {
-            fq_gz_write(*R1_gz_outfile, seq1, 0); // write to gzipped fastq file
-        } else {
-            fq_write(*R1_outfile, seq1, 0); // write to fastq file
-        }
-         
-        
-        if(R3){
+        if(R3) {
             // allocate and copy second barcode and umi (if applicable) to subStr3, to copy to header
             char* subStr3;
             int bcUMIlen3 = 0;
@@ -1190,15 +1311,15 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             char *barcode3 = (char *)malloc((id2_len + 1) * sizeof(char));
             memcpy( barcode3, seq3->seq.s + id2_st, id2_len);
             barcode3[id2_len] = '\0';
-            int match_type = 2; // 0 for exact, 1 for partial, 2 for no
+			MatchType r2_match_type = NoMatch; // 0 for exact, 1 for partial, 2 for no
             
             if (barcode_map.find(subStr3) != barcode_map.end()) {
-                match_type = 0;
+                r2_match_type = Exact;
             } else {
-                match_type = 2; // assume there is no match
+                r2_match_type = NoMatch; // assume there is no match
                 for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
                     if(hamming_distance(it->first, barcode3) < 2){
-                        match_type = 1;
+                        r2_match_type = Partial;
                         break;
                     }
                 }
@@ -1214,16 +1335,24 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             memmove(seq3->seq.s, seq3->seq.s + bc2_end, seq3->seq.l - bc2_end);           
             //seq3->seq.s[seq3->seq.l - bc2_end];
 
-            switch (match_type) {
-                case 0:
+			// both reads must belong to the same match type
+			// so both reads get output to the same category
+			if (r1_match_type > r2_match_type) {
+				r2_match_type = r1_match_type;
+			} else { // r2_match_type >= r1_match_type
+				r1_match_type = r2_match_type;
+			}
+
+            switch (r2_match_type) {
+                case Exact:
                     R3_outfile = &o_stream_R3;
                     R3_gz_outfile = &o_stream_gz_R3;
                     break;
-                case 3:
+                case Partial:
                     R3_outfile = &o_stream_R3_Partial;
                     R3_gz_outfile = &o_stream_gz_R3_Partial;
                     break;
-                case 2:
+                case NoMatch:
                 default:
                     R3_outfile = &o_stream_R3_No;
                     R3_gz_outfile = &o_stream_gz_R3_No;
@@ -1239,6 +1368,32 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             free(subStr3);
             
         }
+
+		// write to R1 output file
+		// if R3 exists, r1_match_type will have been adjusted to ensure both reads are
+		// output to the same file, which is determined by the best match
+		switch (r1_match_type) {
+            case Exact:
+                R1_outfile = &o_stream_R1;
+                R1_gz_outfile = &o_stream_gz_R1;
+                break;
+            case Partial:
+                R1_outfile = &o_stream_R1_Partial;
+                R1_gz_outfile = &o_stream_gz_R1_Partial;
+                break;
+            case NoMatch:
+            default:
+                R1_outfile = &o_stream_R1_No;
+                R1_gz_outfile = &o_stream_gz_R1_No;
+                break;
+        }
+
+        if (write_gz) {
+            fq_gz_write(*R1_gz_outfile, seq1, 0); // write to gzipped fastq file
+        } else {
+            fq_write(*R1_outfile, seq1, 0); // write to fastq file
+        }
+
         free(barcode);
         free(subStr1);
         
@@ -1281,19 +1436,3 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     
     return(out_vect);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

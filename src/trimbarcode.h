@@ -26,6 +26,8 @@
 
 static const char empty_header[] = "@HD\tVN:1.4\tSO:unknown\n";
 
+enum MatchType { Exact, Partial, NoMatch };
+
 // Read structure
 struct read_s
 {
@@ -56,6 +58,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         char *fq1_fn,
         std::vector<std::string> fq2_fn_list,
         char *fq3_fn,
+		char *valid_barcode_fn,
         char *fq_out,
         const bool write_gz,
         const bool rmN,
