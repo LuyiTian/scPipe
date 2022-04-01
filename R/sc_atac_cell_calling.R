@@ -4,8 +4,7 @@
 
 #' @name sc_atac_cell_calling
 #' @title identifying true vs empty cells
-#' @description the methods to call true cells are of various ways. \code{emptyDrops} function from 
-#' \code{DropletUtils} package is one of them that is fully implemented here. There are two more that we anticipate to 
+#' @description the methods to call true cells are of various ways.
 #' implement (i.e. \code{filtering} from \code{scATAC-Pro} and \code{cellranger approach}).
 #' @param mat the feature by cell matrix. 
 #' @param cell_calling the cell calling approach, possible options are "emptydrops" , "cellranger" and "filter".

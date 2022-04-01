@@ -22,7 +22,7 @@
 #' @param bin_size The size of the bins
 #' @param yieldsize The yield size
 #' @param mapq The minimum MAPQ score
-#' @param exclude_regions Whether or not the regions should be excluded
+#' @param exclude_regions Whether or not the regions (specifed in the file) should be excluded
 #' @param excluded_regions_filename The filename of the file containing the regions to be excluded
 #' @param fix_chr Whether chr should be fixed or not
 #' 
@@ -43,6 +43,14 @@
 #' @import dplyr
 #' @import tidyr
 #' 
+#' @examples
+#' \dontrun{
+#' sc_atac_feature_counting(
+#'    insortedbam = tiny_tagged_sorted_bam,
+#'    cell_calling = "filter",
+#'    exclude_regions = TRUE,
+#'    feature_input = feature_file)
+#' }    
 #' @export
 #' 
 
@@ -578,7 +586,7 @@ sc_atac_feature_counting <- function(
       by = "feature"
     )
 
-  # Add annotation overlap information to the feature information dataframe
+  # Add annotation overlap information to the feature information data frame
   features_in_matrix <- unique(feature.gr)[paste(seqnames(unique(feature.gr)), GenomicAlignments::ranges(unique(feature.gr)), sep=":") %in% info_per_feature$feature]
 
   pro.gr <- rtracklayer::import(promoters_file)

@@ -13,6 +13,12 @@
 #' @param bam_tags The BAM tags
 #' @param nthreads The number of threads
 #' 
+#' @examples
+#' \dontrun{
+#' sc_atac_bam_tagging(
+#'     inbam,
+#'     nthreads  = 6) 
+#' }
 #' @export
 #' 
 sc_atac_bam_tagging <- function(inbam,

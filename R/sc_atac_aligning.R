@@ -119,6 +119,17 @@ sc_atac_aligning <- function (ref,
   bamstats <- Rsamtools::idxstatsBam(paste0(fileNameWithoutExtension, "_aligned.bam"))
   utils::write.csv(bamstats, file = paste0(log_and_stats_folder, "stats_file_align_per_chrom.csv"), row.names = FALSE, quote = FALSE)
   
+  
+  
+  
+  
+  
+  # Search for 
+  
+  
+  
+  
+  
   cat(
     paste0(
       "sc_atac_aligning finishes at ",

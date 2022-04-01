@@ -131,7 +131,7 @@ sc_aligning <- function (
   
   #execute Rsubread align()
   
-  if(!is.null(R2) && file.exists(R2)){ # paired-end
+  if(!is.null(R2) && file.exists(R2)){       # paired-end
     align_output_df <- Rsubread::align(
       index       = indexPath,
       readfile1          = R1,
@@ -160,6 +160,50 @@ sc_aligning <- function (
   bamstats <- Rsamtools::idxstatsBam(paste0(fileNameWithoutExtension, "_aligned.bam"))
   utils::write.csv(bamstats, file = paste0(log_and_stats_folder, "stats_file_align_per_chrom.csv"), row.names = FALSE, quote = FALSE)
   
+  
+  # # Check for other files
+  # input_folder_files <- list.files(dirname(r1))
+  # nomatch_fastqs <- list.files(dirname(r1))
+  # partial_matches_R1 <- input_folder_files[grep("demultiplexed_partialmatch.+R1", input_folder_files)]
+  # no_matches_R1 <- input_folder_files[grep("demultiplexed_nomatch.+R1", input_folder_files)]
+  # partial_matches_R3 <- input_folder_files[grep("demultiplexed_partialmatch.+R3", input_folder_files)]
+  # no_matches_R3 <- input_folder_files[grep("demultiplexed_nomatch.+R3", input_folder_files)]
+  # 
+  # if (length(no_matches_R1) > 0 && length(no_matches_R3) > 0) {
+  #   cat("Found barcode non-matches demultiplexed FASTQ files. Proceeding to align them.\n")
+  #   nm_R1 <- file.path(dirname(r1), no_matches_R1[1])
+  #   nm_R3 <- file.path(dirname(r1), no_matches_R3[1])
+  #   fileNameWithoutExtension <- paste0(output_folder, "/", strsplit(basename(nm_R1), "\\.")[[1]][1])
+  #   outbam <- paste0(fileNameWithoutExtension, "_aligned.bam")
+  #   Rsubread::align(
+  #     index = indexPath,
+  #     readfile1 = nm_R1,
+  #     readfile2 = nm_R3,
+  #     sortReadsByCoordinates = TRUE,
+  #     type = type,
+  #     nthreads = nthreads,
+  #     output_file = outbam)
+  # }
+  # 
+  # if (length(partial_matches_R1) > 0 && length(partial_matches_R3) > 0) {
+  #   cat("Found partial barcode matches demultiplexed FASTQ files. Proceeding to align them.\n")
+  #   pm_R1 <- file.path(dirname(r1), partial_matches_R1[1])
+  #   pm_R3 <- file.path(dirname(r1), partial_matches_R3[1])
+  #   fileNameWithoutExtension <- paste0(output_folder, "/", strsplit(basename(pm_R1), "\\.")[[1]][1])
+  #   outbam <- paste0(fileNameWithoutExtension, "_aligned.bam")
+  #   Rsubread::align(
+  #     index = indexPath,
+  #     readfile1 = pm_R1,
+  #     readfile2 = pm_R3,
+  #     sortReadsByCoordinates = TRUE,
+  #     type = type,
+  #     nthreads = nthreads,
+  #     output_file = outbam)
+  # }
+  # 
+  
+  
+
   cat(
     paste0(
       "sc_aligning finishes at ",

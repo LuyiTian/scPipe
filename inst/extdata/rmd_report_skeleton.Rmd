@@ -58,7 +58,7 @@ knitr::kable(alignment_stats,
     kable_styling()
 ```
 
-Below is a stacked bar plot showing the distribution of how the fragments have been mapped. The left plot shows the number of uniquely and multi-mapped fragments, while the right plot shows 
+Below is a stacked bar plot showing the distribution of how the fragments have been mapped. The left plot shows the number of uniquely and multi-mapped fragments, while the right plot provides a more detailed breakdown of the mapped fragments.
 
 ```{r}
 as.1 <- alignment_stats[alignment_stats$V1 %in% c("Unmapped_fragments", 

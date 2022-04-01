@@ -35,6 +35,19 @@
 #' @param nthreads The number of threads to use for alignment (sc_align) and demultiplexing (sc_atac_bam_tagging)
 #' @param output_folder The path of the output folder
 #'
+#' @examples
+#' \dontrun{
+#' sc_atac_pipeline(
+#'   r1,
+#'   r2,
+#'   barcode_csv,
+#'   "hg38",
+#'   "peak",
+#'   remove_duplicates = FALSE
+#' )
+#' 
+#' }
+#'
 #' @export
 #' 
 sc_atac_pipeline <- function(r1,
@@ -109,7 +122,6 @@ sc_atac_pipeline <- function(r1,
     demux_r2        <- file.path(output_folder, paste0("demultiplexed_completematch_", r2_name, ".fastq.gz"))
   }
   reference       <- reference
-  cat(demux_r1)
   sc_aligning(ref = reference,
               R1 = demux_r1,
               R2 = demux_r2,

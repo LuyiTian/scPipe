@@ -1,12 +1,17 @@
 #' @name sc_atac_remove_duplicates
 #'
 #' @title Removing PCR duplicates using samtools
-#' @description Takes in a BAM file and removes the PCR duplicates using the samtools markdup function. Requires samtools 1.10 or newer. 
+#' @description Takes in a BAM file and removes the PCR duplicates using the samtools markdup function. Requires samtools 1.10 or newer for statistics to be generated. 
 #' 
 #' @param inbam The tagged, sorted and duplicate-free input BAM file 
 #' @param samtools_path The path of the samtools executable (if a custom installation is to be specified)
 #' @param output_folder The path of the output folder 
 #'
+#' @examples
+#' \dontrun{
+#' sc_atac_remove_duplicates(inbam) 
+#' }
+#' 
 #' @export
 #' 
 

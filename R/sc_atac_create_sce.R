@@ -10,6 +10,15 @@
 #' @param pheno_data The pheno data
 #' @param report Whether or not a HTML report should be produced
 #'
+#' @examples
+#' \dontrun{
+#' sc_atac_create_sce(
+#'    input_folder = input_folder,
+#'    organism = "hg38",
+#'    feature_type = "peak",
+#'    report = TRUE)
+#' }    
+#' 
 #' @export
 #'
 
