@@ -122,40 +122,31 @@ sc_atac_pipeline <- function(r1,
     demux_r2        <- file.path(output_folder, paste0("demultiplexed_completematch_", r2_name, ".fastq.gz"))
   }
   reference       <- reference
-  sc_aligning(ref = reference,
-              R1 = demux_r1,
-              R2 = demux_r2,
-              nthreads  = nthreads,
-              output_folder = output_folder)
+  bam_to_tag <- sc_aligning(ref = reference,
+                tech = "atac",
+                R1 = demux_r1,
+                R2 = demux_r2,
+                nthreads  = nthreads,
+                output_folder = output_folder)
 
-  if (!is.null(barcode_fastq)) {
-    bam_to_tag  <- file.path(output_folder, paste0("demux_", r1_name, "_aligned.bam"))
-  } else {
-    bam_to_tag  <- file.path(output_folder, paste0("demultiplexed_completematch_", r1_name, "_aligned.bam"))
-  }
-
-  sc_atac_bam_tagging(inbam         = bam_to_tag,
+  sorted_tagged_bam <- sc_atac_bam_tagging(inbam         = bam_to_tag,
                       output_folder = output_folder,
                       bam_tags      = list(bc="CB", mb="OX"),
                       nthreads      =  nthreads)
   
-  if (!is.null(barcode_fastq)) {
-    sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
-  } else {
-    sorted_tagged_bam <- file.path(output_folder, paste0("demultiplexed_completematch_", r1_name, "_aligned_tagged_sorted.bam"))
-  }
-
   if (isTRUE(remove_duplicates)) {
     removed <- sc_atac_remove_duplicates(inbam = sorted_tagged_bam,
                               samtools_path = samtools_path,
                               output_folder = output_folder)
     removed <- TRUE
     if (!removed) return()
-    if (!is.null(barcode_fastq)) {
-      sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
-    } else {
-      sorted_tagged_bam <- file.path(output_folder, paste0("demultiplexed_completematch_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
-    }
+    sorted_tagged_bam <- paste0(substr(sorted_tagged_bam, 0, nchar(sorted_tagged_bam)-4), "_markdup.bam")
+    
+    # if (!is.null(barcode_fastq)) {
+    #   sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
+    # } else {
+    #   sorted_tagged_bam <- file.path(output_folder, paste0("demultiplexed_complete_partialmatch_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
+    # }
   }
   sc_atac_create_fragments(inbam = sorted_tagged_bam,
                            output_folder = output_folder)

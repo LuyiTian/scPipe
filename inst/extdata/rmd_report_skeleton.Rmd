@@ -210,6 +210,30 @@ ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_bre
 
 ```
 
+```{r}
+data <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "demultiplexing_stats.csv"))
+
+DT::datatable(data, options=list(paging=FALSE, searching=FALSE))
+```
+
+```{r}
+
+data$prop <- data$count/sum(data$count) 
+
+ggplot(data, aes_string(x="status", y="prop", fill="status")) + 
+  scale_fill_brewer(palette="Set1") +
+  geom_bar(stat="identity", width=1) +
+  geom_text(aes(y = prop, label = percent(prop)), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0))) +
+  theme(axis.text.x=element_text(angle = 50, hjust = 1),
+        axis.ticks.x=element_blank(),
+        panel.border = element_blank()) +  
+  xlab("status") +
+  ylab("percentage") +
+  expand_limits(y = 1) +
+  ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads")) 
+```
+
 
 # Read count distribution across barcodes
 

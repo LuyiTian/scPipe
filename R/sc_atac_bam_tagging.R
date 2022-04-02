@@ -160,4 +160,6 @@ sc_atac_bam_tagging <- function(inbam,
       "\n\n"
     ),
     file = log_file, append = TRUE)
+  
+  return(paste0(outsortedbam, ".bam"))
 }

@@ -18,6 +18,8 @@
 #' @param output_format a string indicating the output format
 #' @param nthreads numeric value giving the number of threads used for mapping. 
 #'
+#' @returns the file path of the output aligned BAM file
+#'
 #' @examples
 #' \dontrun{
 #' sc_aligning(index_path,
@@ -63,6 +65,97 @@ sc_aligning <- function (
     }
     log_and_stats_folder <- paste0(output_folder, "/scPipe_atac_stats/")
     type                 <- "dna"
+
+    
+    containing_folder <- dirname(R1) # Assume partial and nomatch files are also in the same directory as supplied input fastq files
+    input_folder_files <- list.files(containing_folder)
+
+    # Initialise demultiplexing stats
+    barcode_completematch_count <- length(readLines(R1))/2
+    demux_stats <- data.frame(status = c("barcode_completematch_count"), 
+                              count = c(barcode_completematch_count))
+    
+    # Concatenate the complete and partial matches if the CSV method is used
+    
+    partial_matches_R1 <- file.path(containing_folder, input_folder_files[grep("demultiplexed_partialmatch.+R1.+fastq", input_folder_files)])
+    partial_matches_R3 <- file.path(containing_folder, input_folder_files[grep("demultiplexed_partialmatch.+R3.+fastq", input_folder_files)])
+
+    if (all(file.exists(partial_matches_R1, partial_matches_R3)) && !identical(partial_matches_R1, character(0)) && !identical(partial_matches_R3, character(0))) {
+      
+      if (length(readLines(partial_matches_R1)) > 0 && length(readLines(partial_matches_R3)) > 0) {
+        cat("Found partial match fastq files, proceeding to concatenate with complete match fastq files.\n")
+        barcode_partialmatch_count <- length(readLines(partial_matches_R1))/2
+        demux_stats <- demux_stats %>% add_row(status = "barcode_partialmatch_count", count = barcode_partialmatch_count)
+        concat_filename_R1 <- paste0("demultiplexed_complete_partialmatch_", stringr::str_remove(basename(R1), "demultiplexed_completematch_"))
+        concat_file_R1 <- file.path(containing_folder, concat_filename_R1)
+        concat_filename_R3 <- paste0("demultiplexed_complete_partialmatch_", stringr::str_remove(basename(R2), "demultiplexed_completematch_"))
+        concat_file_R3 <- file.path(containing_folder, concat_filename_R3)
+        system2("zcat", c(R1, partial_matches_R1, "|", "gzip", "-c", ">", concat_file_R1))
+        system2("zcat", c(R2, partial_matches_R3, "|", "gzip", "-c", ">", concat_file_R3))
+        
+        if (!all(file.exists(concat_file_R1, concat_file_R3))) {
+          stop("Couldn't concatenate files!\n")
+        }
+        
+        cat("Outputted concatenated read files to:\n")
+        cat("R1:", concat_file_R1, "\n")
+        cat("R3:", concat_file_R3, "\n")
+        
+        # Replace original fastq files with concatenated files for aligning
+        R1 <- concat_file_R1
+        R2 <- concat_file_R3
+      
+      } else {
+        cat("No partial matches, checking for reads with non-matched barcodes.\n")
+      }
+      
+    }
+    
+    # ------------ Align the nomatch file (for CSV method) --------------------------------
+    
+    output_folder <- "/stornext/Home/data/allstaff/y/yang.p/scPipe_testing/scPipe_atac_output_csv"
+    no_matches_R1 <- file.path(containing_folder, input_folder_files[grep("demultiplexed_nomatch.+R1.+fastq", input_folder_files)])
+    no_matches_R3 <- file.path(containing_folder, input_folder_files[grep("demultiplexed_nomatch.+R3.+fastq", input_folder_files)])
+    if (all(file.exists(no_matches_R1, no_matches_R3)) && !identical(no_matches_R1, character(0)) && !identical(no_matches_R3, character(0))) {
+      if (length(readLines(no_matches_R1)) > 0 && length(readLines(no_matches_R3)) > 0) {
+        cat("Found barcode non-matches demultiplexed FASTQ files. Proceeding to align them.\n")
+        
+        fileNameWithoutExtension <- paste0(output_folder, "/", strsplit(basename(no_matches_R1), "\\.")[[1]][1])
+        nomatch_bam <- paste0(fileNameWithoutExtension, "_aligned.bam")
+        Rsubread::align(
+          index = file.path(output_folder, "genome_index"),
+          readfile1 = no_matches_R1,
+          readfile2 = no_matches_R3,
+          sortReadsByCoordinates = TRUE,
+          type = "DNA",
+          nthreads = 12,
+          output_file = nomatch_bam)
+        
+        # Extract columns
+        bam_tags = list(bc="CB", mb="OX")
+        param <- Rsamtools::ScanBamParam(tag = as.character(bam_tags),  mapqFilter=20)
+        bamfl <- open(Rsamtools::BamFile(nomatch_bam))
+        params <- Rsamtools::ScanBamParam(what=c("flag"), tag=c("CB"))
+        bam0 <- Rsamtools::scanBam(bamfl, param = params)
+        
+        flag_defs <- tibble::tibble(
+          type =
+            paste0("barcode_unmatch_", c("one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "one_read_unmapped", "both_reads_unmapped", "both_reads_unmapped", "mapped", "mapped", "mapped", "mapped", "mapped_wrong_orientation", "mapped_wrong_orientation", "mapped_wrong_orientation", "mapped_wrong_orientation", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously", "mapped_ambigously"))
+          ,
+          flag =
+            c(73, 133, 89, 121, 165, 181, 101, 117, 153, 185, 69, 137, 77, 141, 99, 147, 83, 163, 67, 131, 115, 179, 81, 161, 97, 145, 65, 129, 113, 177))
+        
+        # Create stats data frame 
+        demux_stats <- rbind(demux_stats, as.data.frame(table((data.frame(flag = bam0[[1]]$flag) %>% dplyr::left_join(flag_defs, by = "flag"))[,c('type')])) %>% 
+          dplyr::rename(status = Var1, count = Freq))
+      
+      } else {
+        cat("No reads found with non-matching barcodes.\n")
+      }
+    }
+    utils::write.csv(demux_stats, file.path(log_and_stats_folder, "demultiplexing_stats.csv"), row.names = FALSE)
+    cat("Outputted demultiplexing stats file to", file.path(log_and_stats_folder, "demultiplexing_stats.csv"), "\n")
+    
   } else if(tech == "rna") {
     cat("RNA-Seq mode is selected...")
     
@@ -159,50 +252,6 @@ sc_aligning <- function (
   # get the unmapped mapped stats to be output and stored in a log file
   bamstats <- Rsamtools::idxstatsBam(paste0(fileNameWithoutExtension, "_aligned.bam"))
   utils::write.csv(bamstats, file = paste0(log_and_stats_folder, "stats_file_align_per_chrom.csv"), row.names = FALSE, quote = FALSE)
-  
-  
-  # # Check for other files
-  # input_folder_files <- list.files(dirname(r1))
-  # nomatch_fastqs <- list.files(dirname(r1))
-  # partial_matches_R1 <- input_folder_files[grep("demultiplexed_partialmatch.+R1", input_folder_files)]
-  # no_matches_R1 <- input_folder_files[grep("demultiplexed_nomatch.+R1", input_folder_files)]
-  # partial_matches_R3 <- input_folder_files[grep("demultiplexed_partialmatch.+R3", input_folder_files)]
-  # no_matches_R3 <- input_folder_files[grep("demultiplexed_nomatch.+R3", input_folder_files)]
-  # 
-  # if (length(no_matches_R1) > 0 && length(no_matches_R3) > 0) {
-  #   cat("Found barcode non-matches demultiplexed FASTQ files. Proceeding to align them.\n")
-  #   nm_R1 <- file.path(dirname(r1), no_matches_R1[1])
-  #   nm_R3 <- file.path(dirname(r1), no_matches_R3[1])
-  #   fileNameWithoutExtension <- paste0(output_folder, "/", strsplit(basename(nm_R1), "\\.")[[1]][1])
-  #   outbam <- paste0(fileNameWithoutExtension, "_aligned.bam")
-  #   Rsubread::align(
-  #     index = indexPath,
-  #     readfile1 = nm_R1,
-  #     readfile2 = nm_R3,
-  #     sortReadsByCoordinates = TRUE,
-  #     type = type,
-  #     nthreads = nthreads,
-  #     output_file = outbam)
-  # }
-  # 
-  # if (length(partial_matches_R1) > 0 && length(partial_matches_R3) > 0) {
-  #   cat("Found partial barcode matches demultiplexed FASTQ files. Proceeding to align them.\n")
-  #   pm_R1 <- file.path(dirname(r1), partial_matches_R1[1])
-  #   pm_R3 <- file.path(dirname(r1), partial_matches_R3[1])
-  #   fileNameWithoutExtension <- paste0(output_folder, "/", strsplit(basename(pm_R1), "\\.")[[1]][1])
-  #   outbam <- paste0(fileNameWithoutExtension, "_aligned.bam")
-  #   Rsubread::align(
-  #     index = indexPath,
-  #     readfile1 = pm_R1,
-  #     readfile2 = pm_R3,
-  #     sortReadsByCoordinates = TRUE,
-  #     type = type,
-  #     nthreads = nthreads,
-  #     output_file = outbam)
-  # }
-  # 
-  
-  
 
   cat(
     paste0(
@@ -212,5 +261,5 @@ sc_aligning <- function (
     ), 
     file = log_file, append = TRUE)
   
-  return(align_output_df)
+  return(outbam)
 }
