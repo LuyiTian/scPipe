@@ -138,7 +138,7 @@ char* getFileName(const char* cpath, const char* seperator)
     return path;
 }
 
-char* createFileWithAppend(char* fq_out, const char* appendR1, char* fq1_fn){
+char* createFileWithAppend(const char *fq_out, const char* appendR1, const char *fq1_fn){
     char* fqoutR1 = (char*)malloc(strlen(fq_out) + strlen(appendR1) + strlen(getFileName(fq1_fn)) + 1);
     strcpy(fqoutR1, fq_out);
     strcat(fqoutR1,appendR1);
