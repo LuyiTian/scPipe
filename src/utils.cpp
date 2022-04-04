@@ -115,7 +115,7 @@ string padding(int count, int zero_num)
     return ss.str();
 }
 
-void file_error(char *filename) {
+void file_error(const char *filename) {
     stringstream err_msg;
     err_msg << "Can't open file: " << filename << "\n";
     Rcpp::stop(err_msg.str());
@@ -123,16 +123,18 @@ void file_error(char *filename) {
 
 
 
-char* getFileName(char* path, const char* seperator)
+char* getFileName(const char* cpath, const char* seperator)
 {
+	char *path = (char *)malloc(std::strlen(cpath) * sizeof(char *));
+	std::strcpy(path, cpath);
     char *ssc;
     int l = 0;
     ssc = std::strstr(path, seperator);
-    do{
+    while (ssc) {
         l = strlen(ssc) + 1;
         path = &path[strlen(path)-l+2];
         ssc = strstr(path, seperator);
-    }while(ssc);
+    }
     return path;
 }
 

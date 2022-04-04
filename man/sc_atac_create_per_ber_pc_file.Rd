@@ -13,14 +13,7 @@ sc_atac_create_qc_per_bc_file(
   tss_file,
   enhs_file,
   output_folder,
-  lower = NULL,
-  min_uniq_frags = 0,
-  max_uniq_frags = 50000,
-  min_frac_peak = 0.05,
-  min_frac_tss = 0,
-  min_frac_enhancer = 0,
-  min_frac_promoter = 0,
-  max_frac_mito = 0.2
+  lower = NULL
 )
 }
 \arguments{

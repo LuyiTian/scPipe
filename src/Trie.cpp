@@ -1,13 +1,15 @@
+#include "Trie.h"
+
 //#include <Rcpp.h>
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "Trie.h"
+#include <utility>
+#include <vector>
+
 #define TERMINATOR '@'
 
 //using namespace Rcpp;
-using namespace std;
-
 int Trie::Get_Links_Position(char base)
 {
     /*
@@ -93,6 +95,22 @@ bool Trie::Base_In_Node(trie_node *node, char base)
     return false;
 }
 
+std::vector<trie_node *> Trie::Get_Valid_Links(trie_node *node) {
+	if (node == NULL) {
+		return {};
+	}
+
+	std::vector<trie_node *> out;
+
+	for (int i = 0; i < 5; i++) {
+		if (node->links[i] != NULL) {
+			out.push_back(node->links[i]);
+		}
+	}
+
+	return out;
+}
+
 trie_node *
 Trie::Add_Node(trie_node *node, char base)
 {
@@ -128,7 +146,7 @@ Trie::Add_End_Node(trie_node *node, char base, int original_seq_index, int curre
     return new_node;
 }
 
-void Trie::Add_String(string sequence, int original_seq_index, int current_seq_index) 
+void Trie::Add_String(std::string sequence, int original_seq_index, int current_seq_index) 
 {
     trie_node* current_node = head;
     char insert_base;
@@ -167,9 +185,7 @@ void Trie::Add_String(string sequence, int original_seq_index, int current_seq_i
 }
 
 // Functions for locating barcodes and hairpins using a Trie initially, and reverting to interative mismatch search if the Trie yields no results
-int Trie::Locate_Seq_At_Pos(string read, int index, int barcode_length)
-{
-    int j;
+int Trie::Locate_Seq_At_Pos(std::string read, int index, int barcode_length) {
     char base;
     trie_node *current_node;
     end_node *end;
@@ -185,7 +201,7 @@ int Trie::Locate_Seq_At_Pos(string read, int index, int barcode_length)
     }
 
     // search from index until we find a TERMINATOR
-    for (j = index; j < index + barcode_length; j++)
+    for (int j = index; j < index + barcode_length; j++)
     {
         if (j >= (int)read.length()) break;
         base = read[j];
@@ -218,7 +234,36 @@ int Trie::Locate_Seq_At_Pos(string read, int index, int barcode_length)
     return -1;
 }
 
-int Trie::Locate_Seq_Subsection(string read, int section_start, int section_end, int *found_position)
+std::vector<MismatchResult> Trie::Locate_Seq_Mismatches(std::string read, int index, int barcode_length) const {
+	std::vector<MismatchResult> out;
+	this->SeqMismatchAux(out, read, this->head, index, barcode_length, -1);
+
+	return out;
+}
+
+void Trie::SeqMismatchAux(std::vector<MismatchResult> &found, const std::string &read, trie_node *current, int index, int left, int mismatchPos) const {
+	if (left == 0) {
+		if (this->Base_In_Node(current, TERMINATOR)) {
+			found.push_back(MismatchResult {current->links[this->Get_Links_Position(TERMINATOR)]->end->original_seq_index, mismatchPos});
+		} 
+		return;
+	}
+
+	char base = read[index];
+
+	if (this->Base_In_Node(current, base)) {
+		this->SeqMismatchAux(found, read, current->links[this->Get_Links_Position(base)], index + 1, left - 1, mismatchPos);
+	}
+	if (mismatchPos == -1) {
+		// mismatchPos == -1 if we haven't yet used up the mismatch
+		std::vector<trie_node *> valid_nodes = this->Get_Valid_Links(current);
+		for (int i = 0; i < valid_nodes.size(); i++) {
+			this->SeqMismatchAux(found, read, valid_nodes[i], index + 1, left - 1, index);
+		}
+	}
+}
+
+int Trie::Locate_Seq_Subsection(std::string read, int section_start, int section_end, int *found_position)
 {
     /*
   Search through this read until we locate a known sequence in the given trie. Return that sequences' index.

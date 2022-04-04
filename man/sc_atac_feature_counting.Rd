@@ -26,7 +26,7 @@ sc_atac_feature_counting(
   lower = NULL,
   min_uniq_frags = 0,
   max_uniq_frags = 50000,
-  min_frac_peak = 0,
+  min_frac_peak = 0.3,
   min_frac_tss = 0,
   min_frac_enhancer = 0,
   min_frac_promoter = 0,

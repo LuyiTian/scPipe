@@ -8,6 +8,7 @@ sc_atac_trim_barcode(
   r1,
   r2,
   bc_file,
+  valid_barcode_file = "",
   output_folder = "",
   umi_start = 0,
   umi_length = 0,
@@ -30,6 +31,12 @@ sc_atac_trim_barcode(
 \item{bc_file}{the barcode information, can be either in a \code{fastq} format (e.g. from 10x-ATAC) or
 from a \code{.csv} file (here the barcode is expected to be on the second column). 
 Currently, for the fastq approach, this can be a list of barcode files.}
+
+\item{valid_barcode_file}{file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). Only used if
+\code{bc_file} is a fastq file. Must contain one barcode per line, with no other separators. 
+If given, each barcode from bc_file is matched against the barcode of
+best fit (allowing a hamming distance of 1, prioritising barcodes with a higher mapping quality, as given by
+the fastq reads quality score)}
 
 \item{output_folder}{the output dir for the demultiplexed fastq file, which will contain 
 fastq files with reformatted barcode and UMI into the read name. 
