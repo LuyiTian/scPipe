@@ -37,18 +37,17 @@ std::vector<gzFile> open_gz_files(std::vector<std::string> files) {
 // read the valid barcode file
 // expects a text file or a text file with gz compression
 // uses kseq stream processing to manage the gz file
-std::vector<const char *> readBarcodes(const char *barcode_fn) {
+std::vector<std::string> readBarcodes(const char *barcode_fn) {
 	gzFile fp;
 	kstream_t *ks;
 	kstring_t str = {0,0,0};
 
 	fp = gzopen(barcode_fn, "r");
 	ks = ks_init(fp);
-
-	std::vector<const char *> out;
+	std::vector<std::string> out;
 
 	while (ks_getuntil(ks, '\n', &str, 0) >= 0) {
-		out.push_back(str.s);
+		out.push_back(std::string(str.s));
 	}
 
 	ks_destroy(ks);
@@ -58,19 +57,17 @@ std::vector<const char *> readBarcodes(const char *barcode_fn) {
 }
 
 // handle the building of a Trie using a barcode file
-Trie preprocessBarcodes(const std::vector<const char *> &barcodes) {
+Trie preprocessBarcodes(const std::vector<std::string> &barcodes) {
 	Trie trie;
 
 	// add barcodes to the trie, using the barcode index as both original and new seq id (because these barcodes aren't sorted)
 	for (int i = 0; i < barcodes.size(); i++) {
-		trie.Add_String(std::string(barcodes[i]), i, i);
+		trie.Add_String(barcodes[i], i, i);
 	}
 
 	return trie;
 }
 
-
-// find out why this isn't working.
 int count_unmatched_barcodes(std::vector<std::string> barcodes, const Trie &valid_barcodes, int total) {
 	std::vector<gzFile> fq2_list = open_gz_files(barcodes);
 	std::vector<kseq_t*> seq2_list;
@@ -100,7 +97,6 @@ int count_unmatched_barcodes(std::vector<std::string> barcodes, const Trie &vali
 
 	return failed;
 }
-
 
 const char *charComplement(char c) {
     char out = 'C';
@@ -645,11 +641,11 @@ bool sc_atac_check_qual(char *qual_s, int trim_n, int thr, int below_thr){
 // sc_atac_paired_fastq_to_fastq ------------------
 
 std::vector<int> sc_atac_paired_fastq_to_fastq(
-        char *fq1_fn,
+        const char *fq1_fn,
         std::vector<std::string> fq2_fn_list,
-        char *fq3_fn,
-		char *valid_barcode_fn,
-        char *fq_out,
+        const char *fq3_fn,
+		const char *valid_barcode_fn,
+        const char *fq_out,
         const bool write_gz,
         const bool rmN,
         const bool rmlow,
@@ -754,23 +750,26 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 
 	// preprocess the valid_barcode_file (csv) reads into a Trie, allowing for matching and mismatching.
 	bool checkBarcodeMismatch = false;
-	std::vector<const char *> validBarcodes;
+	std::vector<std::string> validBarcodes;
 	Trie validBarcodeTrie;
-	bool useReverseComplement;
+	bool useReverseComplement = false;
 	if (std::string(valid_barcode_fn) != "") {
 		validBarcodes = readBarcodes(valid_barcode_fn);
 		validBarcodeTrie = preprocessBarcodes(validBarcodes);
-		checkBarcodeMismatch = false;
+		checkBarcodeMismatch = true;
 		
 		// check the validity of the barcodes in seq2_list
 		// if more than 60% don't match (and mismatch) with valid barcode list, then we need to use the reverse complements
-		useReverseComplement = false;
-		// int numToCheck = 1000;
-		// int unmatched = count_unmatched_barcodes(seq2_list, validBarcodeTrie, numToCheck);
-		// if (unmatched >= 0.6f * numToCheck) {
-		// 	Rcpp::Rcout << "Poor match between fastq barcodes and valid barcode file. Using reverse complement of found barcodes for error correction.\n";
-		// 	useReverseComplement = true;
-		// }
+		int numToCheck = 1000;
+		int unmatched = count_unmatched_barcodes(fq2_fn_list, validBarcodeTrie, numToCheck);
+		if (unmatched >= 0.6f * numToCheck) {
+			Rcpp::Rcout << "Poor match between fastq barcodes and valid barcode file. Using reverse complement of found barcodes for error correction.\n";
+			useReverseComplement = true;
+		} else {
+			Rcpp::Rcout << "High proportion of first " << numToCheck << " reads contain a valid barcode sequence.\n";
+		}
+	} else {
+		Rcpp::Rcout << "No valid barcode file provided; no barcode error correction will occur.\n";
 	}
 
     // id1_st: bs1: starting position of barcode in read one. -1 if no barcode in read one.
@@ -870,14 +869,13 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 
 				// verify that we have the correct  barcode sequence, by checking against the valid barcode trie
 				if (checkBarcodeMismatch) {
-					std::cout << "here1\n";
 					std::string seq2_seq_str = 
 						useReverseComplement ? 
 							reverseComplement(seq2_seq, seq2->seq.l) :
 							seq2_seq;
 					
-					// std::vector<MismatchResult> possibleBarcodes = validBarcodeTrie.Locate_Seq_Mismatches(seq2_seq_str, 0, seq2_seq_str.size());
-					std::vector<MismatchResult> possibleBarcodes;
+					std::vector<MismatchResult> possibleBarcodes = validBarcodeTrie.Locate_Seq_Mismatches(seq2_seq_str, 0, seq2_seq_str.size());
+					// std::vector<MismatchResult> possibleBarcodes;
 					// // find the barcode which matches best (highest chance of matching perfectly based quality score)
 					int highestScore = 0;
 					int barcodePosition = -1;
@@ -898,8 +896,10 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 					// this could result from a largers sequencing error.
 					// or from the valid barcode file not being provided.
 					if (barcodePosition != -1) {
-						seq2_seq = validBarcodes[barcodePosition];
+						seq2_seq = validBarcodes[barcodePosition].c_str();
 					} 
+
+					// std::cout << "found barcode with position: " << barcodePosition << "\n";
 				}
 
 

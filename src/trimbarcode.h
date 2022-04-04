@@ -55,11 +55,11 @@ void paired_fastq_to_fastq(char *fq1_fn, char *fq2_fn, char *fq_out, const read_
 void single_fastq_to_fastq(char *fq1_fn, char *fq_out, const read_s read_structure, const filter_s filter_settings);
 
 std::vector<int> sc_atac_paired_fastq_to_fastq(
-        char *fq1_fn,
+        const char *fq1_fn,
         std::vector<std::string> fq2_fn_list,
-        char *fq3_fn,
-		char *valid_barcode_fn,
-        char *fq_out,
+        const char *fq3_fn,
+		const char *valid_barcode_fn,
+        const char *fq_out,
         const bool write_gz,
         const bool rmN,
         const bool rmlow,
