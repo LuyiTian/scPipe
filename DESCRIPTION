@@ -55,7 +55,6 @@ Imports:
     tidyr,
     grid,
     Matrix,
-    ggpubr,
     tibble,
     DropletUtils,
     Biostrings,
@@ -69,8 +68,7 @@ Imports:
     reticulate,
 	tools,
 	Rsubread,
-	dplyr,
-	seqinr
+	dplyr
 SystemRequirements: C++11, GNU make
 License: GPL (>= 2)
 Encoding: UTF-8
