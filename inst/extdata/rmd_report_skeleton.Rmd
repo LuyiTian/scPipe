@@ -60,7 +60,7 @@ knitr::kable(alignment_stats,
 
 Below is a stacked bar plot showing the distribution of how the fragments have been mapped. The left plot shows the number of uniquely and multi-mapped fragments, while the right plot provides a more detailed breakdown of the mapped fragments.
 
-```{r}
+```{r alignment-stats-plot, fig.wide = TRUE, fig.asp = 0.9}
 as.1 <- alignment_stats[alignment_stats$V1 %in% c("Unmapped_fragments", 
                                                   "Uniquely_mapped_fragments", 
                                                   "Multi_mapping_fragments"),] %>% 
@@ -83,15 +83,17 @@ g1 <- ggplot(as.1, aes(x = Type, y = Proportion, fill = Mapping_type)) +
   ylab("Proportion of total fragments") + 
   ggtitle("Uniquely mapped, multimapped and \nunmapped fragments") +
   theme(axis.text.x=element_blank(),
+        title = element_text(size=10),
         axis.ticks.x=element_blank(),
         axis.title.x=element_blank()) +
   scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0)))
 
-g2<- ggplot(as.2, aes(x = Type, y = Proportion, fill = Mapping_type)) + 
+g2 <- ggplot(as.2, aes(x = Type, y = Proportion, fill = Mapping_type)) + 
   geom_bar(stat="identity", width=0.25) +
   ylab("Proportion of total fragments") + 
   ggtitle("Breakdown of mapped fragments") +
   theme(axis.text.x=element_blank(),
+        title =element_text(size=10),
         axis.ticks.x=element_blank(),
         axis.title.x=element_blank()) +
   scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0))) 
@@ -99,38 +101,24 @@ g2<- ggplot(as.2, aes(x = Type, y = Proportion, fill = Mapping_type)) +
 gridExtra::grid.arrange(g1, g2, ncol=2)
 ```
 
-
-```{r}
-alignment_stats$count <- alignment_stats$V2 / sum(alignment_stats$V2)
-colnames(alignment_stats)[1] <- "Statistic"
-ggplot(alignment_stats, aes(x=Statistic, y=count, fill=Statistic)) +
-  scale_fill_brewer(palette="Paired") +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 30,
-                                     hjust = 1)) +
-  ggtitle("Alignment Statistics") +
-  xlab("Statistic") +
-  ylab("Count")
-```
-
-
 ## Alignment statistics per chromosome
 
 ```{r}
 alignment_stats_chrom_filename <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_align_per_chrom.csv")
 alignment_stats_chrom          <- read.csv(alignment_stats_chrom_filename)
-alignment_stats_chrom <- alignment_stats_chrom[, !(names(alignment_stats_chrom) %in% c("unmapped"))]
+alignment_stats_chrom <- alignment_stats_chrom[!(alignment_stats_chrom$seqnames %in% c("*")),  !(names(alignment_stats_chrom) %in% c("unmapped"))]
 DT::datatable(alignment_stats_chrom)
 ```
 
-A plot showing the read count distribution across chromosomes is shown below. Note that the normalised metric used is TPM (transcripts per million), which also takes into account of chromosome sizes (also reflected in the bar widths).
+### Read count distribution across genome
+
+A plot showing the read count distribution across chromosomes is shown below.
 
 ```{r}
 alignment_stats_chrom <- rename(read.csv(alignment_stats_chrom_filename), reads = "mapped") %>% 
   filter(reads > 0) 
 alignment_stats_chrom <- alignment_stats_chrom[, !(names(alignment_stats_chrom) %in% c("unmapped"))]
 # Plot of reads per barcode 
-library(ggplot2)
 alignment_stats_chrom <- alignment_stats_chrom[!(alignment_stats_chrom$seqnames %in% c("chrM")), ] # Remove chrM
 RPK <- alignment_stats_chrom$reads/alignment_stats_chrom$seqlength # Reads per kilo-base (normalize by chromosome length)
 PMSF <- sum(RPK)/10^6 # Per million scaling factor (normalize by total RPK)
@@ -144,6 +132,7 @@ ggplot(alignment_stats_chrom,
            y=TPM,
            width=widths)) +
   geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") +
+  scale_fill_brewer(palette="Set1") +
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
   scale_y_continuous(limits = c(0, NA),
@@ -170,7 +159,7 @@ DT::datatable(sums, options=list(paging=FALSE, searching=FALSE))
 ```{r demux-stats-graph, fig.wide = TRUE, fig.asp = 0.9}
 sums$count <- sums$count / sum(sums$count)
 ggplot(sums, aes(x=status, y=count, fill=status)) +
-  scale_fill_brewer(palette="Dark2") +
+  scale_fill_brewer(palette="Set1") +
   geom_col() +
   theme(axis.text.x = element_text(angle = 30,
                                      hjust = 1)) +
@@ -180,14 +169,12 @@ ggplot(sums, aes(x=status, y=count, fill=status)) +
 
 ```
 
-# Barcode demultiplexing statistics
+# Alignment statistics across barcodes
 
-Shows the alignment statistics for reads with a matched/unmatched barcodes. Note that if a fastq file with the barcodes was supplied then there will be no unmatched barcodes (they can only exist a csv file with barcodes was supplied).
 
 ```{r barcode-alignment-dist, fig.wide = TRUE, fig.asp = 0.9}
 stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
 data <- read.csv(stats_file, row.names = "barcode")[-5] %>% sample_n(500) 
-
 mapping_stat <- data %>% arrange(mapped)
 mapping_stat$barcode <- stats::reorder(rownames(mapping_stat), mapping_stat$mapped)
 mapping_stat_prop <- as.data.frame(prop.table(as.matrix(mapping_stat[, sapply(mapping_stat, is.numeric)]), 1))
@@ -196,7 +183,6 @@ dat.m <- melt(mapping_stat, id.vars="barcode")
 dat.m1 <- melt(mapping_stat_prop, id.vars="barcode")
 colnames(dat.m)[2] <- "type"
 colnames(dat.m1)[2] <- "type"
-
 ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_brewer(palette="Set1")+
   geom_bar(stat="identity", width=1)+
   xlab("barcode") +
@@ -205,10 +191,13 @@ ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_bre
   
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
-
   ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads")) 
-
 ```
+
+# Barcode demultiplexing statistics
+
+Shows the alignment statistics for reads with a matched/unmatched barcodes. Note that if a fastq file with the barcodes was supplied then there will be no unmatched barcodes (they can only exist a csv file with barcodes was supplied).
+
 
 ```{r}
 data <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "demultiplexing_stats.csv"))
@@ -248,6 +237,7 @@ ggplot(raw,
   aes(x=reorder(barcode, count),
       y=log2_count)) +
   geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") +
+  scale_fill_brewer(palette="Set1") +
   xlab("barcode") +
   ylab("log_2 number_of_reads") +
   theme(axis.text.x = element_blank(),
@@ -403,6 +393,7 @@ A density plot representing the distribution of the insert sizes (fragment size 
   
   ggplot(data = frags[isize < 800], aes(x = isize)) +
     geom_density(fill = '#1B9E77') + xlab('Insert Size (bp)') + ylab('Density') + theme_bw() +
+    scale_fill_brewer(palette="Set1") +
     theme(legend.title=element_blank(), 
           legend.background = NULL, 
           axis.text = element_text(size = 15, family = "Helvetica"), 
@@ -441,7 +432,7 @@ qc_sele_df$type = factor(qc_sele_df$type, levels = c('Peaks', 'TSS', 'Promoter',
 
 ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
   geom_boxplot(outlier.size = 0.01, show.legend = FALSE) + 
-  scale_fill_brewer(palette="Dark2") +
+  scale_fill_brewer(palette="Set1") +
   theme(legend.position = 'none', 
         axis.text = element_text(size = 18, family = "Helvetica"), 
         axis.title.x = element_blank(), 

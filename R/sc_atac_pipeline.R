@@ -118,8 +118,8 @@ sc_atac_pipeline <- function(r1,
     demux_r1        <- file.path(output_folder, paste0("demux_", r1_name, ".fastq.gz"))
     demux_r2        <- file.path(output_folder, paste0("demux_", r2_name, ".fastq.gz"))
   } else {
-    demux_r1        <- file.path(output_folder, paste0("demultiplexed_completematch_", r1_name, ".fastq.gz"))
-    demux_r2        <- file.path(output_folder, paste0("demultiplexed_completematch_", r2_name, ".fastq.gz"))
+    demux_r1        <- file.path(output_folder, paste0("demux_completematch_", r1_name, ".fastq.gz"))
+    demux_r2        <- file.path(output_folder, paste0("demux_completematch_", r2_name, ".fastq.gz"))
   }
   reference       <- reference
   bam_to_tag <- sc_aligning(ref = reference,
@@ -129,7 +129,7 @@ sc_atac_pipeline <- function(r1,
                 nthreads  = nthreads,
                 output_folder = output_folder)
 
-  sorted_tagged_bam <- sc_atac_bam_tagging(inbam         = bam_to_tag,
+  sorted_tagged_bam <- sc_atac_bam_tagging(inbam = bam_to_tag,
                       output_folder = output_folder,
                       bam_tags      = list(bc="CB", mb="OX"),
                       nthreads      =  nthreads)
