@@ -142,61 +142,9 @@ ggplot(alignment_stats_chrom,
   ggtitle("Read count (TPM) distribution across chromosomes")
 ```
 
-
-# Aggregate alignment statistics of demultiplexed reads
-```{r}
-stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-raw <- utils::read.csv(stats_file)
-
-sums <- data.frame(colSums(raw[,!(names(raw) %in% c("barcode", "count"))])) %>% tibble::rownames_to_column()
-colnames(sums) <- c("status", "count")
-```
-
-```{r demux-stats-table, fig.wide = TRUE, fig.asp = 0.9}
-DT::datatable(sums, options=list(paging=FALSE, searching=FALSE))
-```
-
-```{r demux-stats-graph, fig.wide = TRUE, fig.asp = 0.9}
-sums$count <- sums$count / sum(sums$count)
-ggplot(sums, aes(x=status, y=count, fill=status)) +
-  scale_fill_brewer(palette="Set1") +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 30,
-                                     hjust = 1)) +
-  ggtitle("Mapping statistics") +
-  xlab("Status") +
-  ylab("Count")
-
-```
-
-# Alignment statistics across barcodes
-
-
-```{r barcode-alignment-dist, fig.wide = TRUE, fig.asp = 0.9}
-stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-data <- read.csv(stats_file, row.names = "barcode")[-5] %>% sample_n(500) 
-mapping_stat <- data %>% arrange(mapped)
-mapping_stat$barcode <- stats::reorder(rownames(mapping_stat), mapping_stat$mapped)
-mapping_stat_prop <- as.data.frame(prop.table(as.matrix(mapping_stat[, sapply(mapping_stat, is.numeric)]), 1))
-mapping_stat_prop$barcode <- mapping_stat$barcode
-dat.m <- melt(mapping_stat, id.vars="barcode")
-dat.m1 <- melt(mapping_stat_prop, id.vars="barcode")
-colnames(dat.m)[2] <- "type"
-colnames(dat.m1)[2] <- "type"
-ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_brewer(palette="Set1")+
-  geom_bar(stat="identity", width=1)+
-  xlab("barcode") +
-  ylab("percentage of reads")+
-  scale_y_continuous(labels = percent_format(), expand = expansion(mult = c(0, 0))) +
-  
-  theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) +
-  ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads")) 
-```
-
 # Barcode demultiplexing statistics
 
-Shows the alignment statistics for reads with a matched/unmatched barcodes. Note that if a fastq file with the barcodes was supplied then there will be no unmatched barcodes (they can only exist a csv file with barcodes was supplied).
+Shows the alignment statistics for reads with matched (without or with error correction) and unmatched barcodes.
 
 
 ```{r}
@@ -223,27 +171,27 @@ ggplot(data, aes_string(x="status", y="prop", fill="status")) +
   ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads")) 
 ```
 
+A stacked bar plot showing the alignment status of reads in a random sample of 500 barcodes (including error-corrected ones) is given below:
 
-# Read count distribution across barcodes
-
-A bar plot showing the distribution of read counts across a random sample of 100 barcodes, ordered by the read count.
-```{r barcode-counts-dist, fig.wide = TRUE, fig.asp = 0.9}
-
+```{r barcode-alignment-dist, fig.wide = TRUE, fig.asp = 0.9}
 stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-raw <- utils::read.csv(stats_file) %>% sample_n(100) %>% dplyr::arrange(count)
-raw$log2_count <- log2(raw$count)
-
-ggplot(raw,
-  aes(x=reorder(barcode, count),
-      y=log2_count)) +
-  geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") +
-  scale_fill_brewer(palette="Set1") +
+data <- read.csv(stats_file, row.names = "barcode")[-5] %>% sample_n(500) 
+mapping_stat <- data %>% arrange(mapped)
+mapping_stat$barcode <- stats::reorder(rownames(mapping_stat), mapping_stat$mapped)
+mapping_stat_prop <- as.data.frame(prop.table(as.matrix(mapping_stat[, sapply(mapping_stat, is.numeric)]), 1))
+mapping_stat_prop$barcode <- mapping_stat$barcode
+dat.m <- melt(mapping_stat, id.vars="barcode")
+dat.m1 <- melt(mapping_stat_prop, id.vars="barcode")
+colnames(dat.m)[2] <- "type"
+colnames(dat.m1)[2] <- "type"
+ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_brewer(palette="Set1")+
+  geom_bar(stat="identity", width=1)+
   xlab("barcode") +
-  ylab("log_2 number_of_reads") +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank()) +
-  scale_y_continuous(limits = c(0, NA),
-                     expand = expansion(mult = c(0, 0.1)))
+  ylab("percentage of reads")+
+  scale_y_continuous(labels = percent_format(), expand = expansion(mult = c(0, 0))) +
+  
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
 ```
 
 # Duplicate removal statistics 
