@@ -116,17 +116,13 @@ sc_atac_create_sce <- function(input_folder = NULL,
 sc_atac_plot_fragments_per_cell <- function(sce) {
   cell_stats <- as.data.frame(QC_metrics(sce))
   cell_stats$log_counts_per_cell <- log(cell_stats$counts_per_cell+1)
-  ggpubr::gghistogram(cell_stats,
-                      x = "log_counts_per_cell",
-                      y = "..count..",
-                      title = "Counts per cell",
-                      color = "#D95F02",
-                      fill = "#D95F02",
-                      bins = 10,
-                      rug = TRUE,
-                      # add = "mean",
-                      add_density = TRUE
-  )
+
+  ggplot(cell_stats, aes(x=log_counts_per_cell, y = ..count..)) +
+    geom_histogram(color = "#D95F02", fill = "#D95F02", bins = 10) +
+    stat_density(geom = "line", color = "#D95F02") +
+    ggtitle("Counts per cell") +
+    xlab("log_counts_per_cell") + 
+    ylab("count") 
 }
 
 #' @name sc_atac_plot_fragments_per_feature
@@ -140,17 +136,13 @@ sc_atac_plot_fragments_per_cell <- function(sce) {
 sc_atac_plot_fragments_per_feature <- function(sce) {
   feature_stats <- as.data.frame(feature_info(sce))
   feature_stats$log_counts_per_feature <- log(feature_stats$counts_per_feature+1)
-  ggpubr::gghistogram(feature_stats,
-                      x = "log_counts_per_feature",
-                      y = "..count..",
-                      title = "Counts per feature",
-                      color = "#D95F02",
-                      fill = "#D95F02",
-                      bins = 10,
-                      rug = TRUE,
-                      # add = "mean",
-                      add_density = TRUE
-  )
+
+  ggplot(feature_stats, aes(x=log_counts_per_feature, y = ..count..)) +
+    geom_histogram(color = "#D95F02", fill = "#D95F02", bins = 10) +
+    stat_density(geom = "line", color = "#D95F02") +
+    ggtitle("Counts per feature") +
+    xlab("log_counts_per_feature") + 
+    ylab("count") 
 }
 
 
@@ -165,16 +157,13 @@ sc_atac_plot_fragments_per_feature <- function(sce) {
 sc_atac_plot_features_per_cell <- function(sce) {
   cell_stats <- as.data.frame(QC_metrics(sce))
   cell_stats$log_features_per_cell <- log(cell_stats$features_per_cell+1)
-  ggpubr::gghistogram(as.data.frame(cell_stats),
-                      x = "log_features_per_cell",
-                      y = "..count..",
-                      title = "Features per cell",
-                      color = "#7570B3",
-                      fill = "#7570B3",
-                      bins = 10,
-                      rug = TRUE,
-                      # add = "mean",
-                      add_density = TRUE)
+
+  ggplot(cell_stats, aes(x=log_features_per_cell, y = ..count..)) +
+    geom_histogram(color = "#7570B3", fill = "#7570B3", bins = 10) +
+    stat_density(geom = "line", color = "#7570B3") +
+    ggtitle("Features per cell") +
+    xlab("log_features_per_cell") + 
+    ylab("count") 
 }
 
 #' @name sc_atac_plot_features_per_cell_ordered
@@ -206,17 +195,14 @@ sc_atac_plot_features_per_cell_ordered <- function(sce) {
 sc_atac_plot_cells_per_feature <- function(sce) {
   feature_stats <- as.data.frame(feature_info(sce))
   feature_stats$log_cells_per_feature <- log(feature_stats$cells_per_feature+1)
-  ggpubr::gghistogram(feature_stats,
-                      x = "log_cells_per_feature",
-                      y = "..count..",
-                      title = "Cells per feature",
-                      color = "#7570B3",
-                      fill = "#7570B3",
-                      bins = 10,
-                      rug = TRUE,
-                      # add = "mean",
-                      add_density = TRUE
-  )
+  
+  ggplot(feature_stats, aes(x=log_cells_per_feature, y = ..count..)) +
+    geom_histogram(color = "#7570B3", fill = "#7570B3", bins = 10) +
+    stat_density(geom = "line", color = "#7570B3") +
+    ggtitle("Cells per feature") +
+    xlab("log_cells_per_feature") + 
+    ylab("count") 
+      
 }
 
 #' @name sc_atac_plot_fragments_features_per_cell
@@ -231,17 +217,13 @@ sc_atac_plot_fragments_features_per_cell <- function(sce) {
   cell_stats <- as.data.frame(QC_metrics(sce))
   cell_stats$log_counts_per_cell <- log(cell_stats$counts_per_cell+1)
   cell_stats$log_features_per_cell <- log(cell_stats$features_per_cell+1)
-  ggpubr::ggscatter(cell_stats,
-                    x = "log_counts_per_cell",
-                    y = "log_features_per_cell",
-                    title = "Relationship between counts and features per cell",
-                    color = "#D95F02",
-                    fill = "#D95F02",
-                    add = "reg.line",
-                    conf.int = TRUE, # Add confidence interval
-                    cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
-                    cor.coeff.args = list(method = "spearman", label.x = 1, label.sep = "\n"),
-                    rug = TRUE)
+
+  ggplot(cell_stats, aes(x=log_counts_per_cell, y=log_features_per_cell)) +
+    geom_point(color = "#D95F02") +
+    ggtitle("Relationship between counts and features per cell") +
+    xlab("log_counts_per_cell") + 
+    ylab("log_features_per_cell") +
+    geom_smooth(formula = y ~ x, method='lm', color = "#D95F02", fill = "#D95F02")
 }
 
 #' @name sc_atac_plot_fragments_cells_per_feature
@@ -256,16 +238,11 @@ sc_atac_plot_fragments_cells_per_feature <- function(sce) {
   feature_stats <- as.data.frame(feature_info(sce))
   feature_stats$log_counts_per_feature <- log(feature_stats$counts_per_feature+1)
   feature_stats$log_cells_per_feature <- log(feature_stats$cells_per_feature+1)
-  ggpubr::ggscatter(feature_stats,
-                    x = "log_counts_per_feature",
-                    y = "log_cells_per_feature",
-                    title = "Relationship between counts and cells per feature",
-                    color = "#7570B3",
-                    fill = "#7570B3",
-                    add = "reg.line",
-                    conf.int = TRUE, # Add confidence interval
-                    cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
-                    cor.coeff.args = list(method = "spearman", label.x = 1, label.sep = "\n"),
-                    rug = TRUE)
+
+  ggplot(feature_stats, aes(x=log_counts_per_feature, y=log_cells_per_feature)) +
+    geom_point(color = "#7570B3") +
+    xlab("log_counts_per_feature") + 
+    ylab("log_cells_per_feature") +
+    geom_smooth(formula = y ~ x, method='lm', color = "#7570B3", fill = "#7570B3")
 }
 

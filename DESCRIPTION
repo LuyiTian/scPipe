@@ -55,7 +55,6 @@ Imports:
     tidyr,
     grid,
     Matrix,
-    ggpubr,
     tibble,
     DropletUtils,
     Biostrings,

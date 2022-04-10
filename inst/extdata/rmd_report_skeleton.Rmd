@@ -80,6 +80,7 @@ as.2$Proportion <- as.2$V2/sum(as.2$V2)
 as.combined <- rbind(as.1, as.2)
 g1 <- ggplot(as.1, aes(x = Type, y = Proportion, fill = Mapping_type)) + 
   geom_bar(stat="identity", width=0.25) +
+  scale_fill_brewer(palette="Dark2") +
   ylab("Proportion of total fragments") + 
   ggtitle("Uniquely mapped, multimapped and \nunmapped fragments") +
   theme(axis.text.x=element_blank(),
@@ -90,6 +91,7 @@ g1 <- ggplot(as.1, aes(x = Type, y = Proportion, fill = Mapping_type)) +
 
 g2 <- ggplot(as.2, aes(x = Type, y = Proportion, fill = Mapping_type)) + 
   geom_bar(stat="identity", width=0.25) +
+  scale_fill_brewer(palette="Dark2") +
   ylab("Proportion of total fragments") + 
   ggtitle("Breakdown of mapped fragments") +
   theme(axis.text.x=element_blank(),
@@ -132,7 +134,7 @@ ggplot(alignment_stats_chrom,
            y=TPM,
            width=widths)) +
   geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") +
-  scale_fill_brewer(palette="Set1") +
+  scale_fill_brewer(palette="Dark2") +
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
   scale_y_continuous(limits = c(0, NA),
@@ -158,7 +160,7 @@ DT::datatable(data, options=list(paging=FALSE, searching=FALSE))
 data$prop <- data$count/sum(data$count) 
 
 ggplot(data, aes_string(x="status", y="prop", fill="status")) + 
-  scale_fill_brewer(palette="Set1") +
+  scale_fill_brewer(palette="Dark2") +
   geom_bar(stat="identity", width=1) +
   geom_text(aes(y = prop, label = percent(prop)), vjust = -0.5) +
   scale_y_continuous(expand = expansion(mult = c(0, 0))) +
@@ -184,7 +186,7 @@ dat.m <- melt(mapping_stat, id.vars="barcode")
 dat.m1 <- melt(mapping_stat_prop, id.vars="barcode")
 colnames(dat.m)[2] <- "type"
 colnames(dat.m1)[2] <- "type"
-ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_brewer(palette="Set1")+
+ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_brewer(palette="Dark2")+
   geom_bar(stat="identity", width=1)+
   xlab("barcode") +
   ylab("percentage of reads")+
@@ -341,7 +343,7 @@ A density plot representing the distribution of the insert sizes (fragment size 
   
   ggplot(data = frags[isize < 800], aes(x = isize)) +
     geom_density(fill = '#1B9E77') + xlab('Insert Size (bp)') + ylab('Density') + theme_bw() +
-    scale_fill_brewer(palette="Set1") +
+    scale_fill_brewer(palette="Dark2") +
     theme(legend.title=element_blank(), 
           legend.background = NULL, 
           axis.text = element_text(size = 15, family = "Helvetica"), 
@@ -380,7 +382,7 @@ qc_sele_df$type = factor(qc_sele_df$type, levels = c('Peaks', 'TSS', 'Promoter',
 
 ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
   geom_boxplot(outlier.size = 0.01, show.legend = FALSE) + 
-  scale_fill_brewer(palette="Set1") +
+  scale_fill_brewer(palette="Dark2") +
   theme(legend.position = 'none', 
         axis.text = element_text(size = 18, family = "Helvetica"), 
         axis.title.x = element_blank(), 
