@@ -26,3 +26,13 @@ sc_atac_create_sce(
 \description{
 sc_atac_create_sce()
 }
+\examples{
+\dontrun{
+sc_atac_create_sce(
+   input_folder = input_folder,
+   organism = "hg38",
+   feature_type = "peak",
+   report = TRUE)
+}    
+
+}

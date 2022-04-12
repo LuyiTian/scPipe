@@ -58,65 +58,126 @@ knitr::kable(alignment_stats,
     kable_styling()
 ```
 
-```{r}
-alignment_stats$count <- alignment_stats$V2 / sum(alignment_stats$V2)
-colnames(alignment_stats)[1] <- "Statistic"
-ggplot(alignment_stats, aes(x=Statistic, y=count, fill=Statistic)) +
-  scale_fill_brewer(palette="Paired") +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 30,
-                                     hjust = 1)) +
-  ggtitle("Alignment Statistics") +
-  xlab("Statistic") +
-  ylab("Count")
-```
+Below is a stacked bar plot showing the distribution of how the fragments have been mapped. The left plot shows the number of uniquely and multi-mapped fragments, while the right plot provides a more detailed breakdown of the mapped fragments.
 
+```{r alignment-stats-plot, fig.wide = TRUE, fig.asp = 0.9}
+as.1 <- alignment_stats[alignment_stats$V1 %in% c("Unmapped_fragments", 
+                                                  "Uniquely_mapped_fragments", 
+                                                  "Multi_mapping_fragments"),] %>% 
+  mutate(Type = "1") %>% rename(Mapping_type = "V1")
+
+as.2 <- alignment_stats[alignment_stats$V1 %in% c("Properly_paired_fragments", 
+                                                  "Singleton_fragments",
+                                                  "More_than_one_chr_fragments",
+                                                  "Unexpected_strandness_fragments",
+                                                  "Unexpected_template_length",
+                                                  "Inversed_mapping"),] %>% 
+  mutate(Type = "2") %>% rename(Mapping_type = "V1")
+
+as.1$Proportion <- as.1$V2/sum(as.1$V2)
+as.2$Proportion <- as.2$V2/sum(as.2$V2)
+
+as.combined <- rbind(as.1, as.2)
+g1 <- ggplot(as.1, aes(x = Type, y = Proportion, fill = Mapping_type)) + 
+  geom_bar(stat="identity", width=0.25) +
+  scale_fill_brewer(palette="Dark2") +
+  ylab("Proportion of total fragments") + 
+  ggtitle("Uniquely mapped, multimapped and \nunmapped fragments") +
+  theme(axis.text.x=element_blank(),
+        title = element_text(size=10),
+        axis.ticks.x=element_blank(),
+        axis.title.x=element_blank()) +
+  scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0)))
+
+g2 <- ggplot(as.2, aes(x = Type, y = Proportion, fill = Mapping_type)) + 
+  geom_bar(stat="identity", width=0.25) +
+  scale_fill_brewer(palette="Dark2") +
+  ylab("Proportion of total fragments") + 
+  ggtitle("Breakdown of mapped fragments") +
+  theme(axis.text.x=element_blank(),
+        title =element_text(size=10),
+        axis.ticks.x=element_blank(),
+        axis.title.x=element_blank()) +
+  scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0))) 
+
+gridExtra::grid.arrange(g1, g2, ncol=2)
+```
 
 ## Alignment statistics per chromosome
 
 ```{r}
 alignment_stats_chrom_filename <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_align_per_chrom.csv")
 alignment_stats_chrom          <- read.csv(alignment_stats_chrom_filename)
-
-knitr::kable(alignment_stats_chrom,
-             col.names = c('Chromosome', 'Chrom_length', 'Mapped_reads', "Unmapped_reads"),
-             caption = "Chromosome level alignment statistics") %>%
-    kable_styling()
-
+alignment_stats_chrom <- alignment_stats_chrom[!(alignment_stats_chrom$seqnames %in% c("*")),  !(names(alignment_stats_chrom) %in% c("unmapped"))]
 DT::datatable(alignment_stats_chrom)
 ```
 
-# Aggregate alignment statistics of demultiplexed reads
+### Read count distribution across genome
+
+A plot showing the read count distribution across chromosomes is shown below.
+
 ```{r}
-stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-raw <- utils::read.csv(stats_file)
-
-sums <- data.frame(colSums(raw[,!(names(raw) %in% c("barcode", "count"))])) %>% tibble::rownames_to_column()
-colnames(sums) <- c("status", "count")
-```
-
-```{r demux-stats-table, fig.wide = TRUE, fig.asp = 0.9}
-DT::datatable(sums, options=list(paging=FALSE, searching=FALSE))
-```
-
-```{r demux-stats-graph, fig.wide = TRUE, fig.asp = 0.9}
-sums$count <- sums$count / sum(sums$count)
-ggplot(sums, aes(x=status, y=count, fill=status)) +
+alignment_stats_chrom <- rename(read.csv(alignment_stats_chrom_filename), reads = "mapped") %>% 
+  filter(reads > 0) 
+alignment_stats_chrom <- alignment_stats_chrom[, !(names(alignment_stats_chrom) %in% c("unmapped"))]
+# Plot of reads per barcode 
+alignment_stats_chrom <- alignment_stats_chrom[!(alignment_stats_chrom$seqnames %in% c("chrM")), ] # Remove chrM
+RPK <- alignment_stats_chrom$reads/alignment_stats_chrom$seqlength # Reads per kilo-base (normalize by chromosome length)
+PMSF <- sum(RPK)/10^6 # Per million scaling factor (normalize by total RPK)
+alignment_stats_chrom$TPM <- RPK/PMSF # Transcripts per million
+alignment_stats_chrom <- alignment_stats_chrom %>% arrange(TPM)
+# Calculate widths
+alignment_stats_chrom$widths <- alignment_stats_chrom$seqlength/sum(alignment_stats_chrom$seqlength)
+alignment_stats_chrom$locs <- cumsum(alignment_stats_chrom$widths) - alignment_stats_chrom$widths/2
+ggplot(alignment_stats_chrom,
+       aes(x=locs,
+           y=TPM,
+           width=widths)) +
+  geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") +
   scale_fill_brewer(palette="Dark2") +
-  geom_col() +
-  theme(axis.text.x = element_text(angle = 30,
-                                     hjust = 1)) +
-  ggtitle("Mapping statistics") +
-  xlab("Status") +
-  ylab("Count")
-
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  scale_y_continuous(limits = c(0, NA),
+                     expand = expansion(mult = c(0, 0.1))) +
+  xlab("Chromosome") +
+  ylab("Transcripts per million") +
+  ggtitle("Read count (TPM) distribution across chromosomes")
 ```
 
-# Alignment statistics of demultiplexed reads per barcode
+# Barcode demultiplexing statistics
+
+Shows the alignment statistics for reads with matched (without or with error correction) and unmatched barcodes.
+
+
+```{r}
+data <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "demultiplexing_stats.csv"))
+
+DT::datatable(data, options=list(paging=FALSE, searching=FALSE))
+```
+
+```{r}
+
+data$prop <- data$count/sum(data$count) 
+
+ggplot(data, aes_string(x="status", y="prop", fill="status")) + 
+  scale_fill_brewer(palette="Dark2") +
+  geom_bar(stat="identity", width=1) +
+  geom_text(aes(y = prop, label = percent(prop)), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0))) +
+  theme(axis.text.x=element_text(angle = 50, hjust = 1),
+        axis.ticks.x=element_blank(),
+        panel.border = element_blank()) +  
+  xlab("status") +
+  ylab("percentage") +
+  expand_limits(y = 1) +
+  ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads")) 
+```
+
+A stacked bar plot showing the alignment status of reads in a random sample of 500 barcodes (including error-corrected ones) is given below:
+
 ```{r barcode-alignment-dist, fig.wide = TRUE, fig.asp = 0.9}
 stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
 data <- read.csv(stats_file, row.names = "barcode")[-5] %>% sample_n(500) 
-
 mapping_stat <- data %>% arrange(mapped)
 mapping_stat$barcode <- stats::reorder(rownames(mapping_stat), mapping_stat$mapped)
 mapping_stat_prop <- as.data.frame(prop.table(as.matrix(mapping_stat[, sapply(mapping_stat, is.numeric)]), 1))
@@ -125,40 +186,14 @@ dat.m <- melt(mapping_stat, id.vars="barcode")
 dat.m1 <- melt(mapping_stat_prop, id.vars="barcode")
 colnames(dat.m)[2] <- "type"
 colnames(dat.m1)[2] <- "type"
-
-ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_brewer(palette="Set1")+
+ggplot(dat.m1, aes_string(x="barcode", y="value", fill="type")) + scale_fill_brewer(palette="Dark2")+
   geom_bar(stat="identity", width=1)+
   xlab("barcode") +
   ylab("percentage of reads")+
-  scale_y_continuous(labels=percent_format()) +
+  scale_y_continuous(labels = percent_format(), expand = expansion(mult = c(0, 0))) +
+  
   theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.x = element_text(vjust = 5),
-        plot.title = element_text(vjust = -2)) +
-  ggtitle(paste0("Overall alignment mapping statistics of demultiplexed reads")) 
-
-```
-
-
-# Read count distribution across barcodes
-
-A bar plot showing the distribution of read counts across a random sample of 100 barcodes, ordered by the read count.
-```{r barcode-counts-dist, fig.wide = TRUE, fig.asp = 0.9}
-
-stats_file <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
-raw <- utils::read.csv(stats_file) %>% sample_n(100) %>% dplyr::arrange(count)
-raw$log2_count <- log2(raw$count)
-
-ggplot(raw,
-  aes(x=reorder(barcode, count),
-      y=log2_count)) +
-  geom_bar(stat = "identity", fill = "#1B9E77", color = "#1B9E77") +
-  xlab("barcode") +
-  ylab("log_2 number_of_reads") +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank()) +
-  scale_y_continuous(limits = c(0, NA),
-                     expand = expansion(mult = c(0, 0.1)))
+        axis.ticks.x=element_blank())
 ```
 
 # Duplicate removal statistics 
@@ -179,7 +214,7 @@ if (file.exists(duplicate_stats.file)) {
 # Per cell statistics
 
 ```{r}
-cell_stats    <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "filtered_stats_per_cell.csv"))
+sce <- readRDS(file.path(params$input_folder, "scPipe_atac_SCEobject.rds"))
 ```
 
 <!-- Figures \@ref(fig:percell-counts) and \@ref(fig:percell-features) -->
@@ -188,142 +223,60 @@ cell_stats    <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "f
 
 A histogram of the total number of fragments across all called cells.
 ```{r percell-counts, fig.wide = TRUE, fig.asp = 0.9}
-cell_stats$log_counts_per_cell <- log(cell_stats$counts_per_cell+1)
+sc_atac_plot_fragments_per_cell(sce)
 
-ggpubr::gghistogram(cell_stats,
-                    x = "log_counts_per_cell",
-                    y = "..count..",
-                    title = "Counts per cell",
-                    color = "#D95F02",
-                    fill = "#D95F02",
-                    bins = 10,
-                    rug = TRUE,
-                    # add = "mean",
-                    add_density = TRUE
-                    )
-
-# plot_grid( ,ncol = 2, align = "v")
-# hist(log(cell_stats$counts_per_cell+1),main='Counts per cell',col='black')
 ```
 
 ## Features per cell
 
 A histogram of the number of overlapping features across all called cells.
 ```{r percell-features, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_features_per_cell(sce)
 
-cell_stats$log_features_per_cell <- log(cell_stats$features_per_cell+1)
+```
 
-ggpubr::gghistogram(cell_stats,
-                    x = "log_features_per_cell",
-                    y = "..count..",
-                    title = "Features per cell",
-                    color = "#7570B3",
-                    fill = "#7570B3",
-                    bins = 10,
-                    rug = TRUE,
-                    # add = "mean",
-                    add_density = TRUE
-                    )
+Plot showing the number of overlapping features across all cells, ordered.
+```{r}
+sc_atac_plot_features_per_cell_ordered(sce)
 
-#hist(log(cell_stats$features_per_cell+1), main='Features per cell', col='black')
 ```
 
 # Per feature statistics
-```{r}
-feature_stats <- read.csv(file.path(params$input_folder, "scPipe_atac_stats", "filtered_stats_per_feature.csv"))
-```
 
 ## Counts per feature
 
 A histogram of the number of overlapping fragments across all features.
 ```{r perfeature-counts, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_fragments_per_feature(sce)
 
-feature_stats$log_counts_per_feature <- log(feature_stats$counts_per_feature+1)
-
-ggpubr::gghistogram(feature_stats,
-                    x = "log_counts_per_feature",
-                    y = "..count..",
-                    title = "Counts per feature",
-                    color = "#D95F02",
-                    fill = "#D95F02",
-                    bins = 10,
-                    rug = TRUE,
-                    # add = "mean",
-                    add_density = TRUE
-                    )
-
-#hist(log(feature_stats$counts_per_feature+1), main='counts per feature', col='black')
 ```
 
 ## Cells per feature
 
 A histogram of the number of associated cells for each feature.
 ```{r perfeature-cells, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_cells_per_feature(sce)
 
-feature_stats$log_cells_per_feature <- log(feature_stats$cells_per_feature+1)
-
-ggpubr::gghistogram(feature_stats,
-                    x = "log_cells_per_feature",
-                    y = "..count..",
-                    title = "Cells per feature",
-                    color = "#7570B3",
-                    fill = "#7570B3",
-                    bins = 10,
-                    rug = TRUE,
-                    # add = "mean",
-                    add_density = TRUE
-                    )
-
-#hist(log(feature_stats$cells_per_feature+1), main='counts per feature', col='black')
 ```
 
 
 ## Counts vs. features per cell
 
-A scatter plot showing the relationship between the number of fragments and number of overlapping features for all called cells.
+A scatter plot showing the relationship between the number of fragments and number of overlapping features for all selected cells.
 ```{r corr-cells, fig.wide = TRUE, fig.asp = 0.9}
-ggpubr::ggscatter(cell_stats,
-                  x = "log_counts_per_cell",
-                  y = "log_features_per_cell",
-                  title = "Relationship between counts and features per cell",
-                  color = "#D95F02",
-                  fill = "#D95F02",
-                  add = "reg.line",
-                  conf.int = TRUE, # Add confidence interval
-                  cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
-                  cor.coeff.args = list(method = "spearman", label.x = 1, label.sep = "\n"),
-                  rug = TRUE)
+sc_atac_plot_fragments_features_per_cell(sce)
 
-# plot(cell_stats$counts_per_cell, cell_stats$features_per_cell, log='xy', col='black')
-# title('counts vs features per cell')
 ```
 
 ## Counts vs. cells per feature
 
 A scatter plot showing the relationship between the number of overlapping fragments and associated cells for each feature.
 ```{r corr-features, fig.wide = TRUE, fig.asp = 0.9}
-ggpubr::ggscatter(feature_stats,
-                  x = "log_counts_per_feature",
-                  y = "log_cells_per_feature",
-                  title = "Relationship between counts and cells per feature",
-                  color = "#7570B3",
-                  fill = "#7570B3",
-                  add = "reg.line",
-                  conf.int = TRUE, # Add confidence interval
-                  cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
-                  cor.coeff.args = list(method = "spearman", label.x = 1, label.sep = "\n"),
-                  rug = TRUE)
+sc_atac_plot_fragments_cells_per_feature(sce)
+
 ```
 
-Plot showing the number of overlapping features across all cells, ordered.
-```{r}
-plot(sort(cell_stats$features_per_cell), 
-     xlab= 'cell', 
-     log= 'y', 
-     ylab = "features", 
-     main= 'features per cell (ordered)',
-     col = "#1B9E77")
-```
+
 
 # Quality control plots
 
@@ -390,6 +343,7 @@ A density plot representing the distribution of the insert sizes (fragment size 
   
   ggplot(data = frags[isize < 800], aes(x = isize)) +
     geom_density(fill = '#1B9E77') + xlab('Insert Size (bp)') + ylab('Density') + theme_bw() +
+    scale_fill_brewer(palette="Dark2") +
     theme(legend.title=element_blank(), 
           legend.background = NULL, 
           axis.text = element_text(size = 15, family = "Helvetica"), 
@@ -444,11 +398,12 @@ frac_promoter = sum(qc_sele$total_frags * qc_sele$frac_promoter)/sum(qc_sele$tot
 frac_enh = sum(qc_sele$total_frags * qc_sele$frac_enhancer)/sum(qc_sele$total_frags)
 frac_tss = sum(qc_sele$total_frags * qc_sele$frac_tss)/sum(qc_sele$total_frags)
 
-fracs = data.frame(c(frac_peak,  frac_promoter, frac_enh, frac_tss))
+fracs = data.frame(c(frac_peak,  frac_promoter, frac_enh, frac_tss, frac_mito))
 row.names(fracs) = c('Fraction in peaks', 
                      'Fraction in promoters', 
                      'Fraction in Enhancers(ENCODE)', 
-                     'Fraction in TSS')
+                     'Fraction in TSS',
+                     'Fraction in mitochondrial genome')
 colnames(fracs) = 'pr'
 fracs$pr = round(fracs$pr, 3)
 fracs$pr = paste0(100*fracs$pr, '%')

@@ -9,8 +9,8 @@ sc_atac_feature_counting(
   feature_input = NULL,
   bam_tags = list(bc = "CB", mb = "OX"),
   feature_type = "peak",
-  organism = NULL,
-  cell_calling = FALSE,
+  organism = "hg38",
+  cell_calling = "filter",
   genome_size = NULL,
   promoters_file = NULL,
   tss_file = NULL,
@@ -24,25 +24,25 @@ sc_atac_feature_counting(
   output_folder = NULL,
   fix_chr = "none",
   lower = NULL,
-  min_uniq_frags = 0,
+  min_uniq_frags = 3000,
   max_uniq_frags = 50000,
   min_frac_peak = 0.3,
   min_frac_tss = 0,
   min_frac_enhancer = 0,
-  min_frac_promoter = 0,
-  max_frac_mito = 0.2
+  min_frac_promoter = 0.1,
+  max_frac_mito = 0.15
 )
 }
 \arguments{
 \item{insortedbam}{The input bam}
 
-\item{feature_input}{The feature input data}
+\item{feature_input}{The feature input data e.g. the .narrowPeak file for peaks}
 
 \item{bam_tags}{The BAM tags}
 
 \item{feature_type}{The type of feature}
 
-\item{organism}{The organism type}
+\item{organism}{The organism type (contains hg19, hg38, mm10)}
 
 \item{cell_calling}{The desired cell calling method; either \code{cellranger}, \code{emptydrops} or  \code{filter}}
 
@@ -62,7 +62,7 @@ sc_atac_feature_counting(
 
 \item{mapq}{The minimum MAPQ score}
 
-\item{exclude_regions}{Whether or not the regions should be excluded}
+\item{exclude_regions}{Whether or not the regions (specifed in the file) should be excluded}
 
 \item{excluded_regions_filename}{The filename of the file containing the regions to be excluded}
 
@@ -89,4 +89,13 @@ sc_atac_feature_counting(
 \description{
 feature matrix is created using a given demultiplexed BAM file and 
 a selected feature type
+}
+\examples{
+\dontrun{
+sc_atac_feature_counting(
+   insortedbam = tiny_tagged_sorted_bam,
+   cell_calling = "filter",
+   exclude_regions = TRUE,
+   feature_input = feature_file)
+}    
 }

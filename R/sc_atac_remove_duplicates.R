@@ -1,12 +1,17 @@
 #' @name sc_atac_remove_duplicates
 #'
 #' @title Removing PCR duplicates using samtools
-#' @description Takes in a BAM file and removes the PCR duplicates using the samtools markdup function. Requires samtools 1.10 or newer. 
+#' @description Takes in a BAM file and removes the PCR duplicates using the samtools markdup function. Requires samtools 1.10 or newer for statistics to be generated. 
 #' 
 #' @param inbam The tagged, sorted and duplicate-free input BAM file 
 #' @param samtools_path The path of the samtools executable (if a custom installation is to be specified)
 #' @param output_folder The path of the output folder 
 #'
+#' @examples
+#' \dontrun{
+#' sc_atac_remove_duplicates(inbam) 
+#' }
+#' 
 #' @export
 #' 
 
@@ -14,10 +19,8 @@ sc_atac_remove_duplicates <- function(inbam,
                                       samtools_path = NULL,
                                       output_folder = NULL) {
   
+  successfully_removed_duplicates <- FALSE
   # Check if samtools is installed
-  samtools.installed <- TRUE
-  
-  
   if (!is.null(samtools_path)) {
     samtools <- samtools_path
   } else {
@@ -25,24 +28,25 @@ sc_atac_remove_duplicates <- function(inbam,
   }
   
   # Check if samtools is installed
-  tryCatch(
+  samtools.installed <- tryCatch(
     {
       system2(samtools, stdout = NULL, stderr = NULL)
-      message("samtools was located")
+      message("samtools was located!")
+      TRUE
     },
     
     warning = function(w) {
-      samtools.installed <- FALSE
       if (is.null(samtools_path)) {
         message("samtools was not located, so can't remove duplicates. Please make sure it is installed.")
       } else {
         message("samtools was not located via the specified path. Please make sure it is correct.")
       }
+      return(FALSE)
     }
   )
-  
-  if (samtools.installed)
-    tryCatch(
+
+  if (isTRUE(samtools.installed)) {
+    return(tryCatch(
       {
         # Check if file exists
         if (!file.exists(inbam)) {
@@ -93,7 +97,7 @@ sc_atac_remove_duplicates <- function(inbam,
 
         # Note: the output bam file is originally created in the same directory as the input bam file
         
-        cat("Running samtools markdup now")
+        cat("Running samtools markdup now\n")
         # Check if the version of samtools is 1.10 or greater (to have the stats functionality)
         version.text <- strsplit(strsplit(system2(samtools, "--version", stdout=TRUE)[1], " ")[[1]][2], "\\.")[[1]]
         if (as.numeric(version.text[1]) < 1 || (as.numeric(version.text[1]) >= 1 && as.numeric(version.text[2]) < 10)) {
@@ -106,7 +110,7 @@ sc_atac_remove_duplicates <- function(inbam,
 
         cat("Indexing the BAM file\n")
         Rsamtools::indexBam(paste(inbam.name, "markdup.bam", sep="_"))
-        cat("step 6\n")
+        cat("Cleaning up intermediary files\n")
         system2("rm", paste(inbam.name, "namesorted.bam", sep="_"))
         system2("rm", paste(inbam.name, "positionsort.bam", sep="_"))
         system2("rm", paste(inbam.name, "fixmate.bam", sep="_"))
@@ -117,7 +121,7 @@ sc_atac_remove_duplicates <- function(inbam,
           # If the new file is already in the destination folder, don't need to move it!
           if (paste(inbam.name, "markdup.bam", sep="_") != output.bam)
             system2("mv", c("--force", paste(inbam.name, "markdup.bam", sep="_"), output_folder))
-          
+          successfully_removed_duplicates <- TRUE
         } else {
           message("Couldn't remove duplicates from the input BAM file. Make sure it is a valid BAM file.")
         }
@@ -128,13 +132,19 @@ sc_atac_remove_duplicates <- function(inbam,
             "\n\n"
           ),
           file = log_file, append = TRUE)
+        successfully_removed_duplicates
       },
       warning = function(w) {w
         message(w)
+        return(FALSE)
       },
       
       error = function(e) {
         message(e)
+        return(FALSE)
       }
-    )
+    ))
+  } else {
+    return(FALSE)
+  }
 }
