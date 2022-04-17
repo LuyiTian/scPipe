@@ -41,6 +41,9 @@ sc_aligning(
 
 \item{nthreads}{numeric value giving the number of threads used for mapping.}
 }
+\value{
+the file path of the output aligned BAM file
+}
 \description{
 after we run the \code{sc_trim_barcode} or \code{sc_atac_trim_barcode} to demultiplex the fastq files, we are using this
 function to align those fastq files to a known reference.
