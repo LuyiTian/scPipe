@@ -128,7 +128,7 @@ sc_atac_feature_counting <- function(
   if (!file.exists(anno_folder)) {
     cat("Annotation files not detected, downloading into", anno_folder, "\n")
     dir.create(anno_folder)
-    anno_file <- "https://github.com/philyang07/scPipe-scATAC-seq-annotation-files/raw/main/annotations.tar.gz"
+    anno_file <- "https://zenodo.org/record/6465769/files/annotations.tar.gz"
     download.file(anno_file, file.path(anno_folder,"annotations.tar.gz"))
     tar_file <- file.path(anno_folder, "annotations.tar.gz")
     untar(tar_file, exdir = anno_folder)

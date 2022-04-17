@@ -85,5 +85,6 @@ Suggests:
     countreg,
     flexmix, 
     kableExtra, 
-    RColorBrewer
+    RColorBrewer,
+    DT
 VignetteBuilder: knitr
