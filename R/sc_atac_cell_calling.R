@@ -109,12 +109,12 @@ sc_atac_cell_calling <- function(mat,
     barcodes     <- colnames(out_mat)
     features     <- rownames(out_mat)
     
-    cat("Number of called barcodes: ")
-    cat(length(selected_cells))
-  
-    cat("\nNumber of columns: ")
-    cat(length(barcodes))
-    cat("\n")
+    # cat("Number of called barcodes: ")
+    # cat(length(selected_cells))
+    # 
+    # cat("\nNumber of columns: ")
+    # cat(length(barcodes))
+    # cat("\n")
     if (length(barcodes) == 0) {
       stop("No cells were called...")
     }

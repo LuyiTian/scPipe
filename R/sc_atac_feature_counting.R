@@ -123,6 +123,20 @@ sc_atac_feature_counting <- function(
     ), 
     file = log_file, append = TRUE)
   
+  # If annotation files aren't in repository, download them
+  anno_folder <- paste0(system.file("extdata/", package = "scPipe", mustWork = TRUE), "/annotations")
+  if (!file.exists(anno_folder)) {
+    cat("Annotation files not detected, downloading into", anno_folder, "\n")
+    dir.create(anno_folder)
+    anno_file <- "https://github.com/philyang07/scPipe-scATAC-seq-annotation-files/raw/main/annotations.tar.gz"
+    download.file(anno_file, file.path(anno_folder,"annotations.tar.gz"))
+    tar_file <- file.path(anno_folder, "annotations.tar.gz")
+    untar(tar_file, exdir = anno_folder)
+    if (file.exists(tar_file))
+      file.remove(tar_file)
+  }
+  
+  
   
   ############# feature type is genome_bin ####################
   
@@ -478,9 +492,10 @@ sc_atac_feature_counting <- function(
   if (organism %in% c("hg19", "hg38", "mm10")) {
     cat(organism, "is a recognized organism. Using annotation files in repository.\n")
     anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
+    
     promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed"))
-    tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed.gz"))
-    enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed.gz"))
+    tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed"))
+    enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed"))
   }
   else if (!all(file.exists(c(promoters_file, tss_file, enhs_file)))) {
     stop("One of the annotation files could not be located. Please make sure their paths are valid.")

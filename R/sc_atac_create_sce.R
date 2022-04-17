@@ -118,8 +118,8 @@ sc_atac_plot_fragments_per_cell <- function(sce) {
   cell_stats$log_counts_per_cell <- log(cell_stats$counts_per_cell+1)
 
   ggplot(cell_stats, aes(x=log_counts_per_cell, y = ..count..)) +
-    geom_histogram(color = "#D95F02", fill = "#D95F02", bins = 10) +
-    stat_density(geom = "line", color = "#D95F02") +
+    geom_histogram(color = "#E6AB02", fill = "#E6AB02", bins = 10) +
+    stat_density(geom = "line", color = "#E6AB02") +
     ggtitle("Counts per cell") +
     xlab("log_counts_per_cell") + 
     ylab("count") 
@@ -138,8 +138,8 @@ sc_atac_plot_fragments_per_feature <- function(sce) {
   feature_stats$log_counts_per_feature <- log(feature_stats$counts_per_feature+1)
 
   ggplot(feature_stats, aes(x=log_counts_per_feature, y = ..count..)) +
-    geom_histogram(color = "#D95F02", fill = "#D95F02", bins = 10) +
-    stat_density(geom = "line", color = "#D95F02") +
+    geom_histogram(color = "#E6AB02", fill = "#E6AB02", bins = 10) +
+    stat_density(geom = "line", color = "#E6AB02") +
     ggtitle("Counts per feature") +
     xlab("log_counts_per_feature") + 
     ylab("count") 
@@ -219,11 +219,11 @@ sc_atac_plot_fragments_features_per_cell <- function(sce) {
   cell_stats$log_features_per_cell <- log(cell_stats$features_per_cell+1)
 
   ggplot(cell_stats, aes(x=log_counts_per_cell, y=log_features_per_cell)) +
-    geom_point(color = "#D95F02") +
+    geom_point(color = "#E6AB02") +
     ggtitle("Relationship between counts and features per cell") +
     xlab("log_counts_per_cell") + 
     ylab("log_features_per_cell") +
-    geom_smooth(formula = y ~ x, method='lm', color = "#D95F02", fill = "#D95F02")
+    geom_smooth(formula = y ~ x, method='lm', color = "#E6AB02", fill = "#E6AB02")
 }
 
 #' @name sc_atac_plot_fragments_cells_per_feature
