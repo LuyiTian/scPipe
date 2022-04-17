@@ -68,10 +68,9 @@ Imports:
   	GenomicRanges,
     IRanges, 
     reticulate,
-  	tools,
-  	Rsubread,
-  	dplyr,
-  	seqinr
+    tools,
+    Rsubread,
+    dplyr
 SystemRequirements: C++11, GNU make
 License: GPL (>= 2)
 Encoding: UTF-8
