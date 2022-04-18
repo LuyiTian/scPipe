@@ -241,24 +241,39 @@ std::vector<MismatchResult> Trie::Locate_Seq_Mismatches(std::string read, int in
 	return out;
 }
 
+/*
+Recursively traverse the trie for exact matches (and mismatches)
+against the given string.
+*/
 void Trie::SeqMismatchAux(std::vector<MismatchResult> &found, const std::string &read, trie_node *current, int index, int left, int mismatchPos) const {
+	// if we're at the end of the sequence to check
 	if (left == 0) {
 		if (this->Base_In_Node(current, TERMINATOR)) {
-			found.push_back(MismatchResult {current->links[this->Get_Links_Position(TERMINATOR)]->end->original_seq_index, mismatchPos});
+			MismatchResult n = {current->links[this->Get_Links_Position(TERMINATOR)]->end->original_seq_index, mismatchPos};
+			found.push_back(n);
 		} 
 		return;
 	}
 
 	char base = read[index];
 
-	if (this->Base_In_Node(current, base)) {
-		this->SeqMismatchAux(found, read, current->links[this->Get_Links_Position(base)], index + 1, left - 1, mismatchPos);
-	}
-	if (mismatchPos == -1) {
-		// mismatchPos == -1 if we haven't yet used up the mismatch
+	// if base is N, we can match to any barcode character
+	// so simply DFS through the trie again 
+	// matching a N character does not 'use' up a mismatch
+	if (base == 'N') {
 		std::vector<trie_node *> valid_nodes = this->Get_Valid_Links(current);
 		for (int i = 0; i < valid_nodes.size(); i++) {
-			this->SeqMismatchAux(found, read, valid_nodes[i], index + 1, left - 1, index);
+			this->SeqMismatchAux(found, read, valid_nodes[i], index + 1, left - 1, mismatchPos);
+		}
+	} else { // base is not N so check exact matching, then mismatch if we can.
+		if (this->Base_In_Node(current, base)) {
+			this->SeqMismatchAux(found, read, current->links[this->Get_Links_Position(base)], index + 1, left - 1, mismatchPos);
+		} else if (mismatchPos == -1) { // mismatching is only allowed if we can't exact match. All exact matches should be used.
+			// mismatchPos == -1 if we haven't yet used up the mismatch
+			std::vector<trie_node *> valid_nodes = this->Get_Valid_Links(current);
+			for (int i = 0; i < valid_nodes.size(); i++) {
+				this->SeqMismatchAux(found, read, valid_nodes[i], index + 1, left - 1, index);
+			}
 		}
 	}
 }

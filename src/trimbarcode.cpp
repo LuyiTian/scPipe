@@ -73,15 +73,19 @@ int count_unmatched_barcodes(const std::vector<std::string> &barcodes, const Tri
 
 	int failed = 0;
 	for (int i = 0; i < total; i++) {
+		bool noMatch = false;
 		for (int j = 0; j < seq2_list.size(); j++) {
 			kseq_t* seq2 = seq2_list[j];
 			if (kseq_read(seq2) >= 0) {
 				std::string barcode (seq2->seq.s);
 				std::vector<MismatchResult> matches = valid_barcodes.Locate_Seq_Mismatches(barcode, 0, barcode.size());
 				if (matches.size() == 0) {
-					failed++;
+					noMatch = true;
 				}
 			}
+		}
+		if (noMatch) {
+			failed++;
 		}
 	}
 
@@ -768,7 +772,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 		checkBarcodeMismatch = true;
 		validBarcodes = processAndBuildTrie(valid_barcode_fn, fq2_fn_list, validBarcodeTrie, useReverseComplement);
 	} else {
-		Rcpp::Rcout << "No valid barcode file provided; no barcode error correction will occur.\n";
+		Rcpp::Rcout << "No valid_barcode_file provided; no barcode error correction will occur.\n";
 	}
 
     // id1_st: bs1: starting position of barcode in read one. -1 if no barcode in read one.
@@ -849,50 +853,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
             }
         } 
         
-		// If rmlow parameter is TRUE:
-        if(rmlow) { // Only check barcode/UMI quality
-            
-            // Check quality
-            if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
-                removed_low_qual++;
-                // Rcout << "R1: "<< std::endl;
-                // Rcout << seq1->qual.s << std::endl << std::endl;
-                continue;
-            } else{
-                if(R3){
-                    if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
-                        removed_low_qual++;
-                        // Rcout << "R3: "<< std::endl;
-                        // Rcout << seq3->qual.s << std::endl << std::endl;
-                        continue;
-                    }
-                }
-            }
-        } // end if(rmlow){
-        
-        // If the rmN parameter is TRUE:
-        if(rmN){
-            // If find_N is TRUE, then there is an N in the sequence
-            if(find_N(seq1)){
-                // If there was an N in the sequence, then
-                // we add 1 to the counter of reads deleted and 
-                // skip the rest of the code in the loop.
-                removed_Ns++; // Add 1 to the counter of reads deleted
-                continue; // the rest of the lines in the while loop are ignored
-            } else{
-                if(R3){
-                    // If there wasn't an N in the sequence, then we check in R3
-                    if(find_N(seq3)){
-                        // If there was an N in the sequence, then
-                        // we add 1 to the counter of reads deleted and 
-                        // skip the rest of the code in the loop.
-                        removed_Ns++; // Add 1 to the counter of reads deleted
-                        continue; // the rest of the lines in the while loop are ignored
-                    }
-                } // end if(R3)
-            } // end else from if(findN(seq1)) 
-        } // end if(rmN)
-		
 		// append every barcode in the barcode fastq list 
 		// to the correct  position in the name of the current read (in both R1 and R3)
 		int barcodeExact = 0, barcodePartial = 0, barcodeNo = 0;
@@ -972,6 +932,48 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
                 Rcpp::Rcout << "read1 file is not the same length as the barcode fastq file: " << "\n";
             }
         }
+
+        if(rmlow) { // Only check barcode/UMI quality      
+            // Check quality
+            if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
+                removed_low_qual++;
+                // Rcout << "R1: "<< std::endl;
+                // Rcout << seq1->qual.s << std::endl << std::endl;
+                continue;
+            } else{
+                if(R3){
+                    if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
+                        removed_low_qual++;
+                        // Rcout << "R3: "<< std::endl;
+                        // Rcout << seq3->qual.s << std::endl << std::endl;
+                        continue;
+                    }
+                }
+            }
+        }
+        
+        if(rmN){
+            // If find_N is TRUE, then there is an N in the sequence
+            if(find_N(seq1)){
+                // If there was an N in the sequence, then
+                // we add 1 to the counter of reads deleted and 
+                // skip the rest of the code in the loop.
+                removed_Ns++; // Add 1 to the counter of reads deleted
+                continue; // the rest of the lines in the while loop are ignored
+            } else{
+                if(R3){
+                    // If there wasn't an N in the sequence, then we check in R3
+                    if(find_N(seq3)){
+                        // If there was an N in the sequence, then
+                        // we add 1 to the counter of reads deleted and 
+                        // skip the rest of the code in the loop.
+                        removed_Ns++; // Add 1 to the counter of reads deleted
+                        continue; // the rest of the lines in the while loop are ignored
+                    }
+                }
+            } 
+        } 
+		
         
 		// decide the type of match
 		// if all n barcode files give an exact match, match type is exact
