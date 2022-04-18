@@ -121,7 +121,7 @@ sc_atac_remove_duplicates <- function(inbam,
           # If the new file is already in the destination folder, don't need to move it!
           if (paste(inbam.name, "markdup.bam", sep="_") != output.bam)
             system2("mv", c("--force", paste(inbam.name, "markdup.bam", sep="_"), output_folder))
-          successfully_removed_duplicates <- TRUE
+          successfully_removed_duplicates <- output.bam
         } else {
           message("Couldn't remove duplicates from the input BAM file. Make sure it is a valid BAM file.")
         }

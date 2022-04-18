@@ -155,15 +155,8 @@ sc_atac_pipeline <- function(r1,
     removed <- sc_atac_remove_duplicates(inbam = sorted_tagged_bam,
                               samtools_path = samtools_path,
                               output_folder = output_folder)
-    removed <- TRUE
-    if (!removed) return()
-    sorted_tagged_bam <- paste0(substr(sorted_tagged_bam, 0, nchar(sorted_tagged_bam)-4), "_markdup.bam")
-    
-    # if (!is.null(barcode_fastq)) {
-    #   sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
-    # } else {
-    #   sorted_tagged_bam <- file.path(output_folder, paste0("demultiplexed_complete_partialmatch_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
-    # }
+    if (!isFalse(removed))
+      sorted_tagged_bam <- removed
   }
   sc_atac_create_fragments(inbam = sorted_tagged_bam,
                            output_folder = output_folder)
