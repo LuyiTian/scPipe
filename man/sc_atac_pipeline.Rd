@@ -7,7 +7,8 @@
 sc_atac_pipeline(
   r1,
   r2,
-  barcode_fastq,
+  barcode_fastq = NULL,
+  barcode_csv = NULL,
   organism,
   reference,
   feature_type,
@@ -26,13 +27,13 @@ sc_atac_pipeline(
   tss_file = NULL,
   enhs_file = NULL,
   gene_anno_file = NULL,
-  min_uniq_frags = 0,
+  min_uniq_frags = 3000,
   max_uniq_frags = 50000,
-  min_frac_peak = 0,
+  min_frac_peak = 0.3,
   min_frac_tss = 0,
   min_frac_enhancer = 0,
-  min_frac_promoter = 0,
-  max_frac_mito = 0.2,
+  min_frac_promoter = 0.1,
+  max_frac_mito = 0.15,
   report = TRUE,
   nthreads = 12,
   output_folder = NULL
@@ -43,7 +44,9 @@ sc_atac_pipeline(
 
 \item{r2}{The second read fastq file}
 
-\item{barcode_fastq}{The barcode fastq file}
+\item{barcode_fastq}{The barcode fastq file (need either this or `barcode_csv`)}
+
+\item{barcode_csv}{The barcode csv file (need either this or `barcode_fastq`)}
 
 \item{organism}{The name of the organism e.g. hg38}
 
@@ -103,4 +106,18 @@ sc_atac_pipeline(
 }
 \description{
 A convenient function for running the entire pipeline
+}
+\examples{
+\dontrun{
+sc_atac_pipeline(
+  r1,
+  r2,
+  barcode_csv,
+  "hg38",
+  "peak",
+  remove_duplicates = FALSE
+)
+
+}
+
 }

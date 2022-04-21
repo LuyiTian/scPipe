@@ -29,3 +29,10 @@ Demultiplexes the reads
 \details{
 sc_atac_bam_tagging()
 }
+\examples{
+\dontrun{
+sc_atac_bam_tagging(
+    inbam,
+    nthreads  = 6) 
+}
+}

@@ -225,7 +225,7 @@ sc_atac_trim_barcode <- function(
           "\nTotal N's removed: ", out_vec[2],
           "\nremoved_low_qual: ", out_vec[3],
           "\nExact match Reads: ", out_vec[4],
-          "\nApprox Match Reads: ", out_vec[5],
+          "\nReads Matched After Correction: ", out_vec[5],
           "\nTotal barcodes: ", out_vec[6],
           "\n",
           file = stats_file, append = TRUE)

@@ -4,7 +4,8 @@
 #' 
 #' @param r1 The first read fastq file
 #' @param r2 The second read fastq file
-#' @param barcode_fastq The barcode fastq file
+#' @param barcode_fastq The barcode fastq file (need either this or `barcode_csv`)
+#' @param barcode_csv The barcode csv file (need either this or `barcode_fastq`)
 #' @param organism The name of the organism e.g. hg38
 #' @param reference The reference genome file
 #' @param feature_type The feature type (either `genome_bin` or `peak`)
@@ -34,11 +35,25 @@
 #' @param nthreads The number of threads to use for alignment (sc_align) and demultiplexing (sc_atac_bam_tagging)
 #' @param output_folder The path of the output folder
 #'
+#' @examples
+#' \dontrun{
+#' sc_atac_pipeline(
+#'   r1,
+#'   r2,
+#'   barcode_csv,
+#'   "hg38",
+#'   "peak",
+#'   remove_duplicates = FALSE
+#' )
+#' 
+#' }
+#'
 #' @export
 #' 
 sc_atac_pipeline <- function(r1,
                              r2,
-                             barcode_fastq,
+                             barcode_fastq = NULL,
+                             barcode_csv = NULL,
                              organism,
                              reference,
                              feature_type,
@@ -57,13 +72,13 @@ sc_atac_pipeline <- function(r1,
                              tss_file       = NULL,
                              enhs_file      = NULL,
                              gene_anno_file = NULL,
-                             min_uniq_frags = 0,
+                             min_uniq_frags = 3000,
                              max_uniq_frags = 50000,
-                             min_frac_peak = 0,
+                             min_frac_peak = 0.3,
                              min_frac_tss = 0,
                              min_frac_enhancer = 0,
-                             min_frac_promoter = 0,
-                             max_frac_mito = 0.2,
+                             min_frac_promoter = 0.1,
+                             max_frac_mito = 0.15,
                              report = TRUE,
                              nthreads = 12,
                              output_folder = NULL) {
@@ -76,41 +91,63 @@ sc_atac_pipeline <- function(r1,
 
   r1_name <- get_filename_without_extension(r1, extension_length = 2)
   r2_name <- get_filename_without_extension(r2, extension_length = 2)
-
-  sc_atac_trim_barcode (r1            = r1,
-                        r2            = r2,
-                        bc_file       = barcode_fastq,
-                        rmN           = TRUE,
-                        rmlow         = TRUE,
-                        output_folder = output_folder)
-
-  demux_r1        <- file.path(output_folder, paste0("demux_", r1_name, ".fastq.gz"))
-  demux_r2        <- file.path(output_folder, paste0("demux_", r2_name, ".fastq.gz"))
-
-  reference       <- reference
   
-  sc_aligning(ref = reference,
-              R1 = demux_r1,
-              R2 = demux_r2,
-              nthreads  = nthreads,
-              output_folder = output_folder)
+  if (!is.null(barcode_fastq)) {
+    sc_atac_trim_barcode (r1            = r1,
+                          r2            = r2,
+                          bc_file       = barcode_fastq,
+                          rmN           = TRUE,
+                          rmlow         = TRUE,
+                          output_folder = output_folder)
+  } else if (!is.null(barcode_csv)) {
+    sc_atac_trim_barcode (r1            = r1,
+                          r2            = r2,
+                          bc_file       = barcode_csv,
+                          id1_st = 0,
+                          id1_len = 16,
+                          id2_st = 0,
+                          id2_len = 16,
+                          rmN           = TRUE,
+                          rmlow         = TRUE,
+                          output_folder = output_folder)
+  } else {
+    return()
+  }
+  
+  if (!is.null(barcode_fastq)) {
+    demux_r1        <- file.path(output_folder, paste0("demux_", r1_name, ".fastq.gz"))
+    demux_r2        <- file.path(output_folder, paste0("demux_", r2_name, ".fastq.gz"))
+  } else {
+    demux_r1        <- file.path(output_folder, paste0("demux_completematch_", r1_name, ".fastq.gz"))
+    demux_r2        <- file.path(output_folder, paste0("demux_completematch_", r2_name, ".fastq.gz"))
+  }
+  reference       <- reference
+  bam_to_tag <- sc_aligning(ref = reference,
+                tech = "atac",
+                R1 = demux_r1,
+                R2 = demux_r2,
+                nthreads  = nthreads,
+                output_folder = output_folder)
 
-  bam_to_tag  <- file.path(output_folder, paste0("demux_", r1_name, "_aligned.bam"))
-
-  sc_atac_bam_tagging(inbam         = bam_to_tag,
+  sorted_tagged_bam <- sc_atac_bam_tagging(inbam = bam_to_tag,
                       output_folder = output_folder,
                       bam_tags      = list(bc="CB", mb="OX"),
                       nthreads      =  nthreads)
-
-  sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
-
+  
   if (isTRUE(remove_duplicates)) {
-    sc_atac_remove_duplicates(inbam = sorted_tagged_bam,
+    removed <- sc_atac_remove_duplicates(inbam = sorted_tagged_bam,
                               samtools_path = samtools_path,
                               output_folder = output_folder)
-    sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
+    removed <- TRUE
+    if (!removed) return()
+    sorted_tagged_bam <- paste0(substr(sorted_tagged_bam, 0, nchar(sorted_tagged_bam)-4), "_markdup.bam")
+    
+    # if (!is.null(barcode_fastq)) {
+    #   sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
+    # } else {
+    #   sorted_tagged_bam <- file.path(output_folder, paste0("demultiplexed_complete_partialmatch_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
+    # }
   }
-
   sc_atac_create_fragments(inbam = sorted_tagged_bam,
                            output_folder = output_folder)
 
@@ -161,7 +198,7 @@ sc_atac_pipeline <- function(r1,
 }
 
 #' @name sc_atac_pipeline_quick_test
-#' @title A function that tests the pipeline on a small test sample
+#' @title A function that tests the pipeline on a small test sample (without duplicate removal)
 #'
 sc_atac_pipeline_quick_test <- function() {
   data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
@@ -175,6 +212,9 @@ sc_atac_pipeline_quick_test <- function() {
                               reference = file.path(data.folder, "small_chr21.fa"),
                               feature_type = "peak",
                               remove_duplicates = FALSE,
+                              min_uniq_frags = 0,
+                              min_frac_peak = 0,
+                              min_frac_promoter = 0,
                               output_folder = output_folder)
       cat("Successfully ran pipeline.\n")
     },
@@ -182,7 +222,7 @@ sc_atac_pipeline_quick_test <- function() {
       message(e)
     },
     finally = {
-      system2("rm", c("-rf", output_folder))
+      # system2("rm", c("-rf", output_folder))
     }
   )
 }

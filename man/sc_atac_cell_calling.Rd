@@ -11,13 +11,13 @@ sc_atac_cell_calling(
   genome_size = NULL,
   qc_per_bc_file = NULL,
   lower = NULL,
-  min_uniq_frags = 0,
+  min_uniq_frags = 3000,
   max_uniq_frags = 50000,
-  min_frac_peak = 0.05,
+  min_frac_peak = 0.3,
   min_frac_tss = 0,
   min_frac_enhancer = 0,
-  min_frac_promoter = 0,
-  max_frac_mito = 0.2
+  min_frac_promoter = 0.1,
+  max_frac_mito = 0.15
 )
 }
 \arguments{
@@ -48,8 +48,7 @@ sc_atac_cell_calling(
 \item{max_frac_mito}{The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)}
 }
 \description{
-the methods to call true cells are of various ways. \code{emptyDrops} function from 
-\code{DropletUtils} package is one of them that is fully implemented here. There are two more that we anticipate to 
+the methods to call true cells are of various ways.
 implement (i.e. \code{filtering} from \code{scATAC-Pro} and \code{cellranger approach}).
 }
 \examples{

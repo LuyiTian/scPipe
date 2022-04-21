@@ -8,10 +8,10 @@
 #' @description feature matrix is created using a given demultiplexed BAM file and 
 #' a selected feature type
 #' @param insortedbam The input bam
-#' @param feature_input The feature input data
+#' @param feature_input The feature input data e.g. the .narrowPeak file for peaks
 #' @param bam_tags The BAM tags
 #' @param feature_type The type of feature
-#' @param organism The organism type
+#' @param organism The organism type (contains hg19, hg38, mm10)
 #' @param cell_calling The desired cell calling method; either \code{cellranger}, \code{emptydrops} or  \code{filter}
 #' 
 #' @param promoters_file The path of the promoter annotation file (if the specified organism isn't recognised)
@@ -22,7 +22,7 @@
 #' @param bin_size The size of the bins
 #' @param yieldsize The yield size
 #' @param mapq The minimum MAPQ score
-#' @param exclude_regions Whether or not the regions should be excluded
+#' @param exclude_regions Whether or not the regions (specifed in the file) should be excluded
 #' @param excluded_regions_filename The filename of the file containing the regions to be excluded
 #' @param fix_chr Whether chr should be fixed or not
 #' 
@@ -43,6 +43,14 @@
 #' @import dplyr
 #' @import tidyr
 #' 
+#' @examples
+#' \dontrun{
+#' sc_atac_feature_counting(
+#'    insortedbam = tiny_tagged_sorted_bam,
+#'    cell_calling = "filter",
+#'    exclude_regions = TRUE,
+#'    feature_input = feature_file)
+#' }    
 #' @export
 #' 
 
@@ -51,8 +59,8 @@ sc_atac_feature_counting <- function(
   feature_input  = NULL, 
   bam_tags       = list(bc="CB", mb="OX"), 
   feature_type   = "peak", 
-  organism       = NULL,
-  cell_calling   = FALSE, # either c("cellranger", "emptydrops", "filter")
+  organism       = "hg38", 
+  cell_calling   = "filter", # either c("cellranger", "emptydrops", "filter")
   genome_size    = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
   promoters_file = NULL,
   tss_file       = NULL,
@@ -66,13 +74,13 @@ sc_atac_feature_counting <- function(
   output_folder  = NULL,
   fix_chr        = "none", # should be either one of these: c("none", "excluded_regions", "feature", "both")
   lower = NULL,
-  min_uniq_frags = 0,
+  min_uniq_frags = 3000,
   max_uniq_frags = 50000,
   min_frac_peak = 0.3,
   min_frac_tss = 0,
   min_frac_enhancer = 0,
-  min_frac_promoter = 0,
-  max_frac_mito = 0.2
+  min_frac_promoter = 0.1,
+  max_frac_mito = 0.15
 ) {
   
   . <- V1 <- V2 <- V3 <- init <- peakStart <- seqnames <- peakEnd <- CB <- chromosome <- chrS <- feature <- barcode <- NULL
@@ -352,14 +360,8 @@ sc_atac_feature_counting <- function(
 
       i <- match(rownames(m), rows)[s$i]
       j <- match(colnames(m), cols)[s$j]
-      # ilj <- i<j
-
-      # sparseMatrix(i=ifelse(ilj, i, j),
-      #              j=ifelse(ilj, j, i),
-      #              x=s$x,
-      #              dims=c(nrows, ncols),
-      #              dimnames=list(rows, cols))
-      sparseMatrix(i=i,
+     
+      Matrix::sparseMatrix(i=i,
                    j=j,
                    x=s$x,
                    dims=c(nrows, ncols),
@@ -550,15 +552,15 @@ sc_atac_feature_counting <- function(
   cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
 
   # generate and save jaccard matrix
-  jaccardM <- locStra::jaccardMatrix(sparseM)
-  cat("Jaccard matrix generated", "\n")
-  saveRDS(jaccardM, file = paste(output_folder,"/jaccard_matrix.rds",sep = ""))
-  cat("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")
+  # jaccardM <- locStra::jaccardMatrix(sparseM)
+  # cat("Jaccard matrix generated", "\n")
+  # saveRDS(jaccardM, file = paste(output_folder,"/jaccard_matrix.rds",sep = ""))
+  # cat("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")
 
   # generate and save the binary matrix
   # matrixData[matrixData>0] <- 1
   # saveRDS(matrixData, file = paste(output_folder,"/binary_matrix.rds",sep = ""))
-  cat("Binary matrix is saved in:\n", paste(output_folder,"/binary_matrix.rds",sep = "") , "\n")
+  # cat("Binary matrix is saved in:\n", paste(output_folder,"/binary_matrix.rds",sep = "") , "\n")
 
   # following can be used to plot the stats and load it into sce object ########
   # (from https://broadinstitute.github.io/2020_scWorkshop/data-wrangling-scrnaseq.html)
@@ -584,7 +586,7 @@ sc_atac_feature_counting <- function(
       by = "feature"
     )
 
-  # Add annotation overlap information to the feature information dataframe
+  # Add annotation overlap information to the feature information data frame
   features_in_matrix <- unique(feature.gr)[paste(seqnames(unique(feature.gr)), GenomicAlignments::ranges(unique(feature.gr)), sep=":") %in% info_per_feature$feature]
 
   pro.gr <- rtracklayer::import(promoters_file)

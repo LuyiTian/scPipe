@@ -13,6 +13,12 @@
 #' @param bam_tags The BAM tags
 #' @param nthreads The number of threads
 #' 
+#' @examples
+#' \dontrun{
+#' sc_atac_bam_tagging(
+#'     inbam,
+#'     nthreads  = 6) 
+#' }
 #' @export
 #' 
 sc_atac_bam_tagging <- function(inbam,
@@ -92,6 +98,30 @@ sc_atac_bam_tagging <- function(inbam,
     flag =
       c(73, 133, 89, 121, 165, 181, 101, 117, 153, 185, 69, 137, 77, 141, 99, 147, 83, 163, 67, 131, 115, 179, 81, 161, 97, 145, 65, 129, 113, 177))
   
+  add_matrices <- function(...) {
+    a <- list(...)
+    cols <- sort(unique(unlist(lapply(a, colnames))))
+    rows <- sort(unique(unlist(lapply(a, rownames))))
+    
+    nrows <- length(rows)
+    ncols <- length(cols)
+    newms <- lapply(a, function(m) {
+      b <- as(as(m, "dgCMatrix"), "dgTMatrix")
+      s <- cbind.data.frame(i = b@i + 1, j = b@j + 1, x = b@x)
+      
+      
+      i <- match(rownames(m), rows)[s$i]
+      j <- match(colnames(m), cols)[s$j]
+  
+      Matrix::sparseMatrix(i=i,
+                   j=j,
+                   x=s$x,
+                   dims=c(nrows, ncols),
+                   dimnames=list(rows, cols))
+    })
+    Reduce(`+`, newms)
+  }
+  
   cat("Generating mapping statistics per barcode\n")
   cat("Iterating through 5,000,000 reads at a time\n")
   bamfl <- open(Rsamtools::BamFile(outbam, yieldSize = 5000000))
@@ -99,12 +129,18 @@ sc_atac_bam_tagging <- function(inbam,
   iter <- 1
   full_matrix = NULL
   
+  # Iterate over the BAM file in chunks of 5 million reads
   while(length((bam0 <- Rsamtools::scanBam(bamfl, param = params)[[1]])$flag)) {
     cat("chunk", iter, "\n")
-    df <- data.table::setDT(data.frame(bam0$tag$CB, bam0$flag) %>% `names<-`(c("barcode", "flag")) %>% dplyr::left_join(flag_defs, by = "flag"))[, !"flag"]
+    
+    # Create a data.table object with each row representing a read, and the columns as the barcode and flag
+    df <- data.table::setDT(data.frame(bam0$tag$CB, bam0$flag) %>% data.table::setnames(c("barcode", "flag")) %>% dplyr::left_join(flag_defs, by = "flag"))[, !"flag"]
+    
+    # Count the reads per barcode 
     x <- df[, list(count=.N), names(df)]
     x <- data.table::dcast(x, barcode ~ type, value.var = "count")
-    for (i in seq_along(x)) set(x, i=which(is.na(x[[i]])), j=i, value=0)
+    for (i in seq_along(x)) data.table::set(x, i=which(is.na(x[[i]])), j=i, value=0)
+
     if (is.null(full_matrix)) {
       full_matrix <- as.matrix(x, rownames=TRUE)
     } else {
@@ -112,10 +148,11 @@ sc_atac_bam_tagging <- function(inbam,
     }
     iter <- iter+1
   }
-  df <- setnames(data.table::setDT(as.data.frame(full_matrix), keep.rownames = TRUE), "rn", "barcode")
+  df <- data.table::setnames(data.table::setDT(as.data.frame(as.matrix(full_matrix)), keep.rownames = TRUE), "rn", "barcode")
   df[ ,count := rowSums(.SD), .SDcols = names(df[,!"barcode"])]
-  data.table::fwrite(df, file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv"))
-  
+  mapping_stats_path <- file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv")
+  data.table::fwrite(df, mapping_stats_path)
+  cat("Completed generating mapping statistics per barcode, saved to", file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv"), "\n")
   cat(
     paste0(
       "sc_atac_tagging finishes at ",
@@ -123,4 +160,6 @@ sc_atac_bam_tagging <- function(inbam,
       "\n\n"
     ),
     file = log_file, append = TRUE)
+  
+  return(paste0(outsortedbam, ".bam"))
 }

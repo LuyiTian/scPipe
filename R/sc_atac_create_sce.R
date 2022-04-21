@@ -10,6 +10,15 @@
 #' @param pheno_data The pheno data
 #' @param report Whether or not a HTML report should be produced
 #'
+#' @examples
+#' \dontrun{
+#' sc_atac_create_sce(
+#'    input_folder = input_folder,
+#'    organism = "hg38",
+#'    feature_type = "peak",
+#'    report = TRUE)
+#' }    
+#' 
 #' @export
 #'
 
@@ -96,6 +105,144 @@ sc_atac_create_sce <- function(input_folder = NULL,
   
 }
 
+#' @name sc_atac_plot_fragments_per_cell
+#' @title A histogram of the log-number of fragments per cell
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_fragments_per_cell <- function(sce) {
+  cell_stats <- as.data.frame(QC_metrics(sce))
+  cell_stats$log_counts_per_cell <- log(cell_stats$counts_per_cell+1)
+
+  ggplot(cell_stats, aes(x=log_counts_per_cell, y = ..count..)) +
+    geom_histogram(color = "#D95F02", fill = "#D95F02", bins = 10) +
+    stat_density(geom = "line", color = "#D95F02") +
+    ggtitle("Counts per cell") +
+    xlab("log_counts_per_cell") + 
+    ylab("count") 
+}
+
+#' @name sc_atac_plot_fragments_per_feature
+#' @title A histogram of the log-number of fragments per feature
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_fragments_per_feature <- function(sce) {
+  feature_stats <- as.data.frame(feature_info(sce))
+  feature_stats$log_counts_per_feature <- log(feature_stats$counts_per_feature+1)
+
+  ggplot(feature_stats, aes(x=log_counts_per_feature, y = ..count..)) +
+    geom_histogram(color = "#D95F02", fill = "#D95F02", bins = 10) +
+    stat_density(geom = "line", color = "#D95F02") +
+    ggtitle("Counts per feature") +
+    xlab("log_counts_per_feature") + 
+    ylab("count") 
+}
 
 
+#' @name sc_atac_plot_features_per_cell
+#' @title A histogram of the log-number of features per cell
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_features_per_cell <- function(sce) {
+  cell_stats <- as.data.frame(QC_metrics(sce))
+  cell_stats$log_features_per_cell <- log(cell_stats$features_per_cell+1)
+
+  ggplot(cell_stats, aes(x=log_features_per_cell, y = ..count..)) +
+    geom_histogram(color = "#7570B3", fill = "#7570B3", bins = 10) +
+    stat_density(geom = "line", color = "#7570B3") +
+    ggtitle("Features per cell") +
+    xlab("log_features_per_cell") + 
+    ylab("count") 
+}
+
+#' @name sc_atac_plot_features_per_cell_ordered
+#' @title Plot showing the number of features per cell in ascending order
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_features_per_cell_ordered <- function(sce) {
+  cell_stats <- QC_metrics(sce)
+  plot(sort(cell_stats$features_per_cell), 
+       xlab= 'cell', 
+       log= 'y', 
+       ylab = "features", 
+       main= 'features per cell (ordered)',
+       col = "#1B9E77")
+}
+
+#' @name sc_atac_plot_cells_per_feature
+#' @title A histogram of the log-number of cells per feature
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_cells_per_feature <- function(sce) {
+  feature_stats <- as.data.frame(feature_info(sce))
+  feature_stats$log_cells_per_feature <- log(feature_stats$cells_per_feature+1)
+  
+  ggplot(feature_stats, aes(x=log_cells_per_feature, y = ..count..)) +
+    geom_histogram(color = "#7570B3", fill = "#7570B3", bins = 10) +
+    stat_density(geom = "line", color = "#7570B3") +
+    ggtitle("Cells per feature") +
+    xlab("log_cells_per_feature") + 
+    ylab("count") 
+      
+}
+
+#' @name sc_atac_plot_fragments_features_per_cell
+#' @title A scatter plot of the log-number of fragments and log-number of features per cell
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_fragments_features_per_cell <- function(sce) {
+  cell_stats <- as.data.frame(QC_metrics(sce))
+  cell_stats$log_counts_per_cell <- log(cell_stats$counts_per_cell+1)
+  cell_stats$log_features_per_cell <- log(cell_stats$features_per_cell+1)
+
+  ggplot(cell_stats, aes(x=log_counts_per_cell, y=log_features_per_cell)) +
+    geom_point(color = "#D95F02") +
+    ggtitle("Relationship between counts and features per cell") +
+    xlab("log_counts_per_cell") + 
+    ylab("log_features_per_cell") +
+    geom_smooth(formula = y ~ x, method='lm', color = "#D95F02", fill = "#D95F02")
+}
+
+#' @name sc_atac_plot_fragments_cells_per_feature
+#' @title A scatter plot of the log-number of fragments and log-number of cells per feature
+#'
+#' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
+#'
+#' @return returns NULL
+#' @export
+#'
+sc_atac_plot_fragments_cells_per_feature <- function(sce) {
+  feature_stats <- as.data.frame(feature_info(sce))
+  feature_stats$log_counts_per_feature <- log(feature_stats$counts_per_feature+1)
+  feature_stats$log_cells_per_feature <- log(feature_stats$cells_per_feature+1)
+
+  ggplot(feature_stats, aes(x=log_counts_per_feature, y=log_cells_per_feature)) +
+    geom_point(color = "#7570B3") +
+    xlab("log_counts_per_feature") + 
+    ylab("log_cells_per_feature") +
+    geom_smooth(formula = y ~ x, method='lm', color = "#7570B3", fill = "#7570B3")
+}
 
