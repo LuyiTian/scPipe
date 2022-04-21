@@ -35,6 +35,10 @@
 #' @param rmlow logical, whether to remove the low quality reads.
 #' @param min_qual the minimum base pair quality that is allowed.
 #' @param num_below_min the maximum number of base pairs below the quality threshold.
+#' @param no_reverse_complement specifies if the reverse complement of the barcode sequence should be 
+#' used for barcode error correction (only when barcode sequences are provided as fastq files). FALSE (default)
+#' lets the function decide whether to use reverse complement, and TRUE forces the function to
+#' use the forward barcode sequences.
 #' @examples
 #' \dontrun{
 #' using a barcode fastq file
@@ -77,7 +81,8 @@ sc_atac_trim_barcode <- function(
   id1_st = -1,
   id1_len = -1,
   id2_st = -1,
-  id2_len = -10) {
+  id2_len = -10,
+  no_reverse_complement=FALSE) {
   
   if(output_folder == ''){
     output_folder <- file.path(getwd(), "scPipe-atac-output")
@@ -152,7 +157,8 @@ sc_atac_trim_barcode <- function(
         id2_st,
         id2_len,
         umi_start,
-        umi_length)
+        umi_length,
+		no_reverse_complement)
       
       cat("Total Reads: ", out_vec[1],
           "\nTotal N's removed: ", out_vec[2],
