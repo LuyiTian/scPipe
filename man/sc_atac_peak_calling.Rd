@@ -23,3 +23,10 @@ sc_atac_peak_calling(
 \description{
 sc_atac_peak_calling()
 }
+\examples{
+\dontrun{
+sc_atac_peak_calling(
+    inbam,
+    reference) 
+}
+}

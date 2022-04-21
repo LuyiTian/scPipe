@@ -1161,9 +1161,9 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     std::ofstream o_stream_R3_No;
     
     kseq_t *seq3;
-    const char* appendCompleteMatch = "/demultiplexed_completematch_";
-    const char* appendPartialMatch = "/demultiplexed_partialmatch_";
-    const char* appendNoMatch = "/demultiplexed_nomatch_";
+    const char* appendCompleteMatch = "/demux_completematch_";
+    const char* appendPartialMatch = "/demux_partialmatch_";
+    const char* appendNoMatch = "/demux_nomatch_";
     
     if(R3){
         fq3 = gzopen(fq3_fn, "r");

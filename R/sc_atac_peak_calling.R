@@ -9,9 +9,16 @@
 #' @param genome_size The size of the genome
 #' @param output_folder The path of the output folder
 #'
+#'
+#' @examples
+#' \dontrun{
+#' sc_atac_peak_calling(
+#'     inbam,
+#'     reference) 
+#' }
 #' @export
 #' 
-#' @importFrom basilisk basiliskStart basiliskStop
+#' @importFrom basilisk basiliskRun basiliskStart basiliskStop
 sc_atac_peak_calling <- function(inbam, 
                                  ref = NULL, 
                                  genome_size = NULL,
