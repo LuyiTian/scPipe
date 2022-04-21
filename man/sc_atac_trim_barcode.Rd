@@ -20,7 +20,8 @@ sc_atac_trim_barcode(
   id1_st = -1,
   id1_len = -1,
   id2_st = -1,
-  id2_len = -10
+  id2_len = -10,
+  no_reverse_complement = FALSE
 )
 }
 \arguments{
@@ -67,6 +68,11 @@ Files ending in \code{.gz} will be automatically compressed.}
 
 \item{id2_len}{barcode length for read 2, which is an extra parameter that is needed if the
 \code{bc_file} is in a \code{.csv} format.}
+
+\item{no_reverse_complement}{specifies if the reverse complement of the barcode sequence should be 
+used for barcode error correction (only when barcode sequences are provided as fastq files). FALSE (default)
+lets the function decide whether to use reverse complement, and TRUE forces the function to
+use the forward barcode sequences.}
 }
 \description{
 single-cell data need to be demultiplexed in order to retain the information of the cell barcodes

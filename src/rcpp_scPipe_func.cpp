@@ -422,7 +422,8 @@ std::vector<int> rcpp_sc_atac_trim_barcode_paired(
 		Rcpp::IntegerVector id2_st,
 		Rcpp::IntegerVector id2_len,
 		Rcpp::NumericVector umi_start,
-		Rcpp::NumericVector umi_len) {
+		Rcpp::NumericVector umi_len,
+		Rcpp::LogicalVector no_reverse_complement) {
   
 	std::string c_outfq = Rcpp::as<std::string>(outfq);
 	std::string c_r1 = Rcpp::as<std::string>(r1);
@@ -436,6 +437,7 @@ std::vector<int> rcpp_sc_atac_trim_barcode_paired(
 	std::string c_valid_barcode = Rcpp::as<std::string>(valid_barcode_file);
 	bool c_write_gz = Rcpp::as<bool>(write_gz);
 	bool c_rmN = Rcpp::as<bool>(rmN);
+	bool c_nRC = Rcpp::as<bool>(no_reverse_complement);
 	
 	bool c_rmlow = Rcpp::as<bool>(rmlow);
 	int c_min_qual = Rcpp::as<int>(min_qual);
@@ -466,7 +468,8 @@ std::vector<int> rcpp_sc_atac_trim_barcode_paired(
 		c_id2_st,
 		c_id2_len,
 		c_umi_st,
-		c_umi_len);
+		c_umi_len,
+		c_nRC);
 	
 	Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";
 	
