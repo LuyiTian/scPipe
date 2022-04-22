@@ -70,7 +70,8 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         int id2_st,
         int id2_len,
         int umi_st,
-        int umi_len);
+        int umi_len,
+		bool no_reverse_complement);
 
 std::vector<int> sc_atac_paired_fastq_to_csv(
         char *fq1_fn,
