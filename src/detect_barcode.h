@@ -1,3 +1,6 @@
+#ifndef DETECTBARCODE_H
+#define DETECTBARCODE_H
+
 #include <zlib.h> // for reading compressed .fq file
 #include <string>
 #include <stdio.h>
@@ -8,13 +11,7 @@
 #include "config_hts.h"
 #include "utils.h"
 
-#ifndef INIT_KSEQ
-#define INIT_KSEQ
-KSEQ_INIT(gzFile, gzread)
-#endif
 
-#ifndef DETECTBARCODE_H
-#define DETECTBARCODE_H
 
 std::unordered_map<std::string, int> summarize_barcode(
     std::string filename,

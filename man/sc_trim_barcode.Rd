@@ -4,9 +4,13 @@
 \alias{sc_trim_barcode}
 \title{sc_trim_barcode}
 \usage{
-sc_trim_barcode(outfq, r1, r2 = NULL, read_structure = list(bs1 = -1, bl1 =
-  0, bs2 = 6, bl2 = 8, us = 0, ul = 6), filter_settings = list(rmlow = TRUE,
-  rmN = TRUE, minq = 20, numbq = 2))
+sc_trim_barcode(
+  outfq,
+  r1,
+  r2 = NULL,
+  read_structure = list(bs1 = -1, bl1 = 0, bs2 = 6, bl2 = 8, us = 0, ul = 6),
+  filter_settings = list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2)
+)
 }
 \arguments{
 \item{outfq}{the output fastq file, which reformat the barcode and UMI into

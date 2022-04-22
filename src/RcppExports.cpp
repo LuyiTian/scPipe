@@ -5,6 +5,52 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
+// check_barcode_reads
+bool check_barcode_reads(String fastq, String barcodeseqs, int barcode_start, int barcode_length, int lines_to_search, double threshold);
+RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcode_startSEXP, SEXP barcode_lengthSEXP, SEXP lines_to_searchSEXP, SEXP thresholdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< String >::type fastq(fastqSEXP);
+    Rcpp::traits::input_parameter< String >::type barcodeseqs(barcodeseqsSEXP);
+    Rcpp::traits::input_parameter< int >::type barcode_start(barcode_startSEXP);
+    Rcpp::traits::input_parameter< int >::type barcode_length(barcode_lengthSEXP);
+    Rcpp::traits::input_parameter< int >::type lines_to_search(lines_to_searchSEXP);
+    Rcpp::traits::input_parameter< double >::type threshold(thresholdSEXP);
+    rcpp_result_gen = Rcpp::wrap(check_barcode_reads(fastq, barcodeseqs, barcode_start, barcode_length, lines_to_search, threshold));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sc_atac_getOverlaps_read2AnyRegion
+IntegerVector sc_atac_getOverlaps_read2AnyRegion(DataFrame reads, DataFrame regions);
+RcppExport SEXP _scPipe_sc_atac_getOverlaps_read2AnyRegion(SEXP readsSEXP, SEXP regionsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type reads(readsSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type regions(regionsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sc_atac_getOverlaps_read2AnyRegion(reads, regions));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sc_atac_getOverlaps_tss2Reads
+NumericVector sc_atac_getOverlaps_tss2Reads(DataFrame regions, DataFrame left_flank, DataFrame reads);
+RcppExport SEXP _scPipe_sc_atac_getOverlaps_tss2Reads(SEXP regionsSEXP, SEXP left_flankSEXP, SEXP readsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type regions(regionsSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type left_flank(left_flankSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type reads(readsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sc_atac_getOverlaps_tss2Reads(regions, left_flank, reads));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_sc_trim_barcode_paired
 void rcpp_sc_trim_barcode_paired(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::CharacterVector r2, Rcpp::NumericVector bs1, Rcpp::NumericVector bl1, Rcpp::NumericVector bs2, Rcpp::NumericVector bl2, Rcpp::NumericVector us, Rcpp::NumericVector ul, Rcpp::NumericVector rmlow, Rcpp::NumericVector rmN, Rcpp::NumericVector minq, Rcpp::NumericVector numbq, Rcpp::LogicalVector write_gz);
 RcppExport SEXP _scPipe_rcpp_sc_trim_barcode_paired(SEXP outfqSEXP, SEXP r1SEXP, SEXP r2SEXP, SEXP bs1SEXP, SEXP bl1SEXP, SEXP bs2SEXP, SEXP bl2SEXP, SEXP usSEXP, SEXP ulSEXP, SEXP rmlowSEXP, SEXP rmNSEXP, SEXP minqSEXP, SEXP numbqSEXP, SEXP write_gzSEXP) {
@@ -142,10 +188,125 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// rcpp_sc_atac_trim_barcode
+std::vector<int> rcpp_sc_atac_trim_barcode(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::CharacterVector r3, Rcpp::StringVector barcode_file, Rcpp::NumericVector umi_start, Rcpp::NumericVector umi_len, Rcpp::CharacterVector umi_in, Rcpp::LogicalVector write_gz, Rcpp::LogicalVector rmN, Rcpp::LogicalVector rmlow, Rcpp::IntegerVector min_qual, Rcpp::IntegerVector num_below_min, Rcpp::IntegerVector id1_st, Rcpp::IntegerVector id1_len, Rcpp::IntegerVector id2_st, Rcpp::IntegerVector id2_len);
+RcppExport SEXP _scPipe_rcpp_sc_atac_trim_barcode(SEXP outfqSEXP, SEXP r1SEXP, SEXP r3SEXP, SEXP barcode_fileSEXP, SEXP umi_startSEXP, SEXP umi_lenSEXP, SEXP umi_inSEXP, SEXP write_gzSEXP, SEXP rmNSEXP, SEXP rmlowSEXP, SEXP min_qualSEXP, SEXP num_below_minSEXP, SEXP id1_stSEXP, SEXP id1_lenSEXP, SEXP id2_stSEXP, SEXP id2_lenSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outfq(outfqSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r1(r1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r3(r3SEXP);
+    Rcpp::traits::input_parameter< Rcpp::StringVector >::type barcode_file(barcode_fileSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type umi_start(umi_startSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type umi_len(umi_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type umi_in(umi_inSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type write_gz(write_gzSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type rmN(rmNSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type rmlow(rmlowSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type min_qual(min_qualSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type num_below_min(num_below_minSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id1_st(id1_stSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id1_len(id1_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_st(id2_stSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_len(id2_lenSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_sc_atac_trim_barcode(outfq, r1, r3, barcode_file, umi_start, umi_len, umi_in, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_sc_atac_trim_barcode_paired
+std::vector<int> rcpp_sc_atac_trim_barcode_paired(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::StringVector r2_list, Rcpp::CharacterVector r3, Rcpp::CharacterVector valid_barcode_file, Rcpp::LogicalVector write_gz, Rcpp::LogicalVector rmN, Rcpp::LogicalVector rmlow, Rcpp::IntegerVector min_qual, Rcpp::IntegerVector num_below_min, Rcpp::IntegerVector id1_st, Rcpp::IntegerVector id1_len, Rcpp::IntegerVector id2_st, Rcpp::IntegerVector id2_len, Rcpp::NumericVector umi_start, Rcpp::NumericVector umi_len, Rcpp::LogicalVector no_reverse_complement);
+RcppExport SEXP _scPipe_rcpp_sc_atac_trim_barcode_paired(SEXP outfqSEXP, SEXP r1SEXP, SEXP r2_listSEXP, SEXP r3SEXP, SEXP valid_barcode_fileSEXP, SEXP write_gzSEXP, SEXP rmNSEXP, SEXP rmlowSEXP, SEXP min_qualSEXP, SEXP num_below_minSEXP, SEXP id1_stSEXP, SEXP id1_lenSEXP, SEXP id2_stSEXP, SEXP id2_lenSEXP, SEXP umi_startSEXP, SEXP umi_lenSEXP, SEXP no_reverse_complementSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outfq(outfqSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r1(r1SEXP);
+    Rcpp::traits::input_parameter< Rcpp::StringVector >::type r2_list(r2_listSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type r3(r3SEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type valid_barcode_file(valid_barcode_fileSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type write_gz(write_gzSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type rmN(rmNSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type rmlow(rmlowSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type min_qual(min_qualSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type num_below_min(num_below_minSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id1_st(id1_stSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id1_len(id1_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_st(id2_stSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type id2_len(id2_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type umi_start(umi_startSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type umi_len(umi_lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type no_reverse_complement(no_reverse_complementSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_sc_atac_trim_barcode_paired(outfq, r1, r2_list, r3, valid_barcode_file, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len, umi_start, umi_len, no_reverse_complement));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_sc_atac_bam_tagging
+void rcpp_sc_atac_bam_tagging(Rcpp::CharacterVector inbam, Rcpp::CharacterVector outbam, Rcpp::CharacterVector bc, Rcpp::CharacterVector mb, Rcpp::NumericVector nthreads);
+RcppExport SEXP _scPipe_rcpp_sc_atac_bam_tagging(SEXP inbamSEXP, SEXP outbamSEXP, SEXP bcSEXP, SEXP mbSEXP, SEXP nthreadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type inbam(inbamSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type outbam(outbamSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type bc(bcSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type mb(mbSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type nthreads(nthreadsSEXP);
+    rcpp_sc_atac_bam_tagging(inbam, outbam, bc, mb, nthreads);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_fasta_bin_bed_file
+void rcpp_fasta_bin_bed_file(std::string in_filename, std::string out_filename, int bin_size);
+RcppExport SEXP _scPipe_rcpp_fasta_bin_bed_file(SEXP in_filenameSEXP, SEXP out_filenameSEXP, SEXP bin_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type in_filename(in_filenameSEXP);
+    Rcpp::traits::input_parameter< std::string >::type out_filename(out_filenameSEXP);
+    Rcpp::traits::input_parameter< int >::type bin_size(bin_sizeSEXP);
+    rcpp_fasta_bin_bed_file(in_filename, out_filename, bin_size);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_append_chr_to_bed_file
+void rcpp_append_chr_to_bed_file(std::string in_filename, std::string out_filename);
+RcppExport SEXP _scPipe_rcpp_append_chr_to_bed_file(SEXP in_filenameSEXP, SEXP out_filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type in_filename(in_filenameSEXP);
+    Rcpp::traits::input_parameter< std::string >::type out_filename(out_filenameSEXP);
+    rcpp_append_chr_to_bed_file(in_filename, out_filename);
+    return R_NilValue;
+END_RCPP
+}
+// sc_atac_create_fragments_cpp
+void sc_atac_create_fragments_cpp(std::string inbam, std::string output, CharacterVector contigs, IntegerVector ends, unsigned int min_mapq, unsigned int nproc, std::string cellbarcode, std::string chromosomes, Nullable<String> readname_barcodeN, Nullable<StringVector> cellsN, unsigned int max_distance, unsigned int min_distance, unsigned int chunksize);
+RcppExport SEXP _scPipe_sc_atac_create_fragments_cpp(SEXP inbamSEXP, SEXP outputSEXP, SEXP contigsSEXP, SEXP endsSEXP, SEXP min_mapqSEXP, SEXP nprocSEXP, SEXP cellbarcodeSEXP, SEXP chromosomesSEXP, SEXP readname_barcodeNSEXP, SEXP cellsNSEXP, SEXP max_distanceSEXP, SEXP min_distanceSEXP, SEXP chunksizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type inbam(inbamSEXP);
+    Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type contigs(contigsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ends(endsSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type min_mapq(min_mapqSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nproc(nprocSEXP);
+    Rcpp::traits::input_parameter< std::string >::type cellbarcode(cellbarcodeSEXP);
+    Rcpp::traits::input_parameter< std::string >::type chromosomes(chromosomesSEXP);
+    Rcpp::traits::input_parameter< Nullable<String> >::type readname_barcodeN(readname_barcodeNSEXP);
+    Rcpp::traits::input_parameter< Nullable<StringVector> >::type cellsN(cellsNSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type max_distance(max_distanceSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type min_distance(min_distanceSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type chunksize(chunksizeSEXP);
+    sc_atac_create_fragments_cpp(inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize);
+    return R_NilValue;
+END_RCPP
+}
 
-RcppExport SEXP run_testthat_tests();
+RcppExport SEXP run_testthat_tests(SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_scPipe_check_barcode_reads", (DL_FUNC) &_scPipe_check_barcode_reads, 6},
+    {"_scPipe_sc_atac_getOverlaps_read2AnyRegion", (DL_FUNC) &_scPipe_sc_atac_getOverlaps_read2AnyRegion, 2},
+    {"_scPipe_sc_atac_getOverlaps_tss2Reads", (DL_FUNC) &_scPipe_sc_atac_getOverlaps_tss2Reads, 3},
     {"_scPipe_rcpp_sc_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_trim_barcode_paired, 14},
     {"_scPipe_rcpp_sc_exon_mapping", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping, 13},
     {"_scPipe_rcpp_sc_exon_mapping_df_anno", (DL_FUNC) &_scPipe_rcpp_sc_exon_mapping_df_anno, 13},
@@ -153,7 +314,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_clean_bam", (DL_FUNC) &_scPipe_rcpp_sc_clean_bam, 10},
     {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
     {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 9},
-    {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 0},
+    {"_scPipe_rcpp_sc_atac_trim_barcode", (DL_FUNC) &_scPipe_rcpp_sc_atac_trim_barcode, 16},
+    {"_scPipe_rcpp_sc_atac_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_atac_trim_barcode_paired, 17},
+    {"_scPipe_rcpp_sc_atac_bam_tagging", (DL_FUNC) &_scPipe_rcpp_sc_atac_bam_tagging, 5},
+    {"_scPipe_rcpp_fasta_bin_bed_file", (DL_FUNC) &_scPipe_rcpp_fasta_bin_bed_file, 3},
+    {"_scPipe_rcpp_append_chr_to_bed_file", (DL_FUNC) &_scPipe_rcpp_append_chr_to_bed_file, 2},
+    {"_scPipe_sc_atac_create_fragments_cpp", (DL_FUNC) &_scPipe_sc_atac_create_fragments_cpp, 13},
+    {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 1},
     {NULL, NULL, 0}
 };
 
