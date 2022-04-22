@@ -81,6 +81,7 @@ int Bamdemultiplex::clean_bam_barcode(string bam_path, string out_bam, int max_m
     // hts_retcode = sam_hdr_write(of, header);
     hts_retcode = sam_hdr_write(of, header); // force discard of return value
 
+
     // Early benchmarking shows BAM reading doesn't saturate even 2 cores
     // so capped reading threads to 2
     int out_threads = std::min(nthreads - 1, 2);
@@ -132,6 +133,7 @@ int Bamdemultiplex::clean_bam_barcode(string bam_path, string out_bam, int max_m
             bam_aux_update_str(b, c_ptr, match_res.length()+1, match_res.c_str());
             // hts_retcode = sam_write1(of, header, b);
             hts_retcode = sam_write1(of, header, b); // force discard of return value
+
         }
     }
 

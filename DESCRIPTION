@@ -1,8 +1,10 @@
 Package: scPipe
 Title: pipeline for single cell RNA-seq data analysis
 Date: 2019-10-12
-Version: 1.9.4
+Version: 1.17.1
 Type: Package
+Maintainer: Luyi Tian <tian.l@wehi.edu.au>
+Author: Luyi Tian
 Authors@R: c(person("Luyi", "Tian", role=c("aut"), email="tian.l@wehi.edu.au"), 
         person("Shian", "Su", role=c("aut"), email="su.s@wehi.edu.au"), 
         person("Shalin", "Naik", role=c("ctb"), email="naik.s@wehi.edu.au"), 
@@ -25,7 +27,7 @@ Imports:
     ggplot2,
     methods,
     SingleCellExperiment,
-	SummarizedExperiment,
+  	SummarizedExperiment,
     Rhtslib,
     biomaRt,
     GGally,
@@ -62,13 +64,13 @@ Imports:
     purrr,
     data.table,
     GenomicAlignments,
-	GenomicFeatures,
-	GenomicRanges,
+  	GenomicFeatures,
+  	GenomicRanges,
     IRanges, 
     reticulate,
-	tools,
-	Rsubread,
-	dplyr
+    tools,
+    Rsubread,
+    dplyr
 SystemRequirements: C++11, GNU make
 License: GPL (>= 2)
 Encoding: UTF-8
@@ -84,5 +86,6 @@ Suggests:
     countreg,
     flexmix, 
     kableExtra, 
-    RColorBrewer
+    RColorBrewer,
+    DT
 VignetteBuilder: knitr

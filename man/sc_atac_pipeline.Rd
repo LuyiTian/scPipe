@@ -9,9 +9,16 @@ sc_atac_pipeline(
   r2,
   barcode_fastq = NULL,
   barcode_csv = NULL,
-  organism,
-  reference,
-  feature_type,
+  valid_barcode_file = "",
+  id1_st = 0,
+  id1_len = 16,
+  id2_st = 0,
+  id2_len = 16,
+  rmN = TRUE,
+  rmlow = TRUE,
+  organism = NULL,
+  reference = NULL,
+  feature_type = NULL,
   remove_duplicates = FALSE,
   samtools_path = NULL,
   genome_size = NULL,
@@ -47,6 +54,24 @@ sc_atac_pipeline(
 \item{barcode_fastq}{The barcode fastq file (need either this or `barcode_csv`)}
 
 \item{barcode_csv}{The barcode csv file (need either this or `barcode_fastq`)}
+
+\item{valid_barcode_file}{file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). Only used if
+\code{bc_file} is a fastq file. Must contain one barcode per line, with no other separators. 
+If given, each barcode from bc_file is matched against the barcode of
+best fit (allowing a hamming distance of 1, prioritising barcodes with a higher mapping quality, as given by
+the fastq reads quality score)}
+
+\item{id1_st}{barcode start position (0-indexed) for read 1, which is an extra parameter that is needed if the
+\code{bc_file} is in a \code{.csv} format.}
+
+\item{id1_len}{barcode length for read 1, which is an extra parameter that is needed if the
+\code{bc_file} is in a \code{.csv} format.}
+
+\item{id2_st}{barcode start position (0-indexed) for read 2, which is an extra parameter that is needed if the
+\code{bc_file} is in a \code{.csv} format.}
+
+\item{id2_len}{barcode length for read 2, which is an extra parameter that is needed if the
+\code{bc_file} is in a \code{.csv} format.}
 
 \item{organism}{The name of the organism e.g. hg38}
 

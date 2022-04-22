@@ -51,21 +51,10 @@ output_folder <- tempdir()
 
 To process the data, we need the `fastq` files (both compressed anad uncompressed versions are accepted) and a cell barcode annotation. We have supplied very small sample FASTQ files of chr21.  The barcode annotation could be either in a `.fastq` format or a `.csv` file with at least two columns, where the first column has the cell id and the second column contains the barcode sequence. All these files can be found in the `data` folder of the `scPipe` package:
 
-```{r,eval=FALSE}
+```{r}
 # data fastq files
 r1      <- file.path(data.folder, "small_chr21_R1.fastq.gz") 
 r2      <- file.path(data.folder, "small_chr21_R3.fastq.gz") 
-
-get_filename_without_extension <- function(path, extension_length = 1) {
-  vec <- strsplit(basename(path), "\\.")[[1]]
-  name.size <- length(vec) - extension_length
-  return(paste(vec[1:name.size], collapse = "."))
-}
-
-r1_name <- get_filename_without_extension(r1, extension_length = 2)
-r2_name <- get_filename_without_extension(r2, extension_length = 2)
-
-reference       <- file.path(data.folder, "small_chr21.fa")
 
 # barcodes in fastq format
 barcode_fastq      <- file.path(data.folder, "small_chr21_R2.fastq.gz") 
@@ -77,7 +66,7 @@ barcode_1000       <- file.path(data.folder, "chr21_modified_barcode_1000.csv")
 
 The pipeline starts with fastq file reformatting. We move the barcode and UMI sequences (if available) to the read name and leave the transcript sequence as is. This outputs a read name that looks like `@[barcode_sequence]_[UMI_sequence]#[readname]`. Usually the scATAC-Seq data is paired-end and a 16bp long barcode is located on both reads. Here the barcode information is located on a separate fastq file and the length of the barcode fastq file matches the length of the reads files. Therefore, you need a minimal example like below to generate the output.
 
-```{r,eval=FALSE}
+```{r}
 sc_atac_trim_barcode (r1            = r1, 
                       r2            = r2, 
                       bc_file       = barcode_fastq, 
@@ -117,33 +106,29 @@ Completion of this function will output three different outputs depending on the
 
 Next, we align reads to the genome. This example uses `Rsubread` but any aligner that support RNA-seq alignment and gives standard BAM output can be used here.
 
-```{r,eval=FALSE}
+```{r}
+demux_r1        <- file.path(output_folder, "demux_completematch_small_chr21_R1.fastq.gz")
+demux_r2        <- file.path(output_folder, "demux_completematch_small_chr21_R3.fastq.gz")
+reference = file.path(data.folder, "small_chr21.fa")
 
-demux_r1        <- file.path(output_folder, paste0("demux_", r1_name, ".fastq.gz"))
-demux_r2        <- file.path(output_folder, paste0("demux_", r2_name, ".fastq.gz"))
 
-
-
-sc_aligning(ref = reference, 
-            R1 = demux_r1, 
-            R2 = demux_r2, 
-            nthreads  = 12,
-            output_folder = output_folder)
+aligned_bam <- sc_aligning(ref = reference, 
+                R1 = demux_r1, 
+                R2 = demux_r2, 
+                nthreads  = 12,
+                output_folder = output_folder)
 ```
 
 # Demultiplexing the BAM file
 
 Next, the BAM file needs to be modified in a way one or two new columns are generated for the cellular barcode tag and the molecular barcode (i.e. UMI) tag denoted by `CB:Z:` and `OX:Z:`, respectively. 
 
-```{r, eval=FALSE}
-bam_to_tag  <- file.path(output_folder, paste0("demux_", r1_name, "_aligned.bam"))
+```{r}
 
-sc_atac_bam_tagging (inbam         = bam_to_tag, 
-                     output_folder =  output_folder, 
-                     bam_tags      = list(bc="CB", mb="OX"), 
-                     nthreads      =  12)
-
-sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
+sorted_tagged_bam <- sc_atac_bam_tagging (inbam = aligned_bam, 
+                       output_folder =  output_folder, 
+                       bam_tags      = list(bc="CB", mb="OX"), 
+                       nthreads      =  12)
 
 ```
 
@@ -152,15 +137,11 @@ sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligne
 Next, PCR duplicate reads are removed from the BAM file. If `samtools` is installed, then `sc_atac_remove_duplicates` can be used, with the installation path of `samtools` being an optional argument if a particular version is preferred. However, if `samtools` isn't installed, the PCR duplicate removal should be performed externally.
 
 ```{r, eval=FALSE}
-sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
-sc_atac_remove_duplicates(sorted_tagged_bam,
+removed <- sc_atac_remove_duplicates(sorted_tagged_bam,
                           output_folder = output_folder)
-
-sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
-
-if (!file.exists(sorted_tagged_bam))
-  sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
+if (!isFALSE(removed))
+  sorted_tagged_bam <- removed
 
 ```
 
@@ -169,7 +150,7 @@ if (!file.exists(sorted_tagged_bam))
 
 Next, a `fragment file` in a `.bed` format is generated, where each line represents a unique fragment generated by the assay. This file is used to generate useful quality control statistics, as well as for the `filter` and `cellranger` cell calling methods. 
 
-```{r, eval=FALSE}
+```{r}
 sc_atac_create_fragments(inbam = sorted_tagged_bam,
                          output_folder = output_folder)
 
@@ -180,7 +161,7 @@ sc_atac_create_fragments(inbam = sorted_tagged_bam,
 
 Similar to many other tools, the the ability to call peaks on a pseudo-bulk level on the demultiplexed reads has also been incorporated. `MACS3` is used underneath to achieve this functionality. If the genome size is not provided then it will be roughly estimated.
 
-```{r, eval=FALSE}
+```{r}
 sc_atac_peak_calling(inbam = sorted_tagged_bam, 
                      ref = reference,
                      genome_size = NULL,
@@ -199,7 +180,6 @@ Note: avoid using input BAM files larger than 8GB for best performance
 
 ```{r,eval=FALSE}
 features          <- file.path(output_folder, "NA_peaks.narrowPeak")
-sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
 
 sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           feature_input = features, 
@@ -244,10 +224,7 @@ For the `filter` cell-calling method, there are a variety of QC metrics that can
 * `min_frac_promoter`
 * `max_frac_mito`
 
-By default, these values are set to 0 (`max_frac_mito` is set to 0.2), so they should be modified to according to your needs.
-
-```{r,eval=FALSE}
-sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
+```{r}
 features          <- file.path(output_folder, "NA_peaks.narrowPeak")
 
 sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
@@ -256,6 +233,9 @@ sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
                           feature_type  = "peak",
                           organism      = "hg38",
                           cell_calling  = "filter",
+                          min_uniq_frags = 0, # set to 0 as the sample dataset only has a small number of reads
+                          min_frac_peak = 0,
+                          min_frac_promoter = 0,
                           yieldsize     = 1000000,
                           mapq          = 20,
                           exclude_regions = TRUE,
@@ -272,11 +252,11 @@ The discrepancy of `chr` between the alignment file and the feature file/exclude
 
 The `sc_atac_feature_counting` function generates a matrix format of the feature by cell matrix (features as rows, cell barcodes as columns) in several formats (raw, sparse, binary, jaccard) that can be used downstream to generate a `singleCellExperiment, SCE` object.
 
-```{r,eval=FALSE}
-feature_matrix <- readRDS(file.path(output_folder, "unfiltered_matrix.rds"))
+```{r}
+feature_matrix <- readRDS(file.path(output_folder, "unfiltered_feature_matrix.rds"))
 dplyr::glimpse(feature_matrix)
 
-sparseM <- readMM(file.path(output_folder, "sparse_matrix.mtx"))
+sparseM <- readRDS(file.path(output_folder, "sparse_matrix.rds"))
 dplyr::glimpse(sparseM)
 ```
 
@@ -284,7 +264,7 @@ dplyr::glimpse(sparseM)
 
 Easiest way to generate a *SCE* object is to run `sc_atac_create_sce` with the `input_folder` parameter. However, if the default dir name was used for previous steps simply running `sc_atac_create_sce()` would produce a `sce` object in the default location (i.e. `scPipe-atac-output`)
 
-```{r, eval=FALSE}
+```{r}
 sce <- sc_atac_create_sce(input_folder = output_folder,
                    organism     = "hg38",
                    feature_type = "peak",
@@ -299,6 +279,27 @@ If the report parameter is set to `TRUE` then an HTML report with various statis
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, out.width="100%"}
 knitr::include_graphics(system.file("report_example.png", package = "scPipe"))
 ```
+
+# A convenience function for running the whole pipeline
+
+A function `sc_atac_pipeline` has been included to make it easier to run the whole pipeline.
+
+```{r eval = FALSE}
+data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
+output_folder <- tempdir()
+sce <- sc_atac_pipeline(r1 = file.path(data.folder, "small_chr21_R1.fastq.gz"),
+                        r2 = file.path(data.folder, "small_chr21_R3.fastq.gz"),
+                        barcode_fastq = file.path(data.folder, "small_chr21_R2.fastq.gz"),
+                        organism = "hg38",
+                        reference = file.path(data.folder, "small_chr21.fa"),
+                        feature_type = "peak",
+                        remove_duplicates = FALSE,
+                        min_uniq_frags = 0, # set to 0 as the sample dataset only has a small number of reads
+                        min_frac_peak = 0,
+                        min_frac_promoter = 0,
+                        output_folder = output_folder)
+```
+
 
 # Downstream analysis
 

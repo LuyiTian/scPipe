@@ -6,6 +6,19 @@
 #' @param r2 The second read fastq file
 #' @param barcode_fastq The barcode fastq file (need either this or `barcode_csv`)
 #' @param barcode_csv The barcode csv file (need either this or `barcode_fastq`)
+#' @param valid_barcode_file file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). Only used if
+#' \code{bc_file} is a fastq file. Must contain one barcode per line, with no other separators. 
+#' If given, each barcode from bc_file is matched against the barcode of
+#' best fit (allowing a hamming distance of 1, prioritising barcodes with a higher mapping quality, as given by
+#' the fastq reads quality score)
+#' @param id1_st barcode start position (0-indexed) for read 1, which is an extra parameter that is needed if the
+#' \code{bc_file} is in a \code{.csv} format.
+#' @param id2_st barcode start position (0-indexed) for read 2, which is an extra parameter that is needed if the
+#' \code{bc_file} is in a \code{.csv} format.
+#' @param id1_len barcode length for read 1, which is an extra parameter that is needed if the
+#' \code{bc_file} is in a \code{.csv} format.
+#' @param id2_len barcode length for read 2, which is an extra parameter that is needed if the
+#' \code{bc_file} is in a \code{.csv} format.
 #' @param organism The name of the organism e.g. hg38
 #' @param reference The reference genome file
 #' @param feature_type The feature type (either `genome_bin` or `peak`)
@@ -54,9 +67,16 @@ sc_atac_pipeline <- function(r1,
                              r2,
                              barcode_fastq = NULL,
                              barcode_csv = NULL,
-                             organism,
-                             reference,
-                             feature_type,
+                             valid_barcode_file = "",
+                             id1_st = 0,
+                             id1_len = 16,
+                             id2_st = 0,
+                             id2_len = 16,
+                             rmN           = TRUE,
+                             rmlow         = TRUE,
+                             organism = NULL,
+                             reference = NULL,
+                             feature_type = NULL,
                              remove_duplicates = FALSE,
                              samtools_path = NULL,
                              genome_size   = NULL,
@@ -96,6 +116,7 @@ sc_atac_pipeline <- function(r1,
     sc_atac_trim_barcode (r1            = r1,
                           r2            = r2,
                           bc_file       = barcode_fastq,
+                          valid_barcode_file = valid_barcode_file,
                           rmN           = TRUE,
                           rmlow         = TRUE,
                           output_folder = output_folder)
@@ -103,10 +124,10 @@ sc_atac_pipeline <- function(r1,
     sc_atac_trim_barcode (r1            = r1,
                           r2            = r2,
                           bc_file       = barcode_csv,
-                          id1_st = 0,
-                          id1_len = 16,
-                          id2_st = 0,
-                          id2_len = 16,
+                          id1_st = id1_st,
+                          id1_len = id1_len,
+                          id2_st = id2_st,
+                          id2_len = id2_len,
                           rmN           = TRUE,
                           rmlow         = TRUE,
                           output_folder = output_folder)
@@ -114,13 +135,9 @@ sc_atac_pipeline <- function(r1,
     return()
   }
   
-  if (!is.null(barcode_fastq)) {
-    demux_r1        <- file.path(output_folder, paste0("demux_", r1_name, ".fastq.gz"))
-    demux_r2        <- file.path(output_folder, paste0("demux_", r2_name, ".fastq.gz"))
-  } else {
-    demux_r1        <- file.path(output_folder, paste0("demux_completematch_", r1_name, ".fastq.gz"))
-    demux_r2        <- file.path(output_folder, paste0("demux_completematch_", r2_name, ".fastq.gz"))
-  }
+  demux_r1        <- file.path(output_folder, paste0("demux_completematch_", r1_name, ".fastq.gz"))
+  demux_r2        <- file.path(output_folder, paste0("demux_completematch_", r2_name, ".fastq.gz"))
+  
   reference       <- reference
   bam_to_tag <- sc_aligning(ref = reference,
                 tech = "atac",
@@ -138,15 +155,8 @@ sc_atac_pipeline <- function(r1,
     removed <- sc_atac_remove_duplicates(inbam = sorted_tagged_bam,
                               samtools_path = samtools_path,
                               output_folder = output_folder)
-    removed <- TRUE
-    if (!removed) return()
-    sorted_tagged_bam <- paste0(substr(sorted_tagged_bam, 0, nchar(sorted_tagged_bam)-4), "_markdup.bam")
-    
-    # if (!is.null(barcode_fastq)) {
-    #   sorted_tagged_bam <- file.path(output_folder, paste0("demux_", r1_name, "_aligned_tagged_sorted.bam"))
-    # } else {
-    #   sorted_tagged_bam <- file.path(output_folder, paste0("demultiplexed_complete_partialmatch_", r1_name, "_aligned_tagged_sorted_markdup.bam"))
-    # }
+    if (!isFALSE(removed))
+      sorted_tagged_bam <- removed
   }
   sc_atac_create_fragments(inbam = sorted_tagged_bam,
                            output_folder = output_folder)

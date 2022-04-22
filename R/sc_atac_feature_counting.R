@@ -122,6 +122,7 @@ sc_atac_feature_counting <- function(
       "\n"
     ), 
     file = log_file, append = TRUE)
+
   
   
   ############# feature type is genome_bin ####################
@@ -478,7 +479,8 @@ sc_atac_feature_counting <- function(
   if (organism %in% c("hg19", "hg38", "mm10")) {
     cat(organism, "is a recognized organism. Using annotation files in repository.\n")
     anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
-    promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed"))
+    
+    promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed.gz"))
     tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed.gz"))
     enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed.gz"))
   }

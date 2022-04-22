@@ -1,5 +1,5 @@
 .onAttach <- function(...) {
-  packageStartupMessage("Some startup message")
+  # packageStartupMessage("Some startup message")
   
 
   
