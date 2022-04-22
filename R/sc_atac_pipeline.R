@@ -155,7 +155,7 @@ sc_atac_pipeline <- function(r1,
     removed <- sc_atac_remove_duplicates(inbam = sorted_tagged_bam,
                               samtools_path = samtools_path,
                               output_folder = output_folder)
-    if (!isFalse(removed))
+    if (!isFALSE(removed))
       sorted_tagged_bam <- removed
   }
   sc_atac_create_fragments(inbam = sorted_tagged_bam,
