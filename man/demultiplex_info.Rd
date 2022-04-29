@@ -3,13 +3,10 @@
 \docType{methods}
 \name{demultiplex_info}
 \alias{demultiplex_info}
-\alias{demultiplex_info}
 \alias{demultiplex_info<-}
 \alias{demultiplex_info.sce}
 \alias{demultiplex_info,SingleCellExperiment-method}
-\alias{demultiplex_info}
 \alias{demultiplex_info<-,SingleCellExperiment-method}
-\alias{demultiplex_info}
 \title{demultiplex_info}
 \usage{
 demultiplex_info(object)
@@ -33,7 +30,7 @@ a dataframe of cell barcode demultiplex information
 A DataFrame of cell barcode demultiplx results.
 }
 \description{
-Get or set cell barcode demultiplx results in a SingleCellExperiment object
+Get or set cell barcode demultiplex results in a SingleCellExperiment object
 }
 \examples{
 data("sc_sample_data")

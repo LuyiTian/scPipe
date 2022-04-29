@@ -61,3 +61,34 @@ setGeneric("gene_id_type", function(object) standardGeneric("gene_id_type"))
 #' @docType methods
 #' @rdname gene_id_type
 setGeneric("gene_id_type<-", function(object, value) standardGeneric("gene_id_type<-"))
+
+#' @name feature_info
+#' @aliases feature_info
+#' @export
+#' @docType methods
+#' @return a dataframe of feature info for scATAC-seq data
+#' @rdname feature_info
+setGeneric("feature_info", function(object) standardGeneric("feature_info"))
+
+#' @name feature_info
+#' @aliases feature_info<-
+#' @export
+#' @docType methods
+#' @rdname feature_info
+setGeneric("feature_info<-", function(object, value) standardGeneric("feature_info<-"))
+
+#' @name feature_type
+#' @aliases feature_type
+#' @export
+#' @docType methods
+#' @return the feature type used in feature counting for scATAC-Seq data
+#' @rdname feature_type
+setGeneric("feature_type", function(object) standardGeneric("feature_type"))
+
+#' @name feature_type
+#' @aliases feature_type<-
+#' @export
+#' @docType methods
+#' @rdname feature_type
+setGeneric("feature_type<-", function(object, value) standardGeneric("feature_type<-"))
+

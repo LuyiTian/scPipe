@@ -96,6 +96,7 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
     r1 = path.expand(r1)
     r2 = path.expand(r2)
 
+
     rcpp_sc_trim_barcode_paired(outfq, r1, r2,
                                 read_structure$bs1,
                                 read_structure$bl1,

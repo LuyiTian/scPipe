@@ -4,8 +4,14 @@
 \alias{detect_outlier}
 \title{Detect outliers based on QC metrics}
 \usage{
-detect_outlier(sce, comp = 1, sel_col = NULL, type = c("low", "both",
-  "high"), conf = c(0.9, 0.99), batch = FALSE)
+detect_outlier(
+  sce,
+  comp = 1,
+  sel_col = NULL,
+  type = c("low", "both", "high"),
+  conf = c(0.9, 0.99),
+  batch = FALSE
+)
 }
 \arguments{
 \item{sce}{a \code{SingleCellExperiment} object containing QC metrics.}

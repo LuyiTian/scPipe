@@ -5,13 +5,12 @@
 \alias{sc_sample_data}
 \title{a small sample scRNA-seq counts dataset to 
 demonstrate capabilities of scPipe}
-\format{a matrix instance, one row per gene.}
+\format{
+a matrix instance, one row per gene.
+}
 \source{
 Christin Biben (WEHI). She FACS sorted cells from several immune
 cell types including B cells, granulocyte and some early progenitors.
-}
-\usage{
-sc_sample_data
 }
 \value{
 NULL, but makes a matrix of count data
