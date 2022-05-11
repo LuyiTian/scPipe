@@ -24,6 +24,8 @@ LinkingTo:
     zlibbioc,
     testthat
 Imports:
+    flexmix,
+    kableExtra,
     ggplot2,
     methods,
     SingleCellExperiment,
