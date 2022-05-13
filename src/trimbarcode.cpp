@@ -47,7 +47,13 @@ std::vector<std::string> readBarcodes(const char *barcode_fn) {
 	std::vector<std::string> out;
 
 	while (ks_getuntil(ks, '\n', &str, 0) >= 0) {
-		out.push_back(std::string(str.s));
+		std::string line(str.s);
+		int comma1 = line.find(',');
+		int comma2 = line.find(',', comma1 + 1);
+	    	std::string secondColumn = line.substr(
+			comma1 != std::string::npos ? comma1 + 1 : 0, 
+			(comma2 != std::string::npos ? comma2 - 1 : line.size()) - comma1);
+		out.push_back(secondColumn);
 	}
 
 	ks_destroy(ks);
