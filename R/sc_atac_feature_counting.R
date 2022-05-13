@@ -12,12 +12,13 @@
 #' @param bam_tags The BAM tags
 #' @param feature_type The type of feature
 #' @param organism The organism type (contains hg19, hg38, mm10)
-#' @param cell_calling The desired cell calling method; either \code{cellranger}, \code{emptydrops} or  \code{filter}
+#' @param cell_calling The desired cell calling method; either \code{cellranger}, \code{emptydrops} or  \code{filter}.
 #' 
-#' @param promoters_file The path of the promoter annotation file (if the specified organism isn't recognised)
-#' @param tss_file The path of the tss annotation file (if the specified organism isn't recognised)
-#' @param enhs_file The path of the enhs annotation file (if the specified organism isn't recognised)
-#' @param gene_anno_file The path of the gene annotation file (gtf or gff3 format)
+#' @param promoters_file The path of the promoter annotation file (if the specified organism isn't recognised).
+#' @param tss_file The path of the tss annotation file (if the specified organism isn't recognised).
+#' @param enhs_file The path of the enhs annotation file (if the specified organism isn't recognised).
+#' @param gene_anno_file The path of the gene annotation file (gtf or gff3 format).
+#' @param sample_name The sample name to identify which is the data is analysed for.
 #' 
 #' @param bin_size The size of the bins
 #' @param yieldsize The yield size
@@ -37,6 +38,7 @@
 #' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
 #' @param output_folder The output folder
+#' @param create_report Logical value to say whether to create the report or not (default = TRUE).
 
 #' @importFrom BiocGenerics start end which strand start<- end<- as.data.frame
 #' @importFrom rlang .data
@@ -61,6 +63,7 @@ sc_atac_feature_counting <- function(
   feature_type   = "peak", 
   organism       = "hg38", 
   cell_calling   = "filter", # either c("cellranger", "emptydrops", "filter")
+  sample_name    = "",
   genome_size    = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
   promoters_file = NULL,
   tss_file       = NULL,
@@ -664,7 +667,7 @@ sc_atac_feature_counting <- function(
     inputfolder <- dirname(insortedbam)
     sc_atac_create_report(input_folder = inputfolder,
                           output_folder= file.path(output_folder, "scPipe_atac_stats"),
-                          sample_name  = NULL,
+                          sample_name  = sample_name,
                           organism     = organism,
                           feature_type = feature_type)
   }
