@@ -12,8 +12,8 @@
 #' @param bc_file the barcode information, can be either in a \code{fastq} format (e.g. from 10x-ATAC) or
 #' from a \code{.csv} file (here the barcode is expected to be on the second column). 
 #' Currently, for the fastq approach, this can be a list of barcode files.
-#' @param valid_barcode_file file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). Only used if
-#' \code{bc_file} is a fastq file. Must contain one barcode per line, with no other separators. 
+#' @param valid_barcode_file optional file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). Only used if
+#' \code{bc_file} is a fastq file. Must contain one barcode per line on the second column seperated by a comma (default ="").
 #' If given, each barcode from bc_file is matched against the barcode of
 #' best fit (allowing a hamming distance of 1, prioritising barcodes with a higher mapping quality, as given by
 #' the fastq reads quality score)

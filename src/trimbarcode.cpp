@@ -1079,6 +1079,9 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
     out_vect[1] = removed_Ns;
     out_vect[2] = removed_low_qual;
     out_vect[3] = seq_2_set.size();
+    out_vect[4] = exactMatches();
+    out_vect[5] = partialMatches();
+    out_vect[6] = noMatches();
     
     return(out_vect);
 }
