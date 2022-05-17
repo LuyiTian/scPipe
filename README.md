@@ -74,7 +74,7 @@ AAGACGTCTAAGGGCGGTGTACACCCTTTTGAGCAATGATTGCACAACCTGCGATCACCTTATACAGAATTAT+AAAAAA
 
 * The `sc_atac_feature_counting` function will generate a feature-count matrix for the alignment and an input feature file (a genome, a bed file format of features, for example one generated through `sc_atac_peak_calling` or MACS2/3). If the feature file is a genome.fasta file a genome_bin approach is used to create the features. It would also generate quality statistics that will get stored in the `scPipe_atac_stats` folder within the working directory. Cell calling is a function implemented in this function to identify the "true" cells. 
 
-* The function `sc_atac_create_sce` generates the `Single Cell Experiment` object from the feature-count matrix aand the quality scores acquired throughout the pipeline. It also aloows the user to generate a HTML report which can alternatively be created by the `sc_atac_create_report` function.
+* The function `sc_atac_create_sce` generates the `Single Cell Experiment` object from the feature-count matrix and the quality scores acquired throughout the pipeline. It also allows the user to generate a HTML report which can alternatively be created by the `sc_atac_create_report` function.
 
 * The function `sc_atac_create_report` can be run within the `sc_atac_create_sce` or independently to create a report based on th quality statistics avaialble through the processed pipeline.
 
