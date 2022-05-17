@@ -68,7 +68,7 @@ AAGACGTCTAAGGGCGGTGTACACCCTTTTGAGCAATGATTGCACAACCTGCGATCACCTTATACAGAATTAT+AAAAAA
 
 * The `sc_atac_aligning` function will align the reformatted fastq files and create bam files.
 
-* After alignment, the `sc_atac_bam_tagging` function will put the cell barcode (and UMI, if avaialble) into the bam file with different tags: `AAAGTCAA_AACTCA#SIMULATE_SEQ::007::000::0013::10        0       ERCC-00171      142     40      73M     *       0       0       GCCTCGGGAATAAGCTGACGGTGACAAGGTTTCCCCCTAATCGAGACGCTGCAATAACACAGGGGCATACAGT AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA       HI:i:1  NH:i:1  NM:i:0  GE:Z:ERCC-00171 YC:Z:AAAGTCAA   YM:Z:AACTCA     YE:i:-364`. In this example the cell barcode is AAAGTCAA with tag `YC`, the UMI is AACTCA with tag `YM` and the gene that this read maps to is `ERCC-00171` with tag `GE`. This read is located 364 bp upstream of the transcription end site (TES), which is stored in the `YE` tag.
+* After alignment, the `sc_atac_bam_tagging` function will put the cell barcode (and UMI, if available) into the bam file with different tags: `AAAGTCAA_AACTCA#SIMULATE_SEQ::007::000::0013::10        0       ERCC-00171      142     40      73M     *       0       0       GCCTCGGGAATAAGCTGACGGTGACAAGGTTTCCCCCTAATCGAGACGCTGCAATAACACAGGGGCATACAGT AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA       HI:i:1  NH:i:1  NM:i:0  GE:Z:ERCC-00171 YC:Z:AAAGTCAA   YM:Z:AACTCA     YE:i:-364`. In this example the cell barcode is AAAGTCAA with tag `YC`, the UMI is AACTCA with tag `YM` and the gene that this read maps to is `ERCC-00171` with tag `GE`. This read is located 364 bp upstream of the transcription end site (TES), which is stored in the `YE` tag.
 
 * The `sc_atac_peak_calling` function can be used to call peaks using macsr via Linux/Mac environment(). However, macsr is yet not compatible with Windows.
 
@@ -76,7 +76,7 @@ AAGACGTCTAAGGGCGGTGTACACCCTTTTGAGCAATGATTGCACAACCTGCGATCACCTTATACAGAATTAT+AAAAAA
 
 * The function `sc_atac_create_sce` generates the `Single Cell Experiment` object from the feature-count matrix and the quality scores acquired throughout the pipeline. It also allows the user to generate a HTML report which can alternatively be created by the `sc_atac_create_report` function.
 
-* The function `sc_atac_create_report` can be run within the `sc_atac_create_sce` or independently to create a report based on th quality statistics avaialble through the processed pipeline.
+* The function `sc_atac_create_report` can be run within the `sc_atac_create_sce` or independently to create a report based on the quality statistics available through the processed pipeline.
 
 A minimal example for scATAC-Seq module of scPipe is available [here](minimal_atac_example.md). For further examples see the relevant vignette.
 
