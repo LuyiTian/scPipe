@@ -397,7 +397,7 @@ sc_atac_feature_counting <- function(
 
   while(length(yld <- GenomicAlignments::readGAlignments(bamfl, use.names = TRUE, param = param))) {
     yld.gr <- GenomicRanges::makeGRangesFromDataFrame(yld, keep.extra.columns=TRUE) 
-    cat("Chunk", iter " completed in ")
+    cat("Chunk", iter, " completed in ")
     if (iter > 1) {
       cat(Sys.time() - last_time, "seconds\n")
     } else {
