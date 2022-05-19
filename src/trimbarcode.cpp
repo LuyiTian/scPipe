@@ -1085,9 +1085,9 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
     out_vect[1] = removed_Ns;
     out_vect[2] = removed_low_qual;
     out_vect[3] = seq_2_set.size();
-    out_vect[4] = exactMatches();
-    out_vect[5] = partialMatches();
-    out_vect[6] = noMatches();
+    out_vect[4] = exactMatches;
+    out_vect[5] = partialMatches;
+    out_vect[6] = noMatches;
     
     return(out_vect);
 }
@@ -1499,7 +1499,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     Rcpp::Rcout << "Total N's removed: " << removed_Ns << std::endl;
     Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
     Rcpp::Rcout << "Exact match Reads: " << exact_match << std::endl;
-    Rcpp::Rcout << "Approx Match Reads: " << approx_match << std::endl;
+    Rcpp::Rcout << "Matched after barcode corrections: " << approx_match << std::endl;
     Rcpp::Rcout << "Total barcodes: " << (int)barcode_map.size() << std::endl;
     
     return(out_vect);

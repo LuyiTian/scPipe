@@ -49,7 +49,7 @@ sc_atac_cell_calling <- function(mat,
                                  min_frac_promoter = 0.1,
                                  max_frac_mito = 0.15){
   
-  cat("calling `", cell_calling, "` function for cell calling ... \n")
+  message("`", cell_calling, "` function is used for cell calling ... \n")
 
   selected_cells <- tryCatch(
     {

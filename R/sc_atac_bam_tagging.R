@@ -60,7 +60,7 @@ sc_atac_bam_tagging <- function(inbam,
 
   cat(
     paste0(
-      "sc_atac_tagging starts at ",
+      "sc_atac_tagging began at ",
       as.character(Sys.time()),
       "\n"
     ),
@@ -72,17 +72,13 @@ sc_atac_bam_tagging <- function(inbam,
 
   rcpp_sc_atac_bam_tagging(inbam, outbam, bam_tags$bc, bam_tags$mb, nthreads)
 
-  cat("Tagged BAM file is located in: \n")
-  cat(outbam)
-  cat("\n")
-
   # Rsamtools::sortBam(outbam, outsortedbam, indexDestination = TRUE, maxMemory = 1024/32*max_memory)
   Rsamtools::indexBam(paste0(outsortedbam, ".bam"))
 
-  cat("Sorted & indexed tagged BAM file is located in: \n")
+  cat("Demultiplexed BAM file sorted and indexed ...")
   }
-  cat(paste0(outsortedbam, ".bam"))
-  cat("\n")
+  #cat(paste0(outsortedbam, ".bam"))
+  #cat("\n")
 
 
   if(is.null(bc_length)){
@@ -152,14 +148,15 @@ sc_atac_bam_tagging <- function(inbam,
   df[ ,count := rowSums(.SD), .SDcols = names(df[,!"barcode"])]
   mapping_stats_path <- file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv")
   data.table::fwrite(df, mapping_stats_path)
-  cat("Completed generating mapping statistics per barcode, saved to", file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv"), "\n")
+  message(paste0("Completed generating mapping statistics per barcode, saved to ", file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv"), "\n"))
   cat(
     paste0(
-      "sc_atac_tagging finishes at ",
+      "sc_atac_tagging() completed at ",
       as.character(Sys.time()),
       "\n\n"
     ),
     file = log_file, append = TRUE)
   
+  message(paste0("The output tagged and sorted BAM file was sent to ", output_folder))
   return(paste0(outsortedbam, ".bam"))
 }
