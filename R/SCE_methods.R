@@ -19,33 +19,33 @@ validObject = function(object){
   if (!is(object, "SingleCellExperiment")) {
     stop("object must be an `SingleCellExperiment` object.")
   }
-  
+
   if(!("scPipe" %in% names(object@metadata))){
     object@metadata$scPipe$version = packageVersion("scPipe")  # set version information
   }
-  
+
   if(min(dim(object)) == 0){
     stop("The dimension of sce should be larger than zero.")
   }else if(is.null(rownames(object)) | is.null(colnames(object))){
     stop("rowname/colname does not exists for sce.")
   }else if(!all(rownames(QC_metrics(object)) == colnames(object))){
-    stop("The rownames of QC metrics is not consistant with column names of the object.")
+    stop("The rownames of QC metrics is not consistent with column names of the object.")
   }
-  
+
 
   if(any(is.null(organism(object)) || is.na(organism(object)))){
     tmp_res = .guess_attr(rownames(object))
     if((!is.na(tmp_res$organism)) & (!is.na(tmp_res$gene_id_type))){
       gene_id_type(object) = tmp_res$gene_id_type
       organism(object) = tmp_res$organism
-      message(paste("organism/gene_id_type not provided. Make a guess:", 
+      message(paste("organism/gene_id_type not provided. Make a guess:",
                   tmp_res$organism,
                   "/",
                   tmp_res$gene_id_type))
     }else{
       gene_id_type(object) = "NA"
       organism(object) = "NA"
-    } 
+    }
   }
   return(object)
 }
@@ -58,7 +58,7 @@ validObject = function(object){
 #'
 #' @return A DataFrame of quality control metrics.
 #' @author Luyi Tian
-#' 
+#'
 #' @importFrom S4Vectors DataFrame SimpleList
 #'
 #' @export
@@ -68,7 +68,7 @@ validObject = function(object){
 #' data("sc_sample_qc")
 #' sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
 #' QC_metrics(sce) = sc_sample_qc
-#' 
+#'
 #' head(QC_metrics(sce))
 #'
 QC_metrics.sce <- function(object) {
@@ -110,7 +110,7 @@ setReplaceMethod(
 
 
 #' @title demultiplex_info
-#' 
+#'
 #' @description Get or set cell barcode demultiplex results in a SingleCellExperiment object
 #' @rdname demultiplex_info
 #' @param object A \code{\link{SingleCellExperiment}} object.
@@ -130,7 +130,7 @@ setReplaceMethod(
 #' QC_metrics(sce) = sc_sample_qc
 #' demultiplex_info(sce) = cell_barcode_matching
 #' UMI_dup_info(sce) = UMI_duplication
-#' 
+#'
 #' demultiplex_info(sce)
 #'
 demultiplex_info.sce <- function(object) {
@@ -188,7 +188,7 @@ setReplaceMethod("demultiplex_info",
 #' QC_metrics(sce) = sc_sample_qc
 #' demultiplex_info(sce) = cell_barcode_matching
 #' UMI_dup_info(sce) = UMI_duplication
-#' 
+#'
 #' head(UMI_dup_info(sce))
 #'
 UMI_dup_info.sce <- function(object) {
@@ -244,7 +244,7 @@ setReplaceMethod("UMI_dup_info",
 #' QC_metrics(sce) = sc_sample_qc
 #' demultiplex_info(sce) = cell_barcode_matching
 #' UMI_dup_info(sce) = UMI_duplication
-#' 
+#'
 #' organism(sce)
 #'
 organism.sce <- function(object) {
@@ -296,7 +296,7 @@ setReplaceMethod("organism",signature="SingleCellExperiment",
 #' QC_metrics(sce) = sc_sample_qc
 #' demultiplex_info(sce) = cell_barcode_matching
 #' UMI_dup_info(sce) = UMI_duplication
-#' 
+#'
 #' gene_id_type(sce)
 #'
 gene_id_type.sce <- function(object) {
@@ -376,7 +376,7 @@ setReplaceMethod("feature_info",signature="SingleCellExperiment",
 #' @param value Value to be assigned to corresponding object.
 #'
 #' @return A string representing the feature type
-#' 
+#'
 #' @export
 #'
 feature_type.sce <- function(object) {

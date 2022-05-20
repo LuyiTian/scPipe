@@ -30,12 +30,12 @@ a SingleCellExperiment object
 }
 \description{
 after we run \code{sc_gene_counting} and finish the preprocessing step. \code{create_sce_by_dir}
-can be used to generate the \link{SingleCellExperiment} obeject from the folder that contains gene count matrix and QC statistics.
+can be used to generate the \link{SingleCellExperiment} object from the folder that contains gene count matrix and QC statistics.
 it can also generate the html report based on the gene count and quality control statistics
 }
 \details{
 after we run \code{sc_gene_counting} and finish the preprocessing step. \code{create_sce_by_dir}
-can be used to generate the SingleCellExperiment obeject from the folder that contains gene count matrix and QC statistics.
+can be used to generate the SingleCellExperiment object from the folder that contains gene count matrix and QC statistics.
 }
 \examples{
 \dontrun{
