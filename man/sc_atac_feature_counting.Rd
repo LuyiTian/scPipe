@@ -11,14 +11,18 @@ sc_atac_feature_counting(
   feature_type = "peak",
   organism = "hg38",
   cell_calling = "filter",
+  sample_name = "",
   genome_size = NULL,
   promoters_file = NULL,
   tss_file = NULL,
   enhs_file = NULL,
   gene_anno_file = NULL,
+  pheno_data = NULL,
   bin_size = NULL,
   yieldsize = 1e+06,
   mapq = 30,
+  n_filter_cell_counts = 200,
+  n_filter_feature_counts = 10,
   exclude_regions = FALSE,
   excluded_regions_filename = NULL,
   output_folder = NULL,
@@ -30,13 +34,14 @@ sc_atac_feature_counting(
   min_frac_tss = 0,
   min_frac_enhancer = 0,
   min_frac_promoter = 0.1,
-  max_frac_mito = 0.15
+  max_frac_mito = 0.15,
+  create_report = TRUE
 )
 }
 \arguments{
 \item{insortedbam}{The input bam}
 
-\item{feature_input}{The feature input data e.g. the .narrowPeak file for peaks}
+\item{feature_input}{The feature input data e.g. the .narrowPeak file for peaks of a bed file format}
 
 \item{bam_tags}{The BAM tags}
 
@@ -44,17 +49,21 @@ sc_atac_feature_counting(
 
 \item{organism}{The organism type (contains hg19, hg38, mm10)}
 
-\item{cell_calling}{The desired cell calling method; either \code{cellranger}, \code{emptydrops} or  \code{filter}}
+\item{cell_calling}{The desired cell calling method; either \code{cellranger}, \code{emptydrops} or  \code{filter}.}
+
+\item{sample_name}{The sample name to identify which is the data is analysed for.}
 
 \item{genome_size}{The size of the genome (used for the \code{cellranger} cell calling method)}
 
-\item{promoters_file}{The path of the promoter annotation file (if the specified organism isn't recognised)}
+\item{promoters_file}{The path of the promoter annotation file (if the specified organism isn't recognised).}
 
-\item{tss_file}{The path of the tss annotation file (if the specified organism isn't recognised)}
+\item{tss_file}{The path of the tss annotation file (if the specified organism isn't recognised).}
 
-\item{enhs_file}{The path of the enhs annotation file (if the specified organism isn't recognised)}
+\item{enhs_file}{The path of the enhs annotation file (if the specified organism isn't recognised).}
 
-\item{gene_anno_file}{The path of the gene annotation file (gtf or gff3 format)}
+\item{gene_anno_file}{The path of the gene annotation file (gtf or gff3 format).}
+
+\item{pheno_data}{The phenotypic data as a data frame}
 
 \item{bin_size}{The size of the bins}
 
@@ -62,7 +71,11 @@ sc_atac_feature_counting(
 
 \item{mapq}{The minimum MAPQ score}
 
-\item{exclude_regions}{Whether or not the regions (specifed in the file) should be excluded}
+\item{n_filter_cell_counts}{An integer value to filter the feature matrix on the number of reads per cell (default = 200)}
+
+\item{n_filter_feature_counts}{An integer value to filter the feature matrix on the number of reads per feature (default = 10).}
+
+\item{exclude_regions}{Whether or not the regions (specified in the file) should be excluded}
 
 \item{excluded_regions_filename}{The filename of the file containing the regions to be excluded}
 
@@ -70,7 +83,7 @@ sc_atac_feature_counting(
 
 \item{fix_chr}{Whether chr should be fixed or not}
 
-\item{lower}{the lower threshold for the data if using the \code{emptydrops} function for cell calling.}
+\item{lower}{the lower threshold for the data if using the \code{emptydrops} function for cell calling}
 
 \item{min_uniq_frags}{The minimum number of required unique fragments required for a cell (used for \code{filter} cell calling)}
 
@@ -85,6 +98,8 @@ sc_atac_feature_counting(
 \item{min_frac_promoter}{The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)}
 
 \item{max_frac_mito}{The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)}
+
+\item{create_report}{Logical value to say whether to create the report or not (default = TRUE).}
 }
 \description{
 feature matrix is created using a given demultiplexed BAM file and 

@@ -38,7 +38,7 @@ context("Trie Data Structure") {
 			{10, 2}, {30, 1}
 		};
 		expect_true(res.size() == real.size());
-		for (int i = 0; i < res.size(); i++) {
+		for (int i = 0; i < (int)res.size(); i++) {
 			expect_true(real[i].sequenceIndex == res[i].sequenceIndex);
 			expect_true(real[i].mismatchPosition == res[i].mismatchPosition);
 		}

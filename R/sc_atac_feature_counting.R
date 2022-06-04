@@ -249,8 +249,9 @@ sc_atac_feature_counting <- function(
       # Try to read first 5 rows of feature_input file to see if the format is correct
       feature_head <- utils::read.table(feature_input, nrows = 5)
       if(ncol(feature_head) < 3){
-        warning("Feature file provided does not contain 3 columns. Cannot append chr")
-        break;
+		stop("Feature file provided does not contain 3 columns. Cannot append chr")
+        # warning("Feature file provided does not contain 3 columns. Cannot append chr")
+        # break;
       }
       
       
@@ -283,8 +284,9 @@ sc_atac_feature_counting <- function(
         # Try to read first 5 rows of excluded_regions file to see if the format is correct
         excluded_regions_head <- utils::read.table(excluded_regions_filename, nrows = 5)
         if(ncol(excluded_regions_head) < 3){
-          warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
-          break
+			stop("excluded_regions file provided does not contain 3 columns. Cannot append chr")
+        #   warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
+        #   break
         }
         
         rcpp_append_chr_to_bed_file(excluded_regions_filename, out_bed_filename_excluded_regions)
