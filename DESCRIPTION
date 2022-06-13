@@ -85,7 +85,7 @@ Suggests:
     rmarkdown,
     testthat,
     xml2,
-    countreg,
+	countreg,
     flexmix, 
     kableExtra, 
     RColorBrewer,

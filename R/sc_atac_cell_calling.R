@@ -218,7 +218,6 @@ sc_atac_cell_calling <- function(mat,
 #' @param genome_size The size of the genome
 #' 
 #' @importFrom data.table :=
-#' 
 #' @export
 #' 
 sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){

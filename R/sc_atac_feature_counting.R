@@ -644,7 +644,7 @@ sc_atac_feature_counting <- function(
 
   pro.gr <- rtracklayer::import(promoters_file)
   enhs.gr <- rtracklayer::import(enhs_file)
-  tss_df <- data.table::fread(tss_file, select=c(1:3), header = F, col.names = c("chr", "start", "end"))
+  tss_df <- data.table::fread(tss_file, select=c(1:3), header = FALSE, col.names = c("chr", "start", "end"))
   tss.gr <- GenomicRanges::makeGRangesFromDataFrame(tss_df)
 
   pro.overlaps <- GenomicRanges::findOverlaps(query = features_in_matrix,
