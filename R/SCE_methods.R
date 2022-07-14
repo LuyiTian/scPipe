@@ -331,7 +331,7 @@ setReplaceMethod("gene_id_type",signature="SingleCellExperiment",
 #' @rdname feature_info
 #' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
-#'
+#' @author Shani Amarasinghe
 #' @return A DataFrame of feature information
 #' @export
 #'
@@ -370,11 +370,12 @@ setReplaceMethod("feature_info",signature="SingleCellExperiment",
                    return(object)
                  })
 
+
 #' Get or set \code{feature_type} from a SingleCellExperiment object
 #' @rdname feature_type
 #' @param object A \code{\link{SingleCellExperiment}} object.
 #' @param value Value to be assigned to corresponding object.
-#'
+#' @author Shani Amarasinghe 
 #' @return A string representing the feature type
 #' 
 #' @export

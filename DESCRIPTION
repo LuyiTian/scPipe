@@ -1,7 +1,7 @@
 Package: scPipe
 Title: Pipeline for single cell multi-omic data pre-processing
 Date: 2022-10-12
-Version: 2.1.1
+Version: 2.2.1
 Type: Package
 Maintainer: Shian Su <su.s@wehi.edu.au>
 Author: Luyi Tian, Shani Amarasinghe
@@ -24,6 +24,7 @@ LinkingTo:
     zlibbioc,
     testthat
 Imports:
+    umap,
     flexmix,
     kableExtra,
     ggplot2,
@@ -86,8 +87,6 @@ Suggests:
     testthat,
     xml2,
     countreg,
-    flexmix, 
-    kableExtra, 
     RColorBrewer,
     DT
 VignetteBuilder: knitr
