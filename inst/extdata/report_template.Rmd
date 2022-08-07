@@ -1,5 +1,5 @@
 ---
-title: "scPipe report for sample `r params$samplename`"
+title: "scPipe report for scRNA-Seq sample `r params$samplename`"
 output:
   html_notebook:
     code_folding: hide

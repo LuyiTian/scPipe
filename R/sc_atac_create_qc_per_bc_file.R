@@ -103,7 +103,7 @@ sc_atac_create_qc_per_bc_file <- function(inbam,
     
     
     fragsInRegion <- rbind(fragsInRegion, frags0)
-    message(paste(chr0, 'Done!'))
+    cat(paste(chr0, 'Done! \n'))
   }
   rm(frags)
   
