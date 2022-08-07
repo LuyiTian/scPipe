@@ -95,7 +95,7 @@ sc_atac_feature_counting <- function(
   
   . <- V1 <- V2 <- V3 <- init <- peakStart <- seqnames <- peakEnd <- CB <- chromosome <- chrS <- feature <- barcode <- NULL
   
-  init_time = Sys.time()
+  init_time <- Sys.time()
   
   available_organisms = c("hg19",
                           "hg38",
@@ -310,7 +310,7 @@ sc_atac_feature_counting <- function(
   
 
   ############## generate the GAalignment file from the feature_input file
-  cat("Creating Galignment object for the feature input...\n")
+  message("Creating Galignment object for the feature input ...\n")
   if(feature_type != 'genome_bin'){
     feature.gr <- rtracklayer::import(feature_input)
   } else {
@@ -385,11 +385,11 @@ sc_atac_feature_counting <- function(
     Reduce(`+`, newms)
   }
   
-  
+  message("Reading in the alignment file for processing ... \n")
   param <- Rsamtools::ScanBamParam(tag = as.character(bam_tags),  mapqFilter=mapq)
   bamfl <- open(Rsamtools::BamFile(insortedbam, yieldSize=yieldsize))
   
-  cat("Iterating over chunks of the BAM file and gnerating the feature by barcode count matrix\n")
+  message("Iterating over chunks of the BAM file and generating the feature by barcode count matrix ...\n")
   
   feature_matrix <- NULL
   iter <- 1
@@ -399,17 +399,11 @@ sc_atac_feature_counting <- function(
 
   while(length(yld <- GenomicAlignments::readGAlignments(bamfl, use.names = TRUE, param = param))) {
     yld.gr <- GenomicRanges::makeGRangesFromDataFrame(yld, keep.extra.columns=TRUE) 
-    cat("Chunk", iter, " completed in ")
-    if (iter > 1) {
-      cat(Sys.time() - last_time, "seconds\n")
-    } else {
-      cat("\n")
-    }
-    last_time <- Sys.time()
-    iter <- iter+1
     
-    bcs <- yld.gr$CB
-    all_bcs <- unique(append(all_bcs, bcs)) 
+    start.time  <- Sys.time()
+    
+    bcs         <- yld.gr$CB
+    all_bcs     <- unique(append(all_bcs, bcs)) 
     total_reads <- total_reads + length(yld.gr)
     
     ############# Adjusting for the Tn5 cut site
@@ -464,11 +458,22 @@ sc_atac_feature_counting <- function(
     } else {
       feature_matrix <- add_matrices(feature_matrix, Matrix::Matrix(matrixData))
     }
+    
+    last_time <- Sys.time()
+    #if (iter > 1) {
+      cat("Chunk", iter, " completed in ")
+      cat(start.time - last_time, "seconds\n")
+    #} else {
+     # cat("Chunk", iter, " initiated! \n")
+     # cat(Sys.time(), "seconds\n")
+    #}
+    iter <- iter+1
+
   }
 
   # Calculate average no. of reads per cellular barcode  
   average_number_of_lines_per_CB <- total_reads/length(all_bcs)
-  cat("Average no. of reads per barcode: ", average_number_of_lines_per_CB, "\n")
+  message("Average no. of reads per barcode: ", average_number_of_lines_per_CB, "\n")
 
   
   saveRDS(feature_matrix, file = file.path(output_folder, "unfiltered_feature_matrix.rds"))
@@ -489,7 +494,7 @@ sc_atac_feature_counting <- function(
 
   ########## Check if organism is pre-recognized and if so then use the package's annotation files
   if (organism %in% c("hg19", "hg38", "mm10")) {
-    cat(organism, "is a recognized organism. Using annotation files in repository.\n")
+    message(organism, " is a recognized organism. Using annotation files in repository ...\n")
     anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
     
     promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed.gz"))
@@ -507,8 +512,9 @@ sc_atac_feature_counting <- function(
       "\n"
     ),
     file = log_file, append = TRUE)
-
-  ########### generate quality control metrics for cells
+  
+  ########### generate quality control metrics for cells #########
+  message("Generating qc per barcode file ...\n")
   sc_atac_create_qc_per_bc_file(inbam      = insortedbam,
                                 frags_file = file.path(output_folder, "fragments.bed"),
                                 peaks_file = feature_input,
@@ -528,19 +534,19 @@ sc_atac_feature_counting <- function(
     file = log_file, append = TRUE)
 
   # Cell calling
-  matrixData <- sc_atac_cell_calling(mat = feature_matrix,
-                                     cell_calling = cell_calling,
-                                     output_folder = output_folder,
-                                     genome_size = genome_size,
-                                     qc_per_bc_file = qc_per_bc_file,
-                                     lower = lower,
-                                     min_uniq_frags = min_uniq_frags,
-                                     max_uniq_frags = max_uniq_frags,
-                                     min_frac_peak = min_frac_peak,
-                                     min_frac_tss = min_frac_tss,
+  matrixData <- sc_atac_cell_calling(mat               = feature_matrix,
+                                     cell_calling      = cell_calling,
+                                     output_folder     = output_folder,
+                                     genome_size       = genome_size,
+                                     qc_per_bc_file    = qc_per_bc_file,
+                                     lower             = lower,
+                                     min_uniq_frags    = min_uniq_frags,
+                                     max_uniq_frags    = max_uniq_frags,
+                                     min_frac_peak     = min_frac_peak,
+                                     min_frac_tss      = min_frac_tss,
                                      min_frac_enhancer = min_frac_enhancer,
                                      min_frac_promoter = min_frac_promoter,
-                                     max_frac_mito = max_frac_mito)
+                                     max_frac_mito     = max_frac_mito)
 
   
   cat(
@@ -553,7 +559,7 @@ sc_atac_feature_counting <- function(
   
   # filter the matrix based on counts per cell
   if (n_filter_cell_counts > 0) {
-    message(paste0("cells with less than ", n_filter_cell_counts, " counts are filtered out."))
+    message(paste0("Cells with less than ", n_filter_cell_counts, " counts are filtered out."))
     cat(
       paste0(
         "cells with less than ",
@@ -562,10 +568,10 @@ sc_atac_feature_counting <- function(
       ),
       file = log_file, append = TRUE)
     
-    filtered_indices <- (colSums(matrixData, na.rm=TRUE) > n_filter_cell_counts)
+    filtered_indices  <- base::colSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_cell_counts
     matrixData        <- matrixData[, filtered_indices] # all the remaining columns
   } else {
-    message("no cells were filtered out based on counts.")
+    message("No cells were filtered out based on counts.")
   }
   
   
@@ -581,13 +587,16 @@ sc_atac_feature_counting <- function(
       ),
       file = log_file, append = TRUE)
     
-    filtered_indices <- (rowSums(matrixData, na.rm=TRUE) > n_filter_feature_counts)
+    filtered_indices  <- base::rowSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_feature_counts
     matrixData        <- matrixData[filtered_indices,] # all the remaining rows
   } else {
-    message("no features were filtered out based on counts.")
+    message("No features were filtered out based on counts.")
   }
   
-
+  ############### calculate TSS enrichment ################
+  
+  
+  
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
   sparseM <- Matrix::Matrix(matrixData, sparse=TRUE)
   # # add dimensions of the sparse matrix if available
@@ -613,7 +622,7 @@ sc_atac_feature_counting <- function(
   saveRDS(matrixData, file = paste(output_folder,"/binary_matrix.rds",sep = ""))
   cat("Binary matrix is saved in:\n", paste(output_folder,"/binary_matrix.rds",sep = "") , "\n")
   
-  ###### calculate teh TF-IDF matrices here : TO-DO
+  ###### calculate the TF-IDF matrices here : TO-DO
 
   # following can be used to plot the stats and load it into sce object ########
   # (from https://broadinstitute.github.io/2020_scWorkshop/data-wrangling-scrnaseq.html)
@@ -693,13 +702,10 @@ sc_atac_feature_counting <- function(
   utils::write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
   utils::write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
   
-  end_time = Sys.time()
-  
-  print(end_time - init_time)
   
   cat(
     paste0(
-      "sc_atac_counting finishes at ",
+      "sc_atac_feature_counting completed at ",
       as.character(Sys.time()),
       "\n\n"
     ), 
@@ -719,8 +725,16 @@ sc_atac_feature_counting <- function(
                           output_folder= file.path(output_folder, "scPipe_atac_stats"),
                           sample_name  = sample_name,
                           organism     = organism,
-                          feature_type = feature_type)
+                          feature_type = feature_type,
+                          tss_file      = tss_file,
+                          promoter_file = promoters_file,
+                          enhancer_file = enhs_file
+                          )
   }
+  
+  end_time <- Sys.time()
+  message(paste0(
+    "sc_atac_feature_counting completed in ", round(end_time - init_time, 2), " minutes"))
   
 }
 
