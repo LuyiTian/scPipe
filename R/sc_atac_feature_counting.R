@@ -356,10 +356,29 @@ sc_atac_feature_counting <- function(
   #minoverlap             <- 0.1*median_feature_overlap
   #maxgap                 <- 0.1*median_feature_overlap
   
+  # Check if organism is pre-recognized and if so then use the package's annotation files
+  if (organism %in% c("hg19", "hg38", "mm10")) {
+    cat(organism, "is a recognized organism. Using annotation files in repository.\n")
+    anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
+    
+    promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed.gz"))
+    tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed.gz"))
+    enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed.gz"))
+  }
+  else if (!all(file.exists(c(promoters_file, tss_file, enhs_file)))) {
+    stop("One of the annotation files could not be located. Please make sure their paths are valid.")
+  }
 
+  # Create bins used for TSS enrichment plot
+  tss_df <- data.table::fread(tss_file, select=c(1:3), header = F, col.names = c("chr", "start", "end"))
+  range <- 4000
+  bin_size <- 100
+  n_bins <- range/bin_size-1
+  bins_df_all <- get_all_TSS_bins(tss_df, range, bin_size)
+  bins_df_all.gr <- GenomicRanges::makeGRangesFromDataFrame(bins_df_all, keep.extra.columns=TRUE) 
+  bin_hits <- c() # used to store all overlaps with bins
   
   ############## read in the aligned and demultiplexed BAM file
-  
   
   add_matrices <- function(...) {
     a <- list(...)
@@ -372,7 +391,6 @@ sc_atac_feature_counting <- function(
       b <- as(as(m, "dgCMatrix"), "dgTMatrix")
       s <- cbind.data.frame(i = b@i + 1, j = b@j + 1, x = b@x)
      
-
       i <- match(rownames(m), rows)[s$i]
       j <- match(colnames(m), cols)[s$j]
      
@@ -416,14 +434,23 @@ sc_atac_feature_counting <- function(
     end(yld.gr)[isMinus] <- end(yld.gr)[isMinus] + 5
     start(yld.gr)[isMinus] <- start(yld.gr)[isMinus] - 4
     
-    ############### Overlaps
-    #cat ("Finding overlaps between alignments and features\n")
+
+    # Compute overlaps with bins for TSS enrichment plot
+    median_feature_overlaptss <- stats::median(GenomicAlignments::ranges(bins_df_all.gr)@width)
+    maxgaptss                 <- 0.51*median_feature_overlap
+    tss_bin_overlaps <- GenomicAlignments::findOverlaps(query = bins_df_all.gr, 
+                                                        subject = yld.gr,
+                                                        type = "equal", 
+                                                        maxgap = maxgaptss,
+                                                        ignore.strand = TRUE)
+    bin_hits <- c(bin_hits, queryHits(tss_bin_overlaps)) # gives the indices of bins_df_all that were hit
+    
+    # Compute overlaps with peaks
     overlaps               <- GenomicAlignments::findOverlaps(query         = feature.gr, # feature.gr,
                                                               subject       = yld.gr, # yld.gr, #
                                                               type          = "any", 
                                                               ignore.strand = TRUE)
     # generate the matrix using this overlap results above.
-    
     GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
     GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakEnd"]   <- end(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
     
@@ -492,19 +519,6 @@ sc_atac_feature_counting <- function(
   cat("Number of regions removed from feature input due to being invalid:", number_of_lines_to_remove, "\n",
       file = log_file, append = TRUE)
 
-  ########## Check if organism is pre-recognized and if so then use the package's annotation files
-  if (organism %in% c("hg19", "hg38", "mm10")) {
-    message(organism, " is a recognized organism. Using annotation files in repository ...\n")
-    anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
-    
-    promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed.gz"))
-    tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed.gz"))
-    enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed.gz"))
-  }
-  else if (!all(file.exists(c(promoters_file, tss_file, enhs_file)))) {
-    stop("One of the annotation files could not be located. Please make sure their paths are valid.")
-  }
-
   cat(
     paste0(
       "Raw matrix generated at ",
@@ -512,10 +526,37 @@ sc_atac_feature_counting <- function(
       "\n"
     ),
     file = log_file, append = TRUE)
+
+  # Compute TSS enrichment scores
+  # Create a matrix where the rows are TSSs and the columns are the bins
+  mat <- matrix(0, nrow(tss_df), n_bins)
   
-  ########### generate quality control metrics for cells #########
-  message("Generating qc per barcode file ...\n")
-  sc_atac_create_qc_per_bc_file(inbam      = insortedbam,
+  # We can iterate over the hits
+  for (i in 1:length(bin_hits)) {
+    tss_index <- (bin_hits[i]-1) %/% n_bins
+    bin <- (bin_hits[i]-1) %% n_bins
+    mat[tss_index+1, bin+1] <- mat[tss_index+1, bin+1]+1
+  }
+  
+  mat_non_zero <- mat[rowSums(mat) != 0,]
+  
+  # Calculate TSS enrichment scores
+  cat("Calculating TSS enrichment scores\n")
+  
+  tss_dists <- seq(-range/2+bin_size, range/2-bin_size, bin_size)
+  flank_read_depth <- (mat_non_zero[,1]+mat_non_zero[,ncol(mat_non_zero)])/2 # Used to normalise
+  norm_read_depths <- na.omit(mat_non_zero/flank_read_depth) # also ignore rows where flanks have no overlaps
+  
+  aggregate_tss_scores <- colMeans(norm_read_depths)
+  tsse <- max(aggregate_tss_scores)
+  tss_plot_data <- data.frame(dists = tss_dists, 
+                              agg_tss_scores = aggregate_tss_scores)
+  
+  utils::write.csv(tss_plot_data, file = file.path(log_and_stats_folder, "tss_plot_data.csv"))
+  
+  # generate quality control metrics for cells
+  cat("Generating QC metrics for cells\n")
+  sc_atac_create_qc_per_bc_file(inbam = insortedbam,
                                 frags_file = file.path(output_folder, "fragments.bed"),
                                 peaks_file = feature_input,
                                 promoters_file = promoters_file,

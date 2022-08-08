@@ -322,8 +322,23 @@ p + annotation_custom(text1) + annotation_custom(text2) +
   scale_fill_manual(values = c('#E6AB02', '#7570B3'))
 ```
 
-</div>
-</div>
+# TSS enrichment plot
+
+A line graph showing aggregate TSS enrichment scores based on the distance from the TSS.
+```{r tss-enrichment, fig.wide = TRUE, fig.asp = 0.9}
+tss_plot_data <- utils::read.csv(file.path(params$input_folder, "scPipe_atac_stats", "tss_plot_data.csv"))
+
+tsse <- max(tss_plot_data$agg_tss_scores)
+max_x <- tss_plot_data$dists[which(tss_plot_data$agg_tss_scores==tsse)]
+ggplot(data=tss_plot_data, aes(x=dists, y=agg_tss_scores)) +
+  geom_line()+
+  geom_point() + 
+  geom_text(aes(max_x, tsse+3, label=paste("TSSE:", signif(tsse,3)))) +
+  ggtitle("TSS enrichment plot") +
+  xlab("Distance from TSS (bp)") + 
+  ylab("Aggregate TSS score") 
+
+```
 
 ## Reference mapping rate for filtered barcodes 
 
