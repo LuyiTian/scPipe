@@ -352,9 +352,9 @@ sc_atac_feature_counting <- function(
   } # End if(exclude_regions)
   
   # default values of findoverlaps (type= "any") works and we don't need to compute below paramters
-  #median_feature_overlap <- stats::median(GenomicAlignments::ranges(feature.gr)@width)
-  #minoverlap             <- 0.1*median_feature_overlap
-  #maxgap                 <- 0.1*median_feature_overlap
+  median_feature_overlap <- stats::median(GenomicAlignments::ranges(feature.gr)@width)
+  minoverlap             <- 0.1*median_feature_overlap
+  maxgap                 <- 0.1*median_feature_overlap
   
   # Check if organism is pre-recognized and if so then use the package's annotation files
   if (organism %in% c("hg19", "hg38", "mm10")) {
@@ -444,11 +444,11 @@ sc_atac_feature_counting <- function(
                                                         maxgap = maxgaptss,
                                                         ignore.strand = TRUE)
     bin_hits <- c(bin_hits, queryHits(tss_bin_overlaps)) # gives the indices of bins_df_all that were hit
-    
+
     # Compute overlaps with peaks
     overlaps               <- GenomicAlignments::findOverlaps(query         = feature.gr, # feature.gr,
                                                               subject       = yld.gr, # yld.gr, #
-                                                              type          = "any", 
+                                                              type          = "any",
                                                               ignore.strand = TRUE)
     # generate the matrix using this overlap results above.
     GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
