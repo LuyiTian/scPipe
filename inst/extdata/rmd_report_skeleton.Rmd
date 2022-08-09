@@ -196,7 +196,7 @@ DT::datatable(alignment_stats_chrom)
 # Barcode demultiplexing
 
 ```{r}
-if(NROW(data) > 1)
+if(nrow(data) > 1)
 {
   DT::datatable(data, options=list(paging=FALSE, searching=FALSE))
 } else {
@@ -274,12 +274,12 @@ kable(cell_calling_stats, row.names = TRUE, col.names = NULL) %>%
 
 ```{r  frag-peak, fig.wide = TRUE, fig.asp = 0.9}
 bc_stat[, 'group' := ifelse(bc %in% cell_barcodes, 'cell', 'non-cell')]
-
 nsub_frags    <- min(15000, nrow(bc_stat))  ## downsample for scatter plot
 bc_stat_down  <- bc_stat[sort(sample(1:nrow(bc_stat), nsub_frags)), ]
 
-g             <- plotly::ggplotly(ggplot(data = bc_stat_down, 
-                                         aes(x = total_frags, y = frac_peak, col = group)) + 
+
+g             <- ggplot(data = bc_stat_down, 
+                                    aes(x = total_frags, y = frac_peak, col = group)) + 
                                     geom_point(size = 0.5) + scale_x_continuous(trans='log10') + 
                                     theme_bw() +
                                     theme(legend.position = 'none', 
@@ -287,7 +287,7 @@ g             <- plotly::ggplotly(ggplot(data = bc_stat_down,
                                           axis.text = element_text(size = 15, family = "Helvetica"),
                                           axis.title = element_text(size = 18, family = "Helvetica")) +
                                     xlab('Total #Unique Fragments') + 
-                                    ylab('Fraction in Peak'))
+                                    ylab('Fraction in Peak')
 
 text1          <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
                            gp=gpar(col='#E6AB02', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
@@ -303,15 +303,15 @@ g + annotation_custom(text1) + annotation_custom(text2) + scale_color_manual(val
 ```{r frag-density, fig.wide = TRUE, fig.asp = 0.9}
 bc_stat[, 'group' := ifelse(bc %in% cell_barcodes, 'cell', 'non-cell')]
 
-p     <- plotly::ggplotly(ggplot(data = bc_stat, aes(x = total_frags, fill = group)) + 
-                            geom_density() + 
-                            scale_x_continuous(trans = 'log10') + 
+p     <- ggplot(data = bc_stat, aes(x = total_frags, fill = group)) +
+                            geom_density() +
+                            scale_x_continuous(trans = 'log10') +
                             theme_bw() +
-                            theme(legend.position='none', 
+                            theme(legend.position='none',
                                   legend.title=element_blank(),
                                   axis.title = element_text(size = 18, family = "Helvetica"),
-                                  axis.text = element_text(size = 15, family = "Helvetica")) + 
-                            xlab('Total #Unique Fragments') + ylab('Density') )
+                                  axis.text = element_text(size = 15, family = "Helvetica")) +
+                            xlab('Total #Unique Fragments') + ylab('Density')
 
 text1 <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
                            gp=gpar(col='#E6AB02', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
@@ -320,6 +320,7 @@ text2 <- grobTree(textGrob("Non-cell", x=0.8,  y=0.83, hjust=0,
 
 p + annotation_custom(text1) + annotation_custom(text2) +
   scale_fill_manual(values = c('#E6AB02', '#7570B3'))
+
 ```
 
 # TSS enrichment plot
@@ -511,7 +512,9 @@ sc_atac_plot_fragments_cells_per_feature(sce)
 <div class = "row">
 <div class = "col-md-6">
 
+## Overlaps among all fragments in selected cells
 ```{r overall-overlap, fig.wide = TRUE, fig.asp = 0.9}
+# Get fraction of all fragments overlapping with each category (essentially weighted sum of fractions, weighted by number of total frags/cell)
 frac_peak     <- sum(qc_sele$total_frags * qc_sele$frac_peak)/sum(qc_sele$total_frags)
 frac_mito     <- sum(qc_sele$total_frags * qc_sele$frac_mito)/sum(qc_sele$total_frags)
 frac_promoter <- sum(qc_sele$total_frags * qc_sele$frac_promoter)/sum(qc_sele$total_frags)
@@ -535,19 +538,20 @@ kable(fracs, row.names = T, col.names = NULL) %>%
 </div>
 <div class = "col-md-6">
 
+## Box plots of overlap proportions among all selected cells
 ```{r anno-overlap-boxes, fig.wide = TRUE, fig.asp = 0.9}
 qc_sele_df      <- data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 
                          'type' = rep(c('Peaks', 'TSS', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))
   
 qc_sele_df$type <- factor(qc_sele_df$type, levels = c('Peaks', 'TSS', 'Promoter', 'Enhancer', 'Mito'))
 
-plotly::ggplotly(ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
+ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
   geom_boxplot(outlier.size = 0.01, show.legend = FALSE) + 
   scale_fill_manual(values=custom_colours) +
   theme(legend.position = 'none', 
         axis.text = element_text(size = 18, family = "Helvetica"), 
         axis.title.x = element_blank(), 
-        axis.title.y = element_text(size = 18, family = "Helvetica")) + xlab('')) 
+        axis.title.y = element_text(size = 18, family = "Helvetica")) + xlab('')
 ```
 
 </div>

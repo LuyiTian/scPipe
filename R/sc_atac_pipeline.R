@@ -199,12 +199,12 @@ sc_atac_pipeline <- function(r1,
                             min_frac_promoter = min_frac_promoter,
                             max_frac_mito = max_frac_mito)
   
-  sce <- sc_atac_create_sce(input_folder = output_folder,
-                            organism     = organism,
-                            feature_type = feature_type,
-                            pheno_data   = NULL,
-                            report       = report)
-  return(sce)
+  # sce <- sc_atac_create_sce(input_folder = output_folder,
+  #                           organism     = organism,
+  #                           feature_type = feature_type,
+  #                           pheno_data   = NULL,
+  #                           report       = report)
+  # return(sce)
 }
 
 #' @name sc_atac_pipeline_quick_test

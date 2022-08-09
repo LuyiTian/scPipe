@@ -489,7 +489,7 @@ sc_atac_feature_counting <- function(
     last_time <- Sys.time()
     #if (iter > 1) {
       cat("Chunk", iter, " completed in ")
-      cat(start.time - last_time, "seconds\n")
+      cat(last_time - start.time, "seconds\n")
     #} else {
      # cat("Chunk", iter, " initiated! \n")
      # cat(Sys.time(), "seconds\n")
