@@ -48,9 +48,9 @@ std::vector<std::string> readBarcodes(const char *barcode_fn) {
 
 	while (ks_getuntil(ks, '\n', &str, 0) >= 0) {
 		std::string line(str.s);
-		int comma1 = line.find(',');
-		int comma2 = line.find(',', comma1 + 1);
-	    	std::string secondColumn = line.substr(
+		size_t comma1 = line.find(',');
+		size_t comma2 = line.find(',', comma1 + 1);
+		std::string secondColumn = line.substr(
 			comma1 != std::string::npos ? comma1 + 1 : 0, 
 			(comma2 != std::string::npos ? comma2 - 1 : line.size()) - comma1);
 		out.push_back(secondColumn);
@@ -65,7 +65,7 @@ std::vector<std::string> readBarcodes(const char *barcode_fn) {
 // handle the building of a Trie using a barcode file
 void preprocessBarcodes(const std::vector<std::string> &barcodes, Trie &trie) {
 	// add barcodes to the trie, using the barcode index as both original and new seq id (because these barcodes aren't sorted)
-	for (int i = 0; i < barcodes.size(); i++) {
+	for (int i = 0; i < (int)barcodes.size(); i++) {
 		trie.Add_String(barcodes[i], i, i);
 	}
 }
@@ -73,14 +73,14 @@ void preprocessBarcodes(const std::vector<std::string> &barcodes, Trie &trie) {
 int count_unmatched_barcodes(const std::vector<std::string> &barcodes, const Trie &valid_barcodes, int total) {
 	std::vector<gzFile> fq2_list = open_gz_files(barcodes);
 	std::vector<kseq_t*> seq2_list;
-	for (int i = 0; i < fq2_list.size(); i++) {
+	for (int i = 0; i < (int)fq2_list.size(); i++) {
 		seq2_list.push_back(kseq_init(fq2_list[i]));
 	}
 
 	int failed = 0;
 	for (int i = 0; i < total; i++) {
 		bool noMatch = false;
-		for (int j = 0; j < seq2_list.size(); j++) {
+		for (int j = 0; j < (int)seq2_list.size(); j++) {
 			kseq_t* seq2 = seq2_list[j];
 			if (kseq_read(seq2) >= 0) {
 				std::string barcode (seq2->seq.s);
@@ -95,7 +95,7 @@ int count_unmatched_barcodes(const std::vector<std::string> &barcodes, const Tri
 		}
 	}
 
-	for (int j = 0; j < seq2_list.size(); j++) {
+	for (int j = 0; j < (int)seq2_list.size(); j++) {
 		kseq_t* seq2 = seq2_list[j];
         kseq_destroy(seq2);// free seq
         gzclose(fq2_list[j]);
@@ -179,7 +179,7 @@ void kseq_t_to_bam_t(kseq_t *seq, bam1_t *b, int trim_n)
 {
     int seq_l = seq->seq.l - trim_n; // seq length after trim the barcode
     b->l_data = seq->name.l + 1 + (int)(1.5 * seq_l + (seq_l % 2 != 0)); // +1 includes the tailing '\0'
-    if (b->m_data < b->l_data)
+    if ((int)b->m_data < (int)b->l_data)
     {
         b->m_data = b->l_data;
         kroundup32(b->m_data);
@@ -238,7 +238,7 @@ void paired_fastq_to_bam(char *fq1_fn, char *fq2_fn, char *bam_out, const read_s
     hdr->n_targets = 0;
     int hts_retcode;
     hts_retcode = sam_hdr_write(fp, hdr);
-
+	if (hts_retcode < 0) Rcpp::Rcout << "Error in sam_hdr_write to " << bam_out << "\n";
     // get settings
     int id1_st = read_structure.id1_st;
     int id1_len = read_structure.id1_len;
@@ -717,7 +717,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 	// preprocess the fastq barcode file(s) so that we have a vector of gzFiles to deal with
     std::vector<gzFile> fq2_list = open_gz_files(fq2_fn_list);
 	std::vector<kseq_t*> seq2_list;
-	for (int i = 0; i < fq2_list.size(); i++) {
+	for (int i = 0; i < (int)fq2_list.size(); i++) {
 		seq2_list.push_back(kseq_init(fq2_list[i]));
 	}
     
@@ -989,7 +989,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 		// if all n barcode files give an exact match, match type is exact
 		// if 1<=x<n are exact or partial matches, match type is partial
 		// if all n barcodes are no match, no match
-		if (barcodeExact == seq2_list.size()) {
+		if (barcodeExact == (int)seq2_list.size()) {
 			barcodeMatchType = Exact;
 			exactMatches++;
 		} else if (barcodePartial + barcodeExact >= 1) {
@@ -1256,7 +1256,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         }
         
         // check if this read is long enough for input params
-        if (bc1_end > seq1->seq.l) {
+        if (bc1_end > (int)seq1->seq.l) {
             Rcpp::stop("Read not long enough to support bc1 length");
         }
 
@@ -1264,7 +1264,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             if((l3 = kseq_read(seq3)) < 0){
                 Rcpp::Rcout << "R3 file is not of same length as R2: " << std::endl;
             } else {
-                if (bc2_end > seq3->seq.l) {
+                if (bc2_end > (int)seq3->seq.l) {
                     Rcpp::stop("Read not long enough to support bc2 length");
                 }
             }

@@ -249,8 +249,9 @@ sc_atac_feature_counting <- function(
       # Try to read first 5 rows of feature_input file to see if the format is correct
       feature_head <- utils::read.table(feature_input, nrows = 5)
       if(ncol(feature_head) < 3){
-        warning("Feature file provided does not contain 3 columns. Cannot append chr")
-        break;
+		stop("Feature file provided does not contain 3 columns. Cannot append chr")
+        # warning("Feature file provided does not contain 3 columns. Cannot append chr")
+        # break;
       }
       
       
@@ -283,8 +284,9 @@ sc_atac_feature_counting <- function(
         # Try to read first 5 rows of excluded_regions file to see if the format is correct
         excluded_regions_head <- utils::read.table(excluded_regions_filename, nrows = 5)
         if(ncol(excluded_regions_head) < 3){
-          warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
-          break
+			stop("excluded_regions file provided does not contain 3 columns. Cannot append chr")
+        #   warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
+        #   break
         }
         
         rcpp_append_chr_to_bed_file(excluded_regions_filename, out_bed_filename_excluded_regions)
@@ -651,7 +653,7 @@ sc_atac_feature_counting <- function(
 
   pro.gr <- rtracklayer::import(promoters_file)
   enhs.gr <- rtracklayer::import(enhs_file)
-  tss_df <- data.table::fread(tss_file, select=c(1:3), header = F, col.names = c("chr", "start", "end"))
+  tss_df <- data.table::fread(tss_file, select=c(1:3), header = FALSE, col.names = c("chr", "start", "end"))
   tss.gr <- GenomicRanges::makeGRangesFromDataFrame(tss_df)
 
   pro.overlaps <- GenomicRanges::findOverlaps(query = features_in_matrix,
