@@ -617,9 +617,13 @@ sc_atac_feature_counting <- function(
         "\n"
       ),
       file = log_file, append = TRUE)
-    
     filtered_indices  <- base::colSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_cell_counts
-    matrixData        <- matrixData[, filtered_indices] # all the remaining columns
+    
+    if (length(filtered_indices[filtered_indices == TRUE]) >= 10) { # only use if resulting matrix isn't too small
+      matrixData <- as.matrix(matrixData[, filtered_indices]) # all the remaining columns
+    } else {
+      message("No cells were filtered out since otherwise there would be too few left.")
+    }
   } else {
     message("No cells were filtered out based on counts.")
   }
@@ -636,14 +640,16 @@ sc_atac_feature_counting <- function(
         "\n"
       ),
       file = log_file, append = TRUE)
-    print(base::rowSums(Matrix::as.matrix(matrixData), na.rm=TRUE))
     filtered_indices  <- base::rowSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_feature_counts
-    matrixData        <- matrixData[filtered_indices,] # all the remaining rows
-    cat("filtered indices\n")
+    if (length(filtered_indices[filtered_indices == TRUE]) >= 10) {
+      matrixData <- matrixData[filtered_indices,] # all the remaining rows
+    } else {
+      message("No features were filtered out since otherwise there would be too few left.")
+    }
+    
   } else {
     message("No features were filtered out based on counts.")
   }
-  
   ############### calculate TSS enrichment ################
   
   
@@ -728,12 +734,10 @@ sc_atac_feature_counting <- function(
   enhs.hits <- seq(length(features_in_matrix)) %in% S4Vectors::queryHits(enhs.overlaps)
   tss.hits <- seq(length(features_in_matrix)) %in% S4Vectors::queryHits(tss.overlaps)
 
-  cat("cbind start\n")
   info_per_feature <- cbind(info_per_feature,
                             promoter_overlaps = pro.hits,
                             enhancer_overlaps = enhs.hits,
                             tss_overlaps = tss.hits)
-  cat("cbind mid\n")
   if (!is.null(gene_anno_file) && file.exists(gene_anno_file)) {
     gene_anno.gr <- rtracklayer::import(gene_anno_file)
     gene.overlaps <- GenomicRanges::findOverlaps(query = features_in_matrix,
@@ -745,7 +749,6 @@ sc_atac_feature_counting <- function(
     info_per_feature <- cbind(info_per_feature, gene_overlaps = gene.hits, intergenic = intergenic)
   }
   
-  cat("cbind end\n")
 
   cat(
     paste0(
@@ -758,6 +761,7 @@ sc_atac_feature_counting <- function(
   utils::write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
   utils::write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
   
+  cat("writing to csv\n")
   
   cat(
     paste0(
@@ -778,8 +782,7 @@ sc_atac_feature_counting <- function(
   
   end_time <- Sys.time()
   message(paste0(
-    "sc_atac_feature_counting completed in ", round(end_time - init_time, 2), " minutes"))
-  
+    "sc_atac_feature_counting completed in ", difftime(end_time, init_time, units = "secs")[[1]], " seconds"))
 }
 
 

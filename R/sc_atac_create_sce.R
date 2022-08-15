@@ -54,14 +54,14 @@ sc_atac_create_sce <- function(input_folder  = NULL,
   cell_stats    <- read.csv(file.path(input_stats_folder, "filtered_stats_per_cell.csv"), row.names=1)
   feature_stats <- read.csv(file.path(input_stats_folder, "filtered_stats_per_feature.csv"))
   
+
   # need to change from here.... (check whether I need to filter before saving to the SCE object)
   
   # can I order a matrix like a csv file like below? test...
-  feature_cnt      <- feature_cnt[, order(colnames(feature_cnt))]
-  
+  feature_cnt      <- feature_cnt[, order(c(colnames(feature_cnt)))]
   qc <- utils::read.table(file.path(input_folder, "qc_per_bc_file.txt"), header = TRUE, row.names = "bc")
   cell_stats <- merge(x = cell_stats, y = qc, by = 0, all.x = TRUE) %>% tibble::column_to_rownames(var = "Row.names")
-  cell_stats       <- cell_stats[order(rownames(cell_stats)), ]
+  cell_stats       <- cell_stats[order(c(rownames(cell_stats))), ]
   
 
   # generating the SCE object
