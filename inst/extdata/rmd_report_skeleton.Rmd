@@ -512,7 +512,7 @@ sc_atac_plot_fragments_cells_per_feature(sce)
 <div class = "row">
 <div class = "col-md-6">
 
-## Overlaps among all fragments in selected cells
+Overlaps among all fragments in selected cells
 ```{r overall-overlap, fig.wide = TRUE, fig.asp = 0.9}
 # Get fraction of all fragments overlapping with each category (essentially weighted sum of fractions, weighted by number of total frags/cell)
 frac_peak     <- sum(qc_sele$total_frags * qc_sele$frac_peak)/sum(qc_sele$total_frags)
@@ -538,7 +538,7 @@ kable(fracs, row.names = T, col.names = NULL) %>%
 </div>
 <div class = "col-md-6">
 
-## Box plots of overlap proportions among all selected cells
+Box plots of overlap proportions among all selected cells
 ```{r anno-overlap-boxes, fig.wide = TRUE, fig.asp = 0.9}
 qc_sele_df      <- data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 
                          'type' = rep(c('Peaks', 'TSS', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))

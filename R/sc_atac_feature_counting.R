@@ -413,12 +413,16 @@ sc_atac_feature_counting <- function(
   iter <- 1
   total_reads <- 0 # total reads in BAM file in that satisfy the specified parameter
   all_bcs <- c() # all the unique barcodes in the BAM file
-  last_time <- NULL
+  last_time <- Sys.time()
 
+  # Update feature file
+  unique_feature.gr <- data.frame(feature.gr) %>% distinct(seqnames, start, end) %>% as.data.frame() %>% GenomicRanges::makeGRangesFromDataFrame()
+  min_feature_width <- min(GenomicAlignments::ranges(feature.gr)@width)
+  
+  
   while(length(yld <- GenomicAlignments::readGAlignments(bamfl, use.names = TRUE, param = param))) {
     yld.gr <- GenomicRanges::makeGRangesFromDataFrame(yld, keep.extra.columns=TRUE) 
-    
-    start.time  <- Sys.time()
+    max_read_width <- max(GenomicAlignments::ranges(yld.gr)@width)
     
     bcs         <- yld.gr$CB
     all_bcs     <- unique(append(all_bcs, bcs)) 
@@ -445,18 +449,25 @@ sc_atac_feature_counting <- function(
                                                         ignore.strand = TRUE)
     bin_hits <- c(bin_hits, queryHits(tss_bin_overlaps)) # gives the indices of bins_df_all that were hit
 
-<<<<<<< HEAD
-    # Compute overlaps with peaks
-    overlaps               <- GenomicAlignments::findOverlaps(query         = feature.gr, # feature.gr,
-                                                              subject       = yld.gr, # yld.gr, #
-                                                              type          = "any",
-                                                              ignore.strand = TRUE)
-    
+    # Compute overlaps
+
+    if (max_read_width < min_feature_width) {
+      overlaps               <- GenomicAlignments::findOverlaps(query         = yld.gr,
+                                                                subject       = unique_feature.gr, 
+                                                                type          = "within")
+    } else {
+      overlap_size <- 0.5*min(min_feature_width, min(GenomicAlignments::ranges(yld.gr)@width))
+      overlaps               <- GenomicAlignments::findOverlaps(query         = yld.gr,
+                                                                subject       = unique_feature.gr, 
+                                                                type          = "any",
+                                                                minoverlap    = overlap_size)
+    }
+    cat("Number of overlaps: ", length(overlaps), "\n")
+
     # generate the matrix using this overlap results above.
-    GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
-    GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakEnd"]   <- end(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
+    GenomicRanges::mcols(yld.gr)[S4Vectors::queryHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(feature.gr)[S4Vectors::subjectHits(overlaps)])
+    GenomicRanges::mcols(yld.gr)[S4Vectors::queryHits(overlaps), "peakEnd"]   <- end(GenomicAlignments::ranges(feature.gr)[S4Vectors::subjectHits(overlaps)])
     
-    #is removing NAs here the right thing to do?
     overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% select(seqnames, peakStart, peakEnd, CB)
     overlap.df <- overlap.df %>% 
       group_by(seqnames, peakStart, peakEnd, CB) %>% 
@@ -488,14 +499,9 @@ sc_atac_feature_counting <- function(
       feature_matrix <- add_matrices(feature_matrix, Matrix::Matrix(matrixData))
     }
     
+    cat("Chunk", iter, "completed in ")
+    cat(difftime(Sys.time(), last_time, units = "secs")[[1]], "seconds\n")
     last_time <- Sys.time()
-    #if (iter > 1) {
-      cat("Chunk", iter, " completed in ")
-      cat(last_time - start.time, "seconds\n")
-    #} else {
-     # cat("Chunk", iter, " initiated! \n")
-     # cat(Sys.time(), "seconds\n")
-    #}
     iter <- iter+1
 
   }
@@ -557,6 +563,7 @@ sc_atac_feature_counting <- function(
   utils::write.csv(tss_plot_data, file = file.path(log_and_stats_folder, "tss_plot_data.csv"))
   
   # generate quality control metrics for cells
+<<<<<<< HEAD
   cat("Generating QC metrics for cells\n")
   sc_atac_create_qc_per_bc_file(inbam = insortedbam,
                                 frags_file = file.path(output_folder, "fragments.bed"),
@@ -565,6 +572,16 @@ sc_atac_feature_counting <- function(
                                 tss_file = tss_file,
                                 enhs_file = enhs_file,
                                 output_folder = output_folder)
+=======
+  message("Generating QC metrics for cells\n")
+  # sc_atac_create_qc_per_bc_file(inbam = insortedbam,
+  #                               frags_file = file.path(output_folder, "fragments.bed"),
+  #                               peaks_file = feature_input,
+  #                               promoters_file = promoters_file,
+  #                               tss_file = tss_file,
+  #                               enhs_file = enhs_file,
+  #                               output_folder = output_folder)
+>>>>>>> added modifications to overlap detection
 
   qc_per_bc_file <- file.path(output_folder, "qc_per_bc_file.txt")
 
@@ -576,8 +593,6 @@ sc_atac_feature_counting <- function(
     ),
     file = log_file, append = TRUE)
 
-  print(feature_matrix)
-  
   # Cell calling
   matrixData <- sc_atac_cell_calling(mat               = feature_matrix,
                                      cell_calling      = cell_calling,
