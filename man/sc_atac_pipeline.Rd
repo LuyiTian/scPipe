@@ -23,7 +23,7 @@ sc_atac_pipeline(
   samtools_path = NULL,
   genome_size = NULL,
   bin_size = NULL,
-  yieldsize = 1e+07,
+  yieldsize = 1e+06,
   mapq = 30,
   exclude_regions = TRUE,
   excluded_regions_filename = NULL,

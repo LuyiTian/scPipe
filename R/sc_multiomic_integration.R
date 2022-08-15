@@ -47,8 +47,8 @@ sc_multiomic_integration <- function(sce.atac, sce.rna, output_folder = NULL){
     file = log_file, append = TRUE)
   
   # sanity check to know whether both are SCE objects
-  if (class(x = sce.atac) != "SingleCellExperiment") && (class(x = sce.rna) != "SingleCellExperiment") { 
-    stop("One of the SCE objects are corrupted or don' exist. Please check them again before running this fucnction \n") 
+  if (class(x = sce.atac) != "SingleCellExperiment" && class(x = sce.rna) != "SingleCellExperiment") { 
+    stop("One of the SCE objects are corrupted or dont' exist. Please check them again before running this fucnction \n") 
   }
   
   

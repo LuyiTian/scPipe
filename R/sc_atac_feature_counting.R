@@ -563,8 +563,7 @@ sc_atac_feature_counting <- function(
   utils::write.csv(tss_plot_data, file = file.path(log_and_stats_folder, "tss_plot_data.csv"))
   
   # generate quality control metrics for cells
-<<<<<<< HEAD
-  cat("Generating QC metrics for cells\n")
+  message("Generating QC metrics for cells\n")
   sc_atac_create_qc_per_bc_file(inbam = insortedbam,
                                 frags_file = file.path(output_folder, "fragments.bed"),
                                 peaks_file = feature_input,
@@ -572,16 +571,7 @@ sc_atac_feature_counting <- function(
                                 tss_file = tss_file,
                                 enhs_file = enhs_file,
                                 output_folder = output_folder)
-=======
-  message("Generating QC metrics for cells\n")
-  # sc_atac_create_qc_per_bc_file(inbam = insortedbam,
-  #                               frags_file = file.path(output_folder, "fragments.bed"),
-  #                               peaks_file = feature_input,
-  #                               promoters_file = promoters_file,
-  #                               tss_file = tss_file,
-  #                               enhs_file = enhs_file,
-  #                               output_folder = output_folder)
->>>>>>> added modifications to overlap detection
+
 
   qc_per_bc_file <- file.path(output_folder, "qc_per_bc_file.txt")
 
