@@ -465,8 +465,8 @@ sc_atac_feature_counting <- function(
     cat("Number of overlaps: ", length(overlaps), "\n")
 
     # generate the matrix using this overlap results above.
-    GenomicRanges::mcols(yld.gr)[S4Vectors::queryHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(feature.gr)[S4Vectors::subjectHits(overlaps)])
-    GenomicRanges::mcols(yld.gr)[S4Vectors::queryHits(overlaps), "peakEnd"]   <- end(GenomicAlignments::ranges(feature.gr)[S4Vectors::subjectHits(overlaps)])
+    GenomicRanges::mcols(yld.gr)[S4Vectors::queryHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(unique_feature.gr)[S4Vectors::subjectHits(overlaps)])
+    GenomicRanges::mcols(yld.gr)[S4Vectors::queryHits(overlaps), "peakEnd"]   <- end(GenomicAlignments::ranges(unique_feature.gr)[S4Vectors::subjectHits(overlaps)])
     
     overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% select(seqnames, peakStart, peakEnd, CB)
     overlap.df <- overlap.df %>% 
@@ -636,9 +636,10 @@ sc_atac_feature_counting <- function(
         "\n"
       ),
       file = log_file, append = TRUE)
-    
+    print(base::rowSums(Matrix::as.matrix(matrixData), na.rm=TRUE))
     filtered_indices  <- base::rowSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_feature_counts
     matrixData        <- matrixData[filtered_indices,] # all the remaining rows
+    cat("filtered indices\n")
   } else {
     message("No features were filtered out based on counts.")
   }
@@ -648,6 +649,7 @@ sc_atac_feature_counting <- function(
   
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
+  cat("making sparse\n")
   sparseM <- Matrix::Matrix(matrixData, sparse=TRUE)
   # # add dimensions of the sparse matrix if available
   # if(cell_calling != FALSE){
@@ -698,8 +700,10 @@ sc_atac_feature_counting <- function(
       by = "feature"
     )
 
+
   # Add annotation overlap information to the feature information data frame
-  features_in_matrix <- unique(feature.gr)[paste(seqnames(unique(feature.gr)), GenomicAlignments::ranges(unique(feature.gr)), sep=":") %in% info_per_feature$feature]
+  cat("Computing feature QC metrics\n")
+  features_in_matrix <- unique_feature.gr[paste(seqnames(unique_feature.gr), GenomicAlignments::ranges(unique_feature.gr), sep=":") %in% info_per_feature$feature]
 
   pro.gr <- rtracklayer::import(promoters_file)
   enhs.gr <- rtracklayer::import(enhs_file)
@@ -724,11 +728,12 @@ sc_atac_feature_counting <- function(
   enhs.hits <- seq(length(features_in_matrix)) %in% S4Vectors::queryHits(enhs.overlaps)
   tss.hits <- seq(length(features_in_matrix)) %in% S4Vectors::queryHits(tss.overlaps)
 
+  cat("cbind start\n")
   info_per_feature <- cbind(info_per_feature,
                             promoter_overlaps = pro.hits,
                             enhancer_overlaps = enhs.hits,
                             tss_overlaps = tss.hits)
-
+  cat("cbind mid\n")
   if (!is.null(gene_anno_file) && file.exists(gene_anno_file)) {
     gene_anno.gr <- rtracklayer::import(gene_anno_file)
     gene.overlaps <- GenomicRanges::findOverlaps(query = features_in_matrix,
@@ -739,7 +744,8 @@ sc_atac_feature_counting <- function(
     intergenic <- !(pro.hits | enhs.hits | tss.hits | gene.hits)
     info_per_feature <- cbind(info_per_feature, gene_overlaps = gene.hits, intergenic = intergenic)
   }
-
+  
+  cat("cbind end\n")
 
   cat(
     paste0(
@@ -764,23 +770,11 @@ sc_atac_feature_counting <- function(
   # create the sce object
   sc_atac_create_sce(input_folder = output_folder,
                             organism     = organism,
+                            sample       = sample_name,
                             feature_type = feature_type,
                             pheno_data   = pheno_data,
-                            report       = FALSE)
-  
-  # create the report if the option is given
-  if(create_report){
-    inputfolder <- dirname(insortedbam)
-    sc_atac_create_report(input_folder = inputfolder,
-                          output_folder= file.path(output_folder, "scPipe_atac_stats"),
-                          sample_name  = sample_name,
-                          organism     = organism,
-                          feature_type = feature_type,
-                          tss_file      = tss_file,
-                          promoter_file = promoters_file,
-                          enhancer_file = enhs_file
-                          )
-  }
+                            report       = create_report)
+
   
   end_time <- Sys.time()
   message(paste0(

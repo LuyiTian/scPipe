@@ -11,11 +11,8 @@ params:
   organism: "ORGANISM__"
   sample: "SAMPLE__"
   feature_type: "FEATURE_TYPE__"
-  feature_file: "FEATURE_FILE__"
   n_barcode_subset: "N_BARCODE_SUBSET__"
-  tss_file: "TSS_FILE__"
-  promoter_file: "PROMOTER_FILE__"
-  enhancer_file: "ENHANCER_FILE__"
+
 editor_options:
   chunk_output_type: console
 ---
@@ -96,12 +93,6 @@ bc_stat                        <- fread(qc_per_bc_file)[bc %in% unfiltered_mtx_b
 
 qc_sele                        <- bc_stat[bc %in% cell_barcodes, ]
 qc_nonsele                     <- bc_stat[!bc %in% cell_barcodes, ]
-
-#features loaded here
-peaks_file                     <- file.path(params$feature_file)
-promoters_file                 <- file.path(params$promoter_file)
-tss_file                       <- file.path(params$tss_file)
-enhs_file                      <- file.path(params$enhancer_file)
 
 ```
 

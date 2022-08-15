@@ -25,11 +25,9 @@
 
 sc_atac_create_sce <- function(input_folder  = NULL, 
                                organism      = NULL, 
+                               sample_name   = NULL,
                                feature_type  = NULL, 
                                pheno_data    = NULL, 
-                               tss_file      = NULL,
-                               promoter_file = NULL,
-                               enhancer_file = NULL,
                                report        = FALSE) {
   
   # if(is.null(input_folder)){
@@ -101,12 +99,9 @@ sc_atac_create_sce <- function(input_folder  = NULL,
   if(report){
     sc_atac_create_report(input_folder  = file.path(input_folder),
                           output_folder = file.path(input_folder, "scPipe_atac_stats"),
-                          sample_name   = NULL,
+                          sample_name   = sample_name,
                           organism      = organism,
-                          feature_type  = feature_type,
-                          tss_file      = NULL,
-                          promoter_file = NULL,
-                          enhancer_file = NULL)
+                          feature_type  = feature_type)
   }
   
   
