@@ -6,21 +6,15 @@
 \usage{
 sc_atac_create_report(
   input_folder,
-  feature_file,
   output_folder = NULL,
   organism = NULL,
   sample_name = NULL,
   feature_type = NULL,
-  n_barcode_subset = NULL,
-  tss_file = NULL,
-  promoter_file = NULL,
-  enhancer_file = NULL
+  n_barcode_subset = 500
 )
 }
 \arguments{
 \item{input_folder}{The path of the folder produced by the pipeline}
-
-\item{feature_file}{is the peak or genome_bin file that was generated via ScPipe workflow or outside the workflow (.bed format)}
 
 \item{output_folder}{The path of the output folder to store the HTML report in}
 

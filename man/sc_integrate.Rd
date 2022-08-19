@@ -2,33 +2,37 @@
 % Please edit documentation in R/sc_integrate.R
 \name{sc_integrate}
 \alias{sc_integrate}
-\title{Integrate multi-omic scRNA-Seq and scATAC-Seq data}
+\title{Integrate multi-omic scRNA-Seq and scATAC-Seq data into a MultiAssayExperiment}
 \usage{
 sc_integrate(
-  sce_rna,
-  sce_atac,
+  sce_list,
   barcode_match_file,
-  rna_barcode = NULL,
-  atac_barcode = NULL,
-  atac_revcomp = FALSE,
+  sce_column_to_barcode_files = NULL,
+  rev_comp = NULL,
   output_folder = NULL
 )
 }
 \arguments{
-\item{sce_rna}{SCE object for scRNA-Seq data}
+\item{sce_list}{A list of SCE objects, named with the corresponding technologies}
 
-\item{sce_atac}{SCE object for scATAC-Seq data}
+\item{barcode_match_file}{A .csv file with columns corresponding to the barcodes for each tech}
 
-\item{barcode_match_file}{A .csv file with scRNA-Seq based barcodes in column 1 and scATAC-Seq barcodes in column 2 with a header row}
+\item{sce_column_to_barcode_files}{A list of files containing the barcodes for each tech (if not needed then give a `NULL` entry)}
 
-\item{rna_barcode}{A .csv file (w/ header row) that is output from scPipe RNA-Seq preprocessing pipeline that has cell name and barcode assignment (cell name should be the first column and barcode sequence in the second column). If the colnames of the inputing SCE for RNA-Seq is different to what is in the `barcode_match_file`, ths file is needed (optional)}
-
-\item{atac_barcode}{A .csv file (w/ header row) that has assignment of barcode to different cell names assigned in the ATAC-Seq based SCE object (cell name should be the first column and barcode sequence in the second column). If the colnames of the inputing SCE for ATAC-Seq is different to what is in the `barcode_match_file`, ths file is needed (optional)}
-
-\item{atac_revcomp}{A logical parameter if TRUE will convert the ATAC-Seq barcode list to revcomp(); Default: FALSE}
-
-\item{output_folder}{The path of the output folder to store the integrated SCE object in}
+\item{output_folder}{The path to the output folder}
 }
 \description{
 Generates an integrated SCE object with scRNA-Seq and scATAC-Seq data produced by the scPipe pipelines
+}
+\examples{
+\dontrun{
+sc_integrate(
+   sce_list = list("RNA" = sce.rna, "ATAC" = sce.atac),
+   barcode_match_file = bc_match_file,
+   sce_column_to_barcode_files = list("RNA" = rna_bc_anno, "ATAC" = NULL),
+   rev_comp = list("RNA" = FALSE, "ATAC" = TRUE),
+   output_folder = output_folder
+   )
+}  
+
 }
