@@ -69,13 +69,14 @@ sc_integrate <- function(sce_list,
     names(sce_list) <- techs # add names back
   }
   
+  barcode_match_df <- read.csv(barcode_match_file, header = TRUE)
+  
   # Check if the barcodes match up with those in the match file, and if not, try taking the reverse complement to see if it helps
   sce_list <- lapply(seq_along(sce_list), function(i) {
     sce <- sce_list[[i]]
     tech <- names(sce_list)[[i]]
     matched <- na.omit(match(colnames(sce), barcode_match_df[[tech]]))
     if (length(matched)/length(colnames(sce)) < 0.2) {
-      # Try taking reverse comp
       cat("Less than 20% of", tech, "barcodes match with the barcodes in the barcode match file. Trying the reverse complement.\n")
       rev_comp <- Biostrings::reverseComplement(DNAStringSet(colnames(sce))) %>% as.character()
       new_matched <- na.omit(match(rev_comp, barcode_match_df[[tech]]))
@@ -92,9 +93,7 @@ sc_integrate <- function(sce_list,
   
   # Outer join the column data
   cat("Merging qc metrics\n")
-  barcode_match_df <- read.csv(barcode_match_file, header = TRUE)
-  first_tech <- names(sce_list)[[1]]
-  
+
   qc_dfs <- lapply(seq_along(sce_list), function(i) {
     sce <- sce_list[[i]]
     tech <- techs[[i]]
@@ -110,7 +109,7 @@ sc_integrate <- function(sce_list,
   mae@metadata$scPipe$integrated_qc <- merged_qc
   
   # Save the MAE object
-  saveRDS(mae, file.path(output_folder, "scPipe_MAE_object.rds"))
+  # saveRDS(mae, file.path(output_folder, "scPipe_MAE_object.rds"))
   
   cat("sc_integrate_complete.\n")
   return(mae)
