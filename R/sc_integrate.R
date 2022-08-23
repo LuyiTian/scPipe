@@ -114,3 +114,82 @@ sc_integrate <- function(sce_list,
   cat("sc_integrate_complete.\n")
   return(mae)
 }
+
+#' @name sc_mae_plot_umap
+#' @title Generates UMAP of multiomic data
+#' @description Uses feature count data from multiple experiment objects to produce a UMAP 
+#' @param mae The MultiAssayExperiment object
+#' @param output_file The path of the output file
+#' @export
+sc_mae_plot_umap <- function(mae,
+                          output_file = NULL) {
+  set.seed(123)
+  
+  umap_dfs <- lapply(seq_along(mae), function(i) {
+    tech <- names(mae)[[i]]
+    counts <- assays(mae)[[tech]]
+    bin_mat <- as.matrix((counts>0)+0)
+    binary.mat <- TF.IDF.custom(bin_mat)
+    n_bcs <- max(min(50, ncol(binary.mat), nrow(binary.mat))-1,0)
+    mat.lsi          <- irlba(binary.mat, n_bcs)
+    d_diagtsne       <- matrix(0, n_bcs, n_bcs)
+    diag(d_diagtsne) <- mat.lsi$d
+    mat_pcs          <- t(d_diagtsne %*% t(mat.lsi$v))
+    rownames(mat_pcs)<- colnames(binary.mat)
+    
+    # clustering in the PCA space using KNN --------------
+    knn.info<- RANN::nn2(mat_pcs, k = 30)
+    
+    ## convert to adjacency matrix
+    knn           <- knn.info$nn.idx
+    adj           <- matrix(0, nrow(mat_pcs), nrow(mat_pcs))
+    rownames(adj) <- colnames(adj) <- rownames(mat_pcs)
+    for(i in seq_len(nrow(mat_pcs))) {
+      adj[i,rownames(mat_pcs)[knn[i,]]] <- 1
+    }
+    
+    ## convert to graph
+    g <- igraph::graph.adjacency(adj, mode="undirected")
+    g <- simplify(g) ## remove self loops
+    
+    # identify communities, many algorithums. Use the Louvain clustering ------------
+    km         <- igraph::cluster_louvain(g)
+    com        <- km$membership
+    names(com) <- km$names
+    
+    # running UMAP ------------------------------
+    norm.data.umap    <- umap::umap(mat_pcs)
+    
+    df_umap           <- as.data.frame(norm.data.umap$layout)
+    colnames(df_umap) <- c("UMAP1", "UMAP2")
+    df_umap$barcode   <- rownames(mat_pcs)
+    
+    df_umap           <- dplyr::left_join(df_umap, enframe(com), by = c("barcode" = "name")) %>%
+      dplyr::rename(cluster = value) %>%
+      dplyr::mutate(cluster = as.factor(cluster))
+    
+    df_umap$source <- tech
+    
+    df_umap
+  })
+  names(umap_dfs) <- names(mae)
+  
+  umap_data <- do.call(rbind, umap_dfs)
+  
+  g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
+                     geom_point(aes(col = cluster, shape = source), size = 0.5) +
+                     theme_bw(base_size = 14)
+  
+  if (!is.null(output_file)) {
+    if (file.exists(output_file)) {
+      ggsave(output_file)
+      cat("Saved plot to", output_file, "\n")
+    } else {
+      cat("The supplied output file path was invalid.\n")
+    }
+  }
+  
+  plotly::ggplotly(g)
+  
+  return(g)
+}
