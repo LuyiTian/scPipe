@@ -9,6 +9,9 @@ sc_atac_create_sce(
   organism = NULL,
   feature_type = NULL,
   pheno_data = NULL,
+  tss_file = NULL,
+  promoter_file = NULL,
+  enhancer_file = NULL,
   report = FALSE
 )
 }
