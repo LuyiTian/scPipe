@@ -152,7 +152,7 @@ sc_mae_plot_umap <- function(mae,
     g <- igraph::graph.adjacency(adj, mode="undirected")
     g <- simplify(g) ## remove self loops
     
-    # identify communities, many algorithums. Use the Louvain clustering ------------
+    # identify communities, many algorithms. Use the Louvain clustering ------------
     km         <- igraph::cluster_louvain(g)
     com        <- km$membership
     names(com) <- km$names
@@ -177,7 +177,7 @@ sc_mae_plot_umap <- function(mae,
   umap_data <- do.call(rbind, umap_dfs)
   
   g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
-                     geom_point(aes(col = cluster, shape = source), size = 0.5) +
+                     geom_point(aes(col = source), size = 0.5) +
                      theme_bw(base_size = 14)
   
   if (!is.null(output_file)) {
