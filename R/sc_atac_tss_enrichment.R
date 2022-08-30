@@ -74,8 +74,12 @@ sc_atac_plot_TSSE <- function(bam, outdir, txs=NULL, seqinfo=NULL, gff=NULL, TxD
 	
 	tsse <- ATACseqQC::TSSEscore(gal1, txs)
 	
-	# can we make this look a lot nicer?
-	plot(1000 * (-9.5:9.5), tsse$values, type="b", xlab="distance to TSS", ylab="aggregate TSS score")
+	df <- data.frame(tsseDistance=1000*(-9.5:9.5), tsseValues=tsse$values)
+	ggplot(df, aes(x=tsseDistance, y=tsseValues, color="ce3716")) +
+		geom_line(show.legend=FALSE) +
+		geom_point(show.legend=FALSE) +
+		labs(x="Distance to TSS", y="Aggregate TSS Score") + 
+		theme_minimal()
 	
 	# return (tsse$TSSEscore) # should we return anything?
 }
