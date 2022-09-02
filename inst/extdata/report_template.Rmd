@@ -105,7 +105,7 @@ assume read1 contains the transcript
 
 # Data summary
 
-The organism is "`r getVal(params$organism), "unknown")`", and gene id type is "`r getVal(params$gene_id_type, "unknown")`".
+The organism is "`r getVal(params$organism, "unknown")`", and gene id type is "`r getVal(params$gene_id_type, "unknown")`".
 
 ## Overall barcode statistics
 

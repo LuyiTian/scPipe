@@ -564,8 +564,7 @@ sc_atac_feature_counting <- function(
   
   # generate quality control metrics for cells
   message("Generating QC metrics for cells\n")
-  sc_atac_create_qc_per_bc_file(inbam = insortedbam,
-                                frags_file = file.path(output_folder, "fragments.bed"),
+  sc_atac_create_qc_per_bc_file(frags_file = file.path(output_folder, "fragments.bed"),
                                 peaks_file = feature_input,
                                 promoters_file = promoters_file,
                                 tss_file = tss_file,

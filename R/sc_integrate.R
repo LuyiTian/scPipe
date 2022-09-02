@@ -145,11 +145,11 @@ sc_integrate <- function(sce_list,
 #' @title Generates UMAP of multiomic data
 #' @description Uses feature count data from multiple experiment objects to produce a UMAP 
 #' @param mae The MultiAssayExperiment object
-#' @param by_cell_line Whether to colour by the cell line. Note that should only be used if the cell line info is present in the object.
+#' @param by What to colour the points by. Needs to be in colData of all experiments.
 #' @param output_file The path of the output file
 #' @export
 sc_mae_plot_umap <- function(mae,
-                             by_cell_line = FALSE,
+                             by = NULL,
                              output_file = NULL) {
   set.seed(123)
   
@@ -199,21 +199,21 @@ sc_mae_plot_umap <- function(mae,
     df_umap$source <- tech
     
     # Attach cell line info if available
-    if (!is.null(colData(experiments(mae)[[tech]])$cell_line)) {
-      sce_coldata <- colData(experiments(mae)[[tech]])[, c("cell_line"), drop=FALSE]
+    if (!is.null(colData(experiments(mae)[[tech]])[[by]])) {
+      sce_coldata <- colData(experiments(mae)[[tech]])[, c(by), drop=FALSE]
       df_umap <- base::merge(df_umap, sce_coldata, by.x = "barcode", by.y = "row.names", all.x = TRUE) 
     } else {
-      df_umap$cell_line <- NA
+      df_umap[[by]] <- NA
     }
     df_umap
   })
   names(umap_dfs) <- names(mae)
   
   umap_data <- do.call(rbind, umap_dfs)
-  
-  if (isTRUE(by_cell_line)) {
+  print(umap_data)
+  if (!is.null(by)) {
     g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
-      geom_point(aes(col = cell_line), size = 0.5) +
+      geom_point(aes(col = .data[[by]]), size = 0.5) +
       theme_bw(base_size = 14)
   } else {
     g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
@@ -230,7 +230,7 @@ sc_mae_plot_umap <- function(mae,
     }
   }
   
-  plotly::ggplotly(g)
+  # plotly::ggplotly(g)
   
   return(g)
 }
