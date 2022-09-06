@@ -6,9 +6,10 @@
 \usage{
 sc_integrate(
   sce_list,
-  barcode_match_file,
+  barcode_match_file = NULL,
   sce_column_to_barcode_files = NULL,
   rev_comp = NULL,
+  cell_line_info = NULL,
   output_folder = NULL
 )
 }
@@ -18,6 +19,8 @@ sc_integrate(
 \item{barcode_match_file}{A .csv file with columns corresponding to the barcodes for each tech}
 
 \item{sce_column_to_barcode_files}{A list of files containing the barcodes for each tech (if not needed then give a `NULL` entry)}
+
+\item{cell_line_info}{A list of files, each of which contains 2 columns corresponding to the barcode and cell line for each tech (if not needed then provide a `NULL` entry)}
 
 \item{output_folder}{The path to the output folder}
 }
@@ -31,6 +34,7 @@ sc_integrate(
    barcode_match_file = bc_match_file,
    sce_column_to_barcode_files = list("RNA" = rna_bc_anno, "ATAC" = NULL),
    rev_comp = list("RNA" = FALSE, "ATAC" = TRUE),
+   cell_line_info = list("RNA" = rna_cell_line_info, "ATAC" = atac_cell_line_info,)
    output_folder = output_folder
    )
 }  

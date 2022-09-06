@@ -59,7 +59,9 @@ sc_atac_create_sce <- function(input_folder  = NULL,
   
   # can I order a matrix like a csv file like below? test...
   feature_cnt      <- feature_cnt[, order(c(colnames(feature_cnt)))]
-  qc <- utils::read.table(file.path(input_folder, "qc_per_bc_file.txt"), header = TRUE, row.names = "bc")
+  
+  
+  qc <- read.csv(file.path(input_folder, "cell_qc_metrics.csv")) %>% tibble::column_to_rownames(var = "bc")
   cell_stats <- merge(x = cell_stats, y = qc, by = 0, all.x = TRUE) %>% tibble::column_to_rownames(var = "Row.names")
   cell_stats       <- cell_stats[order(c(rownames(cell_stats))), ]
   

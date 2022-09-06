@@ -172,7 +172,7 @@ sc_atac_pipeline <- function(r1,
     features <- reference
   }
 
-  sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
+  sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.bed"),
                             feature_input = features,
                             bam_tags      = list(bc="CB", mb="OX"),
                             feature_type  = feature_type,

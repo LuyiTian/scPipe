@@ -9,7 +9,7 @@ sc_atac_cell_calling(
   cell_calling,
   output_folder,
   genome_size = NULL,
-  qc_per_bc_file = NULL,
+  cell_qc_metrics_file = NULL,
   lower = NULL,
   min_uniq_frags = 3000,
   max_uniq_frags = 50000,
@@ -29,7 +29,7 @@ sc_atac_cell_calling(
 
 \item{genome_size}{genome size for the data in feature by cell matrix.}
 
-\item{qc_per_bc_file}{quality per barcode file for the barcodes in the matrix if using the \code{cellranger} or \code{filter} options.}
+\item{cell_qc_metrics_file}{quality per barcode file for the barcodes in the matrix if using the \code{cellranger} or \code{filter} options.}
 
 \item{lower}{the lower threshold for the data if using the \code{emptydrops} function for cell calling.}
 
@@ -57,7 +57,7 @@ sc_atac_cell_calling <- function(mat,
  cell_calling, 
  output_folder, 
  genome_size    = NULL, 
- qc_per_bc_file = NULL, 
+ cell_qc_metrics_file = NULL, 
  lower          = NULL)
 }
 

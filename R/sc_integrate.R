@@ -210,7 +210,6 @@ sc_mae_plot_umap <- function(mae,
   names(umap_dfs) <- names(mae)
   
   umap_data <- do.call(rbind, umap_dfs)
-  print(umap_data)
   if (!is.null(by)) {
     g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
       geom_point(aes(col = .data[[by]]), size = 0.5) +

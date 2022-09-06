@@ -92,8 +92,8 @@ cell_barcode_file              <- file.path(params$input_folder, "non_empty_barc
 cell_barcodes                  <- fread(cell_barcode_file, header=F)$V1
 
 # read in qc_per_bc file
-qc_per_bc_file                 <- file.path(params$input_folder, "qc_per_bc_file.txt")
-bc_stat                        <- fread(qc_per_bc_file)[bc %in% unfiltered_mtx_bcs, ]
+cell_qc_metrics_file           <- file.path(params$input_folder, "cell_qc_metrics.csv")
+bc_stat                        <- fread(cell_qc_metrics_file)[bc %in% unfiltered_mtx_bcs, ]
 
 qc_sele                        <- bc_stat[bc %in% cell_barcodes, ]
 qc_nonsele                     <- bc_stat[!bc %in% cell_barcodes, ]
