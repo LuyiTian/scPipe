@@ -400,14 +400,9 @@ sc_atac_feature_counting <- function(
     Reduce(`+`, newms)
   }
   
-  # Update feature file
   unique_feature.gr <- data.frame(feature.gr) %>% distinct(seqnames, start, end) %>% as.data.frame() %>% GenomicRanges::makeGRangesFromDataFrame()
   min_feature_width <- min(GenomicAlignments::ranges(feature.gr)@width)
   
- 
-  # Sinto fragments
-  # fragment_file <- "/stornext/Home/data/allstaff/y/yang.p/scPipe_testing/scPipe_atac_output/fragments_sinto.bed"
-  fragment_file <- "/stornext/General/data/user_managed/grpu_mritchie_1/PhilYang/scPipe_testing/haoyu_scMixology2_20_output/fragments_sinto.bed"
   fragments <- data.table::fread(fragment_file, select=1:5, header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
   fragments.gr <- fragments %>% makeGRangesFromDataFrame(keep.extra.columns = TRUE)
   
@@ -423,8 +418,7 @@ sc_atac_feature_counting <- function(
   maxgaptss                 <- 0.51*median_feature_overlaptss
   tss_bin_overlaps <- GenomicAlignments::findOverlaps(query = bins_df_all.gr,
                                                       subject = fragments.gr,
-                                                      type = "equal",
-                                                      maxgap = maxgaptss,
+                                                      type = "any",
                                                       ignore.strand = TRUE)
   bin_hits <- queryHits(tss_bin_overlaps) 
   
@@ -509,7 +503,7 @@ sc_atac_feature_counting <- function(
   
   # generate quality control metrics for cells
   message("Generating QC metrics for cells\n")
-  sc_atac_create_cell_qc_metrics(frags_file = file.path(output_folder, "fragments_sinto.bed"),
+  sc_atac_create_cell_qc_metrics(frags_file = fragment_file,
                                  peaks_file = feature_input,
                                  promoters_file = promoters_file,
                                  tss_file = tss_file,

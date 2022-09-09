@@ -77,7 +77,7 @@ Imports:
 SystemRequirements: C++11, GNU make
 License: GPL (>= 2)
 Encoding: UTF-8
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 NeedsCompilation: yes
 URL: https://github.com/LuyiTian/scPipe
 BugReports: https://github.com/LuyiTian/scPipe

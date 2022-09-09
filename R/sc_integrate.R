@@ -198,11 +198,10 @@ sc_mae_plot_umap <- function(mae,
     
     df_umap$source <- tech
     
-    # Attach cell line info if available
-    if (!is.null(colData(experiments(mae)[[tech]])[[by]])) {
+    if (!is.null(by) && !is.null(colData(experiments(mae)[[tech]])[[by]])) {
       sce_coldata <- colData(experiments(mae)[[tech]])[, c(by), drop=FALSE]
       df_umap <- base::merge(df_umap, sce_coldata, by.x = "barcode", by.y = "row.names", all.x = TRUE) 
-    } else {
+    } else if (!is.null(by)) {
       df_umap[[by]] <- NA
     }
     df_umap
