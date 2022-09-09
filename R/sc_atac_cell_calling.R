@@ -10,7 +10,7 @@
 #' @param cell_calling the cell calling approach, possible options are "emptydrops" , "cellranger" and "filter".
 #' @param output_folder output directory for the cell called matrix.
 #' @param genome_size genome size for the data in feature by cell matrix.
-#' @param qc_per_bc_file quality per barcode file for the barcodes in the matrix if using the \code{cellranger} or \code{filter} options.
+#' @param cell_qc_metrics_file quality per barcode file for the barcodes in the matrix if using the \code{cellranger} or \code{filter} options.
 #'
 #' @param lower the lower threshold for the data if using the \code{emptydrops} function for cell calling.
 #' 
@@ -28,7 +28,7 @@
 #'  cell_calling, 
 #'  output_folder, 
 #'  genome_size    = NULL, 
-#'  qc_per_bc_file = NULL, 
+#'  cell_qc_metrics_file = NULL, 
 #'  lower          = NULL)
 #' }
 #'
@@ -39,7 +39,7 @@ sc_atac_cell_calling <- function(mat,
                                  cell_calling, 
                                  output_folder, 
                                  genome_size    = NULL, 
-                                 qc_per_bc_file = NULL, 
+                                 cell_qc_metrics_file = NULL, 
                                  lower          = NULL,
                                  min_uniq_frags = 3000,
                                  max_uniq_frags = 50000,
@@ -57,7 +57,7 @@ sc_atac_cell_calling <- function(mat,
         sc_atac_emptydrops_cell_calling(mat = mat, output_folder = output_folder, lower = lower)
       }
       else if(cell_calling == 'cellranger') {
-        sc_atac_cellranger_cell_calling(mat = mat, genome_size = genome_size, qc_per_bc_file = qc_per_bc_file)
+        sc_atac_cellranger_cell_calling(mat = mat, genome_size = genome_size, cell_qc_metrics_file = cell_qc_metrics_file)
       } 
     },
     error = function(e) {
@@ -72,7 +72,7 @@ sc_atac_cell_calling <- function(mat,
       message("max_frac_mito = ", max_frac_mito)
       message("Running the filter method...")
       sc_atac_filter_cell_calling(mtx = mat, 
-                                  qc_per_bc_file = qc_per_bc_file,
+                                  cell_qc_metrics_file = cell_qc_metrics_file,
                                   min_uniq_frags = min_uniq_frags,
                                   max_uniq_frags = max_uniq_frags,
                                   min_frac_peak = min_frac_peak,
@@ -85,7 +85,7 @@ sc_atac_cell_calling <- function(mat,
   
   if(cell_calling == 'filter') {
     selected_cells <- sc_atac_filter_cell_calling(mtx = mat, 
-                                                  qc_per_bc_file = qc_per_bc_file,
+                                                  cell_qc_metrics_file = cell_qc_metrics_file,
                                                   min_uniq_frags = min_uniq_frags,
                                                   max_uniq_frags = max_uniq_frags,
                                                   min_frac_peak = min_frac_peak,
@@ -214,20 +214,20 @@ sc_atac_cell_calling <- function(mat,
 #' @description use the cellranger cell calling algorithm
 #' 
 #' @param mat The input matrix
-#' @param qc_per_bc_file A file containing qc statistics for each cell
+#' @param cell_qc_metrics_file A file containing qc statistics for each cell
 #' @param genome_size The size of the genome
 #' 
 #' @importFrom data.table :=
 #' @export
 #' 
-sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
+sc_atac_cellranger_cell_calling <- function(mat, cell_qc_metrics_file, genome_size){
   # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/cellranger_cell_caller.R
   # https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/algorithms/overview
   
   frac_peak <- total_frags <- NULL
   
   # first filter barcodes by frac_in_peak
-  qc_per_bc <- fread(qc_per_bc_file)
+  qc_per_bc <- fread(cell_qc_metrics_file)
   peak_cov_frac <- min(0.05, nrow(mat) * 1000/genome_size)
   qc_sele_bc <- qc_per_bc[frac_peak >= peak_cov_frac]
   
@@ -268,7 +268,7 @@ sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
 #' @description specify various qc cutoffs to select the desired cells
 #' 
 #' @param mtx The input matrix
-#' @param qc_per_bc_file A file containing qc statistics for each cell
+#' @param cell_qc_metrics_file A file containing qc statistics for each cell
 #' @param min_uniq_frags The minimum number of required unique fragments required for a cell
 #' @param max_uniq_frags The maximum number of required unique fragments required for a cell
 #' @param min_frac_peak The minimum proportion of fragments in a cell to overlap with a peak
@@ -282,7 +282,7 @@ sc_atac_cellranger_cell_calling <- function(mat, qc_per_bc_file, genome_size){
 #' 
 sc_atac_filter_cell_calling <- function(
   mtx, 
-  qc_per_bc_file,
+  cell_qc_metrics_file,
   min_uniq_frags = 0,
   max_uniq_frags = 50000,
   min_frac_peak = 0.05,
@@ -295,7 +295,7 @@ sc_atac_filter_cell_calling <- function(
 
   total_frags <- frac_mito <- frac_peak <- frac_tss <- frac_promoter <- frac_enhancer <- NULL
     
-  qc_bc_stat <- data.table::fread(qc_per_bc_file)
+  qc_bc_stat <- data.table::fread(cell_qc_metrics_file)
 
   qc_sele <- qc_bc_stat[total_frags >= min_uniq_frags & total_frags <= max_uniq_frags &
                         frac_mito <= max_frac_mito &

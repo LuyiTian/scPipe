@@ -7,7 +7,7 @@
 #' @title generating the feature by cell matrix 
 #' @description feature matrix is created using a given demultiplexed BAM file and 
 #' a selected feature type
-#' @param insortedbam The input bam
+#' @param fragment_file The fragment file
 #' @param feature_input The feature input data e.g. the .narrowPeak file for peaks of a bed file format
 #' @param bam_tags The BAM tags
 #' @param feature_type The type of feature
@@ -51,7 +51,7 @@
 #' @examples
 #' \dontrun{
 #' sc_atac_feature_counting(
-#'    insortedbam = tiny_tagged_sorted_bam,
+#'    fragment_file = fragment_file,
 #'    cell_calling = "filter",
 #'    exclude_regions = TRUE,
 #'    feature_input = feature_file)
@@ -60,7 +60,7 @@
 #' 
 
 sc_atac_feature_counting <- function(
-  insortedbam, 
+  fragment_file, 
   feature_input             = NULL, 
   bam_tags                  = list(bc="CB", mb="OX"), 
   feature_type              = "peak", 
@@ -351,16 +351,32 @@ sc_atac_feature_counting <- function(
     
   } # End if(exclude_regions)
   
-  # default values of findoverlaps (type= "any") works and we don't need to compute below paramters
-  #median_feature_overlap <- stats::median(GenomicAlignments::ranges(feature.gr)@width)
-  #minoverlap             <- 0.1*median_feature_overlap
-  #maxgap                 <- 0.1*median_feature_overlap
-  
 
+  # Check if organism is pre-recognized and if so then use the package's annotation files
+  if (organism %in% c("hg19", "hg38", "mm10")) {
+    cat(organism, "is a recognized organism. Using annotation files in repository.\n")
+    anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
+    
+    promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed.gz"))
+    tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed.gz"))
+    enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed.gz"))
+  }
+  else if (!all(file.exists(c(promoters_file, tss_file, enhs_file)))) {
+    stop("One of the annotation files could not be located. Please make sure their paths are valid.")
+  }
+
+  # Create bins used for TSS enrichment plot
+  tss_df <- data.table::fread(tss_file, select=c(1:3), header = F, col.names = c("chr", "start", "end"))
+  range <- 4000
+  bin_size <- 100
+  n_bins <- range/bin_size-1
+  bins_df_all <- get_all_TSS_bins(tss_df, range, bin_size)
+  bins_df_all.gr <- GenomicRanges::makeGRangesFromDataFrame(bins_df_all, keep.extra.columns=TRUE) 
+  bin_hits <- c() # used to store all overlaps with bins
   
   ############## read in the aligned and demultiplexed BAM file
   
-  
+  # Helper utility function for adding matrices
   add_matrices <- function(...) {
     a <- list(...)
     cols <- sort(unique(unlist(lapply(a, colnames))))
@@ -372,7 +388,6 @@ sc_atac_feature_counting <- function(
       b <- as(as(m, "dgCMatrix"), "dgTMatrix")
       s <- cbind.data.frame(i = b@i + 1, j = b@j + 1, x = b@x)
      
-
       i <- match(rownames(m), rows)[s$i]
       j <- match(colnames(m), cols)[s$j]
      
@@ -385,95 +400,63 @@ sc_atac_feature_counting <- function(
     Reduce(`+`, newms)
   }
   
-  message("Reading in the alignment file for processing ... \n")
-  param <- Rsamtools::ScanBamParam(tag = as.character(bam_tags),  mapqFilter=mapq)
-  bamfl <- open(Rsamtools::BamFile(insortedbam, yieldSize=yieldsize))
+  # Update feature file
+  unique_feature.gr <- data.frame(feature.gr) %>% distinct(seqnames, start, end) %>% as.data.frame() %>% GenomicRanges::makeGRangesFromDataFrame()
+  min_feature_width <- min(GenomicAlignments::ranges(feature.gr)@width)
   
-  message("Iterating over chunks of the BAM file and generating the feature by barcode count matrix ...\n")
+ 
+  # Sinto fragments
+  # fragment_file <- "/stornext/Home/data/allstaff/y/yang.p/scPipe_testing/scPipe_atac_output/fragments_sinto.bed"
+  fragment_file <- "/stornext/General/data/user_managed/grpu_mritchie_1/PhilYang/scPipe_testing/haoyu_scMixology2_20_output/fragments_sinto.bed"
+  fragments <- data.table::fread(fragment_file, select=1:5, header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
+  fragments.gr <- fragments %>% makeGRangesFromDataFrame(keep.extra.columns = TRUE)
   
+  # Compute overlaps with feature
+  peak.overlaps <- GenomicRanges::findOverlaps(query = fragments.gr,
+                                               subject = unique_feature.gr,
+                                               type = "any",
+                                               ignore.strand = TRUE)
+  
+  # Compute overlaps with bins for TSS enrichment plot
+  cat("Generating TSS plot data\n")
+  median_feature_overlaptss <- stats::median(GenomicAlignments::ranges(bins_df_all.gr)@width)
+  maxgaptss                 <- 0.51*median_feature_overlaptss
+  tss_bin_overlaps <- GenomicAlignments::findOverlaps(query = bins_df_all.gr,
+                                                      subject = fragments.gr,
+                                                      type = "equal",
+                                                      maxgap = maxgaptss,
+                                                      ignore.strand = TRUE)
+  bin_hits <- queryHits(tss_bin_overlaps) 
+  
+  num_overlaps <- length(peak.overlaps)
+  
+  barcodes <- fragments[queryHits(peak.overlaps), ]$barcode
+  features <- data.frame(unique_feature.gr[subjectHits(peak.overlaps), ]) %>% 
+    select(seqnames, start, end) %>% 
+    unite("range", start:end, sep="-") %>% 
+    unite("feature", seqnames:range, sep=":") 
+  
+  # Chunk size
+  chunk_size <- yieldsize
+  i <- 1
+  
+  cat("Generating feature-barcode fragment count matrix\n")
+  # Iterate over chunks
   feature_matrix <- NULL
-  iter <- 1
-  total_reads <- 0 # total reads in BAM file in that satisfy the specified parameter
-  all_bcs <- c() # all the unique barcodes in the BAM file
-  last_time <- NULL
-
-  while(length(yld <- GenomicAlignments::readGAlignments(bamfl, use.names = TRUE, param = param))) {
-    yld.gr <- GenomicRanges::makeGRangesFromDataFrame(yld, keep.extra.columns=TRUE) 
-    
-    start.time  <- Sys.time()
-    
-    bcs         <- yld.gr$CB
-    all_bcs     <- unique(append(all_bcs, bcs)) 
-    total_reads <- total_reads + length(yld.gr)
-    
-    ############# Adjusting for the Tn5 cut site
-    isMinus <- which(strand(yld.gr) == "-")
-    isOther <- which(strand(yld.gr) != "-")
-    #Forward
-    start(yld.gr)[isOther] <- start(yld.gr)[isOther] - 5
-    end(yld.gr)[isOther] <- end(yld.gr)[isOther] + 4
-    #Reverse
-    end(yld.gr)[isMinus] <- end(yld.gr)[isMinus] + 5
-    start(yld.gr)[isMinus] <- start(yld.gr)[isMinus] - 4
-    
-    ############### Overlaps
-    #cat ("Finding overlaps between alignments and features\n")
-    overlaps               <- GenomicAlignments::findOverlaps(query         = feature.gr, # feature.gr,
-                                                              subject       = yld.gr, # yld.gr, #
-                                                              type          = "any", 
-                                                              ignore.strand = TRUE)
-    # generate the matrix using this overlap results above.
-    
-    GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakStart"] <- start(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
-    GenomicRanges::mcols(yld.gr)[S4Vectors::subjectHits(overlaps), "peakEnd"]   <- end(GenomicAlignments::ranges(feature.gr)[S4Vectors::queryHits(overlaps)])
-    
-    #is removing NAs here the right thing to do?
-    overlap.df <- data.frame(yld.gr) %>% filter(!is.na(peakStart)) %>% select(seqnames, peakStart, peakEnd, CB)
-    overlap.df <- overlap.df %>% 
-      group_by(seqnames, peakStart, peakEnd, CB) %>% 
-      summarise(count = n()) %>% 
-      purrr::set_names(c("chromosome","start","end","barcode","count")) %>% 
-      unite("chrS", chromosome:start, sep=":") %>%
-      unite("feature", chrS:end, sep="-")
-    
-    matrixData <- overlap.df %>%
-      group_by(feature, barcode) %>% 
-      spread(barcode, count)
-  
-    matrixData           <- as.data.frame(matrixData)
-    
-    rownames(matrixData) <- matrixData$feature
-  
-    matrixData.old       <- matrixData
-    matrixData           <- matrixData %>%
-      dplyr::select(-1) %>%
-      data.table::as.data.table() %>%
-      Biostrings::as.matrix() %>%
-      replace(is.na(.), 0)
-
-    # add dimensions of the matrix
-    dimnames(matrixData)  <-  list(matrixData.old[1] %>% rownames(), matrixData.old %>% dplyr::select(-1) %>% colnames())
+  while (i <= num_overlaps) {
+    temp_mat <- as.matrix(table(feature = features$feature[i:(i + chunk_size-1)], 
+                                barcode = barcodes[i:(i + chunk_size-1)]))
     if (is.null(feature_matrix)) {
-      feature_matrix <- Matrix::Matrix(matrixData)
+      feature_matrix <- Matrix::Matrix(temp_mat)
     } else {
-      feature_matrix <- add_matrices(feature_matrix, Matrix::Matrix(matrixData))
+      feature_matrix <- add_matrices(feature_matrix, Matrix::Matrix(temp_mat))
     }
-    
-    last_time <- Sys.time()
-    #if (iter > 1) {
-      cat("Chunk", iter, " completed in ")
-      cat(start.time - last_time, "seconds\n")
-    #} else {
-     # cat("Chunk", iter, " initiated! \n")
-     # cat(Sys.time(), "seconds\n")
-    #}
-    iter <- iter+1
-
+    i <- i + chunk_size
   }
+ 
+  average_number_of_lines_per_CB <- sum(feature_matrix)/ncol(feature_matrix)
 
-  # Calculate average no. of reads per cellular barcode  
-  average_number_of_lines_per_CB <- total_reads/length(all_bcs)
-  message("Average no. of reads per barcode: ", average_number_of_lines_per_CB, "\n")
+  message("Average no. of fragments per barcode: ", average_number_of_lines_per_CB, "\n")
 
   
   saveRDS(feature_matrix, file = file.path(output_folder, "unfiltered_feature_matrix.rds"))
@@ -492,19 +475,6 @@ sc_atac_feature_counting <- function(
   cat("Number of regions removed from feature input due to being invalid:", number_of_lines_to_remove, "\n",
       file = log_file, append = TRUE)
 
-  ########## Check if organism is pre-recognized and if so then use the package's annotation files
-  if (organism %in% c("hg19", "hg38", "mm10")) {
-    message(organism, " is a recognized organism. Using annotation files in repository ...\n")
-    anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
-    
-    promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed.gz"))
-    tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed.gz"))
-    enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed.gz"))
-  }
-  else if (!all(file.exists(c(promoters_file, tss_file, enhs_file)))) {
-    stop("One of the annotation files could not be located. Please make sure their paths are valid.")
-  }
-
   cat(
     paste0(
       "Raw matrix generated at ",
@@ -513,17 +483,41 @@ sc_atac_feature_counting <- function(
     ),
     file = log_file, append = TRUE)
   
-  ########### generate quality control metrics for cells #########
-  message("Generating qc per barcode file ...\n")
-  sc_atac_create_qc_per_bc_file(inbam      = insortedbam,
-                                frags_file = file.path(output_folder, "fragments.bed"),
-                                peaks_file = feature_input,
-                                promoters_file = promoters_file,
-                                tss_file = tss_file,
-                                enhs_file = enhs_file,
-                                output_folder = output_folder)
+  cat("Calculating TSS enrichment scores\n")
+  # Create a matrix where the rows are TSSs and the columns are the bins
+  mat <- matrix(0, nrow(tss_df), n_bins)
+  for (i in 1:length(bin_hits)) { # populate matrix with hits
+    tss_index <- (bin_hits[i]-1) %/% n_bins
+    bin <- (bin_hits[i]-1) %% n_bins
+    mat[tss_index+1, bin+1] <- mat[tss_index+1, bin+1]+1
+  }
+  
+  mat_non_zero <- mat[rowSums(mat) != 0,]
+  
+  # Calculate TSS enrichment scores
+  
+  tss_dists <- seq(-range/2+bin_size, range/2-bin_size, bin_size)
+  flank_read_depth <- (mat_non_zero[,1]+mat_non_zero[,ncol(mat_non_zero)])/2 # Used to normalise
+  norm_read_depths <- na.omit(mat_non_zero/flank_read_depth) # also ignore rows where flanks have no overlaps
+  
+  aggregate_tss_scores <- colMeans(norm_read_depths)
+  tsse <- max(aggregate_tss_scores)
+  tss_plot_data <- data.frame(dists = tss_dists, 
+                              agg_tss_scores = aggregate_tss_scores)
+  
+  utils::write.csv(tss_plot_data, file = file.path(log_and_stats_folder, "tss_plot_data.csv"))
+  
+  # generate quality control metrics for cells
+  message("Generating QC metrics for cells\n")
+  sc_atac_create_cell_qc_metrics(frags_file = file.path(output_folder, "fragments_sinto.bed"),
+                                 peaks_file = feature_input,
+                                 promoters_file = promoters_file,
+                                 tss_file = tss_file,
+                                 enhs_file = enhs_file,
+                                 output_folder = output_folder)
 
-  qc_per_bc_file <- file.path(output_folder, "qc_per_bc_file.txt")
+
+  cell_qc_metrics_file <- file.path(output_folder, "cell_qc_metrics.csv")
 
   cat(
     paste0(
@@ -534,19 +528,19 @@ sc_atac_feature_counting <- function(
     file = log_file, append = TRUE)
 
   # Cell calling
-  matrixData <- sc_atac_cell_calling(mat               = feature_matrix,
-                                     cell_calling      = cell_calling,
-                                     output_folder     = output_folder,
-                                     genome_size       = genome_size,
-                                     qc_per_bc_file    = qc_per_bc_file,
-                                     lower             = lower,
-                                     min_uniq_frags    = min_uniq_frags,
-                                     max_uniq_frags    = max_uniq_frags,
-                                     min_frac_peak     = min_frac_peak,
-                                     min_frac_tss      = min_frac_tss,
-                                     min_frac_enhancer = min_frac_enhancer,
-                                     min_frac_promoter = min_frac_promoter,
-                                     max_frac_mito     = max_frac_mito)
+  matrixData <- sc_atac_cell_calling(mat                  = feature_matrix,
+                                     cell_calling         = cell_calling,
+                                     output_folder        = output_folder,
+                                     genome_size          = genome_size,
+                                     cell_qc_metrics_file = cell_qc_metrics_file,
+                                     lower                = lower,
+                                     min_uniq_frags       = min_uniq_frags,
+                                     max_uniq_frags       = max_uniq_frags,
+                                     min_frac_peak        = min_frac_peak,
+                                     min_frac_tss         = min_frac_tss,
+                                     min_frac_enhancer    = min_frac_enhancer,
+                                     min_frac_promoter    = min_frac_promoter,
+                                     max_frac_mito        = max_frac_mito)
 
   
   cat(
@@ -567,9 +561,13 @@ sc_atac_feature_counting <- function(
         "\n"
       ),
       file = log_file, append = TRUE)
-    
     filtered_indices  <- base::colSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_cell_counts
-    matrixData        <- matrixData[, filtered_indices] # all the remaining columns
+    
+    if (length(filtered_indices[filtered_indices == TRUE]) >= 10) { # only use if resulting matrix isn't too small
+      matrixData <- as.matrix(matrixData[, filtered_indices]) # all the remaining columns
+    } else {
+      message("No cells were filtered out since otherwise there would be too few left.")
+    }
   } else {
     message("No cells were filtered out based on counts.")
   }
@@ -586,18 +584,22 @@ sc_atac_feature_counting <- function(
         "\n"
       ),
       file = log_file, append = TRUE)
-    
     filtered_indices  <- base::rowSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_feature_counts
-    matrixData        <- matrixData[filtered_indices,] # all the remaining rows
+    if (length(filtered_indices[filtered_indices == TRUE]) >= 10) {
+      matrixData <- matrixData[filtered_indices,] # all the remaining rows
+    } else {
+      message("No features were filtered out since otherwise there would be too few left.")
+    }
+
   } else {
     message("No features were filtered out based on counts.")
   }
-  
-  ############### calculate TSS enrichment ################
+  ############## calculate TSS enrichment ################
   
   
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
+  cat("making sparse\n")
   sparseM <- Matrix::Matrix(matrixData, sparse=TRUE)
   # # add dimensions of the sparse matrix if available
   # if(cell_calling != FALSE){
@@ -648,8 +650,10 @@ sc_atac_feature_counting <- function(
       by = "feature"
     )
 
+
   # Add annotation overlap information to the feature information data frame
-  features_in_matrix <- unique(feature.gr)[paste(seqnames(unique(feature.gr)), GenomicAlignments::ranges(unique(feature.gr)), sep=":") %in% info_per_feature$feature]
+  cat("Computing feature QC metrics\n")
+  features_in_matrix <- unique_feature.gr[paste(seqnames(unique_feature.gr), GenomicAlignments::ranges(unique_feature.gr), sep=":") %in% info_per_feature$feature]
 
   pro.gr <- rtracklayer::import(promoters_file)
   enhs.gr <- rtracklayer::import(enhs_file)
@@ -678,7 +682,6 @@ sc_atac_feature_counting <- function(
                             promoter_overlaps = pro.hits,
                             enhancer_overlaps = enhs.hits,
                             tss_overlaps = tss.hits)
-
   if (!is.null(gene_anno_file) && file.exists(gene_anno_file)) {
     gene_anno.gr <- rtracklayer::import(gene_anno_file)
     gene.overlaps <- GenomicRanges::findOverlaps(query = features_in_matrix,
@@ -689,7 +692,7 @@ sc_atac_feature_counting <- function(
     intergenic <- !(pro.hits | enhs.hits | tss.hits | gene.hits)
     info_per_feature <- cbind(info_per_feature, gene_overlaps = gene.hits, intergenic = intergenic)
   }
-
+  
 
   cat(
     paste0(
@@ -702,6 +705,7 @@ sc_atac_feature_counting <- function(
   utils::write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
   utils::write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
   
+  cat("writing to csv\n")
   
   cat(
     paste0(
@@ -714,28 +718,15 @@ sc_atac_feature_counting <- function(
   # create the sce object
   sc_atac_create_sce(input_folder = output_folder,
                             organism     = organism,
+                            sample       = sample_name,
                             feature_type = feature_type,
                             pheno_data   = pheno_data,
-                            report       = FALSE)
-  
-  # create the report if the option is given
-  if(create_report){
-    inputfolder <- dirname(insortedbam)
-    sc_atac_create_report(input_folder = inputfolder,
-                          output_folder= file.path(output_folder, "scPipe_atac_stats"),
-                          sample_name  = sample_name,
-                          organism     = organism,
-                          feature_type = feature_type,
-                          tss_file      = tss_file,
-                          promoter_file = promoters_file,
-                          enhancer_file = enhs_file
-                          )
-  }
+                            report       = create_report)
+
   
   end_time <- Sys.time()
   message(paste0(
-    "sc_atac_feature_counting completed in ", round(end_time - init_time, 2), " minutes"))
-  
+    "sc_atac_feature_counting completed in ", difftime(end_time, init_time, units = "secs")[[1]], " seconds"))
 }
 
 

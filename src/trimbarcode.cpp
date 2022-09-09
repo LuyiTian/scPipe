@@ -691,7 +691,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
     // // get rid of kseq.h warnings
     // REMOVE_KSEQ_WARNINGS();
 
-    std::vector<int> out_vect(4, 0);  // output vector of length 4 filled with zeroes
+    std::vector<int> out_vect(7, 0);  // output vector of length 7 filled with zeroes
     
     // Input parameters when rmlow is true
     // int min_qual = 20; // minq: the minimum base pair quality that we allowed (from scPipe wrapper_scPipeCPP.R)

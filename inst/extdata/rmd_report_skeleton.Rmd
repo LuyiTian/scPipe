@@ -11,11 +11,7 @@ params:
   organism: "ORGANISM__"
   sample: "SAMPLE__"
   feature_type: "FEATURE_TYPE__"
-  feature_file: "FEATURE_FILE__"
   n_barcode_subset: "N_BARCODE_SUBSET__"
-  tss_file: "TSS_FILE__"
-  promoter_file: "PROMOTER_FILE__"
-  enhancer_file: "ENHANCER_FILE__"
 editor_options:
   chunk_output_type: console
 ---
@@ -27,7 +23,8 @@ knitr::opts_chunk$set(echo = FALSE,
                        warning = FALSE)
 ```
 
-```{r setup}
+
+```{r}
 library(data.table)
 library(dplyr)
 library(ggplot2)
@@ -39,7 +36,11 @@ library(stringr)
 library(scales)
 library(tibble)
 library(readr)
+library(plotly)
+
+
 theme_set(theme_bw())
+
 # if not defined downstream specific for each plot use this order of the colours
 custom_colours <- c("#E6AB02", "#1B9E77", "#7570B3", "#E7298A", "#66A61E", "#A6761D")
 ```
@@ -91,17 +92,11 @@ cell_barcode_file              <- file.path(params$input_folder, "non_empty_barc
 cell_barcodes                  <- fread(cell_barcode_file, header=F)$V1
 
 # read in qc_per_bc file
-qc_per_bc_file                 <- file.path(params$input_folder, "qc_per_bc_file.txt")
-bc_stat                        <- fread(qc_per_bc_file)[bc %in% unfiltered_mtx_bcs, ]
+cell_qc_metrics_file           <- file.path(params$input_folder, "cell_qc_metrics.csv")
+bc_stat                        <- fread(cell_qc_metrics_file)[bc %in% unfiltered_mtx_bcs, ]
 
 qc_sele                        <- bc_stat[bc %in% cell_barcodes, ]
 qc_nonsele                     <- bc_stat[!bc %in% cell_barcodes, ]
-
-#features loaded here
-peaks_file                     <- file.path(params$feature_file)
-promoters_file                 <- file.path(params$promoter_file)
-tss_file                       <- file.path(params$tss_file)
-enhs_file                      <- file.path(params$enhancer_file)
 
 ```
 
@@ -163,23 +158,23 @@ as.1$Proportion <- as.1$V2/sum(as.1$V2)
 as.2$Proportion <- as.2$V2/sum(as.2$V2)
 
 as.combined <- rbind(as.1, as.2)
-g1 <- plotly::ggplotly(ggplot(as.1, aes(x = Mapping_type, y = Proportion, fill = Mapping_type)) + 
+g1 <- ggplot(as.1, aes(x = Mapping_type, y = Proportion, fill = Mapping_type)) + 
   geom_bar(stat="identity", width=1) +
   scale_fill_manual(values=custom_colours) +
   ylab("Proportion of total fragments") + 
   ggtitle("Uniquely mapped, multimapped and \nunmapped fragments") +
   theme(axis.text.x=element_blank(),
         title = element_text(size=10)) +
-  scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0))))
+  scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0)))
 
-g2 <- plotly::ggplotly(ggplot(as.2, aes(x = Mapping_type, y = Proportion, fill = Mapping_type)) + 
+g2 <- ggplot(as.2, aes(x = Mapping_type, y = Proportion, fill = Mapping_type)) + 
   geom_bar(stat="identity", width=1) +
   scale_fill_manual(values=custom_colours) +
   ylab("Proportion of total fragments") + 
   ggtitle("Breakdown of mapped fragments") +
   theme(axis.text.x=element_blank(),
         title = element_text(size=10)) +
-  scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0)))) 
+  scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0)))
 
 gridExtra::grid.arrange(g1, g2, ncol=1)
 
@@ -196,7 +191,7 @@ DT::datatable(alignment_stats_chrom)
 # Barcode demultiplexing
 
 ```{r}
-if(NROW(data) > 1)
+if(nrow(data) > 1)
 {
   DT::datatable(data, options=list(paging=FALSE, searching=FALSE))
 } else {
@@ -274,11 +269,11 @@ kable(cell_calling_stats, row.names = TRUE, col.names = NULL) %>%
 
 ```{r  frag-peak, fig.wide = TRUE, fig.asp = 0.9}
 bc_stat[, 'group' := ifelse(bc %in% cell_barcodes, 'cell', 'non-cell')]
-
 nsub_frags    <- min(15000, nrow(bc_stat))  ## downsample for scatter plot
 bc_stat_down  <- bc_stat[sort(sample(1:nrow(bc_stat), nsub_frags)), ]
 
-g             <- plotly::ggplotly(ggplot(data = bc_stat_down, 
+
+g             <- ggplot(data = bc_stat_down, 
                                          aes(x = total_frags, y = frac_peak, col = group)) + 
                                     geom_point(size = 0.5) + scale_x_continuous(trans='log10') + 
                                     theme_bw() +
@@ -287,7 +282,7 @@ g             <- plotly::ggplotly(ggplot(data = bc_stat_down,
                                           axis.text = element_text(size = 15, family = "Helvetica"),
                                           axis.title = element_text(size = 18, family = "Helvetica")) +
                                     xlab('Total #Unique Fragments') + 
-                                    ylab('Fraction in Peak'))
+                                    ylab('Fraction in Peak')
 
 text1          <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
                            gp=gpar(col='#E6AB02', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
@@ -303,15 +298,15 @@ g + annotation_custom(text1) + annotation_custom(text2) + scale_color_manual(val
 ```{r frag-density, fig.wide = TRUE, fig.asp = 0.9}
 bc_stat[, 'group' := ifelse(bc %in% cell_barcodes, 'cell', 'non-cell')]
 
-p     <- plotly::ggplotly(ggplot(data = bc_stat, aes(x = total_frags, fill = group)) + 
-                            geom_density() + 
-                            scale_x_continuous(trans = 'log10') + 
+p     <- ggplot(data = bc_stat, aes(x = total_frags, fill = group)) +
+                            geom_density() +
+                            scale_x_continuous(trans = 'log10') +
                             theme_bw() +
-                            theme(legend.position='none', 
+                            theme(legend.position='none',
                                   legend.title=element_blank(),
                                   axis.title = element_text(size = 18, family = "Helvetica"),
-                                  axis.text = element_text(size = 15, family = "Helvetica")) + 
-                            xlab('Total #Unique Fragments') + ylab('Density') )
+                                  axis.text = element_text(size = 15, family = "Helvetica")) +
+                            xlab('Total #Unique Fragments') + ylab('Density')
 
 text1 <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
                            gp=gpar(col='#E6AB02', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
@@ -320,6 +315,7 @@ text2 <- grobTree(textGrob("Non-cell", x=0.8,  y=0.83, hjust=0,
 
 p + annotation_custom(text1) + annotation_custom(text2) +
   scale_fill_manual(values = c('#E6AB02', '#7570B3'))
+
 ```
 
 </div>
@@ -331,8 +327,10 @@ p + annotation_custom(text1) + annotation_custom(text2) +
 
 # subset the cell barcodes
 if (!is.null(n_barcode_subset)){
-  # selecting only the barcodes after cell calling
-  barcode_stats                      <- barcode_stats[row.names(barcode_stats) %in% qc_sele$bc, ] %>% sample_n(n_barcode_subset)
+  barcode_stats                      <- barcode_stats[row.names(barcode_stats) %in% qc_sele$bc, ]
+  n <- nrow(barcode_stats)
+  if (n < n_barcode_subset) n_barcode_subset <- n
+  barcode_stats                      <-barcode_stats %>% sample_n(n_barcode_subset)
 } else {
   barcode_stats                      <- barcode_stats[row.names(barcode_stats) %in% qc_sele$bc, ] 
 }
@@ -496,7 +494,9 @@ sc_atac_plot_fragments_cells_per_feature(sce)
 <div class = "row">
 <div class = "col-md-6">
 
+Overlaps among all fragments in selected cells
 ```{r overall-overlap, fig.wide = TRUE, fig.asp = 0.9}
+# Get fraction of all fragments overlapping with each category (essentially weighted sum of fractions, weighted by number of total frags/cell)
 frac_peak     <- sum(qc_sele$total_frags * qc_sele$frac_peak)/sum(qc_sele$total_frags)
 frac_mito     <- sum(qc_sele$total_frags * qc_sele$frac_mito)/sum(qc_sele$total_frags)
 frac_promoter <- sum(qc_sele$total_frags * qc_sele$frac_promoter)/sum(qc_sele$total_frags)
@@ -520,23 +520,47 @@ kable(fracs, row.names = T, col.names = NULL) %>%
 </div>
 <div class = "col-md-6">
 
+Box plots of overlap proportions among all selected cells
 ```{r anno-overlap-boxes, fig.wide = TRUE, fig.asp = 0.9}
 qc_sele_df      <- data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 
                          'type' = rep(c('Peaks', 'TSS', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))
   
 qc_sele_df$type <- factor(qc_sele_df$type, levels = c('Peaks', 'TSS', 'Promoter', 'Enhancer', 'Mito'))
 
-plotly::ggplotly(ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
+ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
   geom_boxplot(outlier.size = 0.01, show.legend = FALSE) + 
   scale_fill_manual(values=custom_colours) +
   theme(legend.position = 'none', 
         axis.text = element_text(size = 18, family = "Helvetica"), 
         axis.title.x = element_blank(), 
-        axis.title.y = element_text(size = 18, family = "Helvetica")) + xlab('')) 
+        axis.title.y = element_text(size = 18, family = "Helvetica")) + xlab('')
 ```
 
 </div>
 </div>
+
+# TSS enrichment plot
+
+A line graph showing aggregate TSS enrichment scores based on the distance from the TSS.
+```{r tss-enrichment, fig.wide = TRUE, fig.asp = 0.9}
+tss_plot_data <- utils::read.csv(file.path(params$input_folder, "scPipe_atac_stats", "tss_plot_data.csv"))
+if (any(is.na(tss_plot_data$agg_tss_scores))) {
+  message("Could not generate plot; perhaps no overlaps.")
+} else {
+  tsse <- max(tss_plot_data$agg_tss_scores)
+  max_x <- tss_plot_data$dists[which(tss_plot_data$agg_tss_scores==tsse)]
+  ggplot(data=tss_plot_data, aes(x=dists, y=agg_tss_scores)) +
+    geom_line()+
+    geom_point() + 
+    geom_text(aes(max_x, tsse+3, label=paste("TSSE:", signif(tsse,3)))) +
+    ggtitle("TSS enrichment plot") +
+    xlab("Distance from TSS (bp)") + 
+    ylab("Aggregate TSS score") 
+}
+
+
+```
+
 
 # UMAP of filtered cells
 
@@ -551,7 +575,7 @@ TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
     if (verbose) {
       message("Performing TF-IDF normalization")
     }
-    
+    object <- binary.mat
     npeaks       <- Matrix::colSums(x = object)
     tf           <- Matrix::tcrossprod(x = as.matrix(object), y = Matrix::Diagonal(x = 1 / npeaks))
     rsums        <- Matrix::rowSums(x = object)
@@ -562,23 +586,24 @@ TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
     norm.data[which(x = is.na(x = norm.data))] <- 0
     return(norm.data)
   }
-  
-  
+
+
   binary.mat <- TF.IDF.custom(binary.mat)
-  
+
   library(irlba)
   set.seed(123)
-  mat.lsi          <- irlba(binary.mat, 50)
-  d_diagtsne       <- matrix(0, 50, 50)
+  n_bcs <- max(min(50, ncol(binary.mat), nrow(binary.mat))-1,0)
+  mat.lsi          <- irlba(binary.mat, n_bcs)
+  d_diagtsne       <- matrix(0, n_bcs, n_bcs)
   diag(d_diagtsne) <- mat.lsi$d
   mat_pcs          <- t(d_diagtsne %*% t(mat.lsi$v))
   rownames(mat_pcs)<- colnames(binary.mat)
-  
+
   # clustering in the PCA space using KNN --------------
-  
+
   library(RANN)
   knn.info<- RANN::nn2(mat_pcs, k = 30)
-  
+
   ## convert to adjacency matrix
   knn           <- knn.info$nn.idx
   adj           <- matrix(0, nrow(mat_pcs), nrow(mat_pcs))
@@ -586,36 +611,36 @@ TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
   for(i in seq_len(nrow(mat_pcs))) {
     adj[i,rownames(mat_pcs)[knn[i,]]] <- 1
   }
-  
+
   ## convert to graph
   library(igraph)
   g <- igraph::graph.adjacency(adj, mode="undirected")
   g <- simplify(g) ## remove self loops
-  
+
   # identify communities, many algorithums. Use the Louvain clustering ------------
   km         <- igraph::cluster_louvain(g)
   com        <- km$membership
   names(com) <- km$names
-  
+
   # running UMAP ------------------------------
-  
+
   library(umap)
   library(ggplot2)
   library(tibble)
   set.seed(345)
-  
+
   norm.data.umap    <- umap::umap(mat_pcs)
-  
+
   df_umap           <- as.data.frame(norm.data.umap$layout)
   colnames(df_umap) <- c("UMAP1", "UMAP2")
   df_umap$barcode   <- rownames(mat_pcs)
-  
+
   df_umap           <- dplyr::left_join(df_umap, enframe(com), by = c("barcode" = "name")) %>%
     dplyr::rename(cluster = value) %>%
     dplyr::mutate(cluster = as.factor(cluster))
-  
-  
-  plotly::ggplotly(ggplot(df_umap, aes(x = UMAP1, y = UMAP2)) + 
+
+
+  plotly::ggplotly(ggplot(df_umap, aes(x = UMAP1, y = UMAP2)) +
     geom_point(aes(col = cluster), size = 0.5) +
     theme_bw(base_size = 14))
 ```

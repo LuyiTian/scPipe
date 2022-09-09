@@ -70,57 +70,5 @@ sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
   
   binary.mat <- TF.IDF.custom(binary.mat)
   
-  library(irlba)
-  set.seed(123)
-  mat.lsi          <- irlba(binary.mat, 50)
-  d_diagtsne       <- matrix(0, 50, 50)
-  diag(d_diagtsne) <- mat.lsi$d
-  mat_pcs          <- t(d_diagtsne %*% t(mat.lsi$v))
-  rownames(mat_pcs)<- colnames(binary.mat)
-  
-  # clustering in the PCA space using KNN --------------
-  
-  library(RANN)
-  knn.info<- RANN::nn2(mat_pcs, k = 30)
-  
-  ## convert to adjacency matrix
-  knn           <- knn.info$nn.idx
-  adj           <- matrix(0, nrow(mat_pcs), nrow(mat_pcs))
-  rownames(adj) <- colnames(adj) <- rownames(mat_pcs)
-  for(i in seq_len(nrow(mat_pcs))) {
-    adj[i,rownames(mat_pcs)[knn[i,]]] <- 1
-  }
-  
-  ## convert to graph
-  library(igraph)
-  g <- igraph::graph.adjacency(adj, mode="undirected")
-  g <- simplify(g) ## remove self loops
-  
-  # identify communities, many algorithums. Use the Louvain clustering ------------
-  km         <- igraph::cluster_louvain(g)
-  com        <- km$membership
-  names(com) <- km$names
-  
-  # running UMAP ------------------------------
-  
-  library(umap)
-  library(ggplot2)
-  library(tibble)
-  set.seed(345)
-  
-  norm.data.umap    <- umap::umap(mat_pcs)
-  
-  df_umap           <- as.data.frame(norm.data.umap$layout)
-  colnames(df_umap) <- c("UMAP1", "UMAP2")
-  df_umap$barcode   <- rownames(mat_pcs)
-  
-  df_umap           <- dplyr::left_join(df_umap, enframe(com), by = c("barcode" = "name")) %>%
-    dplyr::rename(cluster = value) %>%
-    dplyr::mutate(cluster = as.factor(cluster))
-  
-  
-  ggplot(df_umap, aes(x = UMAP1, y = UMAP2)) + 
-    geom_point(aes(col = cluster), size = 0.5) +
-    theme_bw(base_size = 14)
-   
+  saveRDS(binary.mat, file = file.path(output_folder, "tf-idf_mat.rds"))
 }

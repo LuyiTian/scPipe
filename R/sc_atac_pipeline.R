@@ -81,7 +81,7 @@ sc_atac_pipeline <- function(r1,
                              samtools_path = NULL,
                              genome_size   = NULL,
                              bin_size      = NULL,
-                             yieldsize     = 10000000,
+                             yieldsize     = 1000000,
                              mapq          = 30,
                              exclude_regions = TRUE,
                              excluded_regions_filename = NULL,
@@ -172,7 +172,7 @@ sc_atac_pipeline <- function(r1,
     features <- reference
   }
 
-  sc_atac_feature_counting (insortedbam   = sorted_tagged_bam,
+  sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.bed"),
                             feature_input = features,
                             bam_tags      = list(bc="CB", mb="OX"),
                             feature_type  = feature_type,
@@ -199,12 +199,12 @@ sc_atac_pipeline <- function(r1,
                             min_frac_promoter = min_frac_promoter,
                             max_frac_mito = max_frac_mito)
   
-  sce <- sc_atac_create_sce(input_folder = output_folder,
-                            organism     = organism,
-                            feature_type = feature_type,
-                            pheno_data   = NULL,
-                            report       = report)
-  return(sce)
+  # sce <- sc_atac_create_sce(input_folder = output_folder,
+  #                           organism     = organism,
+  #                           feature_type = feature_type,
+  #                           pheno_data   = NULL,
+  #                           report       = report)
+  # return(sce)
 }
 
 #' @name sc_atac_pipeline_quick_test

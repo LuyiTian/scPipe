@@ -32,3 +32,6 @@ A string representing the feature type
 \description{
 Get or set \code{feature_type} from a SingleCellExperiment object
 }
+\author{
+Shani Amarasinghe
+}

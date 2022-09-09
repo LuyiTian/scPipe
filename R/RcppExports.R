@@ -107,3 +107,7 @@ sc_atac_create_fragments_cpp <- function(inbam, output, contigs, ends, min_mapq,
     invisible(.Call(`_scPipe_sc_atac_create_fragments_cpp`, inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize))
 }
 
+get_all_TSS_bins <- function(tss_df, range, bin_size) {
+    .Call(`_scPipe_get_all_TSS_bins`, tss_df, range, bin_size)
+}
+
