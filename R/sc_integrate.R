@@ -213,6 +213,12 @@ sc_mae_plot_umap <- function(mae,
     g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
       geom_point(aes(col = .data[[by]]), size = 0.5) +
       theme_bw(base_size = 14)
+    if (is.numeric(umap_data[[by]])) {
+      g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
+        geom_point(aes(col = .data[[by]]), size = 0.5) +
+        scale_colour_gradientn(colours=c("green","black")) +
+        theme_bw(base_size = 14)
+    }
   } else {
     g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
       geom_point(aes(col = source), size = 0.5) +
