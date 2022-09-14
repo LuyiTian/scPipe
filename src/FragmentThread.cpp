@@ -207,7 +207,7 @@ void
 						if (fragment_dict[qname].cell_barcode.empty()) {
 							fragment_dict[qname].cell_barcode = cell_barcode;
 						}
-						fragment_dict[qname].start = rend;
+						fragment_dict[qname].start = rstart;
 						fragment_dict[qname].complete = true;
 					}
 				}
