@@ -128,6 +128,13 @@ sc_integrate <- function(sce_list,
     merged_qc <- Reduce(function(x, y) base::merge(x, y, all = TRUE), qc_dfs)
   }
   
+  # Mark in coldata of each experiment if the barcode is shared
+  shared_bc <- na.omit(merged_qc)
+  for (i in 1:length(sce_list)) {
+    tech <- techs[[i]]
+    colData(sce_list[[tech]])[, "shared"] <- rownames(colData(sce_list[[tech]])) %in% shared_bc[[tech]]
+  }
+  
   # Create MultiAssayExperiment
   cat("Creating MultiAssayExperiment\n")
   mae <- MultiAssayExperiment(experiments = sce_list)
