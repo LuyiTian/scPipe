@@ -1,5 +1,7 @@
 #include <Rcpp.h>
 #include <string>
+#include <cstring>
+#include <cstdlib>
 #include <sstream>
 #include <regex>
 #include <map>
@@ -78,78 +80,78 @@ FragmentThread::FragmentThread(const FragmentThread &old) {
 //' @description Takes a new aligned seqment and adds information to the dictionary
 //' Modifies the original dictionary
 void
-	FragmentThread::updateFragmentDict(const bam1_t *seqment) {
-		// If we have a regex to match against
-		// using readname_barcode as a regex
-		std::string cell_barcode;
-		if (this->readname_barcode.length() > 0) {
-			std::string qname(bam1_qname(seqment));
-			std::smatch res;
-			std::regex readname_regex (readname_barcode);
+FragmentThread::updateFragmentDict(const bam1_t *seqment) {
+	// If we have a regex to match against
+	// using readname_barcode as a regex
+	std::string cell_barcode;
+	if (this->readname_barcode.length() > 0) {
+		std::string qname(bam1_qname(seqment));
+		std::smatch res;
+		std::regex readname_regex (readname_barcode);
 
-			// do the regex searching, which results in an smatch object
-			// holding the matches information
-			std::regex_search(qname, res, readname_regex);
+		// do the regex searching, which results in an smatch object
+		// holding the matches information
+		std::regex_search(qname, res, readname_regex);
 
-			cell_barcode = *(res.begin()); // begin() is first match
-		
-		} else {
-			// get the tag data associated with the specified tag
-			// default for cellbarcode is "CB". Must be 2 characters
-			// get raw uint8_t data and then convert to string
-			uint8_t *raw_data = bam_aux_get(seqment, this->cellbarcode.substr(0, 2).c_str());
-			std::string barcode_data = bam_aux2string(raw_data); // FragmentThread.hpp
+		cell_barcode = *(res.begin()); // begin() is first match
+	
+	} else {
+		// get the tag data associated with the specified tag
+		// default for cellbarcode is "CB". Must be 2 characters
+		// get raw uint8_t data and then convert to string
+		uint8_t *raw_data = bam_aux_get(seqment, this->cellbarcode.substr(0, 2).c_str());
+		std::string barcode_data = bam_aux2string(raw_data); // FragmentThread.hpp
 
-			if (barcode_data.length() != 0) {
-				cell_barcode = barcode_data;
-			}
-		}
-
-		// if we have cells (to retain) and found a barcode
-		// we can make sure that we actually should process this read
-		// at all. If not, just return
-		if (this->cells.length() != 0 && cell_barcode.length() != 0) {
-			bool contains = false;
-			for (auto it = cells.begin(); it != cells.end(); it++) {
-				if (std::strcmp(cell_barcode.c_str(), *it) == 0) {
-					contains = true;
-					break;
-				}
-			}
-			if (!contains) {
-				return;
-			}
-		}
-
-		unsigned int mapq = (unsigned int) bam_mapping_qual(seqment); // FragmentThread.hpp
-		// recording a fragment requires a minimum mapping quality
-		if (mapq >= this->min_mapq) {
-			char *qname = bam1_qname(seqment); // bam.h
-			int32_t rstart = bam_alignment_start(seqment); // FragmentThread.hpp
-			int32_t rend = bam_endpos(seqment); // sam.h
-			bool is_reverse = bam1_strand(seqment); // bam.h
-
-			if (rstart == -1 || rend == -1) {
-				return;
-			}
-
-			// Correct start and end for 9bp Tn5 shift
-			if (is_reverse) {
-				rend = rend - 5;
-			} else {
-				rstart = rstart + 4;
-			}
-
-			this->addToFragments(
-				qname,
-				this->contig,
-				rstart,
-				rend,
-				cell_barcode,
-				is_reverse
-			);
+		if (barcode_data.length() != 0) {
+			cell_barcode = barcode_data;
 		}
 	}
+
+	// if we have cells (to retain) and found a barcode
+	// we can make sure that we actually should process this read
+	// at all. If not, just return
+	if (this->cells.length() != 0 && cell_barcode.length() != 0) {
+		bool contains = false;
+		for (auto it = cells.begin(); it != cells.end(); it++) {
+			if (std::strcmp(cell_barcode.c_str(), *it) == 0) {
+				contains = true;
+				break;
+			}
+		}
+		if (!contains) {
+			return;
+		}
+	}
+
+	unsigned int mapq = (unsigned int) bam_mapping_qual(seqment); // FragmentThread.hpp
+	// recording a fragment requires a minimum mapping quality
+	if (mapq >= this->min_mapq) {
+		char *qname = bam1_qname(seqment); // bam.h
+		int32_t rstart = bam_alignment_start(seqment); // FragmentThread.hpp
+		int32_t rend = bam_endpos(seqment); // sam.h
+		bool is_reverse = bam1_strand(seqment); // bam.h
+
+		if (rstart == -1 || rend == -1) {
+			return;
+		}
+
+		// Correct start and end for 9bp Tn5 shift
+		if (is_reverse) {
+			rend = rend - 5;
+		} else {
+			rstart = rstart + 4;
+		}
+
+		this->addToFragments(
+			qname,
+			this->contig,
+			rstart,
+			rend,
+			cell_barcode,
+			is_reverse
+		);
+	}
+}
 
 //' Add new fragment information to the fragment dictionary
 //' Checks to see if a fragment with this qname is already in the map
@@ -162,67 +164,76 @@ void
 //' @param cell_barcode cell barcode sequence
 //' @param is_reverse read is aligned to reverse strand
 void
-	FragmentThread::addToFragments(
-		std::string qname,
-		std::string chromosome,
-		int32_t rstart,
-		int32_t rend,
-		std::string cell_barcode,
-		bool is_reverse) {
+FragmentThread::addToFragments(
+	std::string qname,
+	std::string chromosome,
+	int32_t rstart,
+	int32_t rend,
+	std::string cell_barcode,
+	bool is_reverse) {
 
-		// check if qname is already in fragment dict
-		if (fragment_dict[qname].chromosome.length()) {
-			if (is_reverse) {
-				int32_t current_coord = fragment_dict[qname].start;
-				if (current_coord == -1) {
-					// read aligned to the wrong strand
-					fragment_dict.erase(qname);
-				} else if (((rend - current_coord) > (int32_t)this->max_distance) ||
-					((rend - current_coord) < (int32_t)this->min_distance)) {
-					// too far away, don't include
-					fragment_dict.erase(qname);
-				} else {
-					if (cell_barcode.empty() && fragment_dict[qname].cell_barcode.empty()) {
-						// both fragment ends are present but no cell barcode
-						fragment_dict.erase(qname);
-					} else {
-						if (fragment_dict[qname].cell_barcode.empty()) {
-							fragment_dict[qname].cell_barcode = cell_barcode;
-						}
-						fragment_dict[qname].end = rend;
-						fragment_dict[qname].complete = true;
-					}
-				}
+	// check if qname is already in fragment dict
+	if (fragment_dict.count(qname)) {
+		if (is_reverse) {
+			int32_t current_coord = fragment_dict[qname].start;
+			if (current_coord == -1) {
+				// read aligned to the wrong strand
+				fragment_dict.erase(qname);
+			} else if (((rend - current_coord) > (int32_t)this->max_distance) ||
+				((rend - current_coord) < (int32_t)this->min_distance)) {
+				// too far away, don't include
+				fragment_dict.erase(qname);
 			} else {
-				int32_t current_coord = fragment_dict[qname].end;
-				if (current_coord == -1) {
-					fragment_dict.erase(qname);
-				} else if (((current_coord - rstart) > (int32_t)this->max_distance) ||
-					((current_coord - rstart) < (int32_t)this->min_distance)) {
+				if (cell_barcode.empty() && fragment_dict[qname].cell_barcode.empty()) {
+					// both fragment ends are present but no cell barcode
 					fragment_dict.erase(qname);
 				} else {
-					if (cell_barcode.empty() && fragment_dict[qname].cell_barcode.empty()) {
-						fragment_dict.erase(qname);
-					} else {
-						if (fragment_dict[qname].cell_barcode.empty()) {
-							fragment_dict[qname].cell_barcode = cell_barcode;
-						}
-						fragment_dict[qname].start = rend;
-						fragment_dict[qname].complete = true;
+					if (fragment_dict[qname].cell_barcode.empty()) {
+						fragment_dict[qname].cell_barcode = cell_barcode;
 					}
+					fragment_dict[qname].end = rend;
+					fragment_dict[qname].complete = true;
 				}
 			}
 		} else {
-			// make a new fragment
-			fragment_dict[qname] = {
-				chromosome,						// chromosome
-				(!is_reverse ? rstart : -1),	// start
-				(is_reverse ? rend : -1),		// end
-				cell_barcode,					// cell_barcode
-				false							// complete
-			};
+			// augment an existing fragment, using a non reversed fragment 
+			// (using rstart to augment existing fragment start)
+			int32_t current_coord = fragment_dict[qname].end;
+			if (current_coord == -1) {
+				// if we only have a fragment that contains a start coord, delete (will be replaced with a new frag)
+				fragment_dict.erase(qname);
+			} else if (((current_coord - rstart) > (int32_t)this->max_distance) ||
+				((current_coord - rstart) < (int32_t)this->min_distance)) {
+				// if we can't use this start coord, as it's too far beyond the end of the current fragment,
+				// delete the old one.
+				fragment_dict.erase(qname);
+			} else {
+				// if we can use the start coord:
+				if (cell_barcode.empty() && fragment_dict[qname].cell_barcode.empty()) {
+					// delete the old fragment if there's no barcode here or there
+					fragment_dict.erase(qname);
+				} else {
+					// there's at least one barcode
+					if (fragment_dict[qname].cell_barcode.empty()) {
+						// if we can use the start coord, and there's no barcode
+						fragment_dict[qname].cell_barcode = cell_barcode;
+					}
+					fragment_dict[qname].start = rstart;
+					fragment_dict[qname].complete = true;
+				}
+			}
 		}
+	} else {
+		// make a new fragment
+		fragment_dict[qname] = {
+			chromosome,						// chromosome
+			(!is_reverse ? rstart : -1),	// start
+			(is_reverse ? rend : -1),		// end
+			cell_barcode,					// cell_barcode
+			false							// complete
+		};
 	}
+}
 
 
 //' FragmentThread() is equivalent to old getFragments
@@ -230,18 +241,18 @@ void
 //' Execution thread to iterate over paired reads in BAM file and extract
 //' ATAC fragment coordinates
 void
-	FragmentThread::operator() () {
+FragmentThread::operator() () {
 
-		bamFile bam = bam_open(this->bam.c_str(), "r"); // bam.h
-		bam_index_t *index = bam_index_load(this->bam.c_str()); // bam.h
-		bam_fetch(bam, index, this->tid, 0, this->end, this, &FragmentThread::fetchCall);
-		
-		
-		// for the final writeFragments call, pass in inf 
-		this->writeFragments(4294967295); // 4294967295 is max unsigned int
+	bamFile bam = bam_open(this->bam.c_str(), "r"); // bam.h
+	bam_index_t *index = bam_index_load(this->bam.c_str()); // bam.h
+	bam_fetch(bam, index, this->tid, 0, this->end, this, &FragmentThread::fetchCall);
+	
+	
+	// for the final writeFragments call, pass in inf 
+	this->writeFragments(4294967295); // 4294967295 is max unsigned int
 
-		bam_close(bam); // bam.h
-	}
+	bam_close(bam); // bam.h
+}
 
 
 void

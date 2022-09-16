@@ -293,6 +293,35 @@ g + annotation_custom(text1) + annotation_custom(text2) + scale_color_manual(val
 ```
 
 </div>
+
+<div class = "col-md-6">
+
+```{r frag-mito, fig.wide = TRUE, fig.asp = 0.9}
+nsub_frags    <- min(15000, nrow(bc_stat))  ## downsample for scatter plot
+bc_stat_down  <- bc_stat[sort(sample(1:nrow(bc_stat), nsub_frags)), ]
+
+
+g             <- ggplot(data = bc_stat_down, 
+                        aes(x = total_frags, y = frac_mito, col = group)) + 
+  geom_point(size = 0.5) + scale_x_continuous(trans='log10') + 
+  theme_bw() +
+  theme(legend.position = 'none', 
+        legend.title=element_blank(),
+        axis.text = element_text(size = 15, family = "Helvetica"),
+        axis.title = element_text(size = 18, family = "Helvetica")) +
+  xlab('Total #Unique Fragments') + 
+  ylab('Fraction in mitochondrial genome')
+
+text1          <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
+                                    gp=gpar(col='#E6AB02', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+text2          <- grobTree(textGrob("Non-cell", x=0.8,  y=0.83, hjust=0,
+                                    gp=gpar(col='#7570B3', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+
+g + annotation_custom(text1) + annotation_custom(text2) + scale_color_manual(values = c('#E6AB02', '#7570B3'))
+```
+
+</div>
+
 <div class = "col-md-6">
 
 ```{r frag-density, fig.wide = TRUE, fig.asp = 0.9}

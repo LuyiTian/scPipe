@@ -128,6 +128,13 @@ sc_integrate <- function(sce_list,
     merged_qc <- Reduce(function(x, y) base::merge(x, y, all = TRUE), qc_dfs)
   }
   
+  # Mark in coldata of each experiment if the barcode is shared
+  shared_bc <- na.omit(merged_qc)
+  for (i in 1:length(sce_list)) {
+    tech <- techs[[i]]
+    colData(sce_list[[tech]])[, "shared"] <- rownames(colData(sce_list[[tech]])) %in% shared_bc[[tech]]
+  }
+  
   # Create MultiAssayExperiment
   cat("Creating MultiAssayExperiment\n")
   mae <- MultiAssayExperiment(experiments = sce_list)
@@ -198,11 +205,10 @@ sc_mae_plot_umap <- function(mae,
     
     df_umap$source <- tech
     
-    # Attach cell line info if available
-    if (!is.null(colData(experiments(mae)[[tech]])[[by]])) {
+    if (!is.null(by) && !is.null(colData(experiments(mae)[[tech]])[[by]])) {
       sce_coldata <- colData(experiments(mae)[[tech]])[, c(by), drop=FALSE]
       df_umap <- base::merge(df_umap, sce_coldata, by.x = "barcode", by.y = "row.names", all.x = TRUE) 
-    } else {
+    } else if (!is.null(by)) {
       df_umap[[by]] <- NA
     }
     df_umap
@@ -214,6 +220,12 @@ sc_mae_plot_umap <- function(mae,
     g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
       geom_point(aes(col = .data[[by]]), size = 0.5) +
       theme_bw(base_size = 14)
+    if (is.numeric(umap_data[[by]])) {
+      g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
+        geom_point(aes(col = .data[[by]]), size = 0.5) +
+        scale_colour_gradientn(colours=c("green","black")) +
+        theme_bw(base_size = 14)
+    }
   } else {
     g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
       geom_point(aes(col = source), size = 0.5) +

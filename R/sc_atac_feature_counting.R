@@ -400,14 +400,9 @@ sc_atac_feature_counting <- function(
     Reduce(`+`, newms)
   }
   
-  # Update feature file
   unique_feature.gr <- data.frame(feature.gr) %>% distinct(seqnames, start, end) %>% as.data.frame() %>% GenomicRanges::makeGRangesFromDataFrame()
   min_feature_width <- min(GenomicAlignments::ranges(feature.gr)@width)
   
- 
-  # Sinto fragments
-  # fragment_file <- "/stornext/Home/data/allstaff/y/yang.p/scPipe_testing/scPipe_atac_output/fragments_sinto.bed"
-  fragment_file <- "/stornext/General/data/user_managed/grpu_mritchie_1/PhilYang/scPipe_testing/haoyu_scMixology2_20_output/fragments_sinto.bed"
   fragments <- data.table::fread(fragment_file, select=1:5, header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
   fragments.gr <- fragments %>% makeGRangesFromDataFrame(keep.extra.columns = TRUE)
   
@@ -423,8 +418,7 @@ sc_atac_feature_counting <- function(
   maxgaptss                 <- 0.51*median_feature_overlaptss
   tss_bin_overlaps <- GenomicAlignments::findOverlaps(query = bins_df_all.gr,
                                                       subject = fragments.gr,
-                                                      type = "equal",
-                                                      maxgap = maxgaptss,
+                                                      type = "any",
                                                       ignore.strand = TRUE)
   bin_hits <- queryHits(tss_bin_overlaps) 
   
@@ -495,7 +489,6 @@ sc_atac_feature_counting <- function(
   mat_non_zero <- mat[rowSums(mat) != 0,]
   
   # Calculate TSS enrichment scores
-  
   tss_dists <- seq(-range/2+bin_size, range/2-bin_size, bin_size)
   flank_read_depth <- (mat_non_zero[,1]+mat_non_zero[,ncol(mat_non_zero)])/2 # Used to normalise
   norm_read_depths <- na.omit(mat_non_zero/flank_read_depth) # also ignore rows where flanks have no overlaps
@@ -509,7 +502,7 @@ sc_atac_feature_counting <- function(
   
   # generate quality control metrics for cells
   message("Generating QC metrics for cells\n")
-  sc_atac_create_cell_qc_metrics(frags_file = file.path(output_folder, "fragments_sinto.bed"),
+  sc_atac_create_cell_qc_metrics(frags_file = fragment_file,
                                  peaks_file = feature_input,
                                  promoters_file = promoters_file,
                                  tss_file = tss_file,
@@ -562,7 +555,7 @@ sc_atac_feature_counting <- function(
       ),
       file = log_file, append = TRUE)
     filtered_indices  <- base::colSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_cell_counts
-    
+    cat("Number of cells to remove:", sum(!filtered_indices) , "\n")
     if (length(filtered_indices[filtered_indices == TRUE]) >= 10) { # only use if resulting matrix isn't too small
       matrixData <- as.matrix(matrixData[, filtered_indices]) # all the remaining columns
     } else {
@@ -571,8 +564,7 @@ sc_atac_feature_counting <- function(
   } else {
     message("No cells were filtered out based on counts.")
   }
-  
-  
+   
   
   # filter the matrix based on counts per feature
   if (n_filter_feature_counts > 0) {
@@ -585,6 +577,7 @@ sc_atac_feature_counting <- function(
       ),
       file = log_file, append = TRUE)
     filtered_indices  <- base::rowSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_feature_counts
+    cat("Number of features to remove:", sum(!filtered_indices), "\n")
     if (length(filtered_indices[filtered_indices == TRUE]) >= 10) {
       matrixData <- matrixData[filtered_indices,] # all the remaining rows
     } else {
@@ -594,8 +587,11 @@ sc_atac_feature_counting <- function(
   } else {
     message("No features were filtered out based on counts.")
   }
-  ############## calculate TSS enrichment ################
-  
+
+  # Update cell QC metrics to include whether the cell was kept or not
+  cqc <- read.csv(file.path(output_folder, "cell_qc_metrics.csv"))
+  cqc$cell_called <- cqc$bc %in% colnames(matrixData)
+  write.csv(cqc, "cell_qc_metrics.csv", row.names = FALSE)
   
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
