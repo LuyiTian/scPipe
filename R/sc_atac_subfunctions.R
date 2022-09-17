@@ -118,7 +118,6 @@ sc_atac_plot_fragments_features_per_cell <- function(sce) {
   
   ggplot(cell_stats, aes(x=log_counts_per_cell, y=log_features_per_cell)) +
     geom_point(color = "#E6AB02") +
-    ggtitle("Relationship between counts and features per cell") +
     xlab("log_counts_per_cell") + 
     ylab("log_features_per_cell") +
     geom_smooth(formula = y ~ x, method='lm', color = "#E6AB02", fill = "#E6AB02")

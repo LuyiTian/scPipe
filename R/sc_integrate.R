@@ -150,7 +150,7 @@ sc_integrate <- function(sce_list,
 
 #' @name sc_mae_plot_umap
 #' @title Generates UMAP of multiomic data
-#' @description Uses feature count data from multiple experiment objects to produce a UMAP 
+#' @description Uses feature count data from multiple experiment objects to produce UMAPs for each assay and then overlay them on the same pair of axes
 #' @param mae The MultiAssayExperiment object
 #' @param by What to colour the points by. Needs to be in colData of all experiments.
 #' @param output_file The path of the output file

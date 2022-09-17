@@ -104,20 +104,20 @@ int count_unmatched_barcodes(const std::vector<std::string> &barcodes, const Tri
 	return failed;
 }
 
-const char *charComplement(char c) {
-    char out = 'N';
-	if (c == 'A') out = 'T';
-	if (c == 'T') out = 'A';
-	if (c == 'C') out = 'G';
-    if (c == 'G') out = 'C';
-    return new char(out);
+char charComplement(char c) {
+  char out = 'N';
+  if (c == 'A') out = 'T';
+  if (c == 'T') out = 'A';
+  if (c == 'C') out = 'G';
+  if (c == 'G') out = 'C';
+  return out;
 }
 
 std::string reverseComplement(const char *seq, size_t l) {
 	std::string res;
 	res.reserve(l);
 	for (int i = l - 1; i >= 0; i--) {
-		res.append(charComplement(seq[i]));
+		res.append(1, charComplement(seq[i]));
 	}
 	return res;
 }
@@ -883,7 +883,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 						useReverseComplement ? 
 							reverseComplement(seq2_seq, seq2->seq.l) :
 							seq2_seq;
-					
+				  
 					std::vector<MismatchResult> possibleBarcodes = validBarcodeTrie.Locate_Seq_Mismatches(seq2_seq_str, 0, seq2_seq_str.size());
 					// // find the barcode which matches best (highest chance of matching perfectly based quality score)
 					int highestScore = 0;
