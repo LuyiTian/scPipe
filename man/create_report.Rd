@@ -51,7 +51,7 @@ create_report(
 
 \item{stnd}{whether to perform strand specific mapping}
 
-\item{fix_chr}{add `chr` to chromosome names, fix inconsistant names.}
+\item{fix_chr}{add `chr` to chromosome names, fix inconsistent names.}
 
 \item{barcode_anno}{cell barcode annotation file path.}
 

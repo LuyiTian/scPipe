@@ -80,7 +80,7 @@ sc_atac_create_fragments <- function(
         "\n"
       ),
       file = log_file, append = TRUE)
-  
+
     # output = paste0(output_folder, "/fragments.bed")
 
 	chrom = get_chromosomes(inbam, keep_contigs=chromosomes) # List with names as contigs and elements as lengths
@@ -111,7 +111,7 @@ sc_atac_create_fragments <- function(
 #' @param bam file path to the bam file to get data from
 #' @param keep_contigs regular expression used with grepl to filter reference names
 #'
-#' @return a named list where element names are chromosomes reference names and elemnents are integer lengths
+#' @return a named list where element names are chromosomes reference names and elements are integer lengths
 #' @importFrom Rsamtools indexBam idxstatsBam
 #' @importFrom stats setNames
 get_chromosomes <- function(bam, keep_contigs="^chr") {
