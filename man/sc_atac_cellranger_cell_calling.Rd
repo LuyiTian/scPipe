@@ -4,12 +4,12 @@
 \alias{sc_atac_cellranger_cell_calling}
 \title{cellranger cell calling}
 \usage{
-sc_atac_cellranger_cell_calling(mat, qc_per_bc_file, genome_size)
+sc_atac_cellranger_cell_calling(mat, cell_qc_metrics_file, genome_size)
 }
 \arguments{
 \item{mat}{The input matrix}
 
-\item{qc_per_bc_file}{A file containing qc statistics for each cell}
+\item{cell_qc_metrics_file}{A file containing qc statistics for each cell}
 
 \item{genome_size}{The size of the genome}
 }

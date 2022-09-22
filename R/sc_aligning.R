@@ -148,7 +148,7 @@ sc_aligning <- function (
           stop("Couldn't concatenate files!\n")
         }
 
-        cat("Outputted concatenated read files to:\n")
+        cat("Output concatenated read files to:\n")
         cat("R1:", concat_file_R1, "\n")
         cat("R3:", concat_file_R3, "\n")
 
@@ -167,7 +167,7 @@ sc_aligning <- function (
     no_matches_R3 <- file.path(containing_folder, input_folder_files[grep("nomatch.+R3.+fastq", input_folder_files)])
     if (all(file.exists(no_matches_R1, no_matches_R3)) && !identical(no_matches_R1, character(0)) && !identical(no_matches_R3, character(0))) {
       if (length(readLines(no_matches_R1)) > 0 && length(readLines(no_matches_R3)) > 0) {
-        cat("Found barcode non-matches demultiplexed FASTQ files. Proceeding to align them.\n")
+        cat("Found barcode non-matched demultiplexed FASTQ files. Proceeding to align them.\n")
 
         fileNameWithoutExtension <- paste0(output_folder, "/", strsplit(basename(no_matches_R1), "\\.")[[1]][1])
         nomatch_bam <- paste0(fileNameWithoutExtension, "_aligned.bam")

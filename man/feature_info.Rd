@@ -32,3 +32,6 @@ A DataFrame of feature information
 \description{
 Get or set \code{feature_info} from a SingleCellExperiment object
 }
+\author{
+Shani Amarasinghe
+}

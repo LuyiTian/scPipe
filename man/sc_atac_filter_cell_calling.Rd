@@ -6,7 +6,7 @@
 \usage{
 sc_atac_filter_cell_calling(
   mtx,
-  qc_per_bc_file,
+  cell_qc_metrics_file,
   min_uniq_frags = 0,
   max_uniq_frags = 50000,
   min_frac_peak = 0.05,
@@ -19,7 +19,7 @@ sc_atac_filter_cell_calling(
 \arguments{
 \item{mtx}{The input matrix}
 
-\item{qc_per_bc_file}{A file containing qc statistics for each cell}
+\item{cell_qc_metrics_file}{A file containing qc statistics for each cell}
 
 \item{min_uniq_frags}{The minimum number of required unique fragments required for a cell}
 

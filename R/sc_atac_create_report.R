@@ -1,22 +1,31 @@
+
+###############################################
+# Create the final report for scATAC-Seq data
+###############################################
+
 #' @name sc_atac_create_report
 #' @title HTML report generation
 #' @description Generates a HTML report using the output folder produced by the pipeline
 #'
 #' @param input_folder The path of the folder produced by the pipeline
 #' @param output_folder The path of the output folder to store the HTML report in
-#' @param sample_name A string indicating the name of the sample
 #' @param organism A string indicating the name of the organism being analysed
+#' @param sample_name A string indicating the name of the sample
 #' @param feature_type A string indicating the type of the feature (`genome_bin` or `peak`)
-#'
+#' @param n_barcode_subset if you require only to visualise stats for a sample of barcodes to improve processing time (integer)
+#' @param tss_file bed file of the TSS regions
+#' @param promoter_file bed file of the promoter regions
+#' @param enhancer_file bed file fo the enhancer regions
 #' @export
 #'
 
 
 sc_atac_create_report <- function(input_folder, 
-                                  output_folder = NULL, 
-                                  sample_name  = NULL, 
-                                  organism     = NULL, 
-                                  feature_type = NULL){
+                                  output_folder    = NULL, 
+                                  organism         = NULL,
+                                  sample_name      = NULL,
+                                  feature_type     = NULL,
+                                  n_barcode_subset = 500){
   
   if (!dir.exists(input_folder)){
     stop("The input folder could not be found at ", input_folder);
@@ -27,6 +36,11 @@ sc_atac_create_report <- function(input_folder,
          file.path(input_folder, "scPipe_atac_stats"), 
          ". Either run the pipeline to generate it or create a `scPipe_atac_stats` folder that contains the required files.");
   }
+  
+  available_organisms = c("hg19",
+                          "hg38",
+                          "mm10")
+  
   
   if(is.null(output_folder)) {
     output_folder <- file.path(input_folder, "scPipe_atac_stats")
@@ -44,8 +58,11 @@ sc_atac_create_report <- function(input_folder,
   rmarkdown::render(
     input  = report.file,
     params = list(
-      input_folder = input_folder,
-      organism = organism
+      input_folder     = input_folder,
+      organism         = organism,
+      sample           = sample_name,
+      feature_type     = feature_type,
+      n_barcode_subset = n_barcode_subset
     ),
     output_file = file.path(output_folder, "scPipe_atac_report.html")  
   )

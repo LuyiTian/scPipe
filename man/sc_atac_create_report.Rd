@@ -7,9 +7,10 @@
 sc_atac_create_report(
   input_folder,
   output_folder = NULL,
-  sample_name = NULL,
   organism = NULL,
-  feature_type = NULL
+  sample_name = NULL,
+  feature_type = NULL,
+  n_barcode_subset = 500
 )
 }
 \arguments{
@@ -17,11 +18,19 @@ sc_atac_create_report(
 
 \item{output_folder}{The path of the output folder to store the HTML report in}
 
-\item{sample_name}{A string indicating the name of the sample}
-
 \item{organism}{A string indicating the name of the organism being analysed}
 
+\item{sample_name}{A string indicating the name of the sample}
+
 \item{feature_type}{A string indicating the type of the feature (`genome_bin` or `peak`)}
+
+\item{n_barcode_subset}{if you require only to visualise stats for a sample of barcodes to improve processing time (integer)}
+
+\item{tss_file}{bed file of the TSS regions}
+
+\item{promoter_file}{bed file of the promoter regions}
+
+\item{enhancer_file}{bed file fo the enhancer regions}
 }
 \description{
 Generates a HTML report using the output folder produced by the pipeline

@@ -300,6 +300,19 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// get_all_TSS_bins
+DataFrame get_all_TSS_bins(DataFrame tss_df, int range, int bin_size);
+RcppExport SEXP _scPipe_get_all_TSS_bins(SEXP tss_dfSEXP, SEXP rangeSEXP, SEXP bin_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type tss_df(tss_dfSEXP);
+    Rcpp::traits::input_parameter< int >::type range(rangeSEXP);
+    Rcpp::traits::input_parameter< int >::type bin_size(bin_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(get_all_TSS_bins(tss_df, range, bin_size));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 RcppExport SEXP run_testthat_tests(SEXP);
 
@@ -320,6 +333,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_fasta_bin_bed_file", (DL_FUNC) &_scPipe_rcpp_fasta_bin_bed_file, 3},
     {"_scPipe_rcpp_append_chr_to_bed_file", (DL_FUNC) &_scPipe_rcpp_append_chr_to_bed_file, 2},
     {"_scPipe_sc_atac_create_fragments_cpp", (DL_FUNC) &_scPipe_sc_atac_create_fragments_cpp, 13},
+    {"_scPipe_get_all_TSS_bins", (DL_FUNC) &_scPipe_get_all_TSS_bins, 3},
     {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 1},
     {NULL, NULL, 0}
 };
