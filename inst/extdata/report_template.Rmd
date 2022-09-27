@@ -149,7 +149,7 @@ if (any(colSums(counts(sce)) == 0)) {
 
 Datatable of all QC metrics:
 ```{r}
-sce = perCellQCMetrics(sce)
+sce = calculate_QC_metrics(sce)
 if(!all(colSums(as.data.frame(QC_metrics(sce)))>0)){
   QC_metrics(sce) = QC_metrics(sce)[, colSums(as.data.frame(QC_metrics(sce)))>0]
 }
@@ -194,7 +194,7 @@ Remove low quality cells and plot highest expression genes.
 sce_qc = remove_outliers(sce_qc)
 sce_qc = convert_geneid(sce_qc, returns="external_gene_name")
 
-sce_qc <- perCellQCMetrics(sce_qc)
+sce_qc <- calculate_QC_metrics(sce_qc)
 plotHighestExprs(sce_qc, n=20)
 ```
 
@@ -246,8 +246,9 @@ if (min(sizeFactors(sce_qc)) <= 0) {
 PCA plot using gene expressions as input, colored by the number of genes.
 
 ```{r}
-cpm(sce_qc) = calculateCPM(sce_qc, use_size_factors=FALSE)
-plotPCA(sce_qc, run_args = list(exprs_values="cpm"), colour_by="total_features")
+cpm(sce_qc) = calculateCPM(sce_qc, size.factors=NULL)
+sce_qc <- runPCA(sce_qc, exprs_values = "cpm")
+plotPCA(sce_qc, colour_by="total_features")
 ```
 
 ### Normalize the data using size factor and get high variable genes

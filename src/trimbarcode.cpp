@@ -638,10 +638,9 @@ void paired_fastq_to_fastq(
 bool find_N(kseq_t *seq)
 {
     std::string name = seq->name.s;
-    
     // We only care for the string before the pound sign
     std::string substr_of_interest = name.substr(0, name.find("#"));
-    
+
     // If it finds an "N" in the substring of interest,
     // then the value of ".find" is different from std::string::npos
     return(substr_of_interest.find("N") != std::string::npos);
@@ -660,6 +659,7 @@ bool sc_atac_check_qual(char *qual_s, int trim_n, int thr, int below_thr){
             not_pass++;
         }
     }
+
     return (not_pass > below_thr) ? false : true;
 }
 
@@ -944,21 +944,19 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         }
 
         if(rmlow) { // Only check barcode/UMI quality      
-            // Check quality
             if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
+              removed_low_qual++;
+              Rcout << "R1: "<< std::endl;
+              // Rcout << seq1->qual.s << std::endl << std::endl;
+              continue;
+            } 
+            if(R3){
+              if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
                 removed_low_qual++;
-                // Rcout << "R1: "<< std::endl;
-                // Rcout << seq1->qual.s << std::endl << std::endl;
+                Rcout << "R3: "<< std::endl;
+                // Rcout << seq3->qual.s << std::endl << std::endl;
                 continue;
-            } else{
-                if(R3){
-                    if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
-                        removed_low_qual++;
-                        // Rcout << "R3: "<< std::endl;
-                        // Rcout << seq3->qual.s << std::endl << std::endl;
-                        continue;
-                    }
-                }
+              }
             }
         }
         
@@ -970,18 +968,17 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
                 // skip the rest of the code in the loop.
                 removed_Ns++; // Add 1 to the counter of reads deleted
                 continue; // the rest of the lines in the while loop are ignored
-            } else{
-                if(R3){
-                    // If there wasn't an N in the sequence, then we check in R3
-                    if(find_N(seq3)){
-                        // If there was an N in the sequence, then
-                        // we add 1 to the counter of reads deleted and 
-                        // skip the rest of the code in the loop.
-                        removed_Ns++; // Add 1 to the counter of reads deleted
-                        continue; // the rest of the lines in the while loop are ignored
-                    }
-                }
             } 
+            if(R3){
+                // If there wasn't an N in the sequence, then we check in R3
+                if(find_N(seq3)){
+                    // If there was an N in the sequence, then
+                    // we add 1 to the counter of reads deleted and 
+                    // skip the rest of the code in the loop.
+                    removed_Ns++; // Add 1 to the counter of reads deleted
+                    continue; // the rest of the lines in the while loop are ignored
+                }
+            }
         } 
 		
         
@@ -1270,43 +1267,43 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             }
         } 
 
-        // quality control checks for this read 1 and read 2 (if R3)
-        if(rmlow) { // Only check barcode/UMI quality
-            // Check quality
-            if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
-                removed_low_qual++;
-                continue; // the rest of the lines in the while loop are ignored
-            } 
-
-            if (R3) {
-                // Check quality
-                if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
-                    removed_low_qual++;
-                    continue; // the rest of the lines in the while loop are ignored
-                } 
-            }
-        } 
-                    
-        if(rmN){
-            // If find_N is TRUE, then there is an N in the sequence
-            if(find_N(seq1)){
-                // If there was an N in the sequence, then
-                // we add 1 to the counter of reads deleted and
-                // skip the rest of the code in the loop.
-                removed_Ns++; // Add 1 to the counter of reads deleted
-                continue; // the rest of the lines in the while loop are ignored
-            }
-
-            if (R3) {
-                if(find_N(seq3)){
-                    // If there was an N in the sequence, then
-                    // we add 1 to the counter of reads deleted and
-                    // skip the rest of the code in the loop.
-                    removed_Ns++; // Add 1 to the counter of reads deleted
-                    continue; // the rest of the lines in the while loop are ignored
-                }
-            }
-        } // end if(rmN)
+        // // quality control checks for this read 1 and read 2 (if R3)
+        // if(rmlow) { // Only check barcode/UMI quality
+        //     // Check quality
+        //     if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
+        //         removed_low_qual++;
+        //         continue; // the rest of the lines in the while loop are ignored
+        //     }
+        // 
+        //     if (R3) {
+        //         // Check quality
+        //         if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
+        //             removed_low_qual++;
+        //             continue; // the rest of the lines in the while loop are ignored
+        //         }
+        //     }
+        // }
+        // 
+        // if(rmN){
+        //     // If find_N is TRUE, then there is an N in the sequence
+        //     if(find_N(seq1)){
+        //         // If there was an N in the sequence, then
+        //         // we add 1 to the counter of reads deleted and
+        //         // skip the rest of the code in the loop.
+        //         removed_Ns++; // Add 1 to the counter of reads deleted
+        //         continue; // the rest of the lines in the while loop are ignored
+        //     }
+        // 
+        //     if (R3) {
+        //         if(find_N(seq3)){
+        //             // If there was an N in the sequence, then
+        //             // we add 1 to the counter of reads deleted and
+        //             // skip the rest of the code in the loop.
+        //             removed_Ns++; // Add 1 to the counter of reads deleted
+        //             continue; // the rest of the lines in the while loop are ignored
+        //         }
+        //     }
+        // } // end if(rmN)
   
         // allocate space and copy the sequence from the read containing the barcode and UMI (if applicable)
         char* subStr1;
@@ -1436,7 +1433,45 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             free(subStr3);
             
         }
-
+    
+    // quality control checks for this read 1 and read 2 (if R3)
+    if(rmlow) { // Only check barcode/UMI quality
+      // Check quality
+      if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
+        removed_low_qual++;
+        continue; // the rest of the lines in the while loop are ignored
+      }
+      
+      if (R3) {
+        // Check quality
+        if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
+          removed_low_qual++;
+          continue; // the rest of the lines in the while loop are ignored
+        }
+      }
+    }
+    
+    if(rmN){
+      // If find_N is TRUE, then there is an N in the sequence
+      if(find_N(seq1)){
+        // If there was an N in the sequence, then
+        // we add 1 to the counter of reads deleted and
+        // skip the rest of the code in the loop.
+        removed_Ns++; // Add 1 to the counter of reads deleted
+        continue; // the rest of the lines in the while loop are ignored
+      }
+      
+      if (R3) {
+        if(find_N(seq3)){
+          // If there was an N in the sequence, then
+          // we add 1 to the counter of reads deleted and
+          // skip the rest of the code in the loop.
+          removed_Ns++; // Add 1 to the counter of reads deleted
+          continue; // the rest of the lines in the while loop are ignored
+        }
+      }
+    } // end if(rmN)
+    
 		// write to R1 output file
 		// if R3 exists, r1_match_type will have been adjusted to ensure both reads are
 		// output to the same file, which is determined by the best match
