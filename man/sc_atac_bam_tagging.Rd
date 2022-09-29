@@ -33,6 +33,7 @@ sc_atac_bam_tagging()
 \dontrun{
 sc_atac_bam_tagging(
     inbam,
-    nthreads  = 6) 
+    nthreads  = 6)
 }
+
 }

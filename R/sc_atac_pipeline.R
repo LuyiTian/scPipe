@@ -65,7 +65,6 @@
 sc_atac_pipeline <- function(r1,
                              r2,
                              barcode_fastq = NULL,
-                             barcode_csv = NULL,
                              valid_barcode_file = "",
                              id1_st = 0,
                              id1_len = 16,
@@ -109,11 +108,11 @@ sc_atac_pipeline <- function(r1,
 
   r1_name <- get_filename_without_extension(r1, extension_length = 2)
   r2_name <- get_filename_without_extension(r2, extension_length = 2)
-  
+
   if (!is.null(barcode_fastq)) {
     sc_atac_trim_barcode (r1            = r1,
                           r2            = r2,
-                          bc_file       = barcode_fastq,
+                          barcodeFastq = barcode_fastq,
                           valid_barcode_file = valid_barcode_file,
                           rmN           = TRUE,
                           rmlow         = TRUE,
@@ -121,7 +120,7 @@ sc_atac_pipeline <- function(r1,
   } else if (!is.null(barcode_csv)) {
     sc_atac_trim_barcode (r1            = r1,
                           r2            = r2,
-                          bc_file       = barcode_csv,
+                          valid_barcode_file = valid_barcode_file,
                           id1_st = id1_st,
                           id1_len = id1_len,
                           id2_st = id2_st,

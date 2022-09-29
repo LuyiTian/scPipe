@@ -7,6 +7,7 @@
 check_barcode_start_position(
   fastq,
   barcode_file,
+  barcode_file_realname,
   bstart,
   blength,
   search_lines,
@@ -17,6 +18,8 @@ check_barcode_start_position(
 \item{fastq}{file containing reads}
 
 \item{barcode_file}{csv file}
+
+\item{barcode_file_realname}{the real name of the csv file}
 
 \item{bstart}{the start position for barcodes in the given reads}
 

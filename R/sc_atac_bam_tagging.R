@@ -6,21 +6,23 @@
 #' @name sc_atac_bam_tagging
 #' @title BAM tagging
 #' @description Demultiplexes the reads
-#' 
+#'
 #' @param inbam The input BAM file
 #' @param output_folder The path of the output folder
 #' @param bc_length The length of the cellular barcodes
 #' @param bam_tags The BAM tags
 #' @param nthreads The number of threads
-#' 
+#'
 #' @examples
 #' \dontrun{
 #' sc_atac_bam_tagging(
 #'     inbam,
-#'     nthreads  = 6) 
+#'     nthreads  = 6)
 #' }
+#'
+#' @importFrom data.table .N .SD
 #' @export
-#' 
+#'
 sc_atac_bam_tagging <- function(inbam,
                                 output_folder = NULL,
                                 bc_length = NULL,
@@ -48,7 +50,7 @@ sc_atac_bam_tagging <- function(inbam,
     return(paste(vec[1:length(vec)-1], collapse = "."))
   }
   fileNameWithoutExtension <- get_filename_without_extension(inbam)
-  
+
   outbam                   <- file.path(output_folder, paste0(fileNameWithoutExtension, "_tagged_sorted.bam"))
   outsortedbam             <- file.path(output_folder, paste0(fileNameWithoutExtension, "_tagged_sorted")) # don't want extension
 
@@ -93,22 +95,22 @@ sc_atac_bam_tagging <- function(inbam,
     ,
     flag =
       c(73, 133, 89, 121, 165, 181, 101, 117, 153, 185, 69, 137, 77, 141, 99, 147, 83, 163, 67, 131, 115, 179, 81, 161, 97, 145, 65, 129, 113, 177))
-  
+
   add_matrices <- function(...) {
     a <- list(...)
     cols <- sort(unique(unlist(lapply(a, colnames))))
     rows <- sort(unique(unlist(lapply(a, rownames))))
-    
+
     nrows <- length(rows)
     ncols <- length(cols)
     newms <- lapply(a, function(m) {
       b <- as(as(m, "dgCMatrix"), "dgTMatrix")
       s <- cbind.data.frame(i = b@i + 1, j = b@j + 1, x = b@x)
-      
-      
+
+
       i <- match(rownames(m), rows)[s$i]
       j <- match(colnames(m), cols)[s$j]
-  
+
       Matrix::sparseMatrix(i=i,
                    j=j,
                    x=s$x,
@@ -117,22 +119,22 @@ sc_atac_bam_tagging <- function(inbam,
     })
     Reduce(`+`, newms)
   }
-  
+
   cat("Generating mapping statistics per barcode\n")
   cat("Iterating through 5,000,000 reads at a time\n")
   bamfl <- open(Rsamtools::BamFile(outbam, yieldSize = 5000000))
   params <- Rsamtools::ScanBamParam(what=c("flag"), tag=c("CB"))
   iter <- 1
   full_matrix = NULL
-  
+
   # Iterate over the BAM file in chunks of 5 million reads
   while(length((bam0 <- Rsamtools::scanBam(bamfl, param = params)[[1]])$flag)) {
     cat("chunk", iter, "\n")
-    
+
     # Create a data.table object with each row representing a read, and the columns as the barcode and flag
     df <- data.table::setDT(data.frame(bam0$tag$CB, bam0$flag) %>% data.table::setnames(c("barcode", "flag")) %>% dplyr::left_join(flag_defs, by = "flag"))[, !"flag"]
-    
-    # Count the reads per barcode 
+
+    # Count the reads per barcode
     x <- df[, list(count=.N), names(df)]
     x <- data.table::dcast(x, barcode ~ type, value.var = "count")
     for (i in seq_along(x)) data.table::set(x, i=which(is.na(x[[i]])), j=i, value=0)
@@ -156,7 +158,9 @@ sc_atac_bam_tagging <- function(inbam,
       "\n\n"
     ),
     file = log_file, append = TRUE)
+
   
   message(paste0("The output tagged and sorted BAM file was sent to ", output_folder))
-  return(paste0(outsortedbam, ".bam"))
+  
+  return(outbam)
 }

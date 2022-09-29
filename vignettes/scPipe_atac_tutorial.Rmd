@@ -48,7 +48,7 @@ output_folder <- tempdir()
 
 # Fastq reformatting
 
-To process the data, we need the `fastq` files (both compressed anad uncompressed versions are accepted) and a cell barcode annotation. We have supplied very small sample FASTQ files of chr21.  The barcode annotation could be either in a `.fastq` format or a `.csv` file with at least two columns, where the first column has the cell id and the second column contains the barcode sequence. All these files can be found in the `data` folder of the `scPipe` package:
+To process the data, we need the `fastq` files (both compressed and uncompressed versions are accepted) and a cell barcode annotation. We have supplied very small sample FASTQ files of chr21.  The barcode annotation could be either in a `.fastq` format or a `.csv` file with at least two columns, where the first column has the cell id and the second column contains the barcode sequence. All these files can be found in the `data` folder of the `scPipe` package:
 
 ```{r}
 # data fastq files
@@ -92,7 +92,7 @@ sc_atac_trim_barcode (r1            = r1,
 
 To accommodate combinatorial indexing in some scATAC-seq protocols, the `bc_file` parameter will accept a list of barcode files as well (currently only implemented for the `fastq` approach).
 
-Additionally, `rmN`, `rmlow` and `min_qual` paramters define the quality thresholds for the reads. If there are `Ns` in the barcode or UMI positions those will be discarded by `rmN = TRUE`. `rmlow =TRUE` will remove reads having lower quality than what is defined by `min_qual` (default: 20).
+Additionally, `rmN`, `rmlow` and `min_qual` parameters define the quality thresholds for the reads. If there are `Ns` in the barcode or UMI positions those will be discarded by `rmN = TRUE`. `rmlow =TRUE` will remove reads having lower quality than what is defined by `min_qual` (default: 20).
 
 Completion of this function will output three different outputs depending on the findings;
 * complete matches: When the barcode is completely matched and identified in the correct position
@@ -212,7 +212,7 @@ sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.be
 
 ```
 
-Call calling is performed on the data prior to finding overlaps. The cell calling methods available are the `emptyDrops` method from \code{DropletUtils}, `filter` which filters the cells based on various QC cutoffs, and `cellranger` which models the signal and noise as a mixture of two negative binomial distributions, though the `filter` method is recommended as it is most commonly used and the best-suited for scATAC-seq data.
+Call calling is performed on the data prior to finding overlaps. The cell calling methods available are the `emptyDrops` method from \code{DropletUtils}, `filter` which filters the cells based on various QC cut-offs, and `cellranger` which models the signal and noise as a mixture of two negative binomial distributions, though the `filter` method is recommended as it is most commonly used and the best-suited for scATAC-seq data.
 
 For the `filter` cell-calling method, there are a variety of QC metrics that can be used, including 
 * `min_uniq_frags`
@@ -245,7 +245,7 @@ sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.be
 
 Mapping quality (MAPQ) value can be set to filter data further in step (default: 30). Additionally, regions that are considered anomalous, unstructured, or high signal in next-generation sequencing experiments are excluded using an inbuilt `excluded_regions` file (available are for `organism` `hg19`, `hg38`, and `mm10`) or a user provided `excluded_regions_filename` file in BED format.
 
-The discrepancy of `chr` between the alignment file and the feature file/excluded regions file can also be fixed (using `fix_char` parameter) if needed by adding the string `chr` to the beginning of either the features, and/or excluded regions. So the ptions for `fix_char`are "none", "excluded_regions", "feature", "both".
+The discrepancy of `chr` between the alignment file and the feature file/excluded regions file can also be fixed (using `fix_char` parameter) if needed by adding the string `chr` to the beginning of either the features, and/or excluded regions. So the options for `fix_char` are "none", "excluded_regions", "feature", "both".
 
 **NOTE** `genome_bin` approach may be more reliable in detecting sensitive features than using a pseudo-bulk peak calling approach, hence it would make the function slower as well.
 
