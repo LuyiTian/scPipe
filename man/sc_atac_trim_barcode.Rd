@@ -51,7 +51,7 @@ Files ending in \code{.gz} will be automatically compressed.}
 
 \item{rmN}{logical, whether to remove reads that contains N in UMI or cell barcode.}
 
-\item{rmlow}{logical, whether to remove the low quality reads.}
+\item{rmlow}{logical, whether to remove reads that have low quality barcode sequences}
 
 \item{min_qual}{the minimum base pair quality that is allowed (default = 20).}
 

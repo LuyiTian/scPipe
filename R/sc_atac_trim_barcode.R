@@ -32,7 +32,7 @@
 #' @param umi_length if available, the start position of the molecular identifier.  
 #' @param umi_in umi_in
 #' @param rmN logical, whether to remove reads that contains N in UMI or cell barcode.
-#' @param rmlow logical, whether to remove the low quality reads.
+#' @param rmlow logical, whether to remove reads that have low quality barcode sequences
 #' @param min_qual the minimum base pair quality that is allowed (default = 20).
 #' @param num_below_min the maximum number of base pairs below the quality threshold.
 #' @param no_reverse_complement specifies if the reverse complement of the barcode sequence should be 

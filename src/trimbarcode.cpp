@@ -625,14 +625,15 @@ void paired_fastq_to_fastq(
 }
 
 
-// Find whether kseq_t has an N before the pound (#) symbol
-// Very similar to N_check(). Should probably merge eventually.
-bool find_N(kseq_t *seq)
+// Find whether kseq_t has an N in the sequence starting at startPos, for len bases
+// Checks the fastq sequence for this, so this check must happen before
+// the barcode and UMI sequences are removed from the fastq line
+bool find_N(kseq_t *read, size_t startPos, size_t len)
 {
-    std::string name = seq->name.s;
+    std::string seq = read->seq.s;
     
     // We only care for the string before the pound sign
-    std::string substr_of_interest = name.substr(0, name.find("#"));
+    std::string substr_of_interest = seq.substr(startPos, len);
     
     // If it finds an "N" in the substring of interest,
     // then the value of ".find" is different from std::string::npos
@@ -643,7 +644,7 @@ bool find_N(kseq_t *seq)
 
 
 // Very similar to check_qual(). Should probably merge eventually.
-bool sc_atac_check_qual(char *qual_s, int trim_n, int thr, int below_thr){
+bool sc_atac_check_qual(const char *qual_s, int trim_n, int thr, int below_thr){
     int not_pass = 0;
     for (int i = 0; i < trim_n; i++){
         // https://support.illumina.com/help/BaseSpace_OLH_009008/Content/Source/Informatics/BS/QualityScoreEncoding_swBS.htm
@@ -808,6 +809,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 		// append every barcode in the barcode fastq list 
 		// to the correct  position in the name of the current read (in both R1 and R3)
 		int barcodeExact = 0, barcodePartial = 0, barcodeNo = 0;
+		bool removedAnN = false, removedLowQual = false;
         for (int i=0; i<(int)seq2_list.size(); i++) {
 			// grab the current kseq_t fastq read
             kseq_t* seq2 = seq2_list[i];
@@ -818,6 +820,29 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 				const char * const seq2_qual = seq2->qual.s;
                 //int seq2_namelen = seq2->name.l;
                 int seq2_seqlen = seq2->seq.l;
+
+                // Rcout << "seq2_seq: " << seq2_seq << std::endl << std::endl;
+                seq_2_set.insert(std::string{seq2_seq});
+                // Rcout << "seq_2_set size: " << seq_2_set.size() << std::endl << std::endl;
+
+				// quality check before the heavy work of shifting barcodes around is done. Early break
+				if(rmlow) {
+					// Check quality for the entire read (using kstring_t length)
+					if (!sc_atac_check_qual(seq2_qual, seq2->qual.l, min_qual, num_below_min)) {
+						removedLowQual = true;
+						break;
+					} 
+				}
+
+				// check for N values in this current barcode from the fastq
+				// Check for N values before doing any processing to save time
+				if(rmN){
+					// If find_N is TRUE, then there is an N in the sequence
+					if(find_N(seq2, 0, seq2_seqlen)) {
+						removedAnN = true;
+						break; // ignore the entire read
+					} 
+				} 
                 
 				// verify that we have the correct  barcode sequence, by checking against the valid barcode trie
 				if (checkBarcodeMismatch) {
@@ -860,10 +885,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 					barcodeExact++;
 				}
 
-                // Rcout << "seq2_seq: " << seq2_seq << std::endl << std::endl;
-                seq_2_set.insert(std::string{seq2_seq});
-                // Rcout << "seq_2_set size: " << seq_2_set.size() << std::endl << std::endl;
-                
                 const int new_name_length1 = seq1_namelen + seq2_seqlen+1;
                 seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1); // allocate additional memory
                 memmove(seq1_name + seq2_seqlen+1, seq1_name, seq1_namelen * sizeof(char));// move original read name
@@ -883,50 +904,24 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
             } else {
                 Rcpp::Rcout << "read1 file is not the same length as the barcode fastq file: " << "\n";
             }
-        }
+		}
 
-        if(rmlow) { // Only check barcode/UMI quality      
-            // Check quality for the entire read (using kstring_t length)
-            if (!sc_atac_check_qual(seq1->qual.s, seq1->qual.l, min_qual, num_below_min)) {
-                removed_low_qual++;
-                // Rcout << "R1: "<< std::endl;
-                // Rcout << seq1->qual.s << std::endl << std::endl;
-                continue;
-            } else{
-                if(R3){
-                    if (!sc_atac_check_qual(seq3->qual.s, seq3->qual.l, min_qual, num_below_min)) {
-                        removed_low_qual++;
-                        // Rcout << "R3: "<< std::endl;
-                        // Rcout << seq3->qual.s << std::endl << std::endl;
-                        continue;
-                    }
-                }
-            }
-        }
-        
-        if(rmN){
-            // If find_N is TRUE, then there is an N in the sequence
-            if(find_N(seq1)){
-                // If there was an N in the sequence, then
-                // we add 1 to the counter of reads deleted and 
-                // skip the rest of the code in the loop.
-                removed_Ns++; // Add 1 to the counter of reads deleted
-                continue; // the rest of the lines in the while loop are ignored
-            } else{
-                if(R3){
-                    // If there wasn't an N in the sequence, then we check in R3
-                    if(find_N(seq3)){
-                        // If there was an N in the sequence, then
-                        // we add 1 to the counter of reads deleted and 
-                        // skip the rest of the code in the loop.
-                        removed_Ns++; // Add 1 to the counter of reads deleted
-                        continue; // the rest of the lines in the while loop are ignored
-                    }
-                }
-            } 
-        } 
+		// if we've removed a low quality barcode sequence,
+		// we must ignore the entire read
+		if (removedLowQual) {
+			removed_low_qual++;
+			continue;
+		}
+		// if we've removed an N value from a barcode sequence,
+		// ignore the entire read as part of quality checking
+		if (removedAnN) {
+			// If there was an N in the sequence, then
+			// we add 1 to the counter of reads deleted and 
+			// skip the rest of the code in the loop.
+			removed_Ns++; // Add 1 to the counter of reads deleted
+			continue;
+		}
 		
-        
 		// decide the type of match
 		// if all n barcode files give an exact match, match type is exact
 		// if 1<=x<n are exact or partial matches, match type is partial
@@ -1014,9 +1009,9 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 	}
 
     Rcpp::Rcout << "Total reads: " << passed_reads << "\n";
-    Rcpp::Rcout << "Total N's removed: " << removed_Ns << "\n";
-    Rcpp::Rcout << "Total low quality reads removed: " << removed_low_qual << "\n";
-    Rcpp::Rcout << "Total barcodes: " << seq_2_set.size() << "\n";
+    Rcpp::Rcout << "Total reads removed due to N's in barcodes: " << removed_Ns << "\n";
+    Rcpp::Rcout << "Total reads removed due to low quality barcodes: " << removed_low_qual << "\n";
+    Rcpp::Rcout << "Total barcodes provided in FASTQ file: " << seq_2_set.size() << "\n";
 	if (checkBarcodeMismatch) {
 		Rcpp::Rcout << "Exact barcode matches: " << exactMatches << "\n";
 		Rcpp::Rcout << "Matched after barcode correction : " << partialMatches << "\n";
@@ -1212,7 +1207,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             }
         } 
 
-        // quality control checks for this read 1 and read 2 (if R3)
+		// quality control checks for this read 1 and read 2 (if R3)
         if(rmlow) { // Only check barcode/UMI quality
             // Check quality
             if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
@@ -1231,25 +1226,32 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                     
         if(rmN){
             // If find_N is TRUE, then there is an N in the sequence
-            if(find_N(seq1)){
+            if(find_N(seq1, id1_st, id1_len)){
                 // If there was an N in the sequence, then
                 // we add 1 to the counter of reads deleted and
                 // skip the rest of the code in the loop.
                 removed_Ns++; // Add 1 to the counter of reads deleted
                 continue; // the rest of the lines in the while loop are ignored
-            }
+            } else if (isUMIR1 && find_N(seq1, umi_start, umi_length)) {
+				removed_Ns++;
+				continue;
+			}
 
             if (R3) {
-                if(find_N(seq3)){
+                if(find_N(seq3, id2_st, id2_len)){
                     // If there was an N in the sequence, then
                     // we add 1 to the counter of reads deleted and
                     // skip the rest of the code in the loop.
                     removed_Ns++; // Add 1 to the counter of reads deleted
                     continue; // the rest of the lines in the while loop are ignored
-                }
+                } else if (isUMIR2 && find_N(seq3, umi_start, umi_length)) {
+					// remove this read if there's Ns in the UMI sequence
+					removed_Ns++;
+					continue;
+				}
             }
         } // end if(rmN)
-  
+
         // allocate space and copy the sequence from the read containing the barcode and UMI (if applicable)
         char* subStr1;
         int bcUMIlen1 = 0;
@@ -1438,11 +1440,11 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     out_vect[5] = (int)barcode_map.size();
     
     Rcpp::Rcout << "Total Reads: " << passed_reads << std::endl;
-    Rcpp::Rcout << "Total N's removed: " << removed_Ns << std::endl;
-    Rcpp::Rcout << "removed_low_qual: " << removed_low_qual << std::endl;
+    Rcpp::Rcout << "Total reads remvoed due to N's in barcodes: " << removed_Ns << std::endl;
+    Rcpp::Rcout << "Total reads removed due to low quality barcodes: " << removed_low_qual << std::endl;
     Rcpp::Rcout << "Exact match Reads: " << exact_match << std::endl;
     Rcpp::Rcout << "Matched after barcode corrections: " << approx_match << std::endl;
-    Rcpp::Rcout << "Total barcodes: " << (int)barcode_map.size() << std::endl;
+    Rcpp::Rcout << "Total barcodes provided in CSV file: " << (int)barcode_map.size() << std::endl;
     
     return(out_vect);
 }
