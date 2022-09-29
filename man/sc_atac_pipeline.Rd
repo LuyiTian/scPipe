@@ -24,7 +24,6 @@ sc_atac_pipeline(
   genome_size = NULL,
   bin_size = NULL,
   yieldsize = 1e+06,
-  mapq = 30,
   exclude_regions = TRUE,
   excluded_regions_filename = NULL,
   fix_chr = "none",
@@ -88,8 +87,6 @@ the fastq reads quality score)}
 \item{bin_size}{The size of the bins for feature counting with the `genome_bin` feature type}
 
 \item{yieldsize}{The number of reads to read in for feature counting}
-
-\item{mapq}{The minimum MAPQ score}
 
 \item{exclude_regions}{Whether or not the regions should be excluded}
 

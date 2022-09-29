@@ -26,7 +26,6 @@
 #' @param samtools_path A custom path of samtools to use for duplicate removal
 #' @param bin_size The size of the bins for feature counting with the `genome_bin` feature type
 #' @param yieldsize The number of reads to read in for feature counting
-#' @param mapq The minimum MAPQ score
 #' @param exclude_regions Whether or not the regions should be excluded
 #' @param excluded_regions_filename The filename of the file containing the regions to be excluded
 #' @param cell_calling The desired cell calling method either \code{cellranger}, \code{emptydrops} or  \code{filter}
@@ -82,7 +81,6 @@ sc_atac_pipeline <- function(r1,
                              genome_size   = NULL,
                              bin_size      = NULL,
                              yieldsize     = 1000000,
-                             mapq          = 30,
                              exclude_regions = TRUE,
                              excluded_regions_filename = NULL,
                              fix_chr = "none",
@@ -185,7 +183,6 @@ sc_atac_pipeline <- function(r1,
                             gene_anno_file = gene_anno_file,
                             bin_size      = bin_size,
                             yieldsize     = yieldsize,
-                            mapq          = mapq,
                             exclude_regions = exclude_regions,
                             excluded_regions_filename = excluded_regions_filename,
                             output_folder = output_folder,
