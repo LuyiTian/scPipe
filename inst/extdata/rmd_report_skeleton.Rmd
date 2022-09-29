@@ -657,7 +657,7 @@ sce_coldata <- colData(sce)
 
 ```{r interactive-umap, fig.wide = TRUE, fig.asp = 0.9, echo = FALSE}
 
-g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2, text = paste("barcode: ", barcode))) +
+g <- ggplot(df_umap, aes(x = UMAP1, y = UMAP2, text = paste("barcode: ", barcode))) +
         geom_point(aes(col = cluster), size = 0.5) +
         theme_bw(base_size = 14)
 
