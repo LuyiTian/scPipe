@@ -625,14 +625,6 @@ void paired_fastq_to_fastq(
 }
 
 
-
-
-
-
-
-
-
-
 // Find whether kseq_t has an N before the pound (#) symbol
 // Very similar to N_check(). Should probably merge eventually.
 bool find_N(kseq_t *seq)
@@ -647,7 +639,6 @@ bool find_N(kseq_t *seq)
     return(substr_of_interest.find("N") != std::string::npos);
     
 }
-
 
 
 
@@ -679,12 +670,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         const bool rmlow,
         int min_qual,
         int num_below_min,
-        int id1_st,
-        int id1_len,
-        int id2_st,
-        int id2_len,
-        int umi_st,
-        int umi_len,
 		bool no_reverse_complement
 ) {
     
@@ -785,36 +770,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 		Rcpp::Rcout << "No valid_barcode_file provided; no barcode error correction will occur.\n";
 	}
 
-    // id1_st: bs1: starting position of barcode in read one. -1 if no barcode in read one.
-    // id1_len: bl1: length of barcode in read one, if there is no barcode in read one this number is used for trimming beginning of read one.
-    // id2_st: bs2: starting position of barcode in read two
-    // id2_len: bl2: length of barcode in read two
-    // umi_st: us: starting position of UMI
-    // umi_len: ul: length of UMI
-    
-    
-    // Define some variables. These are only used if rmlow = T
-    int bc1_end, bc2_end; // get total length of index + UMI for read1 and read2
-    if (id1_st >= 0) { // if we have plate index
-        bc1_end = id1_st + id1_len;
-    }
-    else { // if no plate information, use id1_len to trim the read 1
-        bc1_end = id1_len;
-    }
-    
-    // set barcode end index
-    if (umi_st >= 0) {
-        // This is basically doing the following: bc2_end = max(id2_st + id2_len, umi_st + umi_len)
-        if (id2_st + id2_len > umi_st + umi_len) {
-            bc2_end = id2_st + id2_len;
-        } else {
-            bc2_end = umi_st + umi_len;
-        }
-    } else {
-        bc2_end = id2_st + id2_len;
-    }
-    
-    
     std::set<std::string> seq_2_set; // Set that will include the unique barcode sequences
     MatchType barcodeMatchType = Exact;
 	int exactMatches = 0, partialMatches = 0, noMatches = 0;
@@ -829,11 +784,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         if (++_interrupt_ind % 4096 == 0) checkUserInterrupt();
         passed_reads++;
         
-        // check if barcode position is valid for this read
-        if (id1_st >= 0) {
-            if (id1_st + id1_len >= l1) continue;
-        }
-        
         char * const seq1_name = seq1->name.s;
         //char * const seq1_seq = seq1->seq.s;
         int seq1_namelen = seq1->name.l;
@@ -845,14 +795,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         //int seq3_seqlen;
         if (R3){
             if((l3 = kseq_read(seq3)) >= 0){
-                // check this read is long enough for id2 and umi positions
-                if (id2_st >= 0) {
-                    if (id2_st + id2_len >= l3) continue;
-                }
-                if (umi_st >= 0) {
-                    if (umi_st + umi_len >= l3) continue;
-                }
-
                 seq3_name = seq3->name.s;
                 //seq3_seq = seq3->seq.s;
                 seq3_namelen = seq3->name.l;
@@ -944,15 +886,15 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         }
 
         if(rmlow) { // Only check barcode/UMI quality      
-            // Check quality
-            if (!sc_atac_check_qual(seq1->qual.s, bc1_end, min_qual, num_below_min)) {
+            // Check quality for the entire read (using kstring_t length)
+            if (!sc_atac_check_qual(seq1->qual.s, seq1->qual.l, min_qual, num_below_min)) {
                 removed_low_qual++;
                 // Rcout << "R1: "<< std::endl;
                 // Rcout << seq1->qual.s << std::endl << std::endl;
                 continue;
             } else{
                 if(R3){
-                    if (!sc_atac_check_qual(seq3->qual.s, bc2_end, min_qual, num_below_min)) {
+                    if (!sc_atac_check_qual(seq3->qual.s, seq3->qual.l, min_qual, num_below_min)) {
                         removed_low_qual++;
                         // Rcout << "R3: "<< std::endl;
                         // Rcout << seq3->qual.s << std::endl << std::endl;

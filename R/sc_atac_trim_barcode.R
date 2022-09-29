@@ -152,12 +152,6 @@ sc_atac_trim_barcode <- function(
         rmlow,
         min_qual,
         num_below_min,
-        id1_st,
-        id1_len,
-        id2_st,
-        id2_len,
-        umi_start,
-        umi_length,
 		no_reverse_complement)
       
       cat("Total Reads: ", out_vec[1],
