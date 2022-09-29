@@ -35,7 +35,7 @@ stored.
 }}
 
 \item{mito}{mitochondrial chromosome name.
-This should be consistant with the chromosome names in the bam file.}
+This should be consistent with the chromosome names in the bam file.}
 
 \item{nthreads}{number of threads to use. (default: 1)}
 }

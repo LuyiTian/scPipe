@@ -36,7 +36,7 @@ stored.
 }}
 
 \item{mito}{mitochondrial chromosome name.
-This should be consistant with the chromosome names in the bam file.}
+This should be consistent with the chromosome names in the bam file.}
 
 \item{has_UMI}{whether the protocol contains UMI (default: TRUE)}
 

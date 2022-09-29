@@ -5,7 +5,7 @@
 \title{generating the feature by cell matrix}
 \usage{
 sc_atac_feature_counting(
-  insortedbam,
+  fragment_file,
   feature_input = NULL,
   bam_tags = list(bc = "CB", mb = "OX"),
   feature_type = "peak",
@@ -39,7 +39,7 @@ sc_atac_feature_counting(
 )
 }
 \arguments{
-\item{insortedbam}{The input bam}
+\item{fragment_file}{The fragment file}
 
 \item{feature_input}{The feature input data e.g. the .narrowPeak file for peaks of a bed file format}
 
@@ -108,7 +108,7 @@ a selected feature type
 \examples{
 \dontrun{
 sc_atac_feature_counting(
-   insortedbam = tiny_tagged_sorted_bam,
+   fragment_file = fragment_file,
    cell_calling = "filter",
    exclude_regions = TRUE,
    feature_input = feature_file)

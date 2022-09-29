@@ -17,7 +17,7 @@ sc_detect_bc(
 )
 }
 \arguments{
-\item{infq}{input fastq file, shoule be the output file of
+\item{infq}{input fastq file, should be the output file of
 \code{sc_trim_barcode}}
 
 \item{outcsv}{output barcode annotation}

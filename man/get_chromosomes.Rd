@@ -12,7 +12,7 @@ get_chromosomes(bam, keep_contigs = "^chr")
 \item{keep_contigs}{regular expression used with grepl to filter reference names}
 }
 \value{
-a named list where element names are chromosomes reference names and elemnents are integer lengths
+a named list where element names are chromosomes reference names and elements are integer lengths
 }
 \description{
 Gets a list of NamedList of chromosomes and the reference length
