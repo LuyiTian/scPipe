@@ -589,7 +589,7 @@ sc_atac_feature_counting <- function(
   # Update cell QC metrics to include whether the cell was kept or not
   cqc <- read.csv(file.path(output_folder, "cell_qc_metrics.csv"))
   cqc$cell_called <- cqc$bc %in% colnames(matrixData)
-  write.csv(cqc, "cell_qc_metrics.csv", row.names = FALSE)
+  write.csv(cqc, file.path(output_folder, "cell_qc_metrics.csv"), row.names = FALSE)
   
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly

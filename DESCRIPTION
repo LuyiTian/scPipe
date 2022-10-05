@@ -94,5 +94,6 @@ Suggests:
     plotly,
     reshape2,
     RANN,
-    igraph
+    igraph,
+    MultiAssayExperiment
 VignetteBuilder: knitr
