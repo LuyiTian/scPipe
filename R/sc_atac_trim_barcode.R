@@ -180,14 +180,14 @@ sc_atac_trim_barcode <- function(
       # Check if given barcode start position is valid
       # check_barcode_start_position is expecting a single barcode, of only the barcode sequences, no commas
       cat("Checking if id1_st is valid\n")
-      if (!check_barcode_start_position(r1, temp_barcode_file, id1_st, id1_len, 10000, .8)) {
+      if (!check_barcode_start_position(r1, temp_barcode_file, bc_file, id1_st, id1_len, 10000, .8)) {
         if (tolower(readline(prompt="Continue anyway? (y/n) ")) != "y") {
           stop("Please change id1_st and try again")
         }
         cat("Continuing...")
       }
       cat("Checking if id2_st is valid\n")
-      if (!check_barcode_start_position(r2, temp_barcode_file, id2_st, id2_len, 10000, .8)) {
+      if (!check_barcode_start_position(r2, temp_barcode_file, bc_file, id2_st, id2_len, 10000, .8)) {
         if (tolower(readline(prompt="Continue anyway? (y/n) ")) != "y") {
           stop("Please change id2_st and try again")
         }

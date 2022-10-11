@@ -1083,18 +1083,18 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     std::map<std::string, int> barcode_map; 
     std::ifstream bc(bc_fn);
     std::string line;
-    if(!bc.is_open()) throw std::runtime_error("Could not open file");
-    while(std::getline(bc, line))
-    {
-        std::string substr = line.substr(0,std::min(id1_len, id2_len));
-        barcode_map.insert(std::pair<std::string, int>(substr, 1)); 
-    }
     
-    if(barcode_map.empty()){
-        std::stringstream err_msg;
-        err_msg << "Error in retrieving barcodes from the barcode File. Please check the barcode file format. " << bc_fn << std::endl;
-        Rcpp::stop(err_msg.str());
-    }
+	while(std::getline(bc, line))
+	{
+		std::string substr = line.substr(0,std::min(id1_len, id2_len));
+		barcode_map.insert(std::pair<std::string, int>(substr, 1)); 
+	}
+	
+	if(barcode_map.empty()){
+		std::stringstream err_msg;
+		err_msg << "Error in retrieving barcodes from the barcode File. Please check the barcode file format. " << bc_fn << std::endl;
+		Rcpp::stop(err_msg.str());
+	}
     
     
     
@@ -1274,23 +1274,24 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         memcpy( barcode, seq1->seq.s + id1_st, id1_len); 
         barcode[id1_len] = '\0'; 
         
-        MatchType r1_match_type = NoMatch; // 0 for exact, 1 for partial, 2 for no
-        // we want to check for an exact match first
-        if (barcode_map.find(barcode) != barcode_map.end()) {
-            // exact match
-            exact_match ++;   
-            r1_match_type = Exact;
-        } else {
-            // inexact match, we need to iterate over all barcodes
-            r1_match_type = NoMatch; // if we never find a barcode, no match
-            for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
-                if(hamming_distance(it->first, barcode) <2){
-                    approx_match++;
-                    r1_match_type = Partial;
-                    break;
-                } 
-            }
-        }
+        MatchType r1_match_type = Exact; // 0 for exact, 1 for partial, 2 for no
+		// we want to check for an exact match first
+		if (barcode_map.find(barcode) != barcode_map.end()) {
+			// exact match
+			exact_match ++;   
+			r1_match_type = Exact;
+		} else {
+			// inexact match, we need to iterate over all barcodes
+			r1_match_type = NoMatch; // if we never find a barcode, no match
+			for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
+				if(hamming_distance(it->first, barcode) <2){
+					approx_match++;
+					r1_match_type = Partial;
+					break;
+				} 
+			}
+		}
+
         // if the barcode matches exactly or inexactly, write the modifiyed sequence lines to the output file
         const int new_name_length1 = seq1->name.l + bcUMIlen1 + 1;
         seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1 + 1); // allocate additional memory
@@ -1323,19 +1324,19 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             char *barcode3 = (char *)malloc((id2_len + 1) * sizeof(char));
             memcpy( barcode3, seq3->seq.s + id2_st, id2_len);
             barcode3[id2_len] = '\0';
-			MatchType r2_match_type = NoMatch; // 0 for exact, 1 for partial, 2 for no
-            
-            if (barcode_map.find(subStr3) != barcode_map.end()) {
-                r2_match_type = Exact;
-            } else {
-                r2_match_type = NoMatch; // assume there is no match
-                for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
-                    if(hamming_distance(it->first, barcode3) < 2){
-                        r2_match_type = Partial;
-                        break;
-                    }
-                }
-            }
+
+			MatchType r2_match_type = Exact; // 0 for exact, 1 for partial, 2 for no
+			if (barcode_map.find(subStr3) != barcode_map.end()) {
+				r2_match_type = Exact;
+			} else {
+				r2_match_type = NoMatch; // assume there is no match
+				for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
+					if(hamming_distance(it->first, barcode3) < 2){
+						r2_match_type = Partial;
+						break;
+					}
+				}
+			}
 
             const int new_name_length1 = seq3->name.l + bcUMIlen3 + 1;
             seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1 + 1); // allocate additional memory
@@ -1440,7 +1441,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     out_vect[5] = (int)barcode_map.size();
     
     Rcpp::Rcout << "Total Reads: " << passed_reads << std::endl;
-    Rcpp::Rcout << "Total reads remvoed due to N's in barcodes: " << removed_Ns << std::endl;
+    Rcpp::Rcout << "Total reads removed due to N's in barcodes: " << removed_Ns << std::endl;
     Rcpp::Rcout << "Total reads removed due to low quality barcodes: " << removed_low_qual << std::endl;
     Rcpp::Rcout << "Exact match Reads: " << exact_match << std::endl;
     Rcpp::Rcout << "Matched after barcode corrections: " << approx_match << std::endl;
