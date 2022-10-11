@@ -20,7 +20,6 @@ sc_atac_feature_counting(
   pheno_data = NULL,
   bin_size = NULL,
   yieldsize = 1e+06,
-  mapq = 30,
   n_filter_cell_counts = 200,
   n_filter_feature_counts = 10,
   exclude_regions = FALSE,
@@ -68,8 +67,6 @@ sc_atac_feature_counting(
 \item{bin_size}{The size of the bins}
 
 \item{yieldsize}{The yield size}
-
-\item{mapq}{The minimum MAPQ score}
 
 \item{n_filter_cell_counts}{An integer value to filter the feature matrix on the number of reads per cell (default = 200)}
 
