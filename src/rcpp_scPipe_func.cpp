@@ -417,12 +417,6 @@ std::vector<int> rcpp_sc_atac_trim_barcode_paired(
 		Rcpp::LogicalVector rmlow,
 		Rcpp::IntegerVector min_qual,
 		Rcpp::IntegerVector num_below_min,
-		Rcpp::IntegerVector id1_st,
-		Rcpp::IntegerVector id1_len,
-		Rcpp::IntegerVector id2_st,
-		Rcpp::IntegerVector id2_len,
-		Rcpp::NumericVector umi_start,
-		Rcpp::NumericVector umi_len,
 		Rcpp::LogicalVector no_reverse_complement) {
   
 	std::string c_outfq = Rcpp::as<std::string>(outfq);
@@ -442,12 +436,6 @@ std::vector<int> rcpp_sc_atac_trim_barcode_paired(
 	bool c_rmlow = Rcpp::as<bool>(rmlow);
 	int c_min_qual = Rcpp::as<int>(min_qual);
 	int c_num_below_min = Rcpp::as<int>(num_below_min);
-	int c_id1_st = Rcpp::as<int>(id1_st);
-	int c_id1_len = Rcpp::as<int>(id1_len);
-	int c_id2_st = Rcpp::as<int>(id2_st);
-	int c_id2_len = Rcpp::as<int>(id2_len);
-	int c_umi_st = Rcpp::as<int>(umi_start);
-	int c_umi_len = Rcpp::as<int>(umi_len);
 	
 	Timer timer;
 	timer.start();
@@ -463,12 +451,6 @@ std::vector<int> rcpp_sc_atac_trim_barcode_paired(
 		c_rmlow,
 		c_min_qual,
 		c_num_below_min,
-		c_id1_st,
-		c_id1_len,
-		c_id2_st,
-		c_id2_len,
-		c_umi_st,
-		c_umi_len,
 		c_nRC);
 	
 	Rcpp::Rcout << "time elapsed: " << timer.time_elapsed() << "\n\n";

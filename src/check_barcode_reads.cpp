@@ -319,7 +319,7 @@ void Clean_Up(int num_barcode)
 }
 
 // [[Rcpp::export]]
-bool check_barcode_reads(String fastq, String barcodeseqs, 
+bool check_barcode_reads(String fastq, String barcodeseqs, String barcodeRealname,
                 int barcode_start, int barcode_length,
                 int lines_to_search, double threshold) {
 
@@ -364,7 +364,7 @@ bool check_barcode_reads(String fastq, String barcodeseqs,
                             search_result * 100, max_position, new_search_result * 100);
             } else {
                 Rprintf("Unsuccessful. No location was found with a high number of barcode matches. Did both %s and %s come from the same provider?\n", 
-                        barcode_file.c_str(), fastq_file.c_str());
+                        barcodeRealname.get_cstring(), fastq_file.c_str());
             }
             positions_found->Delete();
             delete positions_found;
