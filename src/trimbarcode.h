@@ -72,6 +72,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         char *fq3_fn,
         char *fq_out, 
         char *bc_fn, 
+		char *valid_barcode_fn,
         int umi_start,
         int umi_length,
         char *umi_in,

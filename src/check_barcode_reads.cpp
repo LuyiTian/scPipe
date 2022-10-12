@@ -347,7 +347,7 @@ bool check_barcode_reads(String fastq, String barcodeseqs, String barcodeRealnam
         // once we've check the given position for barcodes, if we have a certain hit amount, proceed with program
         // if we don't reach the threshold, we should search the whole read for barcode locations and give a break down
         // of the best spots
-        search_result = (double) found / (double) lines_to_search;
+        search_result = (double) found / (double) (found + not_found);
         if (search_result >= threshold) {
             Rprintf("Successful; continuing with program.\n");
             finish_program = true;
@@ -357,7 +357,7 @@ bool check_barcode_reads(String fastq, String barcodeseqs, String barcodeRealnam
                 Search_Barcodes_Section_Read(barcodes_trie, fastq_file, barcode_start, barcode_length, lines_to_search, &found, &not_found);
             long max_value;
             int max_position = positions_found->Max(&max_value);
-            new_search_result = (double) max_value / (double) lines_to_search;
+            new_search_result = (double) found / (double) (found + not_found);
 
             if (new_search_result >= .5) {
                 Rprintf("Invalid barcode start index given, with only %f percent of reads containing a barcode match. However, a better barcode start location is %d, where %f percent of barcodes were found.\n", 
