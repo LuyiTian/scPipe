@@ -1341,6 +1341,29 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             subStr1[bcUMIlen1] = '\0';
         }
         
+        // allocate and copy just the barcode, to check against the barcodes in the barcode map
+        char *barcode = (char *)malloc((id1_len + 1) * sizeof(char));
+        memcpy( barcode, seq1->seq.s + id1_st, id1_len); 
+        barcode[id1_len] = '\0'; 
+        
+        MatchType r1_match_type = Exact; // 0 for exact, 1 for partial, 2 for no
+        // we want to check for an exact match first
+        if (barcode_map.find(barcode) != barcode_map.end()) {
+          // exact match
+          exact_match ++;   
+          r1_match_type = Exact;
+        } else {
+          // inexact match, we need to iterate over all barcodes
+          r1_match_type = NoMatch; // if we never find a barcode, no match
+          for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
+            if(hamming_distance(it->first, barcode) <2){
+              approx_match++;
+              r1_match_type = Partial;
+              break;
+            } 
+          }
+        }
+
         // if the barcode matches exactly or inexactly, write the modifiyed sequence lines to the output file
         const int new_name_length1 = seq1->name.l + bcUMIlen1 + 1;
         seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1 + 1); // allocate additional memory
@@ -1418,6 +1441,23 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
                 subStr3[bcUMIlen3] = '\0';
             }
             
+            char *barcode3 = (char *)malloc((id2_len + 1) * sizeof(char));
+            memcpy( barcode3, seq3->seq.s + id2_st, id2_len);
+            barcode3[id2_len] = '\0';
+
+            MatchType r2_match_type = Exact; // 0 for exact, 1 for partial, 2 for no
+            if (barcode_map.find(subStr3) != barcode_map.end()) {
+              r2_match_type = Exact;
+            } else {
+              r2_match_type = NoMatch; // assume there is no match
+              for (std::map<std::string,int>::iterator it=barcode_map.begin(); it!=barcode_map.end(); ++it){
+                if(hamming_distance(it->first, barcode3) < 2){
+                  r2_match_type = Partial;
+                  break;
+                }
+              }
+            }
+
             const int new_name_length1 = seq3->name.l + bcUMIlen3 + 1;
             seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1 + 1); // allocate additional memory
             memmove(seq3->name.s + bcUMIlen3+1, seq3->name.s, seq3->name.l);// move original read name

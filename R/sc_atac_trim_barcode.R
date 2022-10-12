@@ -206,7 +206,7 @@ sc_atac_trim_barcode <- function(
 				output_folder,
 				r1,
 				r2,
-				temp_barcode_file,
+				temp_barcode_file, # not urgent but this needs to be changed to bc_file or barcode_file
 				valid_barcode_file,
 				#bc_start,
 				#bc_length,
