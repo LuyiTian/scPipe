@@ -1039,6 +1039,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         char *fq3_fn,
         char *fq_out, 
         char *bc_fn, // barcode file must be a file where each line is a barcode (not comma separated)
+		char *valid_barcode_fn,
         int umi_start,
         int umi_length,
         char *umi_in,
@@ -1096,6 +1097,17 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
 		Rcpp::stop(err_msg.str());
 	}
     
+	// preprocess the valid_barcode_file (csv) reads into a Trie, allowing for matching and mismatching.
+	bool checkBarcodeMismatch = false;
+	std::vector<std::string> validBarcodes;
+	Trie validBarcodeTrie;
+	if (std::string(valid_barcode_fn) != "") {
+		checkBarcodeMismatch = true;
+		std::vector<std::string> validBarcodes = readBarcodes(valid_barcode_fn);
+		preprocessBarcodes(validBarcodes, validBarcodeTrie);
+	} else {
+		Rcpp::Rcout << "No valid_barcode_file provided; no barcode error correction will occur.\n";
+	}
     
     
     gzFile fq3;
@@ -1252,24 +1264,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
             }
         } // end if(rmN)
 
-        // allocate space and copy the sequence from the read containing the barcode and UMI (if applicable)
-        char* subStr1;
-        int bcUMIlen1 = 0;
-        if(isUMIR1){ // create subStr1 of barcode concatenated with UMI, seperated by '_'
-            bcUMIlen1 = id1_len + umi_length + 1;
-            subStr1 = (char *)malloc(bcUMIlen1 + 1); // additional space for zero terminator
-            memcpy(subStr1, seq1->seq.s + id1_st, id1_len);
-            subStr1[id1_len] = '_'; 
-            memcpy(subStr1 + id1_len + 1, seq1->seq.s + umi_start, umi_length); 
-            subStr1[bcUMIlen1] = '\0';
-        } else { // create subStr1 of barcode sequence
-            bcUMIlen1 = id1_len;
-            subStr1 = (char *)malloc(bcUMIlen1 + 1); // additional space for zero terminator
-            memcpy(subStr1, &seq1->seq.s[id1_st], id1_len); 
-            subStr1[bcUMIlen1] = '\0';
-        }
-        
-        // allocate and copy just the barcode, to check against the barcodes in the barcode map
+		// allocate and copy just the barcode, to check against the barcodes in the barcode map
         char *barcode = (char *)malloc((id1_len + 1) * sizeof(char));
         memcpy( barcode, seq1->seq.s + id1_st, id1_len); 
         barcode[id1_len] = '\0'; 
@@ -1292,6 +1287,51 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
 			}
 		}
 
+		// if we need to check barcodes against a valid barcode file
+		if (checkBarcodeMismatch) {
+			std::vector<MismatchResult> possibleBarcodes = validBarcodeTrie.Locate_Seq_Mismatches(barcode, 0, id1_len);
+			int barcodePosition = -1;
+			bool exactMatch = false;
+			for (const MismatchResult &match : possibleBarcodes) {
+				if (match.mismatchPosition == -1) {
+					// we've found a perfect match
+					// ignore all other matches
+					barcodePosition = match.sequenceIndex;
+					exactMatch = true;
+					break;
+				}
+			}
+			// if we didn't find an exact match, just use the first mismatch
+			if (!exactMatch && possibleBarcodes.size() > 0) {
+				barcodePosition = possibleBarcodes[0].sequenceIndex;
+			}
+
+			if (barcodePosition != -1) {
+				// we've found a better barcode match
+				strcpy(barcode, validBarcodes[barcodePosition].c_str());
+			} else {
+				// if there's no match to valid_barcode_file, then it's a non match
+				r1_match_type = NoMatch;
+			}
+		}
+
+        // allocate space and copy the sequence from the read containing the barcode and UMI (if applicable)
+        char* subStr1;
+        int bcUMIlen1 = 0;
+        if(isUMIR1){ // create subStr1 of barcode concatenated with UMI, seperated by '_'
+            bcUMIlen1 = id1_len + umi_length + 1;
+            subStr1 = (char *)malloc(bcUMIlen1 + 1); // additional space for zero terminator
+            memcpy(subStr1, barcode, id1_len);
+            subStr1[id1_len] = '_'; 
+            memcpy(subStr1 + id1_len + 1, seq1->seq.s + umi_start, umi_length); 
+            subStr1[bcUMIlen1] = '\0';
+        } else { // create subStr1 of barcode sequence
+            bcUMIlen1 = id1_len;
+            subStr1 = (char *)malloc(bcUMIlen1 + 1); // additional space for zero terminator
+            memcpy(subStr1, barcode, id1_len); 
+            subStr1[bcUMIlen1] = '\0';
+        }
+        
         // if the barcode matches exactly or inexactly, write the modifiyed sequence lines to the output file
         const int new_name_length1 = seq1->name.l + bcUMIlen1 + 1;
         seq1->name.s = (char*)realloc(seq1->name.s, new_name_length1 + 1); // allocate additional memory
@@ -1304,29 +1344,12 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         memmove(seq1->seq.s, seq1->seq.s + bc1_end, seq1->name.l - bc1_end);   
         
         if(R3) {
-            // allocate and copy second barcode and umi (if applicable) to subStr3, to copy to header
-            char* subStr3;
-            int bcUMIlen3 = 0;
-            if (isUMIR2) {
-                bcUMIlen3 = id2_len + umi_length +1;
-                subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
-                memcpy(subStr3, seq3->seq.s + id2_st, id2_len);
-                subStr3 [id2_len] = '_';
-                memcpy(subStr3 + id2_len + 1, seq3->seq.s + umi_start, umi_length);
-                subStr3[bcUMIlen3] = '\0';          
-            } else {
-                bcUMIlen3 = id2_len;
-                subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
-                memcpy( subStr3, &seq3->seq.s[id2_st], id2_len );
-                subStr3[bcUMIlen3] = '\0';
-            }
-            
-            char *barcode3 = (char *)malloc((id2_len + 1) * sizeof(char));
+			char *barcode3 = (char *)malloc((id2_len + 1) * sizeof(char));
             memcpy( barcode3, seq3->seq.s + id2_st, id2_len);
             barcode3[id2_len] = '\0';
 
 			MatchType r2_match_type = Exact; // 0 for exact, 1 for partial, 2 for no
-			if (barcode_map.find(subStr3) != barcode_map.end()) {
+			if (barcode_map.find(barcode3) != barcode_map.end()) {
 				r2_match_type = Exact;
 			} else {
 				r2_match_type = NoMatch; // assume there is no match
@@ -1338,6 +1361,51 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
 				}
 			}
 
+			// if we need to check barcodes against a valid barcode file
+			if (checkBarcodeMismatch) {
+				std::vector<MismatchResult> possibleBarcodes3 = validBarcodeTrie.Locate_Seq_Mismatches(barcode3, 0, id1_len);
+				// // find the barcode which matches best (highest chance of matching perfectly based on quality score)
+				int barcodePosition3 = -1;
+				bool exactMatch3 = false;
+				for (const MismatchResult &match3 : possibleBarcodes3) {
+					if (match3.mismatchPosition == -1) {
+						// we've found a perfect match
+						// ignore all other matches
+						barcodePosition3 = match3.sequenceIndex;
+						exactMatch3 = true;
+						break;
+					}
+				}
+
+				if (!exactMatch3 && possibleBarcodes3.size() > 0) {
+					barcodePosition3 = possibleBarcodes3[0].sequenceIndex;
+				}
+				if (barcodePosition3 != -1) {
+					// we've found a better barcode match
+					strcpy(barcode3, validBarcodes[barcodePosition3].c_str());
+				} else {
+					// if there's no match to valid_barcod_file, then it's a non match
+					r2_match_type = NoMatch;
+				}
+			}
+
+            // allocate and copy second barcode and umi (if applicable) to subStr3, to copy to header
+            char* subStr3;
+            int bcUMIlen3 = 0;
+            if (isUMIR2) {
+                bcUMIlen3 = id2_len + umi_length +1;
+                subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
+                memcpy(subStr3, barcode3, id2_len);
+                subStr3 [id2_len] = '_';
+                memcpy(subStr3 + id2_len + 1, seq3->seq.s + umi_start, umi_length);
+                subStr3[bcUMIlen3] = '\0';          
+            } else {
+                bcUMIlen3 = id2_len;
+                subStr3 = (char*)malloc(bcUMIlen3 + 1); // additional space for zero terminator
+                memcpy( subStr3, barcode3, id2_len );
+                subStr3[bcUMIlen3] = '\0';
+            }
+            
             const int new_name_length1 = seq3->name.l + bcUMIlen3 + 1;
             seq3->name.s = (char*)realloc(seq3->name.s, new_name_length1 + 1); // allocate additional memory
             memmove(seq3->name.s + bcUMIlen3+1, seq3->name.s, seq3->name.l);// move original read name

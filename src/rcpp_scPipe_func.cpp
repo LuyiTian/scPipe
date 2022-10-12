@@ -342,6 +342,7 @@ std::vector<int> rcpp_sc_atac_trim_barcode(
     Rcpp::CharacterVector r1,
     Rcpp::CharacterVector r3,
     Rcpp::StringVector barcode_file,
+	Rcpp::CharacterVector valid_barcode_file,
     Rcpp::NumericVector umi_start,
     Rcpp::NumericVector umi_len,
     Rcpp::CharacterVector umi_in,
@@ -359,6 +360,7 @@ std::vector<int> rcpp_sc_atac_trim_barcode(
   std::string c_r1 = Rcpp::as<std::string>(r1);
   std::string c_r3 = Rcpp::as<std::string>(r3);
   std::string c_barcode_file = Rcpp::as<std::string>(barcode_file(0));
+  std::string c_valid_barcode_file = Rcpp::as<std::string>(valid_barcode_file);
   //std::string c_barcode_file = Rcpp::as<std::string>(barcode_file);
   std::string c_umi_in = Rcpp::as<std::string>(umi_in);
   
@@ -385,6 +387,7 @@ std::vector<int> rcpp_sc_atac_trim_barcode(
     (char *)c_r3.c_str(), 
     (char *)c_outfq.c_str(), 
     (char *)c_barcode_file.c_str(), 
+	(char *)c_valid_barcode_file.c_str(),
     c_umi_start, 
     c_umi_len, 
     (char*)c_umi_in.c_str(), 

@@ -9,10 +9,14 @@
 #' the sequence into the read name. Since scATAC-Seq data are mostly paired-end, both `r1` and `r2` are demultiplexed in this function.
 #' @param r1 read one for pair-end reads.
 #' @param r2 read two for pair-end reads, NULL if single read.
-#' @param barcodeFastq optional list of FASTQ files containing barcode sequences as sequences (from 10x-ATAC). Each FASTQ must be of the same length
-#' as r1 and r2.
-#' @param valid_barcode_file optional CSV file path of the valid (expected) barcode sequences to be found in either the reads or supplied \code{barcodeFastq}.
-#' Must contain one barcode per line on the second column (comma separated)
+#' @param bc_file the barcode information, can be either in a \code{fastq} format (e.g. from 10x-ATAC) or
+#' from a \code{.csv} file (here the barcode is expected to be on the second column). 
+#' Currently, for the fastq approach, this can be a list of barcode files.
+#' @param valid_barcode_file optional file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). 
+#' Must contain one barcode per line on the second column separated by a comma (default ="").
+#' If given, each barcode from bc_file is matched against the barcode of
+#' best fit (allowing a hamming distance of 1). If a FASTQ \code{bc_file} is provided, barcodes with a higher mapping quality, as given by
+#' the fastq reads quality score are prioritised.
 #' @param output_folder the output dir for the demultiplexed fastq file, which will contain 
 #' fastq files with reformatted barcode and UMI into the read name. 
 #' Files ending in \code{.gz} will be automatically compressed.
@@ -108,9 +112,9 @@ sc_atac_trim_barcode <- function(
 
 	if (!is.null(bc_file)) {
 		i=1;
-		for (bc in barcodeFastq) {
+		for (bc in bc_file) {
 			if (!file.exists(bc)) {stop("Barcode file does not exist.")}
-			barcodeFastq[i] <- path.expand(bc)
+			bc_file[i] <- path.expand(bc)
 			i          <- i+1;
 		}
 
@@ -178,6 +182,8 @@ sc_atac_trim_barcode <- function(
 			# change this to handle multiple barcode files!! TODO
 			barcodes <- read.csv(bc_file, header=FALSE, strip.white=TRUE)
 			write(barcodes$V2, temp_barcode_file)
+
+			# perform the same manipulation for valid
 			
 			# Check if given barcode start position is valid
 			# check_barcode_start_position is expecting a single barcode, of only the barcode sequences, no commas
@@ -201,6 +207,7 @@ sc_atac_trim_barcode <- function(
 				r1,
 				r2,
 				temp_barcode_file,
+				valid_barcode_file,
 				#bc_start,
 				#bc_length,
 				umi_start,
