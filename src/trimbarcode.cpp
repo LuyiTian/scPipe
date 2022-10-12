@@ -1101,9 +1101,10 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
 	bool checkBarcodeMismatch = false;
 	std::vector<std::string> validBarcodes;
 	Trie validBarcodeTrie;
+	int noValidBcMatch = 0;
 	if (std::string(valid_barcode_fn) != "") {
 		checkBarcodeMismatch = true;
-		std::vector<std::string> validBarcodes = readBarcodes(valid_barcode_fn);
+		validBarcodes = readBarcodes(valid_barcode_fn);
 		preprocessBarcodes(validBarcodes, validBarcodeTrie);
 	} else {
 		Rcpp::Rcout << "No valid_barcode_file provided; no barcode error correction will occur.\n";
@@ -1292,27 +1293,32 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
 			std::vector<MismatchResult> possibleBarcodes = validBarcodeTrie.Locate_Seq_Mismatches(barcode, 0, id1_len);
 			int barcodePosition = -1;
 			bool exactMatch = false;
-			for (const MismatchResult &match : possibleBarcodes) {
-				if (match.mismatchPosition == -1) {
-					// we've found a perfect match
-					// ignore all other matches
-					barcodePosition = match.sequenceIndex;
-					exactMatch = true;
-					break;
+			if (possibleBarcodes.size() > 0) {
+				for (const MismatchResult &match : possibleBarcodes) {
+					if (match.mismatchPosition == -1) {
+						// we've found a perfect match
+						// ignore all other matches
+						barcodePosition = match.sequenceIndex;
+						exactMatch = true;
+						break;
+					}
 				}
-			}
-			// if we didn't find an exact match, just use the first mismatch
-			if (!exactMatch && possibleBarcodes.size() > 0) {
-				barcodePosition = possibleBarcodes[0].sequenceIndex;
-			}
+				// if we didn't find an exact match, just use the first mismatch
+				if (!exactMatch && possibleBarcodes.size() > 0) {
+					barcodePosition = possibleBarcodes[0].sequenceIndex;
+				}
 
-			if (barcodePosition != -1) {
-				// we've found a better barcode match
-				strcpy(barcode, validBarcodes[barcodePosition].c_str());
-			} else {
-				// if there's no match to valid_barcode_file, then it's a non match
+				if (barcodePosition != -1) {
+					// we've found a better barcode match
+					strcpy(barcode, validBarcodes[barcodePosition].c_str());
+				} 
+			} 
+
+			if (barcodePosition == -1) {
 				r1_match_type = NoMatch;
+				noValidBcMatch++;
 			}
+			
 		}
 
         // allocate space and copy the sequence from the read containing the barcode and UMI (if applicable)
@@ -1367,25 +1373,28 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
 				// // find the barcode which matches best (highest chance of matching perfectly based on quality score)
 				int barcodePosition3 = -1;
 				bool exactMatch3 = false;
-				for (const MismatchResult &match3 : possibleBarcodes3) {
-					if (match3.mismatchPosition == -1) {
-						// we've found a perfect match
-						// ignore all other matches
-						barcodePosition3 = match3.sequenceIndex;
-						exactMatch3 = true;
-						break;
+				if (possibleBarcodes3.size() > 0) {
+					for (const MismatchResult &match3 : possibleBarcodes3) {
+						if (match3.mismatchPosition == -1) {
+							// we've found a perfect match
+							// ignore all other matches
+							barcodePosition3 = match3.sequenceIndex;
+							exactMatch3 = true;
+							break;
+						}
 					}
-				}
 
-				if (!exactMatch3 && possibleBarcodes3.size() > 0) {
-					barcodePosition3 = possibleBarcodes3[0].sequenceIndex;
-				}
-				if (barcodePosition3 != -1) {
-					// we've found a better barcode match
-					strcpy(barcode3, validBarcodes[barcodePosition3].c_str());
-				} else {
-					// if there's no match to valid_barcod_file, then it's a non match
+					if (!exactMatch3 && possibleBarcodes3.size() > 0) {
+						barcodePosition3 = possibleBarcodes3[0].sequenceIndex;
+					}
+					if (barcodePosition3 != -1) {
+						// we've found a better barcode match
+						strcpy(barcode3, validBarcodes[barcodePosition3].c_str());
+					} 
+				} 
+				if (barcodePosition3 == -1) {
 					r2_match_type = NoMatch;
+					noValidBcMatch++;
 				}
 			}
 
@@ -1513,6 +1522,9 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
     Rcpp::Rcout << "Total reads removed due to low quality barcodes: " << removed_low_qual << std::endl;
     Rcpp::Rcout << "Exact match Reads: " << exact_match << std::endl;
     Rcpp::Rcout << "Matched after barcode corrections: " << approx_match << std::endl;
+	if (checkBarcodeMismatch) {
+		Rcpp::Rcout << "Total reads removed due to no matching barcode in valid_barcode_file: " << noValidBcMatch << std::endl;
+	}
     Rcpp::Rcout << "Total barcodes provided in CSV file: " << (int)barcode_map.size() << std::endl;
     
     return(out_vect);
