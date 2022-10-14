@@ -14,5 +14,5 @@ sc_mae_plot_umap(mae, by = NULL, output_file = NULL)
 \item{output_file}{The path of the output file}
 }
 \description{
-Uses feature count data from multiple experiment objects to produce a UMAP
+Uses feature count data from multiple experiment objects to produce UMAPs for each assay and then overlay them on the same pair of axes
 }

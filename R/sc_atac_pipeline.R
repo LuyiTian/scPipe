@@ -26,7 +26,6 @@
 #' @param samtools_path A custom path of samtools to use for duplicate removal
 #' @param bin_size The size of the bins for feature counting with the `genome_bin` feature type
 #' @param yieldsize The number of reads to read in for feature counting
-#' @param mapq The minimum MAPQ score
 #' @param exclude_regions Whether or not the regions should be excluded
 #' @param excluded_regions_filename The filename of the file containing the regions to be excluded
 #' @param cell_calling The desired cell calling method either \code{cellranger}, \code{emptydrops} or  \code{filter}
@@ -66,7 +65,6 @@
 sc_atac_pipeline <- function(r1,
                              r2,
                              barcode_fastq = NULL,
-                             barcode_csv = NULL,
                              valid_barcode_file = "",
                              id1_st = 0,
                              id1_len = 16,
@@ -82,7 +80,6 @@ sc_atac_pipeline <- function(r1,
                              genome_size   = NULL,
                              bin_size      = NULL,
                              yieldsize     = 1000000,
-                             mapq          = 30,
                              exclude_regions = TRUE,
                              excluded_regions_filename = NULL,
                              fix_chr = "none",
@@ -111,11 +108,11 @@ sc_atac_pipeline <- function(r1,
 
   r1_name <- get_filename_without_extension(r1, extension_length = 2)
   r2_name <- get_filename_without_extension(r2, extension_length = 2)
-  
+
   if (!is.null(barcode_fastq)) {
     sc_atac_trim_barcode (r1            = r1,
                           r2            = r2,
-                          bc_file       = barcode_fastq,
+                          barcodeFastq = barcode_fastq,
                           valid_barcode_file = valid_barcode_file,
                           rmN           = TRUE,
                           rmlow         = TRUE,
@@ -123,7 +120,7 @@ sc_atac_pipeline <- function(r1,
   } else if (!is.null(barcode_csv)) {
     sc_atac_trim_barcode (r1            = r1,
                           r2            = r2,
-                          bc_file       = barcode_csv,
+                          valid_barcode_file = valid_barcode_file,
                           id1_st = id1_st,
                           id1_len = id1_len,
                           id2_st = id2_st,
@@ -185,7 +182,6 @@ sc_atac_pipeline <- function(r1,
                             gene_anno_file = gene_anno_file,
                             bin_size      = bin_size,
                             yieldsize     = yieldsize,
-                            mapq          = mapq,
                             exclude_regions = exclude_regions,
                             excluded_regions_filename = excluded_regions_filename,
                             output_folder = output_folder,

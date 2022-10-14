@@ -65,12 +65,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         const bool rmlow,
         int min_qual,
         int num_below_min,
-        int id1_st,
-        int id1_len,
-        int id2_st,
-        int id2_len,
-        int umi_st,
-        int umi_len,
 		bool no_reverse_complement);
 
 std::vector<int> sc_atac_paired_fastq_to_csv(
@@ -78,6 +72,7 @@ std::vector<int> sc_atac_paired_fastq_to_csv(
         char *fq3_fn,
         char *fq_out, 
         char *bc_fn, 
+		char *valid_barcode_fn,
         int umi_start,
         int umi_length,
         char *umi_in,
