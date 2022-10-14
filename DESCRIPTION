@@ -25,6 +25,7 @@ LinkingTo:
     testthat
 Imports:
     flexmix,
+    ATACseqQC,
     kableExtra,
     ggplot2,
     methods,
