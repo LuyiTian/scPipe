@@ -159,6 +159,6 @@ sc_atac_bam_tagging <- function(inbam,
     ),
     file = log_file, append = TRUE)
 
-  
-  message(paste0("The output tagged and sorted BAM file was sent to ", output_folder))
 
+  message(paste0("The output tagged and sorted BAM file was sent to ", output_folder))
+}
