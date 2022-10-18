@@ -78,10 +78,10 @@ sc_atac_trim_barcode <- function(
 	rmlow = FALSE,
 	min_qual = 20,
 	num_below_min = 2,
-	id1_st = -1,
-	id1_len = -1,
-	id2_st = -1,
-	id2_len = -10,
+	id1_st = -0,
+	id1_len = 16,
+	id2_st = 0,
+	id2_len = 16,
 	no_reverse_complement=FALSE) {
   
 	if(output_folder == ''){

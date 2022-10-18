@@ -4,13 +4,14 @@
 #' 
 #' @param r1 The first read fastq file
 #' @param r2 The second read fastq file
-#' @param barcode_fastq The barcode fastq file (need either this or `barcode_csv`)
-#' @param barcode_csv The barcode csv file (need either this or `barcode_fastq`)
-#' @param valid_barcode_file file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). Only used if
-#' \code{bc_file} is a fastq file. Must contain one barcode per line, with no other separators. 
+#' @param bc_file the barcode information, can be either in a \code{fastq} format (e.g. from 10x-ATAC) or
+#' from a \code{.csv} file (here the barcode is expected to be on the second column). 
+#' Currently, for the fastq approach, this can be a list of barcode files.
+#' @param valid_barcode_file optional file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). 
+#' Must contain one barcode per line on the second column separated by a comma (default ="").
 #' If given, each barcode from bc_file is matched against the barcode of
-#' best fit (allowing a hamming distance of 1, prioritising barcodes with a higher mapping quality, as given by
-#' the fastq reads quality score)
+#' best fit (allowing a hamming distance of 1). If a FASTQ \code{bc_file} is provided, barcodes with a higher mapping quality, as given by
+#' the fastq reads quality score are prioritised.
 #' @param id1_st barcode start position (0-indexed) for read 1, which is an extra parameter that is needed if the
 #' \code{bc_file} is in a \code{.csv} format.
 #' @param id2_st barcode start position (0-indexed) for read 2, which is an extra parameter that is needed if the
@@ -64,9 +65,9 @@
 #' 
 sc_atac_pipeline <- function(r1,
                              r2,
-                             barcode_fastq = NULL,
+                             bc_file,
                              valid_barcode_file = "",
-                             id1_st = 0,
+                             id1_st = -0,
                              id1_len = 16,
                              id2_st = 0,
                              id2_len = 16,
@@ -109,28 +110,18 @@ sc_atac_pipeline <- function(r1,
   r1_name <- get_filename_without_extension(r1, extension_length = 2)
   r2_name <- get_filename_without_extension(r2, extension_length = 2)
 
-  if (!is.null(barcode_fastq)) {
-    sc_atac_trim_barcode (r1            = r1,
-                          r2            = r2,
-                          barcodeFastq = barcode_fastq,
-                          valid_barcode_file = valid_barcode_file,
-                          rmN           = TRUE,
-                          rmlow         = TRUE,
-                          output_folder = output_folder)
-  } else if (!is.null(barcode_csv)) {
-    sc_atac_trim_barcode (r1            = r1,
-                          r2            = r2,
-                          valid_barcode_file = valid_barcode_file,
-                          id1_st = id1_st,
-                          id1_len = id1_len,
-                          id2_st = id2_st,
-                          id2_len = id2_len,
-                          rmN           = TRUE,
-                          rmlow         = TRUE,
-                          output_folder = output_folder)
-  } else {
-    return()
-  }
+  sc_atac_trim_barcode (r1            = r1,
+                        r2            = r2,
+                        bc_file = bc_file,
+                        valid_barcode_file = valid_barcode_file,
+                        id1_st = id1_st,
+                        id1_len = id1_len,
+                        id2_st = id2_st,
+                        id2_len = id2_len,
+                        rmN           = TRUE,
+                        rmlow         = TRUE,
+                        output_folder = output_folder)
+  
   
   demux_r1        <- file.path(output_folder, paste0("demux_completematch_", r1_name, ".fastq.gz"))
   demux_r2        <- file.path(output_folder, paste0("demux_completematch_", r2_name, ".fastq.gz"))
@@ -213,7 +204,7 @@ sc_atac_pipeline_quick_test <- function() {
     {
       sce <- sc_atac_pipeline(r1 = file.path(data.folder, "small_chr21_R1.fastq.gz"),
                               r2 = file.path(data.folder, "small_chr21_R3.fastq.gz"),
-                              barcode_fastq = file.path(data.folder, "small_chr21_R2.fastq.gz"),
+                              bc_file = file.path(data.folder, "small_chr21_R2.fastq.gz"),
                               organism = "hg38",
                               reference = file.path(data.folder, "small_chr21.fa"),
                               feature_type = "peak",
