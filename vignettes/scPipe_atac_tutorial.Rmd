@@ -25,6 +25,7 @@ The pipeline is visually described via the workflow diagram depicted below. The 
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, out.width="100%"}
 library(knitr)
+devtools::load_all()
 knitr::include_graphics(system.file("scATAC-seq_workflow.png", package = "scPipe"))
 ```
 
@@ -204,7 +205,6 @@ sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.be
                           organism      = "hg38",
                           cell_calling  = FALSE,
                           yieldsize     = 1000000,
-                          mapq          = 20,
                           exclude_regions = TRUE,
                           output_folder = output_folder,
                           fix_chr       = "none"
@@ -223,7 +223,7 @@ For the `filter` cell-calling method, there are a variety of QC metrics that can
 * `min_frac_promoter`
 * `max_frac_mito`
 
-```{r}
+```{r eval = FALSE}
 features          <- file.path(output_folder, "NA_peaks.narrowPeak")
 
 sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.bed"),
@@ -232,11 +232,10 @@ sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.be
                           feature_type  = "peak",
                           organism      = "hg38",
                           cell_calling  = "filter",
-                          min_uniq_frags = 0, # set to 0 as the sample dataset only has a small number of reads
+                          min_uniq_frags = 0,
                           min_frac_peak = 0,
                           min_frac_promoter = 0,
                           yieldsize     = 1000000,
-                          mapq          = 20,
                           exclude_regions = TRUE,
                           output_folder = output_folder,
                           fix_chr       = "none"
