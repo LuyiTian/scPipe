@@ -32,11 +32,7 @@ sc_integrate <- function(sce_list,
                          cell_line_info = NULL,
                          output_folder = NULL) {
   
-  if(is.null(output_folder)) {
-    output_folder <- file.path(getwd(), "scPipe-atac-output")
-  }
-  
-  if (!dir.exists(output_folder)){
+  if (!is.null(output_folder) && !dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
     cat("Output directory is not provided. Created directory: ", output_folder, "\n")
   }
@@ -48,7 +44,7 @@ sc_integrate <- function(sce_list,
     sce_list <- lapply(seq_along(sce_list), function(i) {
       sce <- sce_list[[i]]
       if (isTRUE(rev_comp[[i]]))
-        colnames(sce) <- Biostrings::reverseComplement(DNAStringSet(colnames(sce))) %>% as.character()
+        colnames(sce) <- Biostrings::reverseComplement(Biostrings::DNAStringSet(colnames(sce))) %>% as.character()
       sce
     })
   }
@@ -81,7 +77,7 @@ sc_integrate <- function(sce_list,
       matched <- na.omit(match(colnames(sce), barcode_match_df[[tech]]))
       if (length(matched)/length(colnames(sce)) < 0.2) {
         cat("Less than 20% of", tech, "barcodes match with the barcodes in the barcode match file. Trying the reverse complement.\n")
-        rev_comp <- Biostrings::reverseComplement(DNAStringSet(colnames(sce))) %>% as.character()
+        rev_comp <- Biostrings::reverseComplement(Biostrings::DNAStringSet(colnames(sce))) %>% as.character()
         new_matched <- na.omit(match(rev_comp, barcode_match_df[[tech]]))
         if (length(new_matched)/length(colnames(sce)) <= length(matched)/length(colnames(sce))) {
           cat("Reverse complement didn't yield higher proportion of matched barcodes so using existing barcodes.\n")
@@ -137,12 +133,12 @@ sc_integrate <- function(sce_list,
   
   # Create MultiAssayExperiment
   cat("Creating MultiAssayExperiment\n")
-  mae <- MultiAssayExperiment(experiments = sce_list)
+  mae <- MultiAssayExperiment::MultiAssayExperiment(experiments = sce_list)
   mae@metadata$scPipe$version <- packageVersion("scPipe") 
   if (!is.null(barcode_match_file)) mae@metadata$scPipe$integrated_qc <- merged_qc
   
   # Save the MAE object
-  # saveRDS(mae, file.path(output_folder, "scPipe_MAE_object.rds"))
+  if (!is.null(output_folder)) saveRDS(mae, file.path(output_folder, "scPipe_MAE_object.rds"))
   
   cat("sc_integrate_complete.\n")
   return(mae)
@@ -150,7 +146,7 @@ sc_integrate <- function(sce_list,
 
 #' @name sc_mae_plot_umap
 #' @title Generates UMAP of multiomic data
-#' @description Uses feature count data from multiple experiment objects to produce a UMAP 
+#' @description Uses feature count data from multiple experiment objects to produce UMAPs for each assay and then overlay them on the same pair of axes
 #' @param mae The MultiAssayExperiment object
 #' @param by What to colour the points by. Needs to be in colData of all experiments.
 #' @param output_file The path of the output file
@@ -218,17 +214,17 @@ sc_mae_plot_umap <- function(mae,
   umap_data <- do.call(rbind, umap_dfs)
   if (!is.null(by)) {
     g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
-      geom_point(aes(col = .data[[by]]), size = 0.5) +
+      geom_point(aes(col = .data[[by]]), size = 2, alpha = 0.5) +
       theme_bw(base_size = 14)
     if (is.numeric(umap_data[[by]])) {
       g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
-        geom_point(aes(col = .data[[by]]), size = 0.5) +
+        geom_point(aes(col = .data[[by]]), size = 2, alpha = 0.5) +
         scale_colour_gradientn(colours=c("green","black")) +
         theme_bw(base_size = 14)
     }
   } else {
     g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
-      geom_point(aes(col = source), size = 0.5) +
+      geom_point(aes(col = source), size = 2, alpha = 0.5) +
       theme_bw(base_size = 14)
   }
   
@@ -245,3 +241,24 @@ sc_mae_plot_umap <- function(mae,
   
   return(g)
 }
+
+#' @name TF.IDF.custom
+#' @title Returns the TF-IDF normalised version of a binary matrix
+#' @param binary.mat The binary matrix
+#' @export
+TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
+  if (verbose) {
+    message("Performing TF-IDF normalization")
+  }
+  object <- binary.mat
+  npeaks       <- Matrix::colSums(x = object)
+  tf           <- Matrix::tcrossprod(x = as.matrix(object), y = Matrix::Diagonal(x = 1 / npeaks))
+  rsums        <- Matrix::rowSums(x = object)
+  idf          <- ncol(x = object) / rsums
+  norm.data    <- Matrix::Diagonal(n = length(x = idf), x = idf) %*% tf
+  scale.factor <- 1e4
+  slot(object = norm.data, name = "x") <- log1p(x = slot(object = norm.data, name = "x") * scale.factor)
+  norm.data[which(x = is.na(x = norm.data))] <- 0
+  return(norm.data)
+}
+

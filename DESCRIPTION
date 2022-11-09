@@ -89,5 +89,11 @@ Suggests:
     xml2,
     countreg,
     RColorBrewer,
-    DT
+    DT,
+    readr,
+    plotly,
+    reshape2,
+    RANN,
+    igraph,
+    MultiAssayExperiment
 VignetteBuilder: knitr

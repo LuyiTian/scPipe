@@ -7,7 +7,7 @@
 sc_atac_trim_barcode(
   r1,
   r2,
-  bc_file,
+  bc_file = NULL,
   valid_barcode_file = "",
   output_folder = "",
   umi_start = 0,
@@ -33,8 +33,8 @@ sc_atac_trim_barcode(
 from a \code{.csv} file (here the barcode is expected to be on the second column). 
 Currently, for the fastq approach, this can be a list of barcode files.}
 
-\item{valid_barcode_file}{optional file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). Only used if
-\code{bc_file} is a fastq file. Must contain one barcode per line on the second column separated by a comma (default ="").
+\item{valid_barcode_file}{optional file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). 
+Must contain one barcode per line on the second column separated by a comma (default ="").
 If given, each barcode from bc_file is matched against the barcode of
 best fit (allowing a hamming distance of 1, prioritising barcodes with a higher mapping quality, as given by
 the fastq reads quality score)}
@@ -51,7 +51,7 @@ Files ending in \code{.gz} will be automatically compressed.}
 
 \item{rmN}{logical, whether to remove reads that contains N in UMI or cell barcode.}
 
-\item{rmlow}{logical, whether to remove the low quality reads.}
+\item{rmlow}{logical, whether to remove reads that have low quality barcode sequences}
 
 \item{min_qual}{the minimum base pair quality that is allowed (default = 20).}
 

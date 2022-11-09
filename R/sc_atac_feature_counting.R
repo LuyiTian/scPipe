@@ -23,7 +23,6 @@
 #' 
 #' @param bin_size The size of the bins
 #' @param yieldsize The yield size
-#' @param mapq The minimum MAPQ score
 #' @param n_filter_cell_counts An integer value to filter the feature matrix on the number of reads per cell (default = 200)
 #' @param n_filter_feature_counts An integer value to filter the feature matrix on the number of reads per feature (default = 10).
 #' @param exclude_regions Whether or not the regions (specified in the file) should be excluded
@@ -65,9 +64,9 @@ sc_atac_feature_counting <- function(
   bam_tags                  = list(bc="CB", mb="OX"), 
   feature_type              = "peak", 
   organism                  = "hg38", 
-  cell_calling              = "filter", # either c("cellranger", "emptydrops", "filter")
+  cell_calling              = "filter",
   sample_name               = "",
-  genome_size               = NULL, # this is optional but needed if the cell_calling option is cellranger AND organism in NULL
+  genome_size               = NULL, 
   promoters_file            = NULL,
   tss_file                  = NULL,
   enhs_file                 = NULL,
@@ -75,13 +74,12 @@ sc_atac_feature_counting <- function(
   pheno_data                = NULL, 
   bin_size                  = NULL, 
   yieldsize                 = 1000000,
-  mapq                      = 30,
   n_filter_cell_counts      = 200,
   n_filter_feature_counts   = 10,
   exclude_regions           = FALSE, 
   excluded_regions_filename = NULL,
   output_folder             = NULL,
-  fix_chr                   = "none", # should be either one of these: c("none", "excluded_regions", "feature", "both")
+  fix_chr                   = "none", 
   lower                     = NULL,
   min_uniq_frags            = 3000,
   max_uniq_frags            = 50000,
@@ -591,7 +589,7 @@ sc_atac_feature_counting <- function(
   # Update cell QC metrics to include whether the cell was kept or not
   cqc <- read.csv(file.path(output_folder, "cell_qc_metrics.csv"))
   cqc$cell_called <- cqc$bc %in% colnames(matrixData)
-  write.csv(cqc, "cell_qc_metrics.csv", row.names = FALSE)
+  write.csv(cqc, file.path(output_folder, "cell_qc_metrics.csv"), row.names = FALSE)
   
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
