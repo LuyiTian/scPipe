@@ -154,7 +154,7 @@ sc_integrate <- function(sce_list,
 sc_mae_plot_umap <- function(mae,
                              by = NULL,
                              output_file = NULL) {
-  set.seed(123)
+  #set.seed(123)
   
   umap_dfs <- lapply(seq_along(mae), function(i) {
     tech <- names(mae)[[i]]

@@ -21,7 +21,7 @@ sc_atac_create_cell_qc_metrics <- function(frags_file,
                                           output_folder) {
   
   pro.gr <- rtracklayer::import(promoters_file)
-  tss_df <- data.table::fread(tss_file, select=c(1:3), header = F, col.names = c("chr", "start", "end"))
+  tss_df <- data.table::fread(tss_file, select=c(1:3), header = FALSE, col.names = c("chr", "start", "end"))
   tss.gr <- GenomicRanges::makeGRangesFromDataFrame(tss_df)
   enhs.gr <- rtracklayer::import(enhs_file)
   

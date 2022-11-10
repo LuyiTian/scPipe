@@ -364,7 +364,7 @@ sc_atac_feature_counting <- function(
   }
 
   # Create bins used for TSS enrichment plot
-  tss_df <- data.table::fread(tss_file, select=c(1:3), header = F, col.names = c("chr", "start", "end"))
+  tss_df <- data.table::fread(tss_file, select=c(1:3), header = FALSE, col.names = c("chr", "start", "end"))
   range <- 4000
   bin_size <- 100
   n_bins <- range/bin_size-1

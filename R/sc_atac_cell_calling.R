@@ -211,7 +211,8 @@ sc_atac_cell_calling <- function(mat,
 
 #' @name sc_atac_cellranger_cell_calling
 #' @title cellranger cell calling
-#' @description use the cellranger cell calling algorithm
+#' @description use the cellranger cell calling algorithm. Note: This function requires the 'countreg' package to be installed
+#' in order to run.
 #' 
 #' @param mat The input matrix
 #' @param cell_qc_metrics_file A file containing qc statistics for each cell
@@ -241,8 +242,10 @@ sc_atac_cellranger_cell_calling <- function(mat, cell_qc_metrics_file, genome_si
   n_in_peak <- n_in_peak[names(n_in_peak) %in% qc_sele_bc$bc]
   
   # Need countreg for FLXMRnegbin
-  if (!requireNamespace("countreg", quietly = TRUE)) 
-      utils::install.packages("countreg", repos="http://R-Forge.R-project.org")
+  if (!requireNamespace("countreg", quietly = TRUE)) {
+    stop("Install 'countreg' to use this function")
+      #utils::install.packages("countreg", repos="http://R-Forge.R-project.org")
+  }
 
   fm0 <- flexmix::flexmix(n_in_peak ~ 1, k = 2, model = countreg::FLXMRnegbin())
   prob1 <- flexmix::posterior(fm0)[, 1]
@@ -323,7 +326,7 @@ sc_atac_emptydrops_cell_calling <- function(
   output_folder,
   lower = NULL) {
   
-  set.seed(2019)
+  #set.seed(2019)
   
   # generating the knee plot
   my.counts <- Matrix::Matrix(mat)
