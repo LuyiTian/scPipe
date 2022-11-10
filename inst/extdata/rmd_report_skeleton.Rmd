@@ -1,0 +1,667 @@
+---
+title: 'scPipe_atac report `r params$organism` scPipe `r Biobase::package.version("scPipe")`'
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: no
+runtime: shiny
+params:
+  input_folder: "FOLDER__"
+  organism: "ORGANISM__"
+  sample: "SAMPLE__"
+  feature_type: "FEATURE_TYPE__"
+  n_barcode_subset: "N_BARCODE_SUBSET__"
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                       # results = "hide",
+                       message = FALSE,
+                       warning = FALSE)
+```
+
+
+```{r}
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(kableExtra)
+library(RColorBrewer)
+library(grid)
+library(knitr)
+library(stringr)
+library(scales)
+library(tibble)
+library(readr)
+library(plotly)
+
+
+theme_set(theme_bw())
+
+# if not defined downstream specific for each plot use this order of the colours
+custom_colours <- c("#E6AB02", "#1B9E77", "#7570B3", "#E7298A", "#66A61E", "#A6761D")
+```
+
+```{r inputs}
+
+# final SCE object
+sce                            <- readRDS(file.path(params$input_folder, "scPipe_atac_SCEobject.rds"))
+
+# unfiltered feature-count matrix
+unfiltered_mtx                 <- readRDS(file.path(params$input_folder, "unfiltered_feature_matrix.rds"))
+unfiltered_mtx_bcs             <- colnames(unfiltered_mtx)
+
+# filtered feature-count matrix
+filtered_mtx   <- readRDS(file.path(params$input_folder, "sparse_matrix.rds"))
+
+# binary matrix
+binary.mat                     <- readRDS(file.path(params$input_folder, "binary_matrix.rds"))
+
+# quality values for the complete dataset 
+trimbarcode_stats_filename    <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_trimbarcode.txt")
+trimbarcode_stats             <- read.csv(trimbarcode_stats_filename, header=FALSE) %>% as.data.frame()
+
+# for alignment statistics for the complete dataset
+alignment_stats_filename      <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_align.txt")
+alignment_stats               <- read.csv(alignment_stats_filename, header = FALSE, skip = 1) %>% as.data.frame()
+
+# for alignment statistics per chromosome
+alignment_stats_chrom_filename <- file.path(params$input_folder, "scPipe_atac_stats", "stats_file_align_per_chrom.csv")
+alignment_stats_chrom          <- read.csv(alignment_stats_chrom_filename)
+
+# for demultiplexing statistics plotting
+data_file_path                 <- file.path(params$input_folder, "scPipe_atac_stats", "demultiplexing_stats.csv")
+data                           <- read.csv(data_file_path)
+
+# for mapping rates across barcodes
+stats_file                     <- file.path(params$input_folder, "scPipe_atac_stats", "mapping_stats_per_barcode.csv")
+barcode_stats                  <- read.csv(stats_file, row.names = "barcode")[-5] 
+
+# duplicate removal statistics
+duplicate_stats.file           <- file.path(params$input_folder, "scPipe_atac_stats", "duplicate_removal_stats.txt")
+
+# for plotting fragments
+frags_file                     <- file.path(params$input_folder, "fragments.bed")
+frags                          <- fread(frags_file)[V4 %in% unfiltered_mtx_bcs, ]
+
+# read in called cell barcodes
+cell_barcode_file              <- file.path(params$input_folder, "non_empty_barcodes.txt")
+cell_barcodes                  <- fread(cell_barcode_file, header=F)$V1
+
+# read in qc_per_bc file
+cell_qc_metrics_file           <- file.path(params$input_folder, "cell_qc_metrics.csv")
+bc_stat                        <- fread(cell_qc_metrics_file)[bc %in% unfiltered_mtx_bcs, ]
+
+qc_sele                        <- bc_stat[bc %in% cell_barcodes, ]
+qc_nonsele                     <- bc_stat[!bc %in% cell_barcodes, ]
+
+```
+
+
+# Global quality statistics
+
+```{r}
+trimbarcode_stats             <- stringr::str_replace_all(trimbarcode_stats[,1], "\\: +", "\\,") %>% as.data.frame()
+trimbarcode_stats             <- stringr::str_replace_all(trimbarcode_stats[,1],"removed_low_qual","Number of low quality cells removed") %>% as.data.frame()
+trimbarcode_stats             <- stringr::str_split_fixed(trimbarcode_stats[,1], ",", n=2) %>% as.data.frame()
+```
+
+```{r}
+knitr::kable(trimbarcode_stats,
+             col.names = c('Statistic', 'Value'),
+             caption = "Global quality statistics") %>%
+    kableExtra::kable_styling()
+```
+
+# Alignment statistics
+
+## Global level
+
+```{r}
+knitr::kable(alignment_stats, 
+             col.names = c('Statistic', 'Value'), 
+             caption = "") %>%
+    kableExtra::kable_styling()
+```
+
+<!-- Below are bar plots showing the distribution of how the fragments have been mapped. The top plot shows the number of uniquely and multi-mapped fragments, while the bottom plot provides a more detailed breakdown of the mapped fragments. -->
+
+```{r alignment-stats-plot, fig.wide = TRUE, fig.asp = 0.9, fig.width = 14}
+as.1              <- alignment_stats[alignment_stats$V1 %in% c("Unmapped_fragments", 
+                                                  "Uniquely_mapped_fragments", 
+                                                  "Multi_mapping_fragments"),] %>% rename(Mapping_type = "V1")
+x                 <- c("Uniquely_mapped_fragments", "Multi_mapping_fragments", "Unmapped_fragments")
+as.1              <- as.1 %>% slice(match(x, Mapping_type))
+as.1$Mapping_type <- factor(as.1$Mapping_type, levels = as.1$Mapping_type)
+
+as.2              <- alignment_stats[alignment_stats$V1 %in% c("Properly_paired_fragments", 
+                                                  "Singleton_fragments",
+                                                  "More_than_one_chr_fragments",
+                                                  "Unexpected_strandness_fragments",
+                                                  "Unexpected_template_length",
+                                                  "Inversed_mapping"),] %>% rename(Mapping_type = "V1")
+
+y                 <- c("Properly_paired_fragments",
+                       "Singleton_fragments",
+                       "More_than_one_chr_fragments",
+                       "Unexpected_strandness_fragments",
+                       "Unexpected_template_length",
+                       "Inversed_mapping") 
+as.2              <- as.2 %>% slice(match(y, Mapping_type))
+as.2$Mapping_type <- factor(as.2$Mapping_type, levels = as.2$Mapping_type)
+
+
+as.1$Proportion <- as.1$V2/sum(as.1$V2)
+as.2$Proportion <- as.2$V2/sum(as.2$V2)
+
+as.combined <- rbind(as.1, as.2)
+g1 <- ggplot(as.1, aes(x = Mapping_type, y = Proportion, fill = Mapping_type)) + 
+  geom_bar(stat="identity", width=1) +
+  scale_fill_manual(values=custom_colours) +
+  ylab("Proportion of total fragments") + 
+  ggtitle("Uniquely mapped, multimapped and \nunmapped fragments") +
+  theme(axis.text.x=element_blank(),
+        title = element_text(size=10)) +
+  scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0)))
+
+g2 <- ggplot(as.2, aes(x = Mapping_type, y = Proportion, fill = Mapping_type)) + 
+  geom_bar(stat="identity", width=1) +
+  scale_fill_manual(values=custom_colours) +
+  ylab("Proportion of total fragments") + 
+  ggtitle("Breakdown of mapped fragments") +
+  theme(axis.text.x=element_blank(),
+        title = element_text(size=10)) +
+  scale_y_continuous(labels = scales::percent_format(), expand = expansion(mult = c(0, 0)))
+
+gridExtra::grid.arrange(g1, g2, ncol=1)
+
+```
+
+## Chromosome level
+
+```{r}
+alignment_stats_chrom          <- alignment_stats_chrom[!(alignment_stats_chrom$seqnames %in% c("*")),  
+                                                        !(names(alignment_stats_chrom) %in% c("unmapped"))]
+DT::datatable(alignment_stats_chrom)
+```
+
+# Barcode demultiplexing
+
+```{r}
+if(nrow(data) > 1)
+{
+  DT::datatable(data, options=list(paging=FALSE, searching=FALSE))
+} else {
+  # add missing columns before plotting
+  status <- c("barcode_partial_match_count", 
+              "barcode_unmatched_both_reads_unmapped", 
+              "barcode_unmapped_matched", 
+              "barcode_unmatched_mapped_ambigously",
+              "barcode_unmatch_one_read_unmapped")
+  count  <- c(0,0,0,0,0) 
+  extra_cols <- data.frame(status = status, count = count)
+  data <- base::rbind (data, extra_cols)
+}
+```
+
+```{r barcode-alignment-barplot, fig.asp = 0.9, fig.align = 'center',fig.width=10}
+data$prop <- data$count/sum(data$count) 
+
+plotly::ggplotly(ggplot(data, aes_string(x="status", y="prop", fill="status")) + 
+  scale_fill_manual(values=custom_colours) +
+  geom_bar(stat="identity", width=1) +
+  geom_text(aes(y = prop, label = percent(prop)), vjust = -0.5) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0))) +
+  theme(axis.text.x=element_text(angle = 50, hjust = 1),
+        axis.ticks.x=element_blank(),
+        panel.border = element_blank()) +  
+  xlab("status") +
+  ylab("Percentage") +
+  expand_limits(y = 1) +
+  ggtitle(paste0("Overall alignment mapping statistics of demultiplexed unfiltered reads"))) 
+```
+
+# Duplicate removal 
+
+```{r}
+if (file.exists(duplicate_stats.file)) {
+  duplicate.stats <- read.table(duplicate_stats.file, sep=":", skip=1)
+  DT::datatable(duplicate.stats)
+} else {
+  cat("duplicate_removals_stats.txt couldn't be located in the stats folder. Did you run the duplicate removal function with samtools >= 1.10?\n")
+}
+
+```
+
+# Insert size distribution
+
+```{r insert-size-dist, fig.wide = TRUE, fig.asp = 0.9, fig.align='center'}
+  frags[, 'isize' := V3 - V2]
+  if (nrow(frags) >= 100000) {
+    frags = frags[sort(sample(1:nrow(frags), 100000)), ]
+  }
+  
+  plotly::ggplotly(ggplot(data = frags[isize < 800], aes(x = isize)) +
+    geom_density(fill = '#1B9E77') + xlab('Insert Size (bp)') + ylab('Density') + theme_bw() +
+    scale_fill_manual(values=custom_colours) +
+    theme(legend.title=element_blank(), 
+          legend.background = NULL, 
+          axis.text = element_text(size = 15, family = "Helvetica"), 
+          axis.title = element_text(size = 18, family = "Helvetica")))
+```
+
+# Cell calling, feature selection and barcode and feature level filtering 
+
+## Summary
+
+```{r}
+cell_calling_stats          <- data.frame(row.names = c("No. of cells prior to filtering", "No. of cells retained after filtering"), count = c(ncol(unfiltered_mtx), ncol(filtered_mtx)))
+kable(cell_calling_stats, row.names = TRUE, col.names = NULL) %>%
+  kable_styling(full_width = TRUE, position = 'center', font_size = 24)
+
+```
+
+:::: {style="display: flex;"}
+:::{}
+
+```{r  frag-peak, fig.wide = TRUE, fig.asp = 0.9}
+bc_stat[, 'group' := ifelse(bc %in% cell_barcodes, 'cell', 'non-cell')]
+nsub_frags    <- min(15000, nrow(bc_stat))  ## downsample for scatter plot
+bc_stat_down  <- bc_stat[sort(sample(1:nrow(bc_stat), nsub_frags)), ]
+
+
+g             <- ggplot(data = bc_stat_down, 
+                                         aes(x = total_frags, y = frac_peak, col = group)) + 
+                                    geom_point(size = 0.5) + scale_x_continuous(trans='log10') + 
+                                    theme_bw() +
+                                    theme(legend.position = 'none', 
+                                          legend.title=element_blank(),
+                                          axis.text = element_text(size = 15, family = "Helvetica"),
+                                          axis.title = element_text(size = 18, family = "Helvetica")) +
+                                    xlab('Total #Unique Fragments') + 
+                                    ylab('Fraction in Peak')
+
+text1          <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
+                           gp=gpar(col='#E6AB02', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+text2          <- grobTree(textGrob("Non-cell", x=0.8,  y=0.83, hjust=0,
+                           gp=gpar(col='#7570B3', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+
+g + annotation_custom(text1) + annotation_custom(text2) + scale_color_manual(values = c('#E6AB02', '#7570B3'))
+```
+
+:::
+:::{}
+
+```{r frag-mito, fig.wide = TRUE, fig.asp = 0.9}
+nsub_frags    <- min(15000, nrow(bc_stat))  ## downsample for scatter plot
+bc_stat_down  <- bc_stat[sort(sample(1:nrow(bc_stat), nsub_frags)), ]
+
+
+g             <- ggplot(data = bc_stat_down, 
+                        aes(x = total_frags, y = frac_mito, col = group)) + 
+  geom_point(size = 0.5) + scale_x_continuous(trans='log10') + 
+  theme_bw() +
+  theme(legend.position = 'none', 
+        legend.title=element_blank(),
+        axis.text = element_text(size = 15, family = "Helvetica"),
+        axis.title = element_text(size = 18, family = "Helvetica")) +
+  xlab('Total #Unique Fragments') + 
+  ylab('Fraction in mitochondrial genome')
+
+text1          <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
+                                    gp=gpar(col='#E6AB02', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+text2          <- grobTree(textGrob("Non-cell", x=0.8,  y=0.83, hjust=0,
+                                    gp=gpar(col='#7570B3', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+
+g + annotation_custom(text1) + annotation_custom(text2) + scale_color_manual(values = c('#E6AB02', '#7570B3'))
+```
+
+:::
+:::{}
+
+```{r frag-density, fig.wide = TRUE, fig.asp = 0.9}
+bc_stat[, 'group' := ifelse(bc %in% cell_barcodes, 'cell', 'non-cell')]
+
+p     <- ggplot(data = bc_stat, aes(x = total_frags, fill = group)) +
+                            geom_density() +
+                            scale_x_continuous(trans = 'log10') +
+                            theme_bw() +
+                            theme(legend.position='none',
+                                  legend.title=element_blank(),
+                                  axis.title = element_text(size = 18, family = "Helvetica"),
+                                  axis.text = element_text(size = 15, family = "Helvetica")) +
+                            xlab('Total #Unique Fragments') + ylab('Density')
+
+text1 <- grobTree(textGrob("Cell", x=0.8,  y=0.93, hjust=0,
+                           gp=gpar(col='#E6AB02', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+text2 <- grobTree(textGrob("Non-cell", x=0.8,  y=0.83, hjust=0,
+                           gp=gpar(col='#7570B3', fontsize=15, fontface = 'bold', fontfamily = "Helvetica")))
+
+p + annotation_custom(text1) + annotation_custom(text2) +
+  scale_fill_manual(values = c('#E6AB02', '#7570B3'))
+
+```
+
+:::
+::::
+
+## Reference mapping rate for filtered barcodes 
+
+```{r barcode-alignment-dist, fig.asp = 0.9, fig.align = 'center'}
+
+# subset the cell barcodes
+if (!is.null(n_barcode_subset)){
+  barcode_stats                      <- barcode_stats[row.names(barcode_stats) %in% qc_sele$bc, ]
+  n <- nrow(barcode_stats)
+  if (n < n_barcode_subset) n_barcode_subset <- n
+  barcode_stats                      <-barcode_stats %>% sample_n(n_barcode_subset)
+} else {
+  barcode_stats                      <- barcode_stats[row.names(barcode_stats) %in% qc_sele$bc, ] 
+}
+
+# rearranging barcode_stats for plotting
+mapping_stat              <- barcode_stats %>% dplyr::arrange(desc(mapped))
+mapping_stat$barcode      <- stats::reorder(rownames(mapping_stat), mapping_stat$mapped)
+
+
+#subset to order
+mapped_subset             <- mapping_stat[mapping_stat$mapped>0 & 
+                                            mapping_stat$mapped_ambigously==0 & 
+                                            mapping_stat$one_read_unmapped==0 & 
+                                            mapping_stat$both_reads_unmapped==0, ]
+
+mapped_subset             <- mapped_subset[order(-mapped_subset[,2]),]
+
+mapped_amb_subset         <- mapping_stat[mapping_stat$mapped>0 & 
+                                            mapping_stat$mapped_ambigously>0 & 
+                                            mapping_stat$one_read_unmapped==0 & 
+                                            mapping_stat$both_reads_unmapped==0, ]
+
+mapped_amb_subset         <- mapped_amb_subset[order(-mapped_amb_subset[,3]),]
+
+mapped_one_subset         <- mapping_stat[mapping_stat$mapped>0 & 
+                                            mapping_stat$mapped_ambigously==0 & 
+                                            mapping_stat$one_read_unmapped>0 & 
+                                            mapping_stat$both_reads_unmapped==0, ]
+
+mapped_one_subset         <- mapped_one_subset[order(-mapped_one_subset[,4]),]
+
+unmapped_subset           <- mapping_stat[mapping_stat$mapped>0 & 
+                                            mapping_stat$mapped_ambigously==0 & 
+                                            mapping_stat$one_read_unmapped==0 & 
+                                            mapping_stat$both_reads_unmapped>0, ]
+
+unmapped_subset           <- unmapped_subset[order(-unmapped_subset[,1]),]
+
+all_subset                <- mapping_stat[mapping_stat$mapped>0 & 
+                                            mapping_stat$mapped_ambigously>0 & 
+                                            mapping_stat$one_read_unmapped>0 & 
+                                            mapping_stat$both_reads_unmapped>0, ]
+
+all_subset                <- all_subset[order(-all_subset[,2]),]
+
+mapping_stat_ordered      <- rbind(mapped_subset,
+                                   mapped_amb_subset,
+                                   mapped_one_subset,
+                                   unmapped_subset,
+                                   all_subset)
+
+remaining_subset          <- mapping_stat[!mapping_stat$barcode %in% mapping_stat_ordered$barcode, ]
+remaining_subset          <- remaining_subset[order(-remaining_subset[,2]),]
+
+mapping_stat_ordered      <- rbind(mapping_stat_ordered, remaining_subset)
+
+
+# proportion convert to see the differences clearly
+mapping_stat_prop         <- as.data.frame(prop.table(as.matrix(mapping_stat_ordered[, sapply(mapping_stat_ordered, is.numeric)]), 1))
+mapping_stat_prop$barcode <- mapping_stat_ordered$barcode
+
+# reshape to plot
+dat.m1                    <- reshape2::melt(mapping_stat_prop, id.vars="barcode")
+colnames(dat.m1)[2]       <- "type"
+
+# order by category
+dat.m1 <- dat.m1 %>% 
+  mutate(type = factor(type, levels=c("mapped", "mapped_ambigously", "one_read_unmapped", "both_reads_unmapped")))
+
+#order by barcode to show the mapped ones first
+dat.m1 <- dat.m1 %>% 
+  mutate(barcode = factor(barcode, levels=c(mapping_stat_ordered$barcode)))
+
+# plotly::ggplotly(ggplot(dat.m1, 
+#        aes(x = as.factor(barcode), y = as.numeric(value), fill = type)) + 
+#   geom_bar(stat='identity', width =1) +
+#   guides(fill = guide_legend(title = "")) +   
+#   xlab("Sample of 500 barcodes") +   
+#   ylab("Percentage of reads")+
+#   theme(axis.text.x=element_blank(),
+#           axis.ticks.x=element_blank()) +
+#   scale_y_continuous(labels = percent_format(), expand = expansion(mult = c(0, 0))))
+
+plotly::ggplotly(ggplot(dat.m1, 
+       aes(x = as.factor(barcode), y = as.numeric(value), fill = type)) + 
+  scale_fill_manual(values=custom_colours) + 
+  geom_bar(stat='identity', width =1) +
+  guides(fill = guide_legend(title = "")) +   
+  xlab("Sample of 500 barcodes") +   
+  ylab("Percentage of reads")+
+  theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank()) +
+  scale_y_continuous(labels = percent_format(), expand = expansion(mult = c(0, 0))))
+```
+
+## Distribution of fragment and feature counts for filtered cells
+:::: {style="display: flex;"}
+::: {}
+
+
+```{r percell-counts, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_fragments_per_cell(sce)
+```
+
+:::
+::: {}
+
+```{r percell-features, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_features_per_cell(sce)
+```
+:::
+::::
+
+```{r, fig.align='center'}
+sc_atac_plot_features_per_cell_ordered(sce)
+```
+
+## Distribution of fragment and cell counts for features
+:::: {style="display: flex;"}
+::: {}
+
+```{r perfeature-counts, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_fragments_per_feature(sce)
+```
+:::
+::: {}
+
+```{r perfeature-cells, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_cells_per_feature(sce)
+```
+:::
+::::
+
+:::: {style="display: flex;"}
+::: {}
+
+
+
+```{r corr-cells, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_fragments_features_per_cell(sce)
+```
+:::
+::: {}
+
+```{r corr-features, fig.wide = TRUE, fig.asp = 0.9}
+sc_atac_plot_fragments_cells_per_feature(sce)
+```
+:::
+::::
+
+# Feature overlap
+
+:::: {style="display: flex;"}
+::: {}
+
+```{r overall-overlap, fig.wide = TRUE, fig.asp = 0.9}
+# Get fraction of all fragments overlapping with each category (essentially weighted sum of fractions, weighted by number of total frags/cell)
+frac_peak     <- sum(qc_sele$total_frags * qc_sele$frac_peak)/sum(qc_sele$total_frags)
+frac_mito     <- sum(qc_sele$total_frags * qc_sele$frac_mito)/sum(qc_sele$total_frags)
+frac_promoter <- sum(qc_sele$total_frags * qc_sele$frac_promoter)/sum(qc_sele$total_frags)
+frac_enh      <- sum(qc_sele$total_frags * qc_sele$frac_enhancer)/sum(qc_sele$total_frags)
+frac_tss      <- sum(qc_sele$total_frags * qc_sele$frac_tss)/sum(qc_sele$total_frags)
+
+fracs         <- data.frame(c(frac_peak,  frac_promoter, frac_enh, frac_tss, frac_mito))
+row.names(fracs) = c('Fraction in peaks', 
+                     'Fraction in promoters', 
+                     'Fraction in Enhancers(ENCODE)', 
+                     'Fraction in TSS',
+                     'Fraction in mitochondrial genome')
+colnames(fracs) <- 'pr'
+fracs$pr        <- round(fracs$pr, 3)
+fracs$pr        <- paste0(100*fracs$pr, '%')
+
+kable(fracs, row.names = T, col.names = NULL) %>%
+  kable_styling(full_width = F, position = 'left', font_size = 15)
+```
+
+:::
+
+::: {}
+
+```{r anno-overlap-boxes, fig.wide = TRUE, fig.asp = 0.9}
+qc_sele_df      <- data.table(frac = c(qc_sele$frac_peak, qc_sele$frac_tss, qc_sele$frac_promoter, qc_sele$frac_enh, qc_sele$frac_mito), 
+                         'type' = rep(c('Peaks', 'TSS', 'Promoter', 'Enhancer', 'Mito'), each = nrow(qc_sele)))
+  
+qc_sele_df$type <- factor(qc_sele_df$type, levels = c('Peaks', 'TSS', 'Promoter', 'Enhancer', 'Mito'))
+
+ggplot(data = qc_sele_df, aes(y = frac, x = type, fill = type)) + ylab('Fraction') + theme_bw() +
+  geom_boxplot(outlier.size = 0.01, show.legend = FALSE) + 
+  scale_fill_manual(values=custom_colours) +
+  theme(legend.position = 'none', 
+        axis.text = element_text(size = 18, family = "Helvetica"), 
+        axis.title.x = element_blank(), 
+        axis.title.y = element_text(size = 18, family = "Helvetica")) + xlab('')
+```
+
+:::
+::::
+
+# Aggregate TSS enrichment plot
+
+TSSE: the maximum TSS score among all 100bp windows within 1000bp from each side of the TSS, where the TSS score is the read depth of the window normalised by the read depth of the end flanks.
+
+```{r tss-enrichment, fig.wide = TRUE, fig.asp = 0.9}
+tss_plot_data <- utils::read.csv(file.path(params$input_folder, "scPipe_atac_stats", "tss_plot_data.csv"))
+if (any(is.na(tss_plot_data$agg_tss_scores))) {
+  message("Could not generate plot; perhaps no overlaps.")
+} else {
+  tsse <- max(tss_plot_data$agg_tss_scores)
+  max_x <- tss_plot_data$dists[which(tss_plot_data$agg_tss_scores==tsse)]
+  ggplot(data=tss_plot_data, aes(x=dists, y=agg_tss_scores)) +
+    geom_line()+
+    geom_point() + 
+    geom_text(aes(max_x, tsse+3, label=paste("TSSE:", signif(tsse,3)))) +
+    ggtitle("Aggregate TSS enrichment") +
+    xlab("Distance from TSS (bp)") + 
+    ylab("Aggregate TSS score") 
+}
+
+
+```
+
+
+# Visualisation of the preprocessed dataset - UMAP
+
+```{r}
+TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
+    object <- binary.mat
+    npeaks       <- Matrix::colSums(x = object)
+    tf           <- Matrix::tcrossprod(x = as.matrix(object), y = Matrix::Diagonal(x = 1 / npeaks))
+    rsums        <- Matrix::rowSums(x = object)
+    idf          <- ncol(x = object) / rsums
+    norm.data    <- Matrix::Diagonal(n = length(x = idf), x = idf) %*% tf
+    scale.factor <- 1e4
+    slot(object = norm.data, name = "x") <- log1p(x = slot(object = norm.data, name = "x") * scale.factor)
+    norm.data[which(x = is.na(x = norm.data))] <- 0
+    return(norm.data)
+  }
+
+message("Generating UMAP data")
+
+sce <-readRDS(file.path(params$input_folder, "scPipe_atac_SCEobject.rds"))
+counts <- assay(sce)
+  bin_mat <- as.matrix((counts>0)+0)
+  binary.mat <- TF.IDF.custom(bin_mat)
+  
+library(irlba)
+set.seed(123)
+n_bcs <- max(min(50, ncol(binary.mat), nrow(binary.mat))-1,0)
+mat.lsi          <- irlba(binary.mat, n_bcs)
+d_diagtsne       <- matrix(0, n_bcs, n_bcs)
+diag(d_diagtsne) <- mat.lsi$d
+mat_pcs          <- t(d_diagtsne %*% t(mat.lsi$v))
+rownames(mat_pcs)<- colnames(binary.mat)
+
+# clustering in the PCA space using KNN --------------
+
+library(RANN)
+knn.info<- RANN::nn2(mat_pcs, k = 30)
+
+## convert to adjacency matrix
+knn           <- knn.info$nn.idx
+adj           <- matrix(0, nrow(mat_pcs), nrow(mat_pcs))
+rownames(adj) <- colnames(adj) <- rownames(mat_pcs)
+for(i in seq_len(nrow(mat_pcs))) {
+  adj[i,rownames(mat_pcs)[knn[i,]]] <- 1
+}
+
+## convert to graph
+library(igraph)
+g <- igraph::graph.adjacency(adj, mode="undirected")
+g <- simplify(g) ## remove self loops
+
+# identify communities, many algorithums. Use the Louvain clustering ------------
+km         <- igraph::cluster_louvain(g)
+com        <- km$membership
+names(com) <- km$names
+
+# running UMAP ------------------------------
+
+library(umap)
+norm.data.umap    <- umap::umap(mat_pcs)
+
+df_umap           <- as.data.frame(norm.data.umap$layout)
+colnames(df_umap) <- c("UMAP1", "UMAP2")
+df_umap$barcode   <- rownames(mat_pcs)
+
+df_umap           <- dplyr::left_join(df_umap, enframe(com), by = c("barcode" = "name")) %>%
+  dplyr::rename(cluster = value) %>%
+  dplyr::mutate(cluster = as.factor(cluster))
+
+sce_coldata <- colData(sce)
+  df_umap <- base::merge(df_umap, sce_coldata, by.x = "barcode", by.y = "row.names", all.x = TRUE) 
+
+```
+
+```{r interactive-umap, fig.wide = TRUE, fig.asp = 0.9, echo = FALSE}
+
+g <- ggplot(df_umap, aes(x = UMAP1, y = UMAP2, text = paste("barcode: ", barcode))) +
+        geom_point(aes(col = cluster), size = 0.5) +
+        theme_bw(base_size = 14)
+
+plotly::ggplotly(g)
+
+```
+

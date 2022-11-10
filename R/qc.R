@@ -192,7 +192,7 @@ detect_outlier <- function(sce,
 }
 
 
-#' Calcuate QC metrics from gene count matrix
+#' Calculate QC metrics from gene count matrix
 #'
 #' @param sce a \code{SingleCellExperiment} object containing gene counts
 #' @details get QC metrics using gene count matrix.
@@ -438,6 +438,8 @@ plot_mapping <- function(sce,
 #' @param sce a \code{SingleCellExperiment} object
 #'
 #' @return a ggplot2 bar chart
+#'
+#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -472,13 +474,13 @@ plot_demultiplex = function(sce){
       legend.position="none"
     )
 
-  p = ggplot(data=demultiplex_stat, aes(x=status, y=count,
-                                        fill=status))+
+  p = ggplot(data=demultiplex_stat, aes(x=.data$status, y=.data$count,
+                                        fill=.data$status))+
     geom_bar(width = 1, stat = "identity")+
     #coord_polar("y", start=0)+
     scale_fill_brewer(palette="Dark2")+
     blank_theme+
-    geom_text(aes(y = label_y, label = label_tx))+
+    geom_text(aes(y = .data$label_y, label = .data$label_tx))+
     labs(title="Cell barcode demultiplexing statistics", y="percentage",x="")
   return(p)
 }

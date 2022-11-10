@@ -6,9 +6,12 @@
 #include <sstream>
 #include <vector>
 #include <iomanip>
+#include <zlib.h>
 #include <Rcpp.h>
+#include "config_hts.h"
 #include "Gene.h"
 #include "global_config.h"
+
 
 #ifndef UTILS_H
 #define UTILS_H
@@ -41,6 +44,10 @@ std::vector<std::string> split(const std::string &s, char delim);
 std::string padding(int count, int zero_num);
 
 // stops program when file cannot be opened
-void file_error(char *filename);
+void file_error(const char *filename);
 
+char* getFileName(const char* path, const char* seperator = "/");
+char* createFileWithAppend(const char *fq_out, const char* appendR1, const char *fq1_fn);
+void openFile(gzFile &o_stream_gz_R1, std::ofstream &o_stream_R1, char* fqoutR1, bool write_gz);
 #endif
+

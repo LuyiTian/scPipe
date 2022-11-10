@@ -4,7 +4,7 @@ author: "Luyi Tian"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{scPipe: flexible data preprocessing pipeline for 3' end scRNA-seq data}
+  %\VignetteIndexEntry{scPipe: a flexible data preprocessing pipeline for 3' end scRNA-seq data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -131,7 +131,7 @@ There are several plots we can create to assess the overall quality of the exper
 plot_demultiplex(sce)
 ```
 
-A second plot shows the duplication rate which can be used to evaluate read deapth. UMIs are routinely used to mark individual molecules and after PCR amplification, the same molecule with have multiple copys, which can be identified and removed if they are observed to have the same UMI sequence. Therefore, the copy number of UMIs is an indication of the PCR amplification rate. 
+A second plot shows the duplication rate which can be used to evaluate read depth. UMIs are routinely used to mark individual molecules and after PCR amplification, the same molecule with have multiple copys, which can be identified and removed if they are observed to have the same UMI sequence. Therefore, the copy number of UMIs is an indication of the PCR amplification rate. 
 
 ```{r, fig.height=7, fig.width=7}
 plot_UMI_dup(sce)

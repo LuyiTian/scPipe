@@ -4,9 +4,18 @@
 \alias{sc_exon_mapping}
 \title{sc_exon_mapping}
 \usage{
-sc_exon_mapping(inbam, outbam, annofn, bam_tags = list(am = "YE", ge = "GE",
-  bc = "BC", mb = "OX"), bc_len = 8, barcode_vector = "", UMI_len = 6,
-  stnd = TRUE, fix_chr = FALSE, nthreads = 1)
+sc_exon_mapping(
+  inbam,
+  outbam,
+  annofn,
+  bam_tags = list(am = "YE", ge = "GE", bc = "BC", mb = "OX"),
+  bc_len = 8,
+  barcode_vector = "",
+  UMI_len = 6,
+  stnd = TRUE,
+  fix_chr = FALSE,
+  nthreads = 1
+)
 }
 \arguments{
 \item{inbam}{input aligned bam file. can have multiple files as input}

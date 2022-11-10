@@ -4,12 +4,27 @@
 \alias{create_report}
 \title{create_report}
 \usage{
-create_report(sample_name, outdir, r1 = "NA", r2 = "NA", outfq = "NA",
+create_report(
+  sample_name,
+  outdir,
+  r1 = "NA",
+  r2 = "NA",
+  outfq = "NA",
   read_structure = list(bs1 = 0, bl1 = 0, bs2 = 0, bl2 = 0, us = 0, ul = 0),
   filter_settings = list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
-  align_bam = "NA", genome_index = "NA", map_bam = "NA",
-  exon_anno = "NA", stnd = TRUE, fix_chr = FALSE, barcode_anno = "NA",
-  max_mis = 1, UMI_cor = 1, gene_fl = FALSE, organism, gene_id_type)
+  align_bam = "NA",
+  genome_index = "NA",
+  map_bam = "NA",
+  exon_anno = "NA",
+  stnd = TRUE,
+  fix_chr = FALSE,
+  barcode_anno = "NA",
+  max_mis = 1,
+  UMI_cor = 1,
+  gene_fl = FALSE,
+  organism,
+  gene_id_type
+)
 }
 \arguments{
 \item{sample_name}{sample name}
@@ -36,7 +51,7 @@ create_report(sample_name, outdir, r1 = "NA", r2 = "NA", outfq = "NA",
 
 \item{stnd}{whether to perform strand specific mapping}
 
-\item{fix_chr}{add `chr` to chromosome names, fix inconsistant names.}
+\item{fix_chr}{add `chr` to chromosome names, fix inconsistent names.}
 
 \item{barcode_anno}{cell barcode annotation file path.}
 
@@ -46,10 +61,10 @@ create_report(sample_name, outdir, r1 = "NA", r2 = "NA", outfq = "NA",
 
 \item{gene_fl}{whether to remove low abundant gene count. Low abundant is defined as only one copy of one UMI for this gene}
 
-\item{organism}{the organism of the data. List of possible names can be retrieved using the function 
+\item{organism}{the organism of the data. List of possible names can be retrieved using the function
 `listDatasets`from `biomaRt` package. (i.e `mmusculus_gene_ensembl` or `hsapiens_gene_ensembl`)}
 
-\item{gene_id_type}{gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package. 
+\item{gene_id_type}{gene id type of the data A possible list of ids can be retrieved using the function `listAttributes` from `biomaRt` package.
 the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`}
 }
 \value{

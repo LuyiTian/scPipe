@@ -4,12 +4,20 @@
 \alias{sc_detect_bc}
 \title{sc_detect_bc}
 \usage{
-sc_detect_bc(infq, outcsv, prefix = "CELL_", bc_len, max_reads = 1e+06,
-  min_count = 10, number_of_cells = 10000, max_mismatch = 1,
-  white_list_file = NULL)
+sc_detect_bc(
+  infq,
+  outcsv,
+  prefix = "CELL_",
+  bc_len,
+  max_reads = 1e+06,
+  min_count = 10,
+  number_of_cells = 10000,
+  max_mismatch = 1,
+  white_list_file = NULL
+)
 }
 \arguments{
-\item{infq}{input fastq file, shoule be the output file of
+\item{infq}{input fastq file, should be the output file of
 \code{sc_trim_barcode}}
 
 \item{outcsv}{output barcode annotation}
