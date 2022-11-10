@@ -2,11 +2,6 @@
 
 #include "detect_barcode.h"
 
-#ifndef INIT_KSEQ
-#define INIT_KSEQ
-KSEQ_INIT(gzFile, gzread)
-#endif
-
 using namespace Rcpp;
 
 void merge_barcode(std::unordered_map<std::string, int> &counter, int max_mismatch, int min_count)

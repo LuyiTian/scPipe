@@ -2,7 +2,7 @@
 % Please edit documentation in R/qc.R
 \name{calculate_QC_metrics}
 \alias{calculate_QC_metrics}
-\title{Calculate QC metrics from gene count matrix}
+\title{Calcuate QC metrics from gene count matrix}
 \usage{
 calculate_QC_metrics(sce)
 }
@@ -13,7 +13,7 @@ calculate_QC_metrics(sce)
 an \code{SingleCellExperiment} with updated QC metrics
 }
 \description{
-Calculate QC metrics from gene count matrix
+Calcuate QC metrics from gene count matrix
 }
 \details{
 get QC metrics using gene count matrix.

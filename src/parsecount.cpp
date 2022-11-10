@@ -263,7 +263,7 @@ void write_stat(string cnt_fn, string stat_fn, vector<int> UMI_dup_count, unorde
 {
     ofstream cnt_file(cnt_fn);
     cnt_file << "duplication number,count" << "\n";
-    for (unsigned int i=0; i<UMI_dup_count.size(); i++)
+    for (int i=0; i<UMI_dup_count.size(); i++)
     {
         cnt_file << i+1 << "," << UMI_dup_count[i] << "\n";
     }

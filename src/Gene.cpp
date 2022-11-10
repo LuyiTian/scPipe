@@ -102,7 +102,7 @@ void Gene::flatten_exon() {
 
     merged_exons.push_back(exon_vec[0]);
 
-    for (unsigned int i = 1; i < exon_vec.size(); i++)
+    for (auto i = 1; i < exon_vec.size(); i++)
     {
         const auto exon = exon_vec[i];
         const auto &last_merged_exon = merged_exons.back();
@@ -127,7 +127,7 @@ std::ostream& operator<< (std::ostream& out, const Gene& obj)
     out << "\t" << "start/end:   " << obj.st  << "/" << obj.en << "\n";
     out << "\t" << "strand:   " << obj.snd  << "\n";
     out << "\t" << "number of exons:   " << obj.exon_vec.size()  << "\n";
-    for (unsigned int i = 0; i < obj.exon_vec.size(); ++i)
+    for (int i = 0; i < obj.exon_vec.size(); ++i)
     {
         out << "\t" << "exon[" << i+1 << "]: (" << obj.exon_vec[i].st << ", " << obj.exon_vec[i].en << ")" << "\n";
     }

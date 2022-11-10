@@ -115,7 +115,7 @@ anno_to_saf <- function(anno) {
     if (anyNA(saf$GeneID)) {
         orig_rows <- nrow(saf)
         saf <- saf %>%
-            dplyr::filter(!is.na(saf$GeneID))
+            dplyr::filter(!is.na(GeneID))
         filt_rows <- nrow(saf)
         message(glue::glue("NA found in GeneID of {orig_rows - filt_rows} of {orig_rows} entries, automatically removing these entries"))
     }
@@ -204,7 +204,7 @@ infer_gene_id_from_parent <- function(anno) {
     # get parent ids of all exons
     parents <- anno %>%
         as.data.frame() %>%
-        dplyr::filter(.data$type == "exon") %>%
+        dplyr::filter(type == "exon") %>%
         dplyr::pull("Parent") %>%
         unlist()
     

@@ -9,6 +9,7 @@
 #' position in the 384 plates.
 #' @return NULL, but makes a matrix of count data
 #' @docType data
+#' @usage sc_sample_data
 #' @format a matrix instance, one row per gene.
 #' @source Christin Biben (WEHI). She FACS sorted cells from several immune
 #' cell types including B cells, granulocyte and some early progenitors. 

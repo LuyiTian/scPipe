@@ -39,11 +39,11 @@ public:
         }
         genes.push_back(gene);
         // extend boundaries of bin to fully include bin
-        if ((ull_int) gene.st < start)
+        if (gene.st < start)
         {
             start = gene.st;
         }
-        if ((ull_int) gene.en > end)
+        if (gene.en > end)
         {
             end = gene.en;
         }
@@ -51,7 +51,7 @@ public:
 
     // check if interval overlaps bin
     const bool overlaps(const Interval &it) {
-        return !(start > (ull_int) it.en) && !(end < (ull_int) it.st);
+        return !(start > it.en) && !(end < it.st);
     }
 };
 
@@ -97,18 +97,6 @@ private:
     const unsigned int bin_size = 64;
 };
 
-enum AnnotationEnum {
-    SEQID=0,
-    SOURCE=1,
-    TYPE=2,
-    START=3,
-    END=4,
-    SCORE=5,
-    STRAND=6,
-    PHASE=7,
-    ATTRIBUTES=8
-};
-
 // parse gff3 genome annotation
 class GeneAnnotation
 {
@@ -147,16 +135,16 @@ public:
     friend std::ostream& operator<< (std::ostream& out, const GeneAnnotation& obj);
 
 private:
-    // // index variables for gff3 fields
-    // const int SEQID      = 0;
-    // const int SOURCE     = 1;
-    // const int TYPE       = 2;
-    // const int START      = 3;
-    // const int END        = 4;
-    // const int SCORE      = 5;
-    // const int STRAND     = 6;
-    // const int PHASE      = 7;
-    // const int ATTRIBUTES = 8;
+    // index variables for gff3 fields
+    const int SEQID      = 0;
+    const int SOURCE     = 1;
+    const int TYPE       = 2;
+    const int START      = 3;
+    const int END        = 4;
+    const int SCORE      = 5;
+    const int STRAND     = 6;
+    const int PHASE      = 7;
+    const int ATTRIBUTES = 8;
 
     // get attribute from gff3 standard columns
     std::string get_attribute(const std::vector<std::string> &all_attributes, const std::string &target_attribute);
@@ -216,9 +204,6 @@ public:
     // @param: cell_id, to provide the cell barcode, if not in the header of fastq file.
     void parse_align(std::string fn, std::string fn_out, bool m_strand, std::string map_tag, std::string gene_tag, std::string cellular_tag, std::string molecular_tag, int bc_len, std::string write_mode, std::string cell_id, int UMI_len, int nthreads);
 
-    void sc_atac_parse_align_warpper(std::vector<std::string> fn_vec, std::string fn_out,  std::string cellular_tag, std::string molecular_tag, int nthreads);
-    void sc_atac_parse_align(std::string fn, std::string fn_out, std::string cellular_tag, std::string molecular_tag, int nthreads);
-    
     /* data */
 };
 

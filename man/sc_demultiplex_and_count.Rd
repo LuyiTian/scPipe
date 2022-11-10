@@ -4,18 +4,9 @@
 \alias{sc_demultiplex_and_count}
 \title{sc_demultiplex_and_count}
 \usage{
-sc_demultiplex_and_count(
-  inbam,
-  outdir,
-  bc_anno,
-  max_mis = 1,
-  bam_tags = list(am = "YE", ge = "GE", bc = "BC", mb = "OX"),
-  mito = "MT",
-  has_UMI = TRUE,
-  UMI_cor = 1,
-  gene_fl = FALSE,
-  nthreads = 1
-)
+sc_demultiplex_and_count(inbam, outdir, bc_anno, max_mis = 1,
+  bam_tags = list(am = "YE", ge = "GE", bc = "BC", mb = "OX"), mito = "MT",
+  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE, nthreads = 1)
 }
 \arguments{
 \item{inbam}{input bam file. This should be the output of
@@ -38,7 +29,7 @@ stored.
 }}
 
 \item{mito}{mitochondrial chromosome name.
-This should be consistent with the chromosome names in the bam file.}
+This should be consistant with the chromosome names in the bam file.}
 
 \item{has_UMI}{whether the protocol contains UMI (default: TRUE)}
 

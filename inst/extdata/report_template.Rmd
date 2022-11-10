@@ -1,5 +1,5 @@
 ---
-title: "scPipe report for scRNA-Seq sample `r params$samplename`"
+title: "scPipe report for sample `r params$samplename`"
 output:
   html_notebook:
     code_folding: hide
@@ -105,7 +105,7 @@ assume read1 contains the transcript
 
 # Data summary
 
-The organism is "`r getVal(params$organism, "unknown")`", and gene id type is "`r getVal(params$gene_id_type, "unknown")`".
+The organism is "`r getVal(params$organism), "unknown")`", and gene id type is "`r getVal(params$gene_id_type, "unknown")`".
 
 ## Overall barcode statistics
 
@@ -149,7 +149,7 @@ if (any(colSums(counts(sce)) == 0)) {
 
 Datatable of all QC metrics:
 ```{r}
-sce = calculate_QC_metrics(sce)
+sce = perCellQCMetrics(sce)
 if(!all(colSums(as.data.frame(QC_metrics(sce)))>0)){
   QC_metrics(sce) = QC_metrics(sce)[, colSums(as.data.frame(QC_metrics(sce)))>0]
 }
@@ -193,8 +193,7 @@ Remove low quality cells and plot highest expression genes.
 ```{r}
 sce_qc = remove_outliers(sce_qc)
 sce_qc = convert_geneid(sce_qc, returns="external_gene_name")
-
-sce_qc <- calculate_QC_metrics(sce_qc)
+sce_qc <- perCellQCMetrics(sce_qc)
 plotHighestExprs(sce_qc, n=20)
 ```
 
@@ -246,9 +245,8 @@ if (min(sizeFactors(sce_qc)) <= 0) {
 PCA plot using gene expressions as input, colored by the number of genes.
 
 ```{r}
-cpm(sce_qc) = calculateCPM(sce_qc, size.factors=NULL)
-sce_qc <- runPCA(sce_qc, exprs_values = "cpm")
-plotPCA(sce_qc, colour_by="number_of_genes")
+cpm(sce_qc) = calculateCPM(sce_qc, use_size_factors=FALSE)
+plotPCA(sce_qc, run_args = list(exprs_values="cpm"), colour_by="total_features")
 ```
 
 ### Normalize the data using size factor and get high variable genes
@@ -258,9 +256,10 @@ than `0.5`. If the number of highly variable genes is smaller than 100 we will s
 biological variation. If the number is larger than 500 we will only keep top 500 genes by biological variation.
 
 ```{r, warning=FALSE, message=FALSE}
-sce_qc <- logNormCounts(sce_qc)
+sce_qc <- normalize(sce_qc)
 
-var.out <- modelGeneVar(sce_qc)
+var.fit <- trendVar(sce_qc, method="loess", use.spikes=FALSE)
+var.out <- decomposeVar(sce_qc, var.fit)
 
 if (length(which(var.out$FDR <= 0.05 & var.out$bio >= 0.5)) < 500){
   hvg.out <- var.out[order(var.out$bio, decreasing=TRUE)[1:500], ]
@@ -309,8 +308,7 @@ layout(autosize = F, margin = m)
 ## Dimensionality reduction by PCA
 
 ```{r}
-sce_qc <- runPCA(sce_qc, exprs_values = "logcounts")
-plotPCA(sce_qc, colour_by="number_of_genes")
+plotPCA(sce_qc, run_args = list(exprs_values="logcounts"), colour_by="total_features")
 ```
 
 ## Dimensionality reduction by t-SNE
@@ -320,11 +318,10 @@ set.seed(100)
 if (any(duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ])))) {
   sce_qc = sce_qc[, !duplicated(t(logcounts(sce_qc)[rownames(hvg.out), ]))]
 }
-sce_qc <- runTSNE(sce_qc, exprs_values="logcounts", perplexity=10,feature_set=rownames(hvg.out))
-out5 <- plotTSNE(sce_qc, colour_by="number_of_genes") + ggtitle("Perplexity = 10")
-sce_qc <- runTSNE(sce_qc, exprs_values="logcounts", perplexity=20,feature_set=rownames(hvg.out))
-out10 <- plotTSNE(sce_qc, colour_by="number_of_genes") + ggtitle("Perplexity = 20")
-sce_qc <- runTSNE(sce_qc, exprs_values="logcounts", perplexity=30,feature_set=rownames(hvg.out))
-out20 <- plotTSNE(sce_qc, colour_by="number_of_genes") + ggtitle("Perplexity = 30")
-gridExtra::grid.arrange(out5, out10, out20, ncol = 3)
+out5 <- plotTSNE(sce_qc, run_args = list(exprs_values="logcounts", perplexity=10,feature_set=rownames(hvg.out)), colour_by="total_features") + ggtitle("Perplexity = 10")
+out10 <- plotTSNE(sce_qc, run_args = list(exprs_values="logcounts", perplexity=20,feature_set=rownames(hvg.out)), colour_by="total_features",
+     feature_set=rownames(hvg.out))  + ggtitle("Perplexity = 20")
+out20 <- plotTSNE(sce_qc, run_args = list(exprs_values="logcounts", perplexity=30,feature_set=rownames(hvg.out)), colour_by="total_features",
+     feature_set=rownames(hvg.out))  + ggtitle("Perplexity = 30")
+multiplot(out5, out10, out20, cols=3)
 ```

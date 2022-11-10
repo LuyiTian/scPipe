@@ -4,11 +4,8 @@
 \alias{get_genes_by_GO}
 \title{Get genes related to certain GO terms from biomart database}
 \usage{
-get_genes_by_GO(
-  returns = "ensembl_gene_id",
-  dataset = "mmusculus_gene_ensembl",
-  go = NULL
-)
+get_genes_by_GO(returns = "ensembl_gene_id",
+  dataset = "mmusculus_gene_ensembl", go = NULL)
 }
 \arguments{
 \item{returns}{the gene id which is set as return. Default to be ensembl id

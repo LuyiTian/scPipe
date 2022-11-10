@@ -28,6 +28,7 @@
 #'  }
 #' @return NULL, but makes a data frame with cell quality control data.frame
 #' @docType data
+#' @usage sc_sample_qc
 #' @format a data.frame instance, one row per cell.
 #' @source Christin Biben (WEHI). She FACS sorted cells from several immune
 #' cell types including B cells, granulocyte and some early progenitors. 
@@ -53,6 +54,7 @@ NULL
 #' 
 #' @return NULL, but makes a data frame with UMI dulication statistics
 #' @docType data
+#' @usage sc_sample_qc
 #' @format a data.frame instance, one row per cell.
 #' @source Christin Biben (WEHI). She FACS sorted cells from several immune
 #' cell types including B cells, granulocyte and some early progenitors. 
@@ -92,6 +94,7 @@ NULL
 #' }
 #' @return NULL, but makes a data frame with cell barcode demultiplex statistics
 #' @docType data
+#' @usage sc_sample_qc
 #' @format a data.frame instance, one row per cell.
 #' @source Christin Biben (WEHI). She FACS sorted cells from several immune
 #' cell types including B cells, granulocyte and some early progenitors. 

@@ -74,12 +74,12 @@ string Barcode::get_closest_match(const string &bc_seq, int max_mismatch)
     std::vector<int> hamming_dists(barcode_list.size());
     string closest_match;
 
-    for (int i = 0; i < (int)barcode_list.size(); i++)
+    for (int i = 0; i < barcode_list.size(); i++)
     {
         hamming_dists[i] = hamming_distance(barcode_list[i], bc_seq);
     }
 
-    for (int i = 0; i < (int)hamming_dists.size(); i++)
+    for (int i = 0; i < hamming_dists.size(); i++)
     {
         string const &bc = barcode_list[i];
         int dist = hamming_dists[i];

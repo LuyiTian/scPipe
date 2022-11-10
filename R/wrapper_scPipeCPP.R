@@ -96,7 +96,6 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
     r1 = path.expand(r1)
     r2 = path.expand(r2)
 
-
     rcpp_sc_trim_barcode_paired(outfq, r1, r2,
                                 read_structure$bs1,
                                 read_structure$bl1,
@@ -248,7 +247,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #'     \item "mb": molecular barcode tag
 #'   }
 #' @param mito mitochondrial chromosome name.
-#' This should be consistent with the chromosome names in the bam file.
+#' This should be consistant with the chromosome names in the bam file.
 #' @param has_UMI whether the protocol contains UMI (default: TRUE)
 #' @param nthreads number of threads to use. (default: 1)
 #'
@@ -318,7 +317,7 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 #'     \item "mb": molecular barcode tag
 #'   }
 #' @param mito mitochondrial chromosome name.
-#' This should be consistent with the chromosome names in the bam file.
+#' This should be consistant with the chromosome names in the bam file.
 #' @param nthreads number of threads to use. (default: 1)
 #'
 #' @export
@@ -417,7 +416,7 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=2, gene_fl=FALSE) {
 #'
 #' @description Detect cell barcode and generate the barcode annotation
 #'
-#' @param infq input fastq file, should be the output file of
+#' @param infq input fastq file, shoule be the output file of
 #' \code{sc_trim_barcode}
 #' @param outcsv output barcode annotation
 #' @param prefix the prefix of cell name (default: `CELL_`)

@@ -16,7 +16,7 @@ ensembl_to_db = list(ensembl_gene_id="ENSEMBL",
 #'
 #' @return a vector of gene ids.
 #'
-#' @importFrom biomaRt useDataset getBM useMart
+#' @importFrom biomaRt useDataset getBM
 #' @importFrom AnnotationDbi mapIds
 #'
 #' @export
@@ -81,7 +81,7 @@ get_genes_by_GO <- function(returns="ensembl_gene_id",
 #'
 #' @return sce with converted id
 #'
-#' @importFrom biomaRt useDataset getBM useMart
+#' @importFrom biomaRt useDataset getBM
 #' @importFrom utils head
 #' @importFrom methods is
 #' @importFrom AnnotationDbi mapIds
