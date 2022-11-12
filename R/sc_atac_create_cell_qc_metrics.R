@@ -10,7 +10,12 @@
 #' @param output_folder
 #' 
 #' @importFrom data.table fread setkey copy :=
+#' @importFrom utils write.csv
+#' @importFrom rtracklayer import
+#' @importFrom GenomicRanges makeGRangesFromDataFrame findOverlaps 
+#' @importFrom tibble rownames_to_column
 #' 
+#' @returns Nothing.
 #' @export
 #' 
 sc_atac_create_cell_qc_metrics <- function(frags_file,
@@ -32,7 +37,7 @@ sc_atac_create_cell_qc_metrics <- function(frags_file,
   
   # Sinto fragments
   fragments <- data.table::fread(frags_file, select=1:5, header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
-  fragments.gr <- fragments %>% makeGRangesFromDataFrame(keep.extra.columns = TRUE)
+  fragments.gr <- fragments %>% GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE)
   
   # Get all barcodes
   barcodes <- unique(fragments$barcode)
@@ -88,5 +93,5 @@ sc_atac_create_cell_qc_metrics <- function(frags_file,
   
   qc_table <- qc_table[qc_table$total_frags > 5, ] %>% tibble::rownames_to_column("bc")
   
-  write.csv(qc_table, file = file.path(output_folder, "cell_qc_metrics.csv"), row.names = FALSE)
+  utils::write.csv(qc_table, file = file.path(output_folder, "cell_qc_metrics.csv"), row.names = FALSE)
 }

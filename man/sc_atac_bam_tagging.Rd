@@ -23,6 +23,9 @@ sc_atac_bam_tagging(
 
 \item{nthreads}{The number of threads}
 }
+\value{
+file path of the resultant demmultiplexed BAM file.
+}
 \description{
 Demultiplexes the reads
 }
@@ -30,10 +33,12 @@ Demultiplexes the reads
 sc_atac_bam_tagging()
 }
 \examples{
-\dontrun{
-sc_atac_bam_tagging(
-    inbam,
-    nthreads  = 6)
-}
+inbam <- system.file("extdata", "tiny_sample.bam", package="scPipe")
+out <- tempdir()
+
+out_bam <- sc_atac_bam_tagging(
+   inbam = inbam,
+   output_folder = out,
+   nthreads = 6)
 
 }

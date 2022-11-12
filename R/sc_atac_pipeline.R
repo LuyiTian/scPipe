@@ -48,17 +48,23 @@
 #' @param nthreads The number of threads to use for alignment (sc_align) and demultiplexing (sc_atac_bam_tagging)
 #' @param output_folder The path of the output folder
 #'
+#' @returns None (invisible `NULL`)
 #' @examples
+#' data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
+#' r1      <- file.path(data.folder, "small_chr21_R1.fastq.gz") 
+#' r2      <- file.path(data.folder, "small_chr21_R3.fastq.gz") 
+#' 
+#' # Using a barcode fastq file:
+#'
+#' # barcodes in fastq format
+#' barcode_fastq      <- file.path(data.folder, "small_chr21_R2.fastq.gz") 
+#' 
 #' \dontrun{
 #' sc_atac_pipeline(
-#'   r1,
-#'   r2,
-#'   barcode_csv,
-#'   "hg38",
-#'   "peak",
-#'   remove_duplicates = FALSE
+#'   r1 = r1,
+#'   r2 = r2,
+#'   bc_file = barcode_fastq
 #' )
-#' 
 #' }
 #'
 #' @export
@@ -196,7 +202,7 @@ sc_atac_pipeline <- function(r1,
 
 #' @name sc_atac_pipeline_quick_test
 #' @title A function that tests the pipeline on a small test sample (without duplicate removal)
-#'
+#' @returns None (invisible `NULL`)
 sc_atac_pipeline_quick_test <- function() {
   data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
   output_folder <- file.path(getwd(), "scPipe-atac-output")

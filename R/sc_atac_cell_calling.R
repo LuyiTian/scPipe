@@ -217,8 +217,13 @@ sc_atac_cell_calling <- function(mat,
 #' @param mat The input matrix
 #' @param cell_qc_metrics_file A file containing qc statistics for each cell
 #' @param genome_size The size of the genome
+#'
+#' @returns a character vector of ???
 #' 
-#' @importFrom data.table :=
+#' @importFrom data.table := fread
+#' @importFrom flexmix flexmix posterior parameters
+#' @importFrom stats median
+#' @importFrom Matrix colSums
 #' @export
 #' 
 sc_atac_cellranger_cell_calling <- function(mat, cell_qc_metrics_file, genome_size){
@@ -228,7 +233,7 @@ sc_atac_cellranger_cell_calling <- function(mat, cell_qc_metrics_file, genome_si
   frac_peak <- total_frags <- NULL
   
   # first filter barcodes by frac_in_peak
-  qc_per_bc <- fread(cell_qc_metrics_file)
+  qc_per_bc <- data.table::fread(cell_qc_metrics_file)
   peak_cov_frac <- min(0.05, nrow(mat) * 1000/genome_size)
   qc_sele_bc <- qc_per_bc[frac_peak >= peak_cov_frac]
   
@@ -369,10 +374,3 @@ sc_atac_emptydrops_cell_calling <- function(
   
   return(select.cells)
 }
-
-
-
-
-
-
-

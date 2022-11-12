@@ -24,6 +24,9 @@ sc_atac_create_sce(
 
 \item{report}{Whether or not a HTML report should be produced}
 }
+\value{
+a SingleCellExperiment object created from the scATAC-Seq data provided
+}
 \description{
 sc_atac_create_sce()
 }

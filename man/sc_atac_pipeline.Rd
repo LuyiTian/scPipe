@@ -7,10 +7,9 @@
 sc_atac_pipeline(
   r1,
   r2,
-  barcode_fastq = NULL,
-  barcode_csv = NULL,
+  bc_file,
   valid_barcode_file = "",
-  id1_st = 0,
+  id1_st = -0,
   id1_len = 16,
   id2_st = 0,
   id2_len = 16,
@@ -50,15 +49,15 @@ sc_atac_pipeline(
 
 \item{r2}{The second read fastq file}
 
-\item{barcode_fastq}{The barcode fastq file (need either this or `barcode_csv`)}
+\item{bc_file}{the barcode information, can be either in a \code{fastq} format (e.g. from 10x-ATAC) or
+from a \code{.csv} file (here the barcode is expected to be on the second column). 
+Currently, for the fastq approach, this can be a list of barcode files.}
 
-\item{barcode_csv}{The barcode csv file (need either this or `barcode_fastq`)}
-
-\item{valid_barcode_file}{file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). Only used if
-\code{bc_file} is a fastq file. Must contain one barcode per line, with no other separators. 
+\item{valid_barcode_file}{optional file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). 
+Must contain one barcode per line on the second column separated by a comma (default ="").
 If given, each barcode from bc_file is matched against the barcode of
-best fit (allowing a hamming distance of 1, prioritising barcodes with a higher mapping quality, as given by
-the fastq reads quality score)}
+best fit (allowing a hamming distance of 1). If a FASTQ \code{bc_file} is provided, barcodes with a higher mapping quality, as given by
+the fastq reads quality score are prioritised.}
 
 \item{id1_st}{barcode start position (0-indexed) for read 1, which is an extra parameter that is needed if the
 \code{bc_file} is in a \code{.csv} format.}
@@ -126,20 +125,28 @@ the fastq reads quality score)}
 
 \item{output_folder}{The path of the output folder}
 }
+\value{
+None (invisible `NULL`)
+}
 \description{
 A convenient function for running the entire pipeline
 }
 \examples{
+data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
+r1      <- file.path(data.folder, "small_chr21_R1.fastq.gz") 
+r2      <- file.path(data.folder, "small_chr21_R3.fastq.gz") 
+
+# Using a barcode fastq file:
+
+# barcodes in fastq format
+barcode_fastq      <- file.path(data.folder, "small_chr21_R2.fastq.gz") 
+
 \dontrun{
 sc_atac_pipeline(
-  r1,
-  r2,
-  barcode_csv,
-  "hg38",
-  "peak",
-  remove_duplicates = FALSE
+  r1 = r1,
+  r2 = r2,
+  bc_file = barcode_fastq
 )
-
 }
 
 }

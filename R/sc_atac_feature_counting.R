@@ -41,11 +41,22 @@
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
 #' @param output_folder The output folder
 #' @param create_report Logical value to say whether to create the report or not (default = TRUE).
-
+#' 
+#' @returns None (invisible `NULL`)
+#' 
 #' @importFrom BiocGenerics start end which strand start<- end<- as.data.frame
 #' @importFrom rlang .data
-#' @import dplyr
 #' @import tidyr
+#' @importFrom Rsamtools indexFa
+#' @importFrom utils read.table write.table
+#' @importFrom data.table fread
+#' @importFrom dplyr group_by mutate ungroup tibble slice
+#' @importFrom tibble rownames_to_column
+#' @importFrom purrr map_df
+#' @importFrom rtracklayer import
+#' @importFrom GenomicRanges makeGRangesFromDataFrame ranges findOverlaps
+#' @importFrom Matrix sparseMatrix Matrix as.matrix rowSums colSums
+#' @importFrom stats median
 #' 
 #' @examples
 #' \dontrun{

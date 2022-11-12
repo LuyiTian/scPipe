@@ -11,14 +11,16 @@
 #' @param binary.mat The final, filtered feature matrix in binary format 
 #' @param output_folder The path of the output folder 
 #'
+#' @returns None (invisible `NULL`)
 #' @examples
 #' \dontrun{
 #' sc_atac_tfidf(binary.mat = final_binary_matrix) 
 #' }
 #' 
+#' @importFrom Matrix colSums tcrossprod Diagonal rowSums
+#'
 #' @export
 #' 
-
 sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
 
   # Check if output directory exists
@@ -78,6 +80,7 @@ sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
 #' @description Can colour the UMAP by any of the colData columns in the SCE object
 #' @param sce The SingleCellExperiment object
 #'
+#' @returns A shiny object which represents the app. Printing the object or passing it to `shiny::runApp(...)` will run the app.
 #' @importFrom ggplot2 ggplot geom_point theme_bw geom_point aes scale_colour_gradientn
 #' @export
 sc_interactive_umap_plot <- function(sce) {
@@ -132,6 +135,9 @@ sc_interactive_umap_plot <- function(sce) {
 #' @description Produces a DataFrame containing the UMAP dimensions, as well as all the colData of the sce object for each cell
 #' @param mae The SingleCellExperiment object
 #' @param n_neighbours No. of neighbours for KNN 
+#'
+#' @returns A dataframe containing the UMAP dimensions, as well as all the colData of the sce object for each cell
+#' @importFrom Matrix colSums tcrossprod Diagonal rowSums
 #' @export
 sc_get_umap_data <- function(sce,
                              n_neighbours = 30) {

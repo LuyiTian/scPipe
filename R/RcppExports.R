@@ -62,7 +62,7 @@ rcpp_append_chr_to_bed_file <- function(in_filename, out_filename) {
 }
 
 #' @name sc_atac_create_fragments_cpp
-#' @title Generating the popular fragments for scATAC-Seq data using sinto
+#' @title Generating the popular fragments for scATAC-Seq data
 #' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
 #'
 #' @param inbam The tagged, sorted and duplicate-free input BAM file
@@ -100,8 +100,9 @@ rcpp_append_chr_to_bed_file <- function(in_filename, out_filename) {
 #'    Number of BAM entries to read through before collapsing and writing
 #'    fragments to disk. Higher chunksize will use more memory but will be
 #'    faster.
-#' @import Rhtslib
-#' @import Rcpp
+#'
+#' @returns returns NULL
+#'
 #' @useDynLib scPipe, .registration = TRUE
 sc_atac_create_fragments_cpp <- function(inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize) {
     invisible(.Call(`_scPipe_sc_atac_create_fragments_cpp`, inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize))

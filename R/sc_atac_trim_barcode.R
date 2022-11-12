@@ -39,29 +39,44 @@
 #' used for barcode error correction (only when barcode sequences are provided as fastq files). FALSE (default)
 #' lets the function decide whether to use reverse complement, and TRUE forces the function to
 #' use the forward barcode sequences.
+#'
+#' @returns None (invisible `NULL`)
+#'
 #' @examples
-#' \dontrun{
-#' using a barcode fastq file
+#' data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
+#' r1      <- file.path(data.folder, "small_chr21_R1.fastq.gz") 
+#' r2      <- file.path(data.folder, "small_chr21_R3.fastq.gz") 
+#' 
+#' # Using a barcode fastq file:
+#'
+#' # barcodes in fastq format
+#' barcode_fastq      <- file.path(data.folder, "small_chr21_R2.fastq.gz") 
+#' 
 #' sc_atac_trim_barcode (
 #' r1            = r1, 
 #' r2            = r2, 
 #' bc_file       = barcode_fastq,
 #' rmN           = TRUE,
 #' rmlow         = TRUE,
-#' output_folder = "")
+#' output_folder = tempdir())
+#'
+#' # Using a barcode csv file:
+#'
+#' # barcodes in .csv format
+#' barcode_1000       <- file.path(data.folder, "chr21_modified_barcode_1000.csv")
 #' 
-#' using a barcode csv file
+#' \dontrun{
 #' sc_atac_trim_barcode (
 #' r1            = r1, 
 #' r2            = r2, 
-#' bc_file       = barcode_csv, 
+#' bc_file       = barcode_1000, 
 #' id1_st        = 0,
 #` id1_len       = 16,
 #` id2_st        = 0,
 #` id2_len       = 16 
 #' rmN           = TRUE,
 #' rmlow         = TRUE,
-#' output_folder = "")
+#' output_folder = tempdir())
 #' }
 #'@export
 

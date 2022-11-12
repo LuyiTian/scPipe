@@ -20,6 +20,9 @@ sc_atac_peak_calling(
 
 \item{output_folder}{The path of the output folder}
 }
+\value{
+None (invisible `NULL`)
+}
 \description{
 sc_atac_peak_calling()
 }

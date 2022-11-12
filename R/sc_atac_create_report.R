@@ -16,10 +16,9 @@
 #' @param tss_file bed file of the TSS regions
 #' @param promoter_file bed file of the promoter regions
 #' @param enhancer_file bed file fo the enhancer regions
-#' @export
 #'
-
-
+#' @returns the path of the output file
+#' @export
 sc_atac_create_report <- function(input_folder, 
                                   output_folder    = NULL, 
                                   organism         = NULL,
@@ -55,6 +54,7 @@ sc_atac_create_report <- function(input_folder,
   if (report.file == "") # Used if installed via the repo
     report.file <- system.file("inst/extdata/rmd_report_skeleton.Rmd", package = "scPipe", mustWork = TRUE)
   
+  output_file <- file.path(output_folder, "scPipe_atac_report.html")
   rmarkdown::render(
     input  = report.file,
     params = list(
@@ -64,6 +64,8 @@ sc_atac_create_report <- function(input_folder,
       feature_type     = feature_type,
       n_barcode_subset = n_barcode_subset
     ),
-    output_file = file.path(output_folder, "scPipe_atac_report.html")  
+    output_file = output_file 
   )
+
+  return(output_file)
 }
