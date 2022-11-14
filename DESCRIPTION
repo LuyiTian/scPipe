@@ -80,7 +80,6 @@ Suggests:
     rmarkdown,
     testthat,
     xml2,
-    countreg,
     RColorBrewer,
     DT,
     readr,
