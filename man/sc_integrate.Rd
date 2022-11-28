@@ -24,6 +24,9 @@ sc_integrate(
 
 \item{output_folder}{The path to the output folder}
 }
+\value{
+Returns a MultiAssayExperiment containing the scRNA-Seq and scATAC-Seq data produced by the scPipe pipelines
+}
 \description{
 Generates an integrated SCE object with scRNA-Seq and scATAC-Seq data produced by the scPipe pipelines
 }

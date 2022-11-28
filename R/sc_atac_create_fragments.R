@@ -43,7 +43,7 @@
 #'    fragments to disk. Higher chunksize will use more memory but will be
 #'    faster.
 #'
-#' @return returns NULL
+#' @returns returns NULL
 #'
 #' @import Rhtslib
 #' @import Rcpp
@@ -60,7 +60,7 @@ sc_atac_create_fragments <- function(
 	max_distance=5000,
 	min_distance=10,
 	chunksize=500000) {
-	  if(output_folder == ''){
+	if(output_folder == ''){
         output_folder = file.path(getwd(), "scPipe-atac-output")
     }
 

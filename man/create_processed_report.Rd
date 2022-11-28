@@ -22,6 +22,9 @@ the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entre
 
 \item{report_name}{the name of the report .Rmd and .html files.}
 }
+\value{
+file path of the created compiled document.
+}
 \description{
 Create an HTML report summarising pro-processed data. This is an alternative to the more verbose \code{create_report} that requires only the processed counts and stats folders.
 }

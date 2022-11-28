@@ -7,14 +7,9 @@
 #' @param samtools_path The path of the samtools executable (if a custom installation is to be specified)
 #' @param output_folder The path of the output folder 
 #'
-#' @examples
-#' \dontrun{
-#' sc_atac_remove_duplicates(inbam) 
-#' }
-#' 
+#' @returns file path to a bam file created from samtools markdup
 #' @export
 #' 
-
 sc_atac_remove_duplicates <- function(inbam, 
                                       samtools_path = NULL,
                                       output_folder = NULL) {

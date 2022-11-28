@@ -241,6 +241,7 @@ create_report = function(sample_name,
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.
 #' @param report_name the name of the report .Rmd and .html files.
 #'
+#' @returns file path of the created compiled document.
 #' @examples
 #' \dontrun{
 #' create_report(

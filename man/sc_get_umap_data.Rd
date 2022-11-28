@@ -11,6 +11,9 @@ sc_get_umap_data(sce, n_neighbours = 30)
 
 \item{mae}{The SingleCellExperiment object}
 }
+\value{
+A dataframe containing the UMAP dimensions, as well as all the colData of the sce object for each cell
+}
 \description{
 Produces a DataFrame containing the UMAP dimensions, as well as all the colData of the sce object for each cell
 }

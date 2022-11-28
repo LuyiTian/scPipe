@@ -26,6 +26,9 @@ sc_atac_create_cell_qc_metrics(
 
 \item{output_folder}{}
 }
+\value{
+Nothing.
+}
 \description{
 uses the peak file and annotation files for features
 }

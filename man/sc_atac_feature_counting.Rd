@@ -98,6 +98,9 @@ sc_atac_feature_counting(
 
 \item{create_report}{Logical value to say whether to create the report or not (default = TRUE).}
 }
+\value{
+None (invisible `NULL`)
+}
 \description{
 feature matrix is created using a given demultiplexed BAM file and 
 a selected feature type

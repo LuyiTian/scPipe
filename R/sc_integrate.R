@@ -10,7 +10,7 @@
 #' @param cell_line_info A list of files, each of which contains 2 columns corresponding to the barcode and cell line for each tech (if not needed then provide a `NULL` entry)
 #' @param barcode_match_file A .csv file with columns corresponding to the barcodes for each tech
 #' @param output_folder The path to the output folder
-#' 
+#' @returns Returns a MultiAssayExperiment containing the scRNA-Seq and scATAC-Seq data produced by the scPipe pipelines
 #' @examples
 #' \dontrun{
 #' sc_integrate(
@@ -150,11 +150,12 @@ sc_integrate <- function(sce_list,
 #' @param mae The MultiAssayExperiment object
 #' @param by What to colour the points by. Needs to be in colData of all experiments.
 #' @param output_file The path of the output file
+#' @returns A ggplot2 object representing the UMAP plot
 #' @export
 sc_mae_plot_umap <- function(mae,
                              by = NULL,
                              output_file = NULL) {
-  set.seed(123)
+  #set.seed(123)
   
   umap_dfs <- lapply(seq_along(mae), function(i) {
     tech <- names(mae)[[i]]
@@ -245,6 +246,7 @@ sc_mae_plot_umap <- function(mae,
 #' @name TF.IDF.custom
 #' @title Returns the TF-IDF normalised version of a binary matrix
 #' @param binary.mat The binary matrix
+#' @returns Returns the TF-IDF normalised version of a binary matrix
 #' @export
 TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
   if (verbose) {

@@ -9,7 +9,7 @@
 #' @param genome_size The size of the genome
 #' @param output_folder The path of the output folder
 #'
-#'
+#' @returns None (invisible `NULL`)
 #' @examples
 #' \dontrun{
 #' sc_atac_peak_calling(

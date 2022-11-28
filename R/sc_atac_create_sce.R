@@ -11,6 +11,7 @@
 #' @param pheno_data The pheno data
 #' @param report Whether or not a HTML report should be produced
 #'
+#' @returns a SingleCellExperiment object created from the scATAC-Seq data provided
 #' @examples
 #' \dontrun{
 #' sc_atac_create_sce(
@@ -22,7 +23,6 @@
 #' 
 #' @export
 #'
-
 sc_atac_create_sce <- function(input_folder  = NULL, 
                                organism      = NULL, 
                                sample_name   = NULL,

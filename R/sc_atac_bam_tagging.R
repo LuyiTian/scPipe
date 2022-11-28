@@ -13,12 +13,15 @@
 #' @param bam_tags The BAM tags
 #' @param nthreads The number of threads
 #'
+#' @returns file path of the resultant demmultiplexed BAM file. 
 #' @examples
-#' \dontrun{
-#' sc_atac_bam_tagging(
-#'     inbam,
-#'     nthreads  = 6)
-#' }
+#' inbam <- system.file("extdata", "tiny_sample.bam", package="scPipe")
+#' out <- tempdir()
+#'
+#' out_bam <- sc_atac_bam_tagging(
+#'    inbam = inbam,
+#'    output_folder = out,
+#'    nthreads = 6)
 #'
 #' @importFrom data.table .N .SD
 #' @export
@@ -72,12 +75,12 @@ sc_atac_bam_tagging <- function(inbam,
   if(!file.exists(outbam)){
     file.create(outbam)
 
-  rcpp_sc_atac_bam_tagging(inbam, outbam, bam_tags$bc, bam_tags$mb, nthreads)
+    rcpp_sc_atac_bam_tagging(inbam, outbam, bam_tags$bc, bam_tags$mb, nthreads)
 
-  # Rsamtools::sortBam(outbam, outsortedbam, indexDestination = TRUE, maxMemory = 1024/32*max_memory)
-  Rsamtools::indexBam(paste0(outsortedbam, ".bam"))
+    # Rsamtools::sortBam(outbam, outsortedbam, indexDestination = TRUE, maxMemory = 1024/32*max_memory)
+    Rsamtools::indexBam(paste0(outsortedbam, ".bam"))
 
-  cat("Demultiplexed BAM file sorted and indexed ...")
+    cat("Demultiplexed BAM file sorted and indexed ...")
   }
   #cat(paste0(outsortedbam, ".bam"))
   #cat("\n")

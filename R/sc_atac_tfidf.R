@@ -11,14 +11,16 @@
 #' @param binary.mat The final, filtered feature matrix in binary format 
 #' @param output_folder The path of the output folder 
 #'
+#' @returns None (invisible `NULL`)
 #' @examples
 #' \dontrun{
 #' sc_atac_tfidf(binary.mat = final_binary_matrix) 
 #' }
 #' 
+#' @importFrom Matrix colSums tcrossprod Diagonal rowSums
+#'
 #' @export
 #' 
-
 sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
 
   # Check if output directory exists
@@ -46,10 +48,10 @@ sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
   
     
   TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
-    if (class(x = binary.mat) == "data.frame") {
+    if (is(binary.mat, "data.frame")) {
       binary.mat <- as.matrix(x = binary.mat)
     }
-    if (class(x = binary.mat) != "dgCMatrix") {
+    if (!is(binary.mat, "dgCMatrix")) {
       binary.mat <- as(object = binary.mat, Class = "dgCMatrix")
     }
     if (verbose) {
@@ -77,45 +79,54 @@ sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
 #' @title Produces an interactive UMAP plot via Shiny
 #' @description Can colour the UMAP by any of the colData columns in the SCE object
 #' @param sce The SingleCellExperiment object
+#'
+#' @returns A shiny object which represents the app. Printing the object or passing it to `shiny::runApp(...)` will run the app.
+#' @importFrom ggplot2 ggplot geom_point theme_bw geom_point aes scale_colour_gradientn
 #' @export
 sc_interactive_umap_plot <- function(sce) {
   umap_data <- sc_get_umap_data(sce)
   
-  library(shiny)
+#   library(shiny)
+  if(!requireNamespace("shiny", quietly=TRUE)) {
+    stop("Install 'shiny' to use this function.")
+  }
+  if(!requireNamespace("plotly", quietly=TRUE)) {
+    stop("Install 'plotly' to use this function.")
+  }
   
-  ui <- fluidPage(
-    titlePanel("Interactive UMAP plot"),
+  ui <- shiny::fluidPage(
+    shiny::titlePanel("Interactive UMAP plot"),
     
-    sidebarLayout(
+    shiny::sidebarLayout(
       
-      sidebarPanel( # INPUT
+      shiny::sidebarPanel( # INPUT
         
-        selectInput("by", "Colour by",
+        shiny::selectInput("by", "Colour by",
                     colnames(umap_data)[!colnames(umap_data) %in% c("barcode", "UMAP1", "UMAP2")]),
       ),
-      mainPanel( # OUTPUT      
-        plotlyOutput(outputId = "umapPlot")
+      shiny::mainPanel( # OUTPUT      
+        plotly::plotlyOutput(outputId = "umapPlot")
       )
     )
   )
   
   # Define server logic required to draw a histogram ----
   server <- function(input, output) {
-    output$umapPlot <- renderPlotly({
-      g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2, text = paste("barcode: ", barcode))) +
-        geom_point(aes(col = .data[[input$by]]), size = 2, alpha = 0.5) +
-        theme_bw(base_size = 14)
+    output$umapPlot <- plotly::renderPlotly({
+      g <- ggplot2::ggplot(umap_data, ggplot2::aes(x = UMAP1, y = UMAP2, text = paste("barcode: ", barcode))) +
+        ggplot2::geom_point(ggplot2::aes(col = .data[[input$by]]), size = 2, alpha = 0.5) +
+        ggplot2::theme_bw(base_size = 14)
       if (is.numeric(umap_data[[input$by]])) {
-        g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2, text = paste("barcode: ", barcode))) +
-          geom_point(aes(col = .data[[input$by]]), size = 2, alpha = 0.5) +
-          scale_colour_gradientn(colours = c("green", "red")) +
-          theme_bw(base_size = 14)
+        g <- ggplot2::ggplot(umap_data, gglot2::aes(x = UMAP1, y = UMAP2, text = paste("barcode: ", barcode))) +
+          ggplot2::geom_point(ggplot2::aes(col = .data[[input$by]]), size = 2, alpha = 0.5) +
+          ggplot2::scale_colour_gradientn(colours = c("green", "red")) +
+          ggplot2::theme_bw(base_size = 14)
       }
       plotly::ggplotly(g)
     })
   }
   
-  shinyApp(ui = ui, server = server)
+  shiny::shinyApp(ui = ui, server = server)
 }
 
 
@@ -124,10 +135,13 @@ sc_interactive_umap_plot <- function(sce) {
 #' @description Produces a DataFrame containing the UMAP dimensions, as well as all the colData of the sce object for each cell
 #' @param mae The SingleCellExperiment object
 #' @param n_neighbours No. of neighbours for KNN 
+#'
+#' @returns A dataframe containing the UMAP dimensions, as well as all the colData of the sce object for each cell
+#' @importFrom Matrix colSums tcrossprod Diagonal rowSums
 #' @export
 sc_get_umap_data <- function(sce,
                              n_neighbours = 30) {
-  set.seed(123)
+  #set.seed(123)
   
   counts <- assay(sce)
   bin_mat <- as.matrix((counts>0)+0)

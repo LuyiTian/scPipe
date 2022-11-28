@@ -13,6 +13,9 @@ sc_mae_plot_umap(mae, by = NULL, output_file = NULL)
 
 \item{output_file}{The path of the output file}
 }
+\value{
+A ggplot2 object representing the UMAP plot
+}
 \description{
 Uses feature count data from multiple experiment objects to produce UMAPs for each assay and then overlay them on the same pair of axes
 }
