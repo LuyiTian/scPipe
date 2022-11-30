@@ -2,7 +2,9 @@
 title: "scPipe: a flexible data preprocessing pipeline for single-cell data"
 author: "Shani Amarasinghe, Phil Yang"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+    BiocStyle::html_document:
+        toc_float: true
 vignette: >
   %\VignetteIndexEntry{scPipe: a flexible data preprocessing pipeline for single-cell data}
   %\VignetteEngine{knitr::rmarkdown}
@@ -24,8 +26,6 @@ The output fastq files from a `10X ATAC` experiment is paired-ended and data is 
 The pipeline is visually described via the workflow diagram depicted below. The functions will be explained in greater detail.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, out.width="100%"}
-library(knitr)
-devtools::load_all()
 knitr::include_graphics(system.file("scATAC-seq_workflow.png", package = "scPipe"))
 ```
 
@@ -174,7 +174,7 @@ sc_atac_peak_calling(inbam = sorted_tagged_bam,
 
 After the read alignment and BAM file demultiplexing, a feature set can be used to find the overlap between the aligned reads and the features using the `sc_atac_feature_counting` function. 
 
-Accepted format of the `feature_input` should be either a BED format (i.e. format should have three main columns; chromosome, feature start and feature end, extension of the file is not considered) or a `genome.fasta` file. If using a BED format as the 'feature_input`, the `feature_type` should be either "peak" or "tss". If using a `.fasta` for the `feature_input`, the `feature_type` needs to be defined as `genome_bin`. This `genome.fasta` file will be used within the function to generate a `genome_bin` that defines the array of features. The size of the bins can be set using the `bin_size` parameter (default: 2000). 
+Accepted format of the `feature_input` should be either a BED format (i.e. format should have three main columns; chromosome, feature start and feature end, extension of the file is not considered) or a `genome.fasta` file. If using a BED format as the `feature_input`, the `feature_type` should be either "peak" or "tss". If using a `.fasta` for the `feature_input`, the `feature_type` needs to be defined as `genome_bin`. This `genome.fasta` file will be used within the function to generate a `genome_bin` that defines the array of features. The size of the bins can be set using the `bin_size` parameter (default: 2000). 
 
 Note: avoid using input BAM files larger than 8GB for best performance
 
@@ -187,14 +187,13 @@ sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.be
                           feature_type  = "peak", 
                           organism      = "hg38",
                           yieldsize     = 1000000,
-                          mapq          = 20,
                           exclude_regions = TRUE,
                           output_folder = output_folder,
                           fix_chr       = "none"
                           )
 ```
 
-If genome_bin approach is selected, following can be used:
+If genome_bin approach is selected, the following can be used:
 
 ```{r,eval=FALSE}
 reference       <- file.path(data.folder, "small_chr21.fa")
@@ -212,9 +211,10 @@ sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.be
 
 ```
 
-Call calling is performed on the data prior to finding overlaps. The cell calling methods available are the `emptyDrops` method from \code{DropletUtils}, `filter` which filters the cells based on various QC cut-offs, and `cellranger` which models the signal and noise as a mixture of two negative binomial distributions, though the `filter` method is recommended as it is most commonly used and the best-suited for scATAC-seq data.
+Call calling is performed on the data prior to finding overlaps. The cell calling methods available are the `emptyDrops` method from [DropletUtils](https://bioconductor.org/packages/release/DropletUtils), `filter` which filters the cells based on various QC cut-offs, and `cellranger` which models the signal and noise as a mixture of two negative binomial distributions, though the `filter` method is recommended as it is most commonly used and the best-suited for scATAC-seq data.
 
-For the `filter` cell-calling method, there are a variety of QC metrics that can be used, including 
+For the `filter` cell-calling method, there are a variety of QC metrics that can be used, including:
+
 * `min_uniq_frags`
 * `max_uniq_frags`
 * `min_frac_peak`
@@ -223,7 +223,7 @@ For the `filter` cell-calling method, there are a variety of QC metrics that can
 * `min_frac_promoter`
 * `max_frac_mito`
 
-```{r eval = FALSE}
+```{r}
 features          <- file.path(output_folder, "NA_peaks.narrowPeak")
 
 sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.bed"),
@@ -301,4 +301,10 @@ sce <- sc_atac_pipeline(r1 = file.path(data.folder, "small_chr21_R1.fastq.gz"),
 
 # Downstream analysis
 
-Since the **scater** and **scran** packages both use the *SingleCellExperiment* class, it will be easy to further process this data using these packages for normalization and visualization. Other packages such as **SC3** may be useful for clustering and **MAST** and **edgeR** for differential expression analysis.
+Since the [scater](https://bioconductor.org/packages/release/scater) and [scran](https://bioconductor.org/packages/release/scran) packages both use the [SingleCellExperiment](https://bioconductor.org/packages/release/SingleCellExperiment) class, it will be easy to further process this data using these packages for normalization and visualization. Other packages such as [SC3](https://bioconductor.org/packages/release/SC3) may be useful for clustering and [MAST](https://bioconductor.org/packages/release/MAST) and [edgeR](https://bioconductor.org/packages/release/edgeR) for differential expression analysis.
+
+
+# Session Information {-}
+```{r}
+sessionInfo()
+```

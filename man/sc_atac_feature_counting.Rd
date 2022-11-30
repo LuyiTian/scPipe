@@ -34,7 +34,7 @@ sc_atac_feature_counting(
   min_frac_enhancer = 0,
   min_frac_promoter = 0.1,
   max_frac_mito = 0.15,
-  create_report = TRUE
+  create_report = FALSE
 )
 }
 \arguments{

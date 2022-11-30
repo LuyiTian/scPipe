@@ -47,17 +47,19 @@
 #' @importFrom BiocGenerics start end which strand start<- end<- as.data.frame
 #' @importFrom rlang .data
 #' @import tidyr
+#' @importFrom tidyr unite
 #' @importFrom Rsamtools indexFa
 #' @importFrom utils read.table write.table
 #' @importFrom data.table fread
-#' @importFrom dplyr group_by mutate ungroup tibble slice
+#' @importFrom dplyr group_by mutate ungroup tibble slice distinct select full_join
 #' @importFrom tibble rownames_to_column
 #' @importFrom purrr map_df
 #' @importFrom rtracklayer import
 #' @importFrom GenomicRanges makeGRangesFromDataFrame ranges findOverlaps
-#' @importFrom Matrix sparseMatrix Matrix as.matrix rowSums colSums
-#' @importFrom stats median
-#' 
+#' @importFrom Matrix sparseMatrix Matrix as.matrix rowSums colSums 
+#' @importFrom stats median na.omit
+#' @importFrom S4Vectors queryHits subjectHits
+#'
 #' @examples
 #' \dontrun{
 #' sc_atac_feature_counting(
@@ -68,7 +70,6 @@
 #' }    
 #' @export
 #' 
-
 sc_atac_feature_counting <- function(
   fragment_file, 
   feature_input             = NULL, 
@@ -99,7 +100,7 @@ sc_atac_feature_counting <- function(
   min_frac_enhancer         = 0,
   min_frac_promoter         = 0.1,
   max_frac_mito             = 0.15,
-  create_report             = TRUE
+  create_report             = FALSE
 ) {
   
   . <- V1 <- V2 <- V3 <- init <- peakStart <- seqnames <- peakEnd <- CB <- chromosome <- chrS <- feature <- barcode <- NULL
@@ -409,7 +410,8 @@ sc_atac_feature_counting <- function(
     Reduce(`+`, newms)
   }
   
-  unique_feature.gr <- data.frame(feature.gr) %>% distinct(seqnames, start, end) %>% as.data.frame() %>% GenomicRanges::makeGRangesFromDataFrame()
+  unique_feature.gr <- GenomicRanges::makeGRangesFromDataFrame(as.data.frame(dplyr::distinct(data.frame(feature.gr), seqnames, start, end)))
+#   unique_feature.gr <- data.frame(feature.gr) %>% dplyr::distinct(seqnames, start, end) %>% as.data.frame() %>% GenomicRanges::makeGRangesFromDataFrame()
   min_feature_width <- min(GenomicAlignments::ranges(feature.gr)@width)
   
   fragments <- data.table::fread(fragment_file, select=1:5, header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
@@ -429,15 +431,15 @@ sc_atac_feature_counting <- function(
                                                       subject = fragments.gr,
                                                       type = "any",
                                                       ignore.strand = TRUE)
-  bin_hits <- queryHits(tss_bin_overlaps) 
+  bin_hits <- S4Vectors::queryHits(tss_bin_overlaps) 
   
   num_overlaps <- length(peak.overlaps)
   
-  barcodes <- fragments[queryHits(peak.overlaps), ]$barcode
-  features <- data.frame(unique_feature.gr[subjectHits(peak.overlaps), ]) %>% 
-    select(seqnames, start, end) %>% 
-    unite("range", start:end, sep="-") %>% 
-    unite("feature", seqnames:range, sep=":") 
+  barcodes <- fragments[S4Vectors::queryHits(peak.overlaps), ]$barcode
+  features <- data.frame(unique_feature.gr[S4Vectors::subjectHits(peak.overlaps), ]) %>% 
+    dplyr::select(seqnames, start, end) %>% 
+    tidyr::unite("range", start:end, sep="-") %>% 
+    tidyr::unite("feature", seqnames:range, sep=":") 
   
   # Chunk size
   chunk_size <- yieldsize
@@ -500,7 +502,7 @@ sc_atac_feature_counting <- function(
   # Calculate TSS enrichment scores
   tss_dists <- seq(-range/2+bin_size, range/2-bin_size, bin_size)
   flank_read_depth <- (mat_non_zero[,1]+mat_non_zero[,ncol(mat_non_zero)])/2 # Used to normalise
-  norm_read_depths <- na.omit(mat_non_zero/flank_read_depth) # also ignore rows where flanks have no overlaps
+  norm_read_depths <- stats::na.omit(mat_non_zero/flank_read_depth) # also ignore rows where flanks have no overlaps
   
   aggregate_tss_scores <- colMeans(norm_read_depths)
   tsse <- max(aggregate_tss_scores)
@@ -641,7 +643,7 @@ sc_atac_feature_counting <- function(
   # generating the data frames for downstream use
   info_per_cell <- data.frame(counts_per_cell = counts_per_cell) %>%
     tibble::rownames_to_column(var = "cell") %>%
-    full_join(
+    dplyr::full_join(
       data.frame(features_per_cell = features_per_cell) %>%
         tibble::rownames_to_column(var = "cell"),
       by = "cell"
@@ -649,7 +651,7 @@ sc_atac_feature_counting <- function(
 
   info_per_feature <- data.frame(counts_per_feature = counts_per_feature) %>%
     tibble::rownames_to_column(var = "feature") %>%
-    full_join(
+    dplyr::full_join(
       data.frame(cells_per_feature = cells_per_feature) %>%
         tibble::rownames_to_column(var = "feature"),
       by = "feature"
