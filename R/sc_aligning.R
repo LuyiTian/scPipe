@@ -20,6 +20,7 @@
 #'
 #' @returns the file path of the output aligned BAM file
 #'
+#' @importFrom tibble add_row
 #' @examples
 #' \dontrun{
 #' sc_aligning(index_path,
@@ -136,7 +137,7 @@ sc_aligning <- function (
       if (length(readLines(partial_matches_R1)) > 0 && length(readLines(partial_matches_R3)) > 0) {
         cat("Found partial match fastq files, proceeding to concatenate with complete match fastq files.\n")
         barcode_partialmatch_count <- length(readLines(partial_matches_R1))/2
-        demux_stats <- demux_stats %>% add_row(status = "barcode_partialmatch_count", count = barcode_partialmatch_count)
+        demux_stats <- demux_stats %>% tibble::add_row(status = "barcode_partialmatch_count", count = barcode_partialmatch_count)
         concat_filename_R1 <- paste0("demultiplexed_complete_partialmatch_", stringr::str_remove(basename(R1), stringr::regex("dem.+completematch_")))
         concat_file_R1 <- file.path(containing_folder, concat_filename_R1)
         concat_filename_R3 <- paste0("demultiplexed_complete_partialmatch_", stringr::str_remove(basename(R2), stringr::regex("dem.+completematch_")))

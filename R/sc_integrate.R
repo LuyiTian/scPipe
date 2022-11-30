@@ -11,6 +11,11 @@
 #' @param barcode_match_file A .csv file with columns corresponding to the barcodes for each tech
 #' @param output_folder The path to the output folder
 #' @returns Returns a MultiAssayExperiment containing the scRNA-Seq and scATAC-Seq data produced by the scPipe pipelines
+#'
+#' @importFrom stats na.omit
+#' @importFrom tibble column_to_rownames
+#' @importFrom dplyr rename_with
+#' @importFrom S4Vectors rename
 #' @examples
 #' \dontrun{
 #' sc_integrate(
@@ -74,11 +79,11 @@ sc_integrate <- function(sce_list,
     sce_list <- lapply(seq_along(sce_list), function(i) {
       sce <- sce_list[[i]]
       tech <- names(sce_list)[[i]]
-      matched <- na.omit(match(colnames(sce), barcode_match_df[[tech]]))
+      matched <- stats::na.omit(match(colnames(sce), barcode_match_df[[tech]]))
       if (length(matched)/length(colnames(sce)) < 0.2) {
         cat("Less than 20% of", tech, "barcodes match with the barcodes in the barcode match file. Trying the reverse complement.\n")
         rev_comp <- Biostrings::reverseComplement(Biostrings::DNAStringSet(colnames(sce))) %>% as.character()
-        new_matched <- na.omit(match(rev_comp, barcode_match_df[[tech]]))
+        new_matched <- stats::na.omit(match(rev_comp, barcode_match_df[[tech]]))
         if (length(new_matched)/length(colnames(sce)) <= length(matched)/length(colnames(sce))) {
           cat("Reverse complement didn't yield higher proportion of matched barcodes so using existing barcodes.\n")
         } else {
@@ -103,7 +108,7 @@ sc_integrate <- function(sce_list,
       if (!is.null(cell_line_file)) {
         cli <- read.csv(cell_line_file, header=FALSE)
         colnames(cli) <- c("barcode", "cell_line")
-        merged_cell_line_info <- base::merge(data.frame(barcode = colnames(sce)), cli, all.x = TRUE) %>% column_to_rownames("barcode")
+        merged_cell_line_info <- base::merge(data.frame(barcode = colnames(sce)), cli, all.x = TRUE) %>% tibble::column_to_rownames("barcode")
         reordered_cli <- merged_cell_line_info[colnames(sce), , drop=FALSE]
         colData(sce) <- cbind(colData(sce), cell_line = reordered_cli$cell_line)
       } 
@@ -118,14 +123,14 @@ sc_integrate <- function(sce_list,
     qc_dfs <- lapply(seq_along(sce_list), function(i) {
       sce <- sce_list[[i]]
       tech <- techs[[i]]
-      qc <- data.frame(colData(sce)) %>% rename_with( ~ paste0(tech, "_", .x))
-      base::merge(qc, barcode_match_df, by.x = "row.names", by.y = techs[[i]], all.x = TRUE) %>% rename(!!tech := "Row.names")
+      qc <- data.frame(colData(sce)) %>% dplyr::rename_with( ~ paste0(tech, "_", .x))
+      base::merge(qc, barcode_match_df, by.x = "row.names", by.y = techs[[i]], all.x = TRUE) %>% S4Vectors::rename(!!tech := "Row.names")
     })
     merged_qc <- Reduce(function(x, y) base::merge(x, y, all = TRUE), qc_dfs)
   }
   
   # Mark in coldata of each experiment if the barcode is shared
-  shared_bc <- na.omit(merged_qc)
+  shared_bc <- stats::na.omit(merged_qc)
   for (i in 1:length(sce_list)) {
     tech <- techs[[i]]
     colData(sce_list[[tech]])[, "shared"] <- rownames(colData(sce_list[[tech]])) %in% shared_bc[[tech]]
@@ -151,6 +156,9 @@ sc_integrate <- function(sce_list,
 #' @param by What to colour the points by. Needs to be in colData of all experiments.
 #' @param output_file The path of the output file
 #' @returns A ggplot2 object representing the UMAP plot
+#'
+#' @importFrom tibble enframe
+#' @importFrom purrr simplify
 #' @export
 sc_mae_plot_umap <- function(mae,
                              by = NULL,
@@ -182,7 +190,7 @@ sc_mae_plot_umap <- function(mae,
     
     ## convert to graph
     g <- igraph::graph.adjacency(adj, mode="undirected")
-    g <- simplify(g) ## remove self loops
+    g <- purrr::simplify(g) ## remove self loops
     
     # identify communities, many algorithms. Use the Louvain clustering ------------
     km         <- igraph::cluster_louvain(g)
@@ -196,7 +204,7 @@ sc_mae_plot_umap <- function(mae,
     colnames(df_umap) <- c("UMAP1", "UMAP2")
     df_umap$barcode   <- rownames(mat_pcs)
     
-    df_umap           <- dplyr::left_join(df_umap, enframe(com), by = c("barcode" = "name")) %>%
+    df_umap           <- dplyr::left_join(df_umap, tibble::enframe(com), by = c("barcode" = "name")) %>%
       dplyr::rename(cluster = value) %>%
       dplyr::mutate(cluster = as.factor(cluster))
     
@@ -247,6 +255,8 @@ sc_mae_plot_umap <- function(mae,
 #' @title Returns the TF-IDF normalised version of a binary matrix
 #' @param binary.mat The binary matrix
 #' @returns Returns the TF-IDF normalised version of a binary matrix
+#' @importFrom methods slot
+#' @importFrom Matrix colSums tcrossprod Diagonal rowSums
 #' @export
 TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
   if (verbose) {
@@ -259,8 +269,7 @@ TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
   idf          <- ncol(x = object) / rsums
   norm.data    <- Matrix::Diagonal(n = length(x = idf), x = idf) %*% tf
   scale.factor <- 1e4
-  slot(object = norm.data, name = "x") <- log1p(x = slot(object = norm.data, name = "x") * scale.factor)
+  methods::slot(object = norm.data, name = "x") <- log1p(x = methods::slot(object = norm.data, name = "x") * scale.factor)
   norm.data[which(x = is.na(x = norm.data))] <- 0
   return(norm.data)
 }
-

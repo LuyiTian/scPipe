@@ -18,7 +18,7 @@
 #' }
 #' 
 #' @importFrom Matrix colSums tcrossprod Diagonal rowSums
-#'
+#' @importFrom methods slot
 #' @export
 #' 
 sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
@@ -47,27 +47,27 @@ sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
     file = log_file, append = TRUE)
   
     
-  TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
-    if (is(binary.mat, "data.frame")) {
-      binary.mat <- as.matrix(x = binary.mat)
-    }
-    if (!is(binary.mat, "dgCMatrix")) {
-      binary.mat <- as(object = binary.mat, Class = "dgCMatrix")
-    }
-    if (verbose) {
-      message("Performing TF-IDF normalization")
-    }
+#   TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
+#     if (is(binary.mat, "data.frame")) {
+#       binary.mat <- as.matrix(x = binary.mat)
+#     }
+#     if (!is(binary.mat, "dgCMatrix")) {
+#       binary.mat <- as(object = binary.mat, Class = "dgCMatrix")
+#     }
+#     if (verbose) {
+#       message("Performing TF-IDF normalization")
+#     }
     
-    npeaks       <- Matrix::colSums(x = object)
-    tf           <- Matrix::tcrossprod(x = as.matrix(object), y = Matrix::Diagonal(x = 1 / npeaks))
-    rsums        <- Matrix::rowSums(x = object)
-    idf          <- ncol(x = object) / rsums
-    norm.data    <- Matrix::Diagonal(n = length(x = idf), x = idf) %*% tf
-    scale.factor <- 1e4
-    slot(object = norm.data, name = "x") <- log1p(x = slot(object = norm.data, name = "x") * scale.factor)
-    norm.data[which(x = is.na(x = norm.data))] <- 0
-    return(norm.data)
-  }
+#     npeaks       <- Matrix::colSums(x = object)
+#     tf           <- Matrix::tcrossprod(x = as.matrix(object), y = Matrix::Diagonal(x = 1 / npeaks))
+#     rsums        <- Matrix::rowSums(x = object)
+#     idf          <- ncol(x = object) / rsums
+#     norm.data    <- Matrix::Diagonal(n = length(x = idf), x = idf) %*% tf
+#     scale.factor <- 1e4
+#     methods::slot(object = norm.data, name = "x") <- log1p(x = methods::slot(object = norm.data, name = "x") * scale.factor)
+#     norm.data[which(x = is.na(x = norm.data))] <- 0
+#     return(norm.data)
+#   }
   
   
   binary.mat <- TF.IDF.custom(binary.mat)
@@ -138,6 +138,9 @@ sc_interactive_umap_plot <- function(sce) {
 #'
 #' @returns A dataframe containing the UMAP dimensions, as well as all the colData of the sce object for each cell
 #' @importFrom Matrix colSums tcrossprod Diagonal rowSums
+#' @importFrom methods slot
+#' @importFrom purrr simplify
+#' @importFrom tibble enframe
 #' @export
 sc_get_umap_data <- function(sce,
                              n_neighbours = 30) {
@@ -154,7 +157,7 @@ sc_get_umap_data <- function(sce,
     idf          <- ncol(x = object) / rsums
     norm.data    <- Matrix::Diagonal(n = length(x = idf), x = idf) %*% tf
     scale.factor <- 1e4
-    slot(object = norm.data, name = "x") <- log1p(x = slot(object = norm.data, name = "x") * scale.factor)
+    methods::slot(object = norm.data, name = "x") <- log1p(x = methods::slot(object = norm.data, name = "x") * scale.factor)
     norm.data[which(x = is.na(x = norm.data))] <- 0
     return(norm.data)
   }
@@ -180,7 +183,7 @@ sc_get_umap_data <- function(sce,
   
   ## convert to graph
   g <- igraph::graph.adjacency(adj, mode="undirected")
-  g <- simplify(g) ## remove self loops
+  g <- purrr::simplify(g) ## remove self loops
   
   # identify communities, many algorithms. Use the Louvain clustering ------------
   km         <- igraph::cluster_louvain(g)
@@ -194,7 +197,7 @@ sc_get_umap_data <- function(sce,
   colnames(df_umap) <- c("UMAP1", "UMAP2")
   df_umap$barcode   <- rownames(mat_pcs)
   
-  df_umap           <- dplyr::left_join(df_umap, enframe(com), by = c("barcode" = "name")) %>%
+  df_umap           <- dplyr::left_join(df_umap, tibble::enframe(com), by = c("barcode" = "name")) %>%
     dplyr::rename(cluster = value) %>%
     dplyr::mutate(cluster = as.factor(cluster))
   

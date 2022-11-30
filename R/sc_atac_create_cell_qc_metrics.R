@@ -12,8 +12,10 @@
 #' @importFrom data.table fread setkey copy :=
 #' @importFrom utils write.csv
 #' @importFrom rtracklayer import
-#' @importFrom GenomicRanges makeGRangesFromDataFrame findOverlaps 
+#' @importFrom GenomicRanges makeGRangesFromDataFrame findOverlaps seqnames
 #' @importFrom tibble rownames_to_column
+#' @importFrom dplyr select group_by distinct mutate count 
+#' @importFrom S4Vectors queryHits
 #' 
 #' @returns Nothing.
 #' @export
@@ -32,7 +34,7 @@ sc_atac_create_cell_qc_metrics <- function(frags_file,
   
   # Peak file
   peaks.gr <-  rtracklayer::import(peaks_file)
-  unique_peak.gr <- data.frame(peaks.gr) %>% distinct(seqnames, start, end) %>% as.data.frame() %>% GenomicRanges::makeGRangesFromDataFrame()
+  unique_peak.gr <- data.frame(peaks.gr) %>% dplyr::distinct(seqnames, start, end) %>% as.data.frame() %>% GenomicRanges::makeGRangesFromDataFrame()
   
   
   # Sinto fragments
@@ -42,7 +44,7 @@ sc_atac_create_cell_qc_metrics <- function(frags_file,
   # Get all barcodes
   barcodes <- unique(fragments$barcode)
   
-  mito_counts <- fragments %>% group_by(barcode) %>% mutate(count = sum(seqnames == "chrM")) %>% select(barcode, count)
+  mito_counts <- fragments %>% dplyr::group_by(barcode) %>% dplyr::mutate(count = sum(seqnames == "chrM")) %>% dplyr::select(barcode, count)
   
   # Compute overlaps of fragments with each feature
   peak.overlaps <- GenomicRanges::findOverlaps(query = fragments.gr,
@@ -64,10 +66,10 @@ sc_atac_create_cell_qc_metrics <- function(frags_file,
                                               ignore.strand = TRUE)
   
   total_counts <- table(fragments$barcode)
-  peak_counts <- table(fragments.gr[unique(queryHits(peak.overlaps))]$barcode)
-  promoter_counts <- table(fragments.gr[unique(queryHits(pro.overlaps))]$barcode)
-  enhancer_counts <- table(fragments.gr[unique(queryHits(enhs.overlaps))]$barcode)
-  tss_counts <- table(fragments.gr[unique(queryHits(tss.overlaps))]$barcode)
+  peak_counts <- table(fragments.gr[unique(S4Vectors::queryHits(peak.overlaps))]$barcode)
+  promoter_counts <- table(fragments.gr[unique(S4Vectors::queryHits(pro.overlaps))]$barcode)
+  enhancer_counts <- table(fragments.gr[unique(S4Vectors::queryHits(enhs.overlaps))]$barcode)
+  tss_counts <- table(fragments.gr[unique(S4Vectors::queryHits(tss.overlaps))]$barcode)
   
   qc_table <- data.frame(total_frags = rep(0, length(barcodes)),
                          frac_peak = rep(0, length(barcodes)),
