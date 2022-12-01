@@ -44,7 +44,7 @@ sc_atac_create_sce <- function(input_folder  = NULL,
   }
   
   if (!dir.exists(input_folder)){
-    cat("Default input folder could not be found at " , input_folder,  "\nPlease enter the full input path to proceed \n");
+    message("Default input folder could not be found at " , input_folder,  "\nPlease enter the full input path to proceed");
   } else {
     input_stats_folder <- file.path(input_folder, "scPipe_atac_stats")
   }
@@ -96,7 +96,7 @@ sc_atac_create_sce <- function(input_folder  = NULL,
   feature_info(sce) <- feature_stats
   saveRDS(sce, file = file.path(input_folder, "scPipe_atac_SCEobject.rds"))
   
-  cat("SCE object is saved in\n", paste(output_folder,"/scPipe_atac_SCEobject.rds",sep = "") , "\n")
+  message("SCE object is saved in:\n\t", output_folder,"/scPipe_atac_SCEobject.rds")
   
   if(report){
     sc_atac_create_report(input_folder  = file.path(input_folder),

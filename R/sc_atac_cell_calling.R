@@ -49,7 +49,7 @@ sc_atac_cell_calling <- function(mat,
                                  min_frac_promoter = 0.1,
                                  max_frac_mito = 0.15){
   
-  message("`", cell_calling, "` function is used for cell calling ... \n")
+  message("`", cell_calling, "` function is used for cell calling ... ")
 
   selected_cells <- tryCatch(
     {
@@ -95,10 +95,10 @@ sc_atac_cell_calling <- function(mat,
                                                   max_frac_mito = max_frac_mito)
   } 
   else if(isFALSE(cell_calling)) {
-    cat("No cell calling method was selected.\n")
+    message("No cell calling method was selected.")
   }
   else if (!cell_calling %in% c("emptydrops", "cellranger", "filter")) { # no legitimate cell calling method chosen, so just return the original matrix
-    cat(cell_calling, "was not an implemented cell calling method\n")
+    message(cell_calling, "was not an implemented cell calling method")
   }
   out_mat <- mat
   barcodes     <- colnames(out_mat)
@@ -122,7 +122,7 @@ sc_atac_cell_calling <- function(mat,
   
   # Store output matrix
   # Matrix::writeMM(Matrix::Matrix(out_mat), file =file.path(output_folder, 'cell_called_matrix.mtx'))
-  cat("cell called and stored in ", output_folder, "\n")
+  message("cell called and stored in ", output_folder)
   utils::write.table(barcodes, file = file.path(output_folder, 'non_empty_barcodes.txt'), sep = '\t',
               row.names = FALSE, quote = FALSE, col.names = FALSE)
   utils::write.table(features, file = file.path(output_folder, 'non_empty_features.txt'), sep = '\t',
@@ -258,14 +258,14 @@ sc_atac_cellranger_cell_calling <- function(mat, cell_qc_metrics_file, genome_si
   mus <- flexmix::parameters(fm0)[1, ]
   
   if(mus[1] > mus[2]){
-    odd = prob1
+    odd <- prob1
   } else {
-    odd = prob2
+    odd <- prob2
   }
 
-  aa = which(odd == 1)
+  aa <- which(odd == 1)
 
-  select.cells = names(n_in_peak)[aa]
+  select.cells <- names(n_in_peak)[aa]
 
   return(select.cells)
 }
@@ -364,10 +364,10 @@ sc_atac_emptydrops_cell_calling <- function(
   
   if(length(filter.out$FDR) > 0){
     fdr <- 0.01
-    cat("FDR of 0.01 is assigned... \n")
+    message("FDR of 0.01 is assigned...")
     filter.out <- filter.out[filter.out$FDR <= fdr, ]
   } else{
-    message("insufficient unique points for computing knee/inflection points ... Use the output matrices with caution! \n")
+    message("insufficient unique points for computing knee/inflection points ... Use the output matrices with caution!")
   }
   
   select.cells <- rownames(filter.out)

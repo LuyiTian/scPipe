@@ -1,7 +1,7 @@
 # guess the organism and species from input data
-.guess_attr = function(row_names) {
-  hsp_ensembl = length(grep("^ENSG",row_names))
-  mm_ensembl = length(grep("^ENSMUSG", row_names))
+.guess_attr <- function(row_names) {
+  hsp_ensembl <- length(grep("^ENSG",row_names))
+  mm_ensembl <- length(grep("^ENSMUSG", row_names))
   if ((hsp_ensembl>0) & (hsp_ensembl>mm_ensembl)) {
     return(list(organism="hsapiens_gene_ensembl", gene_id_type="ensembl_gene_id"))
   }
@@ -15,13 +15,13 @@
 
 
 # check the object, fix empty slot with default.
-validObject = function(object){
+validObject <- function(object){
   if (!is(object, "SingleCellExperiment")) {
     stop("object must be an `SingleCellExperiment` object.")
   }
 
   if(!("scPipe" %in% names(object@metadata))){
-    object@metadata$scPipe$version = packageVersion("scPipe")  # set version information
+    object@metadata$scPipe$version <- packageVersion("scPipe")  # set version information
   }
 
   if(min(dim(object)) == 0){
@@ -34,17 +34,17 @@ validObject = function(object){
 
 
   if(any(is.null(organism(object)) || is.na(organism(object)))){
-    tmp_res = .guess_attr(rownames(object))
+    tmp_res <- .guess_attr(rownames(object))
     if((!is.na(tmp_res$organism)) & (!is.na(tmp_res$gene_id_type))){
-      gene_id_type(object) = tmp_res$gene_id_type
-      organism(object) = tmp_res$organism
-      message(paste("organism/gene_id_type not provided. Make a guess:",
-                  tmp_res$organism,
-                  "/",
-                  tmp_res$gene_id_type))
-    }else{
-      gene_id_type(object) = "NA"
-      organism(object) = "NA"
+      gene_id_type(object) <- tmp_res$gene_id_type
+      organism(object) <- tmp_res$organism
+      message("organism/gene_id_type not provided. Make a guess:",
+            tmp_res$organism,
+            "/",
+            tmp_res$gene_id_type)
+    } else {
+      gene_id_type(object) <- "NA"
+      organism(object) <- "NA"
     }
   }
   return(object)
@@ -97,9 +97,9 @@ setReplaceMethod(
   signature = "SingleCellExperiment",
   function(object, value) {
     if (!("scPipe" %in% names(object@metadata))) {
-      object@metadata[["scPipe"]] = list(QC_cols=colnames(value))
+      object@metadata[["scPipe"]] <- list(QC_cols=colnames(value))
     } else {
-      object@metadata$scPipe$QC_cols = colnames(value)
+      object@metadata$scPipe$QC_cols <- colnames(value)
     }
 
     colData(object)[, colnames(value)] <- DataFrame(value)
@@ -158,11 +158,11 @@ setReplaceMethod("demultiplex_info",
                  signature="SingleCellExperiment",
                  function(object, value) {
                    if(!("scPipe" %in% names(object@metadata))){
-                     object@metadata[["scPipe"]] = list(demultiplex_info=value)
+                     object@metadata[["scPipe"]] <- list(demultiplex_info=value)
                    }else{
-                     object@metadata$scPipe$demultiplex_info = value
+                     object@metadata$scPipe$demultiplex_info <- value
                    }
-                   object = validObject(object) # could add other checks
+                   object <- validObject(object) # could add other checks
                    return(object)
                  })
 
@@ -216,11 +216,11 @@ setReplaceMethod("UMI_dup_info",
                  signature="SingleCellExperiment",
                  function(object, value) {
                    if(!("scPipe" %in% names(object@metadata))){
-                     object@metadata[["scPipe"]] = list(UMI_dup_info=value)
+                     object@metadata[["scPipe"]] <- list(UMI_dup_info=value)
                    }else{
-                     object@metadata$scPipe$UMI_dup_info = value
+                     object@metadata$scPipe$UMI_dup_info <- value
                    }
-                   object = validObject(object) # could add other checks
+                   object <- validObject(object) # could add other checks
                    return(object)
                  })
 
@@ -266,11 +266,11 @@ setMethod("organism", signature(object="SingleCellExperiment"),
 setReplaceMethod("organism",signature="SingleCellExperiment",
                  function(object, value) {
                    if(is.null(value)){
-                     object@metadata$Biomart$organism = NA
+                     object@metadata$Biomart$organism <- NA
                      }else if(value == "NA"){
-                       object@metadata$Biomart$organism = NA
+                       object@metadata$Biomart$organism <- NA
                        }else{
-                         object@metadata$Biomart$organism = value
+                         object@metadata$Biomart$organism <- value
                          }
                    return(object)
                    })
@@ -317,11 +317,11 @@ setMethod("gene_id_type", signature(object = "SingleCellExperiment"),
 setReplaceMethod("gene_id_type",signature="SingleCellExperiment",
                  function(object, value) {
                    if(is.null(value)){
-                     object@metadata$Biomart$gene_id_type = NA
+                     object@metadata$Biomart$gene_id_type <- NA
                    }else if(value == "NA"){
-                     object@metadata$Biomart$gene_id_type = NA
+                     object@metadata$Biomart$gene_id_type <- NA
                    }else{
-                     object@metadata$Biomart$gene_id_type = value
+                     object@metadata$Biomart$gene_id_type <- value
                    }
                    return(object)
                  })
@@ -362,9 +362,9 @@ setReplaceMethod("feature_info",signature="SingleCellExperiment",
                    feature <- NULL
                    value <- subset(value, select = -c(feature))
                    if (!("scPipe" %in% names(object@metadata))) {
-                     object@metadata[["scPipe"]] = list(feature_cols=colnames(value))
+                     object@metadata[["scPipe"]] <= list(feature_cols=colnames(value))
                    } else {
-                     object@metadata$scPipe$feature_cols = colnames(value)
+                     object@metadata$scPipe$feature_cols <- colnames(value)
                    }
                    rowData(object)[, colnames(value)] <- DataFrame(value)
                    return(object)
@@ -398,9 +398,9 @@ setMethod("feature_type", signature(object = "SingleCellExperiment"),
 setReplaceMethod("feature_type",signature="SingleCellExperiment",
                  function(object, value) {
                      if(is.null(value) || value == "NA"){
-                       object@metadata$scPipe$feature_type = NA
+                       object@metadata$scPipe$feature_type <- NA
                      }else{
-                       object@metadata$scPipe$feature_type = value
+                       object@metadata$scPipe$feature_type <- value
                      }
                    return(object)
                  })

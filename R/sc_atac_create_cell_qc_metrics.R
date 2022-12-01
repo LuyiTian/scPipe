@@ -28,7 +28,7 @@ sc_atac_create_cell_qc_metrics <- function(frags_file,
                                           output_folder) {
   
   pro.gr <- rtracklayer::import(promoters_file)
-  tss_df <- data.table::fread(tss_file, select=c(1:3), header = FALSE, col.names = c("chr", "start", "end"))
+  tss_df <- data.table::fread(tss_file, select=c(seq_len(3)), header = FALSE, col.names = c("chr", "start", "end"))
   tss.gr <- GenomicRanges::makeGRangesFromDataFrame(tss_df)
   enhs.gr <- rtracklayer::import(enhs_file)
   
@@ -38,7 +38,7 @@ sc_atac_create_cell_qc_metrics <- function(frags_file,
   
   
   # Sinto fragments
-  fragments <- data.table::fread(frags_file, select=1:5, header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
+  fragments <- data.table::fread(frags_file, select=seq_len(5), header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
   fragments.gr <- fragments %>% GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE)
   
   # Get all barcodes

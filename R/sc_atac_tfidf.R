@@ -30,7 +30,7 @@ sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
   
   if (!dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
-    cat("Output directory does not exist. Created directory: ", output_folder, "\n")
+    message("Output directory does not exist. Created directory: ", output_folder)
   }
   
   #Create log folder/file
@@ -38,8 +38,8 @@ sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
   dir.create(log_and_stats_folder, showWarnings = FALSE)
   log_file            <- file.path(log_and_stats_folder, "log_file.txt")
   if(!file.exists(log_file)) file.create(log_file)
-  cat(
-    paste0(
+  write(
+    c(
       "sc_atac_tfidf starts at ",
       as.character(Sys.time()),
       "\n"

@@ -54,7 +54,7 @@ sc_aligning <- function (
   }
   
   if(tech == "atac") {
-    cat("ATAC-Seq mode is selected...\n")
+    message("ATAC-Seq mode is selected...")
     
     if(is.null(output_folder)) {
       output_folder        <- file.path(getwd(), "scPipe-atac-output")
@@ -62,14 +62,14 @@ sc_aligning <- function (
     
     if (!dir.exists(output_folder)){
       dir.create(output_folder,recursive=TRUE)
-      cat("Output directory is not provided. Created directory: ", output_folder, "\n")
+      message("Output directory is not provided. Created directory: ", output_folder)
     }
     
     log_and_stats_folder <- paste0(output_folder, "/scPipe_atac_stats/")
     type                 <- "dna"
     
   } else if(tech == "rna") {
-    cat("RNA-Seq mode is selected...")
+    message("RNA-Seq mode is selected...")
     
     if(is.null(output_folder)) {
       stop("output_folder cannot be NULL for rna mode. Aborting...\n")
@@ -83,8 +83,8 @@ sc_aligning <- function (
   stats_file           <- paste0(log_and_stats_folder, "stats_file_align.txt")
   if(!file.exists(log_file)) file.create(log_file)
   
-  cat(
-    paste0(
+  write(
+    c(
       "sc_aligning starts at ",
       as.character(Sys.time()),
       "\n"
@@ -103,12 +103,12 @@ sc_aligning <- function (
         stop("Genome index does not exist in the specificed location. Please check the full index path again.\n")   
       }
     } else {
-      cat("Genome index location not specified. Looking for the index in", output_folder, "\n")
+      message("Genome index location not specified. Looking for the index in", output_folder)
       indexPath <-  file.path(output_folder, "genome_index") 
       if (file.exists(paste0(indexPath, ".log"))) {
-        cat("Genome index found in ", output_folder, "...\n")
+        message("Genome index found in ", output_folder, "...")
       } else {
-        cat("Genome index not found. Creating one in ", output_folder, " ...\n")
+        message("Genome index not found. Creating one in ", output_folder, " ...")
         if(file.exists(ref)){
           Rsubread::buildindex(basename=indexPath, reference=ref)
         } else {
@@ -135,7 +135,7 @@ sc_aligning <- function (
 
     if (all(file.exists(partial_matches_R1, partial_matches_R3)) && !identical(partial_matches_R1, character(0)) && !identical(partial_matches_R3, character(0))) {
       if (length(readLines(partial_matches_R1)) > 0 && length(readLines(partial_matches_R3)) > 0) {
-        cat("Found partial match fastq files, proceeding to concatenate with complete match fastq files.\n")
+        message("Found partial match fastq files, proceeding to concatenate with complete match fastq files.")
         barcode_partialmatch_count <- length(readLines(partial_matches_R1))/2
         demux_stats <- demux_stats %>% tibble::add_row(status = "barcode_partialmatch_count", count = barcode_partialmatch_count)
         concat_filename_R1 <- paste0("demultiplexed_complete_partialmatch_", stringr::str_remove(basename(R1), stringr::regex("dem.+completematch_")))
@@ -149,16 +149,16 @@ sc_aligning <- function (
           stop("Couldn't concatenate files!\n")
         }
 
-        cat("Output concatenated read files to:\n")
-        cat("R1:", concat_file_R1, "\n")
-        cat("R3:", concat_file_R3, "\n")
+        message("Output concatenated read files to:")
+        message("R1:", concat_file_R1)
+        message("R3:", concat_file_R3)
 
         # Replace original fastq files with concatenated files for aligning
         R1 <- concat_file_R1
         R2 <- concat_file_R3
 
       } else {
-        cat("No partial matches, checking for reads with non-matched barcodes.\n")
+        message("No partial matches, checking for reads with non-matched barcodes.")
       }
 
     }
@@ -168,7 +168,7 @@ sc_aligning <- function (
     no_matches_R3 <- file.path(containing_folder, input_folder_files[grep("nomatch.+R3.+fastq", input_folder_files)])
     if (all(file.exists(no_matches_R1, no_matches_R3)) && !identical(no_matches_R1, character(0)) && !identical(no_matches_R3, character(0))) {
       if (length(readLines(no_matches_R1)) > 0 && length(readLines(no_matches_R3)) > 0) {
-        cat("Found barcode non-matched demultiplexed FASTQ files. Proceeding to align them.\n")
+        message("Found barcode non-matched demultiplexed FASTQ files. Proceeding to align them.")
 
         fileNameWithoutExtension <- paste0(output_folder, "/", strsplit(basename(no_matches_R1), "\\.")[[1]][1])
         nomatch_bam <- paste0(fileNameWithoutExtension, "_aligned.bam")
@@ -182,7 +182,7 @@ sc_aligning <- function (
           output_file = nomatch_bam)
 
         # Extract columns
-        bam_tags = list(bc="CB", mb="OX")
+        bam_tags <-list(bc="CB", mb="OX")
         param <- Rsamtools::ScanBamParam(tag = as.character(bam_tags),  mapqFilter=20)
         bamfl <- open(Rsamtools::BamFile(nomatch_bam))
         params <- Rsamtools::ScanBamParam(what=c("flag"), tag=c("CB"))
@@ -200,11 +200,11 @@ sc_aligning <- function (
                                dplyr::rename(status = Var1, count = Freq))
 
       } else {
-        cat("No reads found with non-matching barcodes.\n")
+        message("No reads found with non-matching barcodes.")
       }
     }
     utils::write.csv(demux_stats, file.path(log_and_stats_folder, "demultiplexing_stats.csv"), row.names = FALSE)
-    cat("Outputted demultiplexing stats file to", file.path(log_and_stats_folder, "demultiplexing_stats.csv"), "\n")
+    message("Outputted demultiplexing stats file to", file.path(log_and_stats_folder, "demultiplexing_stats.csv"), "\n")
 
   }
   
@@ -213,7 +213,7 @@ sc_aligning <- function (
     # Only exception is if filename (excluding directory name) contains '.' then will only extract the first part
     fileNameWithoutExtension <- paste0(output_folder, "/", strsplit(basename(R1), "\\.")[[1]][1])
     outbam                   <- paste0(fileNameWithoutExtension, "_aligned.bam")
-    cat("Output file name is not provided. Aligned reads are saved in ", outbam, "\n")
+    message("Output file name is not provided. Aligned reads are saved in ", outbam)
   }
   else {
     fileNameWithoutExtension <- paste(output_folder, strsplit(output_file, "\\.")[[1]][1], sep = "/")
@@ -251,8 +251,8 @@ sc_aligning <- function (
   bamstats <- Rsamtools::idxstatsBam(paste0(fileNameWithoutExtension, "_aligned.bam"))
   utils::write.csv(bamstats, file = paste0(log_and_stats_folder, "stats_file_align_per_chrom.csv"), row.names = FALSE, quote = FALSE)
 
-  cat(
-    paste0(
+  write(
+    c(
       "sc_aligning finishes at ",
       as.character(Sys.time()),
       "\n\n"

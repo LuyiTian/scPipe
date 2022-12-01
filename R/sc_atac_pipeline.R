@@ -110,7 +110,7 @@ sc_atac_pipeline <- function(r1,
   get_filename_without_extension <- function(path, extension_length = 1) {
     vec <- strsplit(basename(path), "\\.")[[1]]
     name.size <- length(vec) - extension_length
-    return(paste(vec[1:name.size], collapse = "."))
+    return(paste(vec[seq_len(name.size)], collapse = "."))
   }
 
   r1_name <- get_filename_without_extension(r1, extension_length = 2)
@@ -219,7 +219,7 @@ sc_atac_pipeline_quick_test <- function() {
                               min_frac_peak = 0,
                               min_frac_promoter = 0,
                               output_folder = output_folder)
-      cat("Successfully ran pipeline.\n")
+      message("Successfully ran pipeline.")
     },
     error = function(e) {
       message(e)

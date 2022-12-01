@@ -107,7 +107,7 @@ sc_atac_feature_counting <- function(
   
   init_time <- Sys.time()
   
-  available_organisms = c("hg19",
+  available_organisms <- c("hg19",
                           "hg38",
                           "mm10")
   
@@ -117,12 +117,12 @@ sc_atac_feature_counting <- function(
   
   if(is.null(output_folder)) {
     output_folder <- file.path(getwd(), "scPipe-atac-output")
-    cat("Output directory has not been provided. Saving output in\n", output_folder, "\n")
+    message("Output directory has not been provided. Saving output in\n", output_folder)
   }
   
   if (!dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
-    cat("Output directory does not exist. Creating...", output_folder, "\n")
+    message("Output directory does not exist. Creating...", output_folder)
   }
   
   
@@ -135,8 +135,8 @@ sc_atac_feature_counting <- function(
   # file.create(stats_file)
   
   # timer
-  cat(
-    paste0(
+  write(
+    c(
       "sc_atac_feature_counting starts at ",
       as.character(Sys.time()),
       "\n"
@@ -149,17 +149,17 @@ sc_atac_feature_counting <- function(
   
   if(feature_type == 'genome_bin'){
     # TODO: test the format of the fasta file here and stop if not proper format
-    cat("`genome bin` feature type is selected for feature input. reading the genome fasta file ...", "\n")
+    message("`genome bin` feature type is selected for feature input. reading the genome fasta file ...")
     
     # index for feature_input is created if not found in the same directory as the feature_input
     if(!file.exists(paste0(feature_input,".fai"))){
       Rsamtools::indexFa(feature_input)
-      cat("Index for ", feature_input, " is being created... ", "\n")
+      message("Index for ", feature_input, " is being created... ")
     }
     
     if(is.null(bin_size)){
       bin_size <- 2000
-      cat("Default bin size of 2000 is selected", "\n")
+      message("Default bin size of 2000 is selected")
     }
     
     out_bed_filename <- paste0(output_folder, "/", sub('\\..[^\\.]*$', '', basename(feature_input)), ".bed") # remove extension and append output folder
@@ -175,7 +175,7 @@ sc_atac_feature_counting <- function(
       
       # Check if file was created
       if(file.exists(out_bed_filename)) {
-        cat("Generated the genome bin file:\n", out_bed_filename, "\n")
+        message("Generated the genome bin file:\n", out_bed_filename)
       }
       else {
         stop("File ", out_bed_filename, "file was not created.")
@@ -202,7 +202,7 @@ sc_atac_feature_counting <- function(
         
         
         
-        out_bed <- purrr::map_df(1:nrow(sizes_df_aux), function(i){
+        out_bed <- purrr::map_df(seq_len(nrow(sizes_df_aux)), function(i){
           
           aux_i        <- sizes_df_aux %>% dplyr::slice(i)
           seq_aux_end  <- seq(from = bin_size, to = aux_i$V4, by = bin_size)
@@ -229,7 +229,7 @@ sc_atac_feature_counting <- function(
         
         # Check if file was created
         if(file.exists(out_bed_filename)) {
-          cat("Generated the genome bin file:\n", out_bed_filename, "\n")
+          message("Generated the genome bin file:\n", out_bed_filename)
         }
         else {
           stop("File ", out_bed_filename, "file was not created.")
@@ -244,7 +244,7 @@ sc_atac_feature_counting <- function(
   
   ############################## feature type is peak #####################
   if(feature_type == 'peak' || feature_type == 'tss' || feature_type == 'gene'){
-    cat("`peak`, `tss` or `gene` feature_type is selected for feature input", "\n")
+    message("`peak`, `tss` or `gene` feature_type is selected for feature input")
     
     ############################### fix_chr in feature file
     if(fix_chr %in% c("feature", "both")){
@@ -259,7 +259,7 @@ sc_atac_feature_counting <- function(
       # Try to read first 5 rows of feature_input file to see if the format is correct
       feature_head <- utils::read.table(feature_input, nrows = 5)
       if(ncol(feature_head) < 3){
-		stop("Feature file provided does not contain 3 columns. Cannot append chr")
+        stop("Feature file provided does not contain 3 columns. Cannot append chr")
         # warning("Feature file provided does not contain 3 columns. Cannot append chr")
         # break;
       }
@@ -269,7 +269,7 @@ sc_atac_feature_counting <- function(
       
       # Check if file was created
       if(file.exists(out_bed_filename_feature)) {
-        cat("Appended 'chr' to feature file and output created in:", out_bed_filename_feature, "\n")
+        message("Appended 'chr' to feature file and output created in:", out_bed_filename_feature)
         feature_input <- out_bed_filename_feature
       }
       else {
@@ -294,7 +294,7 @@ sc_atac_feature_counting <- function(
         # Try to read first 5 rows of excluded_regions file to see if the format is correct
         excluded_regions_head <- utils::read.table(excluded_regions_filename, nrows = 5)
         if(ncol(excluded_regions_head) < 3){
-			stop("excluded_regions file provided does not contain 3 columns. Cannot append chr")
+            stop("excluded_regions file provided does not contain 3 columns. Cannot append chr")
         #   warning("excluded_regions file provided does not contain 3 columns. Cannot append chr")
         #   break
         }
@@ -303,7 +303,7 @@ sc_atac_feature_counting <- function(
         
         # Check if file was created
         if(file.exists(out_bed_filename_excluded_regions)) {
-          cat("Appended 'chr' to excluded_regions file and output created in:", out_bed_filename_excluded_regions, "\n")
+          message("Appended 'chr' to excluded_regions file and output created in:", out_bed_filename_excluded_regions)
           excluded_regions_filename <- out_bed_filename_excluded_regions
         }
         else {
@@ -320,7 +320,7 @@ sc_atac_feature_counting <- function(
   
 
   ############## generate the GAalignment file from the feature_input file
-  message("Creating Galignment object for the feature input ...\n")
+  message("Creating Galignment object for the feature input ...")
   if(feature_type != 'genome_bin'){
     feature.gr <- rtracklayer::import(feature_input)
   } else {
@@ -350,7 +350,7 @@ sc_atac_feature_counting <- function(
       
       if(number_of_lines_to_remove > 0){ # If there are lines to remove
         feature.gr.df            <- as.data.frame(feature.gr)
-        lines_to_keep            <- setdiff(1:nrow(feature.gr.df), lines_to_remove)
+        lines_to_keep            <- setdiff(seq_len(nrow(feature.gr.df)), lines_to_remove)
         feature.gr               <- feature.gr[lines_to_keep, ]
       } # End if(number_of_lines_to_remove > 0)
       
@@ -364,7 +364,7 @@ sc_atac_feature_counting <- function(
 
   # Check if organism is pre-recognized and if so then use the package's annotation files
   if (organism %in% c("hg19", "hg38", "mm10")) {
-    cat(organism, "is a recognized organism. Using annotation files in repository.\n")
+    message(organism, "is a recognized organism. Using annotation files in repository.")
     anno_paths <- system.file("extdata/annotations/", package = "scPipe", mustWork = TRUE)
     
     promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed.gz"))
@@ -376,7 +376,7 @@ sc_atac_feature_counting <- function(
   }
 
   # Create bins used for TSS enrichment plot
-  tss_df <- data.table::fread(tss_file, select=c(1:3), header = FALSE, col.names = c("chr", "start", "end"))
+  tss_df <- data.table::fread(tss_file, select=c(seq_len(3)), header = FALSE, col.names = c("chr", "start", "end"))
   range <- 4000
   bin_size <- 100
   n_bins <- range/bin_size-1
@@ -414,7 +414,7 @@ sc_atac_feature_counting <- function(
 #   unique_feature.gr <- data.frame(feature.gr) %>% dplyr::distinct(seqnames, start, end) %>% as.data.frame() %>% GenomicRanges::makeGRangesFromDataFrame()
   min_feature_width <- min(GenomicAlignments::ranges(feature.gr)@width)
   
-  fragments <- data.table::fread(fragment_file, select=1:5, header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
+  fragments <- data.table::fread(fragment_file, select=seq_len(5), header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
   fragments.gr <- fragments %>% makeGRangesFromDataFrame(keep.extra.columns = TRUE)
   
   # Compute overlaps with feature
@@ -424,7 +424,7 @@ sc_atac_feature_counting <- function(
                                                ignore.strand = TRUE)
   
   # Compute overlaps with bins for TSS enrichment plot
-  cat("Generating TSS plot data\n")
+  message("Generating TSS plot data")
   median_feature_overlaptss <- stats::median(GenomicAlignments::ranges(bins_df_all.gr)@width)
   maxgaptss                 <- 0.51*median_feature_overlaptss
   tss_bin_overlaps <- GenomicAlignments::findOverlaps(query = bins_df_all.gr,
@@ -445,7 +445,7 @@ sc_atac_feature_counting <- function(
   chunk_size <- yieldsize
   i <- 1
   
-  cat("Generating feature-barcode fragment count matrix\n")
+  message("Generating feature-barcode fragment count matrix")
   # Iterate over chunks
   feature_matrix <- NULL
   while (i <= num_overlaps) {
@@ -465,7 +465,7 @@ sc_atac_feature_counting <- function(
 
   
   saveRDS(feature_matrix, file = file.path(output_folder, "unfiltered_feature_matrix.rds"))
-  cat("Raw feature matrix generated: ", file.path(output_folder, "unfiltered_feature_matrix.rds") , "\n")
+  message("Raw feature matrix generated: ", file.path(output_folder, "unfiltered_feature_matrix.rds") )
   
   
   ################ Initiate log file
@@ -474,24 +474,24 @@ sc_atac_feature_counting <- function(
   log_file                   <- paste0(log_and_stats_folder, "log_file.txt")
   if(!file.exists(log_file)) file.create(log_file)
 
-  cat("Average number of reads per cell barcode:", average_number_of_lines_per_CB, "\n",
+  write(c("Average number of reads per cell barcode:", average_number_of_lines_per_CB, "\n"),
       file = log_file, append = TRUE)
 
-  cat("Number of regions removed from feature input due to being invalid:", number_of_lines_to_remove, "\n",
+  write(c("Number of regions removed from feature input due to being invalid:", number_of_lines_to_remove, "\n"),
       file = log_file, append = TRUE)
 
-  cat(
-    paste0(
+  write(
+    c(
       "Raw matrix generated at ",
       as.character(Sys.time()),
       "\n"
     ),
     file = log_file, append = TRUE)
   
-  cat("Calculating TSS enrichment scores\n")
+  message("Calculating TSS enrichment scores")
   # Create a matrix where the rows are TSSs and the columns are the bins
   mat <- matrix(0, nrow(tss_df), n_bins)
-  for (i in 1:length(bin_hits)) { # populate matrix with hits
+  for (i in seq_len(length(bin_hits))) { # populate matrix with hits
     tss_index <- (bin_hits[i]-1) %/% n_bins
     bin <- (bin_hits[i]-1) %% n_bins
     mat[tss_index+1, bin+1] <- mat[tss_index+1, bin+1]+1
@@ -523,8 +523,8 @@ sc_atac_feature_counting <- function(
 
   cell_qc_metrics_file <- file.path(output_folder, "cell_qc_metrics.csv")
 
-  cat(
-    paste0(
+  write(
+    c(
       "Cell QC metrics generated at ",
       as.character(Sys.time()),
       "\n"
@@ -547,8 +547,8 @@ sc_atac_feature_counting <- function(
                                      max_frac_mito        = max_frac_mito)
 
   
-  cat(
-    paste0(
+  write(
+    c(
       "Cell calling completed at ",
       as.character(Sys.time()),
       "\n"
@@ -557,16 +557,16 @@ sc_atac_feature_counting <- function(
   
   # filter the matrix based on counts per cell
   if (n_filter_cell_counts > 0) {
-    message(paste0("Cells with less than ", n_filter_cell_counts, " counts are filtered out."))
-    cat(
-      paste0(
+    message("Cells with less than ", n_filter_cell_counts, " counts are filtered out.")
+    write(
+      c(
         "cells with less than ",
         n_filter_cell_counts," counts are filtered out.",
         "\n"
       ),
       file = log_file, append = TRUE)
     filtered_indices  <- base::colSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_cell_counts
-    cat("Number of cells to remove:", sum(!filtered_indices) , "\n")
+    message("Number of cells to remove:", sum(!filtered_indices))
     if (length(filtered_indices[filtered_indices == TRUE]) >= 10) { # only use if resulting matrix isn't too small
       matrixData <- as.matrix(matrixData[, filtered_indices]) # all the remaining columns
     } else {
@@ -579,16 +579,16 @@ sc_atac_feature_counting <- function(
   
   # filter the matrix based on counts per feature
   if (n_filter_feature_counts > 0) {
-    message(paste0("features with less than ", n_filter_feature_counts, " counts are filtered out."))
-    cat(
-      paste0(
+    message("features with less than ", n_filter_feature_counts, " counts are filtered out.")
+    write(
+      c(
         "features with less than ",
         n_filter_feature_counts," counts are filtered out.",
         "\n"
       ),
       file = log_file, append = TRUE)
     filtered_indices  <- base::rowSums(Matrix::as.matrix(matrixData), na.rm=TRUE) > n_filter_feature_counts
-    cat("Number of features to remove:", sum(!filtered_indices), "\n")
+    message("Number of features to remove:", sum(!filtered_indices))
     if (length(filtered_indices[filtered_indices == TRUE]) >= 10) {
       matrixData <- matrixData[filtered_indices,] # all the remaining rows
     } else {
@@ -606,7 +606,7 @@ sc_atac_feature_counting <- function(
   
   
   # converting the NAs to 0s if the sparse option to create the sparse Matrix properly
-  cat("making sparse\n")
+  message("making sparse")
   sparseM <- Matrix::Matrix(matrixData, sparse=TRUE)
   # # add dimensions of the sparse matrix if available
   # if(cell_calling != FALSE){
@@ -615,21 +615,21 @@ sc_atac_feature_counting <- function(
   #   dimnames(sparseM) <- list(features, barcodes)
   # }
 
-  cat("Sparse matrix generated", "\n")
+  message("Sparse matrix generated")
   saveRDS(sparseM, file = paste(output_folder, "/sparse_matrix.rds", sep = ""))
   # Matrix::writeMM(obj = sparseM, file=paste(output_folder, "/sparse_matrix.mtx", sep =""))
-  cat("Sparse count matrix is saved in\n", paste(output_folder,"/sparse_matrix.mtx",sep = "") , "\n")
+  message("Sparse count matrix is saved in\n", output_folder,"/sparse_matrix.mtx")
 
   # generate and save jaccard matrix
   # jaccardM <- locStra::jaccardMatrix(sparseM)
-  # cat("Jaccard matrix generated", "\n")
+  # message("Jaccard matrix generated")
   # saveRDS(jaccardM, file = paste(output_folder,"/jaccard_matrix.rds",sep = ""))
-  # cat("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") , "\n")
+  # message("Jaccard matrix is saved in\n", paste(output_folder,"/jaccard_matrix.rds",sep = "") )
 
   # generate and save the binary matrix
   matrixData[matrixData>0] <- 1
   saveRDS(matrixData, file = paste(output_folder,"/binary_matrix.rds",sep = ""))
-  cat("Binary matrix is saved in:\n", paste(output_folder,"/binary_matrix.rds",sep = "") , "\n")
+  message("Binary matrix is saved in:\n", output_folder,"/binary_matrix.rds")
   
   ###### calculate the TF-IDF matrices here : TO-DO
 
@@ -659,12 +659,12 @@ sc_atac_feature_counting <- function(
 
 
   # Add annotation overlap information to the feature information data frame
-  cat("Computing feature QC metrics\n")
+  message("Computing feature QC metrics")
   features_in_matrix <- unique_feature.gr[paste(seqnames(unique_feature.gr), GenomicAlignments::ranges(unique_feature.gr), sep=":") %in% info_per_feature$feature]
 
   pro.gr <- rtracklayer::import(promoters_file)
   enhs.gr <- rtracklayer::import(enhs_file)
-  tss_df <- data.table::fread(tss_file, select=c(1:3), header = FALSE, col.names = c("chr", "start", "end"))
+  tss_df <- data.table::fread(tss_file, select=c(seq_len(3)), header = FALSE, col.names = c("chr", "start", "end"))
   tss.gr <- GenomicRanges::makeGRangesFromDataFrame(tss_df)
 
   pro.overlaps <- GenomicRanges::findOverlaps(query = features_in_matrix,
@@ -701,8 +701,8 @@ sc_atac_feature_counting <- function(
   }
   
 
-  cat(
-    paste0(
+  write(
+    c(
       "Feature quality control metrics produced at ",
       as.character(Sys.time()),
       "\n"
@@ -712,10 +712,10 @@ sc_atac_feature_counting <- function(
   utils::write.csv(info_per_cell, paste0(log_and_stats_folder, "filtered_stats_per_cell.csv"), row.names = FALSE)
   utils::write.csv(info_per_feature, paste0(log_and_stats_folder, "filtered_stats_per_feature.csv"), row.names = FALSE)
   
-  cat("writing to csv\n")
+  message("writing to csv")
   
-  cat(
-    paste0(
+  write(
+    c(
       "sc_atac_feature_counting completed at ",
       as.character(Sys.time()),
       "\n\n"
@@ -732,8 +732,7 @@ sc_atac_feature_counting <- function(
 
   
   end_time <- Sys.time()
-  message(paste0(
-    "sc_atac_feature_counting completed in ", difftime(end_time, init_time, units = "secs")[[1]], " seconds"))
+  message("sc_atac_feature_counting completed in ", difftime(end_time, init_time, units = "secs")[[1]], " seconds")
 }
 
 

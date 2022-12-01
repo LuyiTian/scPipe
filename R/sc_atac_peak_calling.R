@@ -30,18 +30,18 @@ sc_atac_peak_calling <- function(inbam,
     if (is.null(ref) || !file.exists(ref)) {
       stop("Specified reference file doesn't exist!")
     }
-    genome_size = signif(file.info(ref)$size, 2)
-    cat("Using genome size of", genome_size, "\n")
+    genome_size <- signif(file.info(ref)$size, 2)
+    message("Using genome size of", genome_size)
   }
   
   
   if(is.null(output_folder)) {
-    output_folder = file.path(getwd(), "scPipe-atac-output")
+    output_folder <- file.path(getwd(), "scPipe-atac-output")
   }
   
   if (!dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
-    cat("Output directory does not exist. Created: ", output_folder, "\n")
+    message("Output directory does not exist. Created: ", output_folder)
   }
   
   # Create log folder/file
@@ -49,8 +49,8 @@ sc_atac_peak_calling <- function(inbam,
   dir.create(log_and_stats_folder, showWarnings = FALSE)
   log_file <- file.path(log_and_stats_folder, "log_file.txt")
   if(!file.exists(log_file)) file.create(log_file)
-  cat(
-    paste0(
+  write(
+    c(
       "sc_atac_peak_calling starts at ",
       as.character(Sys.time()),
       "\n"
@@ -86,8 +86,8 @@ sc_atac_peak_calling <- function(inbam,
                      "--call-summits"))
   }, inbam=inbam, genome_size=genome_size, output=output_folder)
   
-  cat(
-    paste0(
+  write(
+    c(
       "sc_atac_peak_calling finishes at ",
       as.character(Sys.time()),
       "\n"

@@ -39,13 +39,13 @@ sc_integrate <- function(sce_list,
   
   if (!is.null(output_folder) && !dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
-    cat("Output directory is not provided. Created directory: ", output_folder, "\n")
+    message("Output directory is not provided. Created directory: ", output_folder)
   }
   techs <- names(sce_list)
   
   # Apply reverse complement if specified
   if (!is.null(rev_comp)) {
-    cat("Applying reverse complement to columns of SCE objects where required.\n")
+    message("Applying reverse complement to columns of SCE objects where required.")
     sce_list <- lapply(seq_along(sce_list), function(i) {
       sce <- sce_list[[i]]
       if (isTRUE(rev_comp[[i]]))
@@ -56,14 +56,14 @@ sc_integrate <- function(sce_list,
   names(sce_list) <- techs # add names back
   
   if (!is.null(sce_column_to_barcode_files)) {
-    cat("Updating columns of SCE objects to barcodes where required.\n")
+    message("Updating columns of SCE objects to barcodes where required.")
     sce_list <- lapply(seq_along(sce_list), function(i) {
       tech <- names(sce_list)[[i]]
       sce <- sce_list[[i]]
       column_to_bc_file <- sce_column_to_barcode_files[tech][[1]]
       if(!is.null(column_to_bc_file)) {
         column_to_bc <- read.csv(column_to_bc_file, header = TRUE)
-        colnames(column_to_bc)[1:2] <- c("cell_name", "barcode_sequence")
+        colnames(column_to_bc)[seq_len(2)] <- c("cell_name", "barcode_sequence")
         if (!all(colnames(sce) %in% column_to_bc$cell_name)) 
           stop("Columns of SCE object not present in annotation file!")
         colnames(sce) <- column_to_bc$barcode_sequence[match(colnames(sce), column_to_bc$cell_name)]
@@ -81,13 +81,13 @@ sc_integrate <- function(sce_list,
       tech <- names(sce_list)[[i]]
       matched <- stats::na.omit(match(colnames(sce), barcode_match_df[[tech]]))
       if (length(matched)/length(colnames(sce)) < 0.2) {
-        cat("Less than 20% of", tech, "barcodes match with the barcodes in the barcode match file. Trying the reverse complement.\n")
+        message("Less than 20% of", tech, "barcodes match with the barcodes in the barcode match file. Trying the reverse complement.")
         rev_comp <- Biostrings::reverseComplement(Biostrings::DNAStringSet(colnames(sce))) %>% as.character()
         new_matched <- stats::na.omit(match(rev_comp, barcode_match_df[[tech]]))
         if (length(new_matched)/length(colnames(sce)) <= length(matched)/length(colnames(sce))) {
-          cat("Reverse complement didn't yield higher proportion of matched barcodes so using existing barcodes.\n")
+          message("Reverse complement didn't yield higher proportion of matched barcodes so using existing barcodes.")
         } else {
-          cat("Reverse complement yielded higher proportion of matched barcodes so using reverse complement\n")
+          message("Reverse complement yielded higher proportion of matched barcodes so using reverse complement")
           colnames(sce) <- rev_comp
         }
       }
@@ -99,7 +99,7 @@ sc_integrate <- function(sce_list,
   
   # Left join the cell line info
   if (!is.null(cell_line_info)) {
-    cat("Attaching cell line information provided.\n")
+    message("Attaching cell line information provided.")
     sce_list <- lapply(seq_along(sce_list), function(i) {
       sce <- sce_list[[i]]
       tech <- names(sce_list)[[i]]
@@ -119,7 +119,7 @@ sc_integrate <- function(sce_list,
   
   # Outer join the column data
   if (!is.null(barcode_match_file)) { 
-    cat("Merging qc metrics\n")
+    message("Merging qc metrics")
     qc_dfs <- lapply(seq_along(sce_list), function(i) {
       sce <- sce_list[[i]]
       tech <- techs[[i]]
@@ -131,13 +131,13 @@ sc_integrate <- function(sce_list,
   
   # Mark in coldata of each experiment if the barcode is shared
   shared_bc <- stats::na.omit(merged_qc)
-  for (i in 1:length(sce_list)) {
+  for (i in seq_len(length(sce_list))) {
     tech <- techs[[i]]
     colData(sce_list[[tech]])[, "shared"] <- rownames(colData(sce_list[[tech]])) %in% shared_bc[[tech]]
   }
   
   # Create MultiAssayExperiment
-  cat("Creating MultiAssayExperiment\n")
+  message("Creating MultiAssayExperiment")
   mae <- MultiAssayExperiment::MultiAssayExperiment(experiments = sce_list)
   mae@metadata$scPipe$version <- packageVersion("scPipe") 
   if (!is.null(barcode_match_file)) mae@metadata$scPipe$integrated_qc <- merged_qc
@@ -145,7 +145,7 @@ sc_integrate <- function(sce_list,
   # Save the MAE object
   if (!is.null(output_folder)) saveRDS(mae, file.path(output_folder, "scPipe_MAE_object.rds"))
   
-  cat("sc_integrate_complete.\n")
+  message("sc_integrate_complete.")
   return(mae)
 }
 
@@ -240,9 +240,9 @@ sc_mae_plot_umap <- function(mae,
   if (!is.null(output_file)) {
     if (file.exists(output_file)) {
       ggsave(output_file)
-      cat("Saved plot to", output_file, "\n")
+      message("Saved plot to", output_file)
     } else {
-      cat("The supplied output file path was invalid.\n")
+      message("The supplied output file path was invalid.")
     }
   }
   

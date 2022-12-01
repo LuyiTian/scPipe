@@ -36,7 +36,7 @@ sc_atac_create_report <- function(input_folder,
          ". Either run the pipeline to generate it or create a `scPipe_atac_stats` folder that contains the required files.");
   }
   
-  available_organisms = c("hg19",
+  available_organisms <- c("hg19",
                           "hg38",
                           "mm10")
   
@@ -46,7 +46,7 @@ sc_atac_create_report <- function(input_folder,
   }
   
   if (!dir.exists(output_folder)){
-    cat("Output folder could not be found at " , output_folder,  "Creating it now... \n");
+    message("Output folder could not be found at " , output_folder,  "Creating it now...");
     dir.create(output_folder, recursive=TRUE)
   }
   

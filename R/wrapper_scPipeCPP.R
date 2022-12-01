@@ -58,7 +58,7 @@
 #'    file.path(data_dir, "simu_R2.fastq"))
 #' ...
 #' }
-sc_trim_barcode = function(outfq, r1, r2=NULL,
+sc_trim_barcode <- function(outfq, r1, r2=NULL,
                            read_structure = list(
                              bs1=-1, bl1=0, bs2=6, bl2=8, us=0, ul=6),
                            filter_settings = list(
@@ -69,23 +69,23 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
     dir.create(outdir, recursive = TRUE)
 
   if (filter_settings$rmlow) {
-    i_rmlow = 1
+    i_rmlow <- 1
   }
   else {
-    i_rmlow = 0
+    i_rmlow <- 0
   }
   if (filter_settings$rmN) {
-    i_rmN = 1
+    i_rmN <- 1
   }
   else {
-    i_rmN = 0
+    i_rmN <- 0
   }
 
   if (substr(outfq, nchar(outfq) - 2, nchar(outfq)) == ".gz") {
-    write_gz = TRUE
+    write_gz <- TRUE
   }
   else {
-    write_gz = FALSE
+    write_gz <- FALSE
   }
 
   if (!is.null(r2)) {
@@ -93,8 +93,8 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
     if (!file.exists(r2)) {stop("read2 fastq file does not exists.")}
 
     # expand tilde to home path for downstream gzopen() call
-    r1 = path.expand(r1)
-    r2 = path.expand(r2)
+    r1 <- path.expand(r1)
+    r2 <- path.expand(r2)
 
 
     rcpp_sc_trim_barcode_paired(outfq, r1, r2,
@@ -171,30 +171,30 @@ sc_trim_barcode = function(outfq, r1, r2=NULL,
 #' ...
 #' }
 #'
-sc_exon_mapping = function(inbam, outbam, annofn,
+sc_exon_mapping <- function(inbam, outbam, annofn,
                             bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
                             bc_len=8, barcode_vector="", UMI_len=6, stnd=TRUE, fix_chr=FALSE,
                             nthreads=1) {
   if (stnd) {
-    i_stnd = 1
+    i_stnd <- 1
   }
   else {
-    i_stnd = 0
+    i_stnd <- 0
   }
   if (fix_chr) {
-    i_fix_chr = 1
+    i_fix_chr <- 1
   }
   else {
-    i_fix_chr = 0
+    i_fix_chr <- 0
   }
 
   if (any(!file.exists(inbam))) {
     stop("At least one input bam file does not exist")
   } else {
-    inbam = path.expand(inbam)
+    inbam <- path.expand(inbam)
   }
 
-  outbam = path.expand(outbam)
+  outbam <- path.expand(outbam)
 
   # if (length(inbam) > 1) {
   #   stop("Only one bam file can be used as input")
@@ -210,7 +210,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
     if (any(!file.exists(annofn))) {
       stop("At least one genome annotation file does not exist")
     } else {
-      annofn = path.expand(annofn)
+      annofn <- path.expand(annofn)
     }
     rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_import(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
                                  barcode_vector, UMI_len, stnd, fix_chr, nthreads)
@@ -267,7 +267,7 @@ sc_exon_mapping = function(inbam, outbam, annofn,
 #' ...
 #' }
 #'
-sc_demultiplex = function(inbam, outdir, bc_anno,
+sc_demultiplex <- function(inbam, outdir, bc_anno,
                           max_mis=1,
                           bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
                           mito="MT",
@@ -279,17 +279,17 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
   if (!dir.exists(outdir))
     dir.create(outdir, recursive = TRUE)
 
-  outdir = path.expand(outdir)
+  outdir <- path.expand(outdir)
 
   if (!file.exists(inbam)) {
     stop("input bam file does not exists.")
   } else {
-    inbam = path.expand(inbam)
+    inbam <- path.expand(inbam)
   }
   if (!file.exists(bc_anno)) {
     stop("barcode annotation file does not exists.")
   } else {
-    bc_anno = path.expand(bc_anno)
+    bc_anno <- path.expand(bc_anno)
   }
   rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis,
                       bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
@@ -336,7 +336,7 @@ sc_demultiplex = function(inbam, outdir, bc_anno,
 #' ...
 #' }
 #'
-sc_correct_bam_bc = function(inbam, outbam, bc_anno,
+sc_correct_bam_bc <- function(inbam, outbam, bc_anno,
                           max_mis=1,
                           bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
                           mito="MT",
@@ -345,15 +345,15 @@ sc_correct_bam_bc = function(inbam, outbam, bc_anno,
   if (!file.exists(inbam)) {
     stop("input bam file does not exists.")
   } else {
-    inbam = path.expand(inbam)
+    inbam <- path.expand(inbam)
   }
 
-  outbam = path.expand(outbam)
+  outbam <- path.expand(outbam)
 
   if (!file.exists(bc_anno)) {
     stop("barcode annotation file does not exists.")
   } else {
-    bc_anno = path.expand(bc_anno)
+    bc_anno <- path.expand(bc_anno)
   }
   rcpp_sc_clean_bam(inbam, outbam, bc_anno, max_mis,
                       bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
@@ -387,25 +387,25 @@ sc_correct_bam_bc = function(inbam, outbam, bc_anno,
 #' ...
 #' }
 #'
-sc_gene_counting = function(outdir, bc_anno, UMI_cor=2, gene_fl=FALSE) {
+sc_gene_counting <- function(outdir, bc_anno, UMI_cor=2, gene_fl=FALSE) {
   if (!dir.exists(outdir))
     dir.create(outdir, recursive = TRUE)
 
-  outdir = path.expand(outdir)
+  outdir <- path.expand(outdir)
 
   dir.create(file.path(outdir, "count"), showWarnings = FALSE)
   dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
 
   if (gene_fl) {
-    i_gene_fl = 1
+    i_gene_fl <- 1
   } else {
-    i_gene_fl = 0
+    i_gene_fl <- 0
   }
 
   if (!file.exists(bc_anno)) {
     stop("barcode annotation file does not exists.")
   } else {
-    bc_anno = path.expand(bc_anno)
+    bc_anno <- path.expand(bc_anno)
   }
 
   rcpp_sc_gene_counting(outdir, bc_anno, UMI_cor, i_gene_fl)
@@ -445,24 +445,24 @@ sc_gene_counting = function(outdir, bc_anno, UMI_cor=2, gene_fl=FALSE) {
 #' }
 #'
 #'
-sc_detect_bc = function(infq, outcsv, prefix="CELL_", bc_len,
+sc_detect_bc <- function(infq, outcsv, prefix="CELL_", bc_len,
                         max_reads=1000000, min_count=10, number_of_cells=10000,
                         max_mismatch=1,white_list_file=NULL) {
   if (!file.exists(infq)) {
     stop("input fastq file does not exists.")
   } else {
-    infq = path.expand(infq)
+    infq <- path.expand(infq)
   }
-  outcsv = path.expand(outcsv)
+  outcsv <- path.expand(outcsv)
   if(!is.null(white_list_file)){
     if(!file.exists(white_list_file)){
       stop("input whitelist file does not exists.")
     }
   } else {
-    white_list_file = ""
+    white_list_file <- ""
   }
-  if (max_reads=="all") {m_r = -1}
-  else {m_r=max_reads}
+  if (max_reads=="all") {m_r <- -1}
+  else {m_r<-max_reads}
   rcpp_sc_detect_bc(infq, outcsv, prefix, bc_len, m_r, number_of_cells,
     min_count, max_mismatch, white_list_file)
 }
@@ -493,7 +493,7 @@ sc_detect_bc = function(infq, outcsv, prefix="CELL_", bc_len,
 #'
 #' @export
 #'
-sc_demultiplex_and_count = function(
+sc_demultiplex_and_count <- function(
   inbam, outdir, bc_anno,
   max_mis = 1,
   bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),

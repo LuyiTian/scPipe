@@ -45,12 +45,12 @@ sc_atac_bam_tagging <- function(inbam,
 
   if (!dir.exists(output_folder)){
     dir.create(output_folder,recursive=TRUE)
-    cat("Output directory does not exist. Creating ", output_folder, "\n")
+    message("Output directory does not exist. Creating ", output_folder)
   }
 
   get_filename_without_extension <- function(path) {
     vec <- strsplit(basename(path), "\\.")[[1]]
-    return(paste(vec[1:length(vec)-1], collapse = "."))
+    return(paste(vec[seq_len(length(vec)-1)], collapse = "."))
   }
   fileNameWithoutExtension <- get_filename_without_extension(inbam)
 
@@ -63,8 +63,8 @@ sc_atac_bam_tagging <- function(inbam,
   stats_file                 <- file.path(log_and_stats_folder, "stats_file_bam_tagging.txt")
   if(!file.exists(log_file)) file.create(log_file)
 
-  cat(
-    paste0(
+  write(
+    c(
       "sc_atac_tagging began at ",
       as.character(Sys.time()),
       "\n"
@@ -80,14 +80,14 @@ sc_atac_bam_tagging <- function(inbam,
     # Rsamtools::sortBam(outbam, outsortedbam, indexDestination = TRUE, maxMemory = 1024/32*max_memory)
     Rsamtools::indexBam(paste0(outsortedbam, ".bam"))
 
-    cat("Demultiplexed BAM file sorted and indexed ...")
+    message("Demultiplexed BAM file sorted and indexed ...")
   }
   #cat(paste0(outsortedbam, ".bam"))
   #cat("\n")
 
 
   if(is.null(bc_length)){
-    cat("Using default value for barcode length (bc_length = 16) \n")
+    message("Using default value for barcode length (bc_length = 16) ")
     bc_length <- 16
   }
 
@@ -123,16 +123,16 @@ sc_atac_bam_tagging <- function(inbam,
     Reduce(`+`, newms)
   }
 
-  cat("Generating mapping statistics per barcode\n")
-  cat("Iterating through 5,000,000 reads at a time\n")
+  message("Generating mapping statistics per barcode")
+  message("Iterating through 5,000,000 reads at a time")
   bamfl <- open(Rsamtools::BamFile(outbam, yieldSize = 5000000))
   params <- Rsamtools::ScanBamParam(what=c("flag"), tag=c("CB"))
   iter <- 1
-  full_matrix = NULL
+  full_matrix <- NULL
 
   # Iterate over the BAM file in chunks of 5 million reads
   while(length((bam0 <- Rsamtools::scanBam(bamfl, param = params)[[1]])$flag)) {
-    cat("chunk", iter, "\n")
+    message("chunk", iter)
 
     # Create a data.table object with each row representing a read, and the columns as the barcode and flag
     df <- data.table::setDT(data.frame(bam0$tag$CB, bam0$flag) %>% data.table::setnames(c("barcode", "flag")) %>% dplyr::left_join(flag_defs, by = "flag"))[, !"flag"]
@@ -153,9 +153,9 @@ sc_atac_bam_tagging <- function(inbam,
   df[ ,count := rowSums(.SD), .SDcols = names(df[,!"barcode"])]
   mapping_stats_path <- file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv")
   data.table::fwrite(df, mapping_stats_path)
-  message(paste0("Completed generating mapping statistics per barcode, saved to ", file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv"), "\n"))
-  cat(
-    paste0(
+  message("Completed generating mapping statistics per barcode, saved to ", file.path(log_and_stats_folder, "mapping_stats_per_barcode.csv"), "\n")
+  write(
+    c(
       "sc_atac_tagging() completed at ",
       as.character(Sys.time()),
       "\n\n"
@@ -163,7 +163,7 @@ sc_atac_bam_tagging <- function(inbam,
     file = log_file, append = TRUE)
 
   
-  message(paste0("The output tagged and sorted BAM file was sent to ", output_folder))
+  message("The output tagged and sorted BAM file was sent to ", output_folder)
   
   return(outbam)
 }
