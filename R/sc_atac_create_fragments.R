@@ -49,17 +49,17 @@
 #' @import Rcpp
 #' @export
 sc_atac_create_fragments <- function(
-    inbam,
-    output_folder="",
-    min_mapq=30,
-    nproc=1,
-    cellbarcode="CB",
-    chromosomes="^chr",
-    readname_barcode=NULL,
-    cells=NULL,
-    max_distance=5000,
-    min_distance=10,
-    chunksize=500000) {
+        inbam,
+        output_folder="",
+        min_mapq=30,
+        nproc=1,
+        cellbarcode="CB",
+        chromosomes="^chr",
+        readname_barcode=NULL,
+        cells=NULL,
+        max_distance=5000,
+        min_distance=10,
+        chunksize=500000) {
     if(output_folder == ''){
         output_folder <- file.path(getwd(), "scPipe-atac-output")
     }
@@ -74,12 +74,12 @@ sc_atac_create_fragments <- function(
     log_file <- file.path(log_and_stats_folder, "log_file.txt")
     if(!file.exists(log_file)) file.create(log_file)
     write(
-      c(
+    c(
         "sc_atac_create_fragments starts at ",
         as.character(Sys.time()),
         "\n"
-      ),
-      file = log_file, append = TRUE)
+    ),
+    file = log_file, append = TRUE)
 
     # output = paste0(output_folder, "/fragments.bed")
 

@@ -97,7 +97,7 @@ sc_atac_trim_barcode <- function(
     id2_st = 0,
     id2_len = 16,
     no_reverse_complement=FALSE) {
-  
+    
     if(output_folder == ''){
     output_folder <- file.path(getwd(), "scPipe-atac-output")
     }
@@ -126,7 +126,7 @@ sc_atac_trim_barcode <- function(
     }
 
     if (!is.null(bc_file)) {
-        i=1;
+        i <- 1;
         for (bc in bc_file) {
             if (!file.exists(bc)) {stop("Barcode file does not exist.")}
             bc_file[i] <- path.expand(bc)
@@ -266,6 +266,4 @@ sc_atac_trim_barcode <- function(
         file = log_file, append = TRUE)
     
     # return(out_vec)
-  
-  
 }

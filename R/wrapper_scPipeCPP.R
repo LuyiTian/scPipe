@@ -59,60 +59,60 @@
 #' ...
 #' }
 sc_trim_barcode <- function(outfq, r1, r2=NULL,
-                           read_structure = list(
-                             bs1=-1, bl1=0, bs2=6, bl2=8, us=0, ul=6),
-                           filter_settings = list(
-                             rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)) {
+                            read_structure = list(
+                                bs1=-1, bl1=0, bs2=6, bl2=8, us=0, ul=6),
+                            filter_settings = list(
+                                rmlow=TRUE, rmN=TRUE, minq=20, numbq=2)) {
 
-  outdir <- regmatches(outfq, regexpr(".*/", outfq))
-  if (outdir != character(0) && !dir.exists(outdir))
-    dir.create(outdir, recursive = TRUE)
+    outdir <- regmatches(outfq, regexpr(".*/", outfq))
+    if (outdir != character(0) && !dir.exists(outdir))
+        dir.create(outdir, recursive = TRUE)
 
-  if (filter_settings$rmlow) {
-    i_rmlow <- 1
-  }
-  else {
-    i_rmlow <- 0
-  }
-  if (filter_settings$rmN) {
-    i_rmN <- 1
-  }
-  else {
-    i_rmN <- 0
-  }
+    if (filter_settings$rmlow) {
+        i_rmlow <- 1
+    }
+    else {
+        i_rmlow <- 0
+    }
+    if (filter_settings$rmN) {
+        i_rmN <- 1
+    }
+    else {
+        i_rmN <- 0
+    }
 
-  if (substr(outfq, nchar(outfq) - 2, nchar(outfq)) == ".gz") {
-    write_gz <- TRUE
-  }
-  else {
-    write_gz <- FALSE
-  }
+    if (substr(outfq, nchar(outfq) - 2, nchar(outfq)) == ".gz") {
+        write_gz <- TRUE
+    }
+    else {
+        write_gz <- FALSE
+    }
 
-  if (!is.null(r2)) {
-    if (!file.exists(r1)) {stop("read1 fastq file does not exists.")}
-    if (!file.exists(r2)) {stop("read2 fastq file does not exists.")}
+    if (!is.null(r2)) {
+        if (!file.exists(r1)) {stop("read1 fastq file does not exists.")}
+        if (!file.exists(r2)) {stop("read2 fastq file does not exists.")}
 
-    # expand tilde to home path for downstream gzopen() call
-    r1 <- path.expand(r1)
-    r2 <- path.expand(r2)
+        # expand tilde to home path for downstream gzopen() call
+        r1 <- path.expand(r1)
+        r2 <- path.expand(r2)
 
 
-    rcpp_sc_trim_barcode_paired(outfq, r1, r2,
-                                read_structure$bs1,
-                                read_structure$bl1,
-                                read_structure$bs2,
-                                read_structure$bl2,
-                                read_structure$us,
-                                read_structure$ul,
-                                i_rmlow,
-                                i_rmN,
-                                filter_settings$minq,
-                                filter_settings$numbq,
-                                write_gz)
-  }
-  else {
-    stop("not implemented.")
-  }
+        rcpp_sc_trim_barcode_paired(outfq, r1, r2,
+                                    read_structure$bs1,
+                                    read_structure$bl1,
+                                    read_structure$bs2,
+                                    read_structure$bl2,
+                                    read_structure$us,
+                                    read_structure$ul,
+                                    i_rmlow,
+                                    i_rmN,
+                                    filter_settings$minq,
+                                    filter_settings$numbq,
+                                    write_gz)
+    }
+    else {
+        stop("not implemented.")
+    }
 }
 
 
@@ -172,56 +172,56 @@ sc_trim_barcode <- function(outfq, r1, r2=NULL,
 #' }
 #'
 sc_exon_mapping <- function(inbam, outbam, annofn,
-                            bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-                            bc_len=8, barcode_vector="", UMI_len=6, stnd=TRUE, fix_chr=FALSE,
-                            nthreads=1) {
-  if (stnd) {
-    i_stnd <- 1
-  }
-  else {
-    i_stnd <- 0
-  }
-  if (fix_chr) {
-    i_fix_chr <- 1
-  }
-  else {
-    i_fix_chr <- 0
-  }
-
-  if (any(!file.exists(inbam))) {
-    stop("At least one input bam file does not exist")
-  } else {
-    inbam <- path.expand(inbam)
-  }
-
-  outbam <- path.expand(outbam)
-
-  # if (length(inbam) > 1) {
-  #   stop("Only one bam file can be used as input")
-  # }
-
-  if (!is(annofn, "character") &&
-      !is(annofn, "GRanges") &&
-      !is(annofn, "data.frame")) {
-    stop("'annofn' must be either character vector, GRanges, or data.frame object")
-  }
-
-  if (is(annofn, "character")) {
-    if (any(!file.exists(annofn))) {
-      stop("At least one genome annotation file does not exist")
-    } else {
-      annofn <- path.expand(annofn)
+                                bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
+                                bc_len=8, barcode_vector="", UMI_len=6, stnd=TRUE, fix_chr=FALSE,
+                                nthreads=1) {
+    if (stnd) {
+        i_stnd <- 1
     }
-    rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_import(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
-                                 barcode_vector, UMI_len, stnd, fix_chr, nthreads)
-  } else if (is(annofn, "GRanges")) {
-    rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_to_saf(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
-                                 barcode_vector, UMI_len, stnd, fix_chr, nthreads)
-  } else if (is(annofn, "data.frame")) {
-    validate_saf(annofn)
-    rcpp_sc_exon_mapping_df_anno(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
-                                  barcode_vector, UMI_len, stnd, fix_chr, nthreads)
-  }
+    else {
+        i_stnd <- 0
+    }
+    if (fix_chr) {
+        i_fix_chr <- 1
+    }
+    else {
+        i_fix_chr <- 0
+    }
+
+    if (any(!file.exists(inbam))) {
+        stop("At least one input bam file does not exist")
+    } else {
+        inbam <- path.expand(inbam)
+    }
+
+    outbam <- path.expand(outbam)
+
+    # if (length(inbam) > 1) {
+    #   stop("Only one bam file can be used as input")
+    # }
+
+    if (!is(annofn, "character") &&
+        !is(annofn, "GRanges") &&
+        !is(annofn, "data.frame")) {
+        stop("'annofn' must be either character vector, GRanges, or data.frame object")
+    }
+
+    if (is(annofn, "character")) {
+        if (any(!file.exists(annofn))) {
+            stop("At least one genome annotation file does not exist")
+        } else {
+            annofn <- path.expand(annofn)
+        }
+        rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_import(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
+                                    barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+    } else if (is(annofn, "GRanges")) {
+        rcpp_sc_exon_mapping_df_anno(inbam, outbam, anno_to_saf(annofn), bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
+                                    barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+    } else if (is(annofn, "data.frame")) {
+        validate_saf(annofn)
+        rcpp_sc_exon_mapping_df_anno(inbam, outbam, annofn, bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb, bc_len,
+                                    barcode_vector, UMI_len, stnd, fix_chr, nthreads)
+    }
 }
 
 
@@ -268,32 +268,32 @@ sc_exon_mapping <- function(inbam, outbam, annofn,
 #' }
 #'
 sc_demultiplex <- function(inbam, outdir, bc_anno,
-                          max_mis=1,
-                          bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-                          mito="MT",
-                          has_UMI=TRUE,
-                          nthreads = 1) {
-  dir.create(file.path(outdir, "count"), showWarnings = FALSE)
-  dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
+                            max_mis=1,
+                            bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
+                            mito="MT",
+                            has_UMI=TRUE,
+                            nthreads = 1) {
+    dir.create(file.path(outdir, "count"), showWarnings = FALSE)
+    dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
 
-  if (!dir.exists(outdir))
-    dir.create(outdir, recursive = TRUE)
+    if (!dir.exists(outdir))
+        dir.create(outdir, recursive = TRUE)
 
-  outdir <- path.expand(outdir)
+    outdir <- path.expand(outdir)
 
-  if (!file.exists(inbam)) {
-    stop("input bam file does not exists.")
-  } else {
-    inbam <- path.expand(inbam)
-  }
-  if (!file.exists(bc_anno)) {
-    stop("barcode annotation file does not exists.")
-  } else {
-    bc_anno <- path.expand(bc_anno)
-  }
-  rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis,
-                      bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
-                      mito, has_UMI, nthreads)
+    if (!file.exists(inbam)) {
+        stop("input bam file does not exists.")
+    } else {
+        inbam <- path.expand(inbam)
+    }
+    if (!file.exists(bc_anno)) {
+        stop("barcode annotation file does not exists.")
+    } else {
+        bc_anno <- path.expand(bc_anno)
+    }
+    rcpp_sc_demultiplex(inbam, outdir, bc_anno, max_mis,
+                        bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
+                        mito, has_UMI, nthreads)
 }
 
 
@@ -337,27 +337,27 @@ sc_demultiplex <- function(inbam, outdir, bc_anno,
 #' }
 #'
 sc_correct_bam_bc <- function(inbam, outbam, bc_anno,
-                          max_mis=1,
-                          bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-                          mito="MT",
-                          nthreads = 1) {
+                            max_mis=1,
+                            bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
+                            mito="MT",
+                            nthreads = 1) {
 
-  if (!file.exists(inbam)) {
-    stop("input bam file does not exists.")
-  } else {
-    inbam <- path.expand(inbam)
-  }
+    if (!file.exists(inbam)) {
+        stop("input bam file does not exists.")
+    } else {
+        inbam <- path.expand(inbam)
+    }
 
-  outbam <- path.expand(outbam)
+    outbam <- path.expand(outbam)
 
-  if (!file.exists(bc_anno)) {
-    stop("barcode annotation file does not exists.")
-  } else {
-    bc_anno <- path.expand(bc_anno)
-  }
-  rcpp_sc_clean_bam(inbam, outbam, bc_anno, max_mis,
-                      bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
-                      mito, nthreads)
+    if (!file.exists(bc_anno)) {
+        stop("barcode annotation file does not exists.")
+    } else {
+        bc_anno <- path.expand(bc_anno)
+    }
+    rcpp_sc_clean_bam(inbam, outbam, bc_anno, max_mis,
+                        bam_tags$am, bam_tags$ge, bam_tags$bc, bam_tags$mb,
+                        mito, nthreads)
 }
 
 
@@ -388,27 +388,27 @@ sc_correct_bam_bc <- function(inbam, outbam, bc_anno,
 #' }
 #'
 sc_gene_counting <- function(outdir, bc_anno, UMI_cor=2, gene_fl=FALSE) {
-  if (!dir.exists(outdir))
-    dir.create(outdir, recursive = TRUE)
+    if (!dir.exists(outdir))
+        dir.create(outdir, recursive = TRUE)
 
-  outdir <- path.expand(outdir)
+    outdir <- path.expand(outdir)
 
-  dir.create(file.path(outdir, "count"), showWarnings = FALSE)
-  dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
+    dir.create(file.path(outdir, "count"), showWarnings = FALSE)
+    dir.create(file.path(outdir, "stat"), showWarnings = FALSE)
 
-  if (gene_fl) {
-    i_gene_fl <- 1
-  } else {
-    i_gene_fl <- 0
-  }
+    if (gene_fl) {
+        i_gene_fl <- 1
+    } else {
+        i_gene_fl <- 0
+    }
 
-  if (!file.exists(bc_anno)) {
-    stop("barcode annotation file does not exists.")
-  } else {
-    bc_anno <- path.expand(bc_anno)
-  }
+    if (!file.exists(bc_anno)) {
+        stop("barcode annotation file does not exists.")
+    } else {
+        bc_anno <- path.expand(bc_anno)
+    }
 
-  rcpp_sc_gene_counting(outdir, bc_anno, UMI_cor, i_gene_fl)
+    rcpp_sc_gene_counting(outdir, bc_anno, UMI_cor, i_gene_fl)
 }
 
 
@@ -446,25 +446,25 @@ sc_gene_counting <- function(outdir, bc_anno, UMI_cor=2, gene_fl=FALSE) {
 #'
 #'
 sc_detect_bc <- function(infq, outcsv, prefix="CELL_", bc_len,
-                        max_reads=1000000, min_count=10, number_of_cells=10000,
-                        max_mismatch=1,white_list_file=NULL) {
-  if (!file.exists(infq)) {
-    stop("input fastq file does not exists.")
-  } else {
-    infq <- path.expand(infq)
-  }
-  outcsv <- path.expand(outcsv)
-  if(!is.null(white_list_file)){
-    if(!file.exists(white_list_file)){
-      stop("input whitelist file does not exists.")
+                            max_reads=1000000, min_count=10, number_of_cells=10000,
+                            max_mismatch=1,white_list_file=NULL) {
+    if (!file.exists(infq)) {
+        stop("input fastq file does not exists.")
+    } else {
+        infq <- path.expand(infq)
     }
-  } else {
-    white_list_file <- ""
-  }
-  if (max_reads=="all") {m_r <- -1}
-  else {m_r<-max_reads}
-  rcpp_sc_detect_bc(infq, outcsv, prefix, bc_len, m_r, number_of_cells,
-    min_count, max_mismatch, white_list_file)
+    outcsv <- path.expand(outcsv)
+    if (!is.null(white_list_file)){
+        if(!file.exists(white_list_file)){
+            stop("input whitelist file does not exists.")
+        }
+    } else {
+        white_list_file <- ""
+    }
+    if (max_reads=="all") {m_r <- -1}
+    else {m_r<-max_reads}
+    rcpp_sc_detect_bc(infq, outcsv, prefix, bc_len, m_r, number_of_cells,
+        min_count, max_mismatch, white_list_file)
 }
 
 #' sc_demultiplex_and_count
@@ -494,29 +494,28 @@ sc_detect_bc <- function(infq, outcsv, prefix="CELL_", bc_len,
 #' @export
 #'
 sc_demultiplex_and_count <- function(
-  inbam, outdir, bc_anno,
-  max_mis = 1,
-  bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-  mito = "MT", has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
-  nthreads = 1
-) {
-  sc_demultiplex(
-    inbam = inbam,
-    outdir = outdir,
-    bc_anno = bc_anno,
-    max_mis = max_mis,
-    bam_tags = bam_tags,
-    mito = mito,
-    has_UMI = has_UMI,
-    nthreads = nthreads
-  )
+    inbam, outdir, bc_anno,
+    max_mis = 1,
+    bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
+    mito = "MT", has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
+    nthreads = 1) {
+    sc_demultiplex(
+        inbam = inbam,
+        outdir = outdir,
+        bc_anno = bc_anno,
+        max_mis = max_mis,
+        bam_tags = bam_tags,
+        mito = mito,
+        has_UMI = has_UMI,
+        nthreads = nthreads
+    )
 
-  sc_gene_counting(
-    outdir = outdir,
-    bc_anno = bc_anno,
-    UMI_cor = UMI_cor,
-    gene_fl = gene_fl
-  )
+    sc_gene_counting(
+        outdir = outdir,
+        bc_anno = bc_anno,
+        UMI_cor = UMI_cor,
+        gene_fl = gene_fl
+    )
 }
 
 #' sc_count_aligned_bam
@@ -546,44 +545,44 @@ sc_demultiplex_and_count <- function(
 #' @export
 #'
 sc_count_aligned_bam <- function(
-  inbam, outbam, annofn,
-  bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
-  bc_len = 8, UMI_len = 6,
-  stnd = TRUE, fix_chr = FALSE,
-  outdir,
-  bc_anno,
-  max_mis = 1,
-  mito = "MT",
-  has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
-  keep_mapped_bam = TRUE,
-  nthreads = 1
-) {
-  sc_exon_mapping(
-    inbam = inbam,
-    outbam = outbam,
-    annofn = annofn,
-    bam_tags = bam_tags,
-    bc_len = bc_len,
-    UMI_len = UMI_len,
-    stnd = stnd,
-    fix_chr = fix_chr,
-    nthreads = nthreads
-  )
+    inbam, outbam, annofn,
+    bam_tags = list(am="YE", ge="GE", bc="BC", mb="OX"),
+    bc_len = 8, UMI_len = 6,
+    stnd = TRUE, fix_chr = FALSE,
+    outdir,
+    bc_anno,
+    max_mis = 1,
+    mito = "MT",
+    has_UMI = TRUE, UMI_cor = 1, gene_fl = FALSE,
+    keep_mapped_bam = TRUE,
+    nthreads = 1
+    ) {
+    sc_exon_mapping(
+        inbam = inbam,
+        outbam = outbam,
+        annofn = annofn,
+        bam_tags = bam_tags,
+        bc_len = bc_len,
+        UMI_len = UMI_len,
+        stnd = stnd,
+        fix_chr = fix_chr,
+        nthreads = nthreads
+    )
 
-  sc_demultiplex_and_count(
-    inbam = outbam,
-    outdir = outdir,
-    bc_anno = bc_anno,
-    max_mis = max_mis,
-    bam_tags = bam_tags,
-    mito = mito,
-    has_UMI = has_UMI,
-    UMI_cor = UMI_cor,
-    gene_fl = gene_fl,
-    nthreads = nthreads
-  )
+    sc_demultiplex_and_count(
+        inbam = outbam,
+        outdir = outdir,
+        bc_anno = bc_anno,
+        max_mis = max_mis,
+        bam_tags = bam_tags,
+        mito = mito,
+        has_UMI = has_UMI,
+        UMI_cor = UMI_cor,
+        gene_fl = gene_fl,
+        nthreads = nthreads
+    )
 
-  if (!keep_mapped_bam) {
-    unlink(outbam)
-  }
+    if (!keep_mapped_bam) {
+        unlink(outbam)
+    }
 }

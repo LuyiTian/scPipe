@@ -16,8 +16,8 @@
 #' @return Boolean; TRUE if program can continue execution, FALSE otherwise.
 #'
 check_barcode_start_position <- function(fastq, barcode_file, barcode_file_realname, bstart, blength, search_lines, threshold) {
-  # check if the given bstart param is valid
-  continue <- check_barcode_reads(fastq, barcode_file, barcode_file_realname, bstart, blength, search_lines, threshold)
+    # check if the given bstart param is valid
+    continue <- check_barcode_reads(fastq, barcode_file, barcode_file_realname, bstart, blength, search_lines, threshold)
 
-  return (continue)
+    return (continue)
 }

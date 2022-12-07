@@ -51,17 +51,17 @@ anno_import <- function(filename) {
 #' @param anno The GRanges object containing exon information
 #'
 #' @description This function converts a GRanges object into a data.frame of the
-#'   SAF format for scPipe's consumption. The GRanges object should contain a
-#'   "type" column where at least some features are annotated as "exon", in
-#'   addition there should be a gene_id column specifying the gene to which the
-#'   exon belongs. In the SAF only the gene ID, chromosome, start, end and
-#'   strand are recorded, this is a gene-exon centric format, with all entries
-#'   containing the same gene ID treated as exons of that gene. It is possible
-#'   to count alternative features by setting the gene_id column to an arbitrary
-#'   feature name and having alternative features in the SAF table, the main
-#'   caveat is that the features are still treated as exons, and the mapping
-#'   statistics for exon and intron will not reflect biological exons and
-#'   introns but rather the annotation features.
+#'      SAF format for scPipe's consumption. The GRanges object should contain a
+#'      "type" column where at least some features are annotated as "exon", in
+#'      addition there should be a gene_id column specifying the gene to which the
+#'      exon belongs. In the SAF only the gene ID, chromosome, start, end and
+#'      strand are recorded, this is a gene-exon centric format, with all entries
+#'      containing the same gene ID treated as exons of that gene. It is possible
+#'      to count alternative features by setting the gene_id column to an arbitrary
+#'      feature name and having alternative features in the SAF table, the main
+#'      caveat is that the features are still treated as exons, and the mapping
+#'      statistics for exon and intron will not reflect biological exons and
+#'      introns but rather the annotation features.
 #'
 #' @return data.frame containing exon information in SAF format
 #'
@@ -71,10 +71,10 @@ anno_import <- function(filename) {
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' anno <- system.file("extdata", "ensembl_hg38_chrY.gtf.gz", package = "scPipe")
-#' saf_chrY <- anno_to_saf(rtracklayer::import(anno))
-#' }
+#'  \dontrun{
+#'      anno <- system.file("extdata", "ensembl_hg38_chrY.gtf.gz", package = "scPipe")
+#'      saf_chrY <- anno_to_saf(rtracklayer::import(anno))
+#'  }
 #'
 anno_to_saf <- function(anno) {
     stopifnot(is(anno, "GRanges"))
@@ -105,22 +105,22 @@ anno_to_saf <- function(anno) {
         dplyr::filter(.data$type == "exon") %>%
         dplyr::select("gene_id", "seqnames", "start", "end", "strand") %>%
         dplyr::rename(
-            GeneID = .data$gene_id,
-            Chr = .data$seqnames,
-            Start = .data$start,
-            End = .data$end,
-            Strand = .data$strand
+            GeneID = "gene_id",
+            Chr = "seqnames",
+            Start = "start",
+            End = "end",
+            Strand = "strand"
         )
 
     if (anyNA(saf$GeneID)) {
         orig_rows <- nrow(saf)
         saf <- saf %>%
-            dplyr::filter(!is.na(saf$GeneID))
+            dplyr::filter(!is.na("GeneID"))
         filt_rows <- nrow(saf)
         message(glue::glue("NA found in GeneID of {orig_rows - filt_rows} of {orig_rows} entries, automatically removing these entries"))
     }
 
-    saf %>% dplyr::select(.data$GeneID, dplyr::everything())
+    saf %>% dplyr::select("GeneID", dplyr::everything())
 }
 
 infer_gene_ids <- function(anno) {

@@ -4,6 +4,7 @@
 .Rproj
 .vscode
 ..Rcheck
+.Rprofile
 scPipe.Rproj
 inst/doc
 src/*.o
