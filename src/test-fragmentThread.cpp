@@ -217,26 +217,26 @@ context("FragmentThread tests") {
 		}
 	}
 
-	test_that("Write to file is able of writing a fragment map to file") {
-		expect_true(true);
-		// below code executes correctly when run:
-		// (not run for tests)
+	// test_that("Write to file is able of writing a fragment map to file") {
+	// 	expect_true(true);
+	// 	// below code executes correctly when run:
+	// 	// (not run for tests)
 
-		// FragmentMap m;
-		// m["AAT"] = {"AATG",3,25, "GG", true, 10};
-		// m["AAG"] = {"AATG",3,60, "GG", false, 20}; 
-		// m["AAC"] = {"AATG",3,50, "GG", true, 30};
-		// m["ATA"] = {"AAGG",4,15, "GT", false, 40}; 
-		// m["ACG"] = {"AAGG",4,25, "GT", false, 50};
-		// m["ACA"] = {"AGTC",5,30, "GA", true, 60};
+	// 	// FragmentMap m;
+	// 	// m["AAT"] = {"AATG",3,25, "GG", true, 10};
+	// 	// m["AAG"] = {"AATG",3,60, "GG", false, 20}; 
+	// 	// m["AAC"] = {"AATG",3,50, "GG", true, 30};
+	// 	// m["ATA"] = {"AAGG",4,15, "GT", false, 40}; 
+	// 	// m["ACG"] = {"AAGG",4,25, "GT", false, 50};
+	// 	// m["ACA"] = {"AGTC",5,30, "GA", true, 60};
 		
-		// std::vector<FragmentStruct> ls;
-		// for (auto it : m) {
-		// 	ls.push_back(it.second);
-		// }
+	// 	// std::vector<FragmentStruct> ls;
+	// 	// for (auto it : m) {
+	// 	// 	ls.push_back(it.second);
+	// 	// }
 
-		// FragmentThread::writeFragmentsToFile(ls, "output/testWriteToFile");
-	}
+	// 	// FragmentThread::writeFragmentsToFile(ls, "output/testWriteToFile");
+	// }
 
 	test_that("Fragment Dict can be correctly added to") {
 		FragmentThread f (nullptr, "A", 1, 30, "BAM", nullptr, 0, 
@@ -255,52 +255,52 @@ context("FragmentThread tests") {
 		expect_true(equalFragmentStruct(f.fragment_dict["CCG"], res2));
 	}
 
-	test_that("Fragment dict is updated") {
-		FragmentMap m;
-		m["AAT"] = {"AATG",3,25, "GG"};
-		m["AAG"] = {"AATG",3,60, "GG"}; 
-		m["AAC"] = {"AATG",3,50, "GG"};
-		m["ATA"] = {"AAGG",4,15, "GT"}; 
-		m["ACG"] = {"AAGG",4,25, "GT"};
-		m["ACA"] = {"AGTC",5,30, "GA"};
-		// python:
-		// from sinto_fragments import *
-		// import pysam
-		// frags={"AAT":["AATG",3,25, "GG"],"AAG":["AATG",3,60, "GG"], "AAC":["AATG",3,50, "GG"], "ATA":["AAGG",4,15, "GT"], "ACG":["AAGG",4,25, "GT"], "ACA":["AGTC",5,30, "GA"]}
-		// bam = "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/sinto_output/demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam"
-		// inputBam = pysam.AlignmentFile(bam, "rb")
-		// seg = inputBam.fetch("chr21", 0, 48129895).__next__()
-		// fragments = updateFragmentDict(fragments=frags, segment=seg, min_mapq=10, cellbarcode="CB", readname_barcode=None, cells=None, max_dist=5000, min_dist=10)
-		// fragments should be :
-		// {'AAT': ['AATG', 3, 25, 'GG'], 'AAG': ['AATG', 3, 60, 'GG'], 'AAC': ['AATG', 3, 50, 'GG'], 'ATA': ['AAGG', 4, 15, 'GT'], 'ACG': ['AAGG', 4, 25, 'GT'], 'ACA': ['AGTC', 5, 30, 'GA'], 'TGAGTCACATTGTGAC#A00228:277:HFKLHDMXX:1:2167:2853:35336': ['chr21', 9411277, None, 'TGAGTCACATTGTGAC', False]}
-		const char *bamPath = "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/sinto_output/demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam";
-		bamFile bam = bam_open(bamPath, "r");
-		bam_header_t *header = bam_header_read(bam); // bam.h
+	// test_that("Fragment dict is updated") {
+	// 	FragmentMap m;
+	// 	m["AAT"] = {"AATG",3,25, "GG"};
+	// 	m["AAG"] = {"AATG",3,60, "GG"}; 
+	// 	m["AAC"] = {"AATG",3,50, "GG"};
+	// 	m["ATA"] = {"AAGG",4,15, "GT"}; 
+	// 	m["ACG"] = {"AAGG",4,25, "GT"};
+	// 	m["ACA"] = {"AGTC",5,30, "GA"};
+	// 	// python:
+	// 	// from sinto_fragments import *
+	// 	// import pysam
+	// 	// frags={"AAT":["AATG",3,25, "GG"],"AAG":["AATG",3,60, "GG"], "AAC":["AATG",3,50, "GG"], "ATA":["AAGG",4,15, "GT"], "ACG":["AAGG",4,25, "GT"], "ACA":["AGTC",5,30, "GA"]}
+	// 	// bam = "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/sinto_output/demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam"
+	// 	// inputBam = pysam.AlignmentFile(bam, "rb")
+	// 	// seg = inputBam.fetch("chr21", 0, 48129895).__next__()
+	// 	// fragments = updateFragmentDict(fragments=frags, segment=seg, min_mapq=10, cellbarcode="CB", readname_barcode=None, cells=None, max_dist=5000, min_dist=10)
+	// 	// fragments should be :
+	// 	// {'AAT': ['AATG', 3, 25, 'GG'], 'AAG': ['AATG', 3, 60, 'GG'], 'AAC': ['AATG', 3, 50, 'GG'], 'ATA': ['AAGG', 4, 15, 'GT'], 'ACG': ['AAGG', 4, 25, 'GT'], 'ACA': ['AGTC', 5, 30, 'GA'], 'TGAGTCACATTGTGAC#A00228:277:HFKLHDMXX:1:2167:2853:35336': ['chr21', 9411277, None, 'TGAGTCACATTGTGAC', False]}
+	// 	const char *bamPath = "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/sinto_output/demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam";
+	// 	bamFile bam = bam_open(bamPath, "r");
+	// 	bam_header_t *header = bam_header_read(bam); // bam.h
 		
 		
-		FragmentThread f(
-			nullptr, "chr21", bam_get_tid(header, "chr21"), 48129895, 
-			bamPath, nullptr,
-			10, "CB", "", NULL, 5000, 10, 10
-		);
+	// 	FragmentThread f(
+	// 		nullptr, "chr21", bam_get_tid(header, "chr21"), 48129895, 
+	// 		bamPath, nullptr,
+	// 		10, "CB", "", NULL, 5000, 10, 10
+	// 	);
 
-		f.fragment_dict = m;
+	// 	f.fragment_dict = m;
 
-		bam1_t *b = bam_init1();
-		bam_iter_t iter = bam_iter_query(bam_index_load(f.bam.c_str()), f.tid, 0, f.end);
-		int ret = bam_iter_read(bam, iter, b);
+	// 	bam1_t *b = bam_init1();
+	// 	bam_iter_t iter = bam_iter_query(bam_index_load(f.bam.c_str()), f.tid, 0, f.end);
+	// 	int ret = bam_iter_read(bam, iter, b);
 
-		// b is the first segment
-		// updateFragmentDict
-		f.updateFragmentDict(b);
+	// 	// b is the first segment
+	// 	// updateFragmentDict
+	// 	f.updateFragmentDict(b);
 
-		FragmentStruct res1 = {"chr21", 9411277, -1, "TGAGTCACATTGTGAC", false};
-		expect_true(equalFragmentStruct(f.fragment_dict["TGAGTCACATTGTGAC#A00228:277:HFKLHDMXX:1:2167:2853:35336"], res1));
+	// 	FragmentStruct res1 = {"chr21", 9411277, -1, "TGAGTCACATTGTGAC", false};
+	// 	expect_true(equalFragmentStruct(f.fragment_dict["TGAGTCACATTGTGAC#A00228:277:HFKLHDMXX:1:2167:2853:35336"], res1));
 		
-		bam_iter_destroy(iter);
-		bam_destroy1(b);
-		bam_close(bam);
-	}
+	// 	bam_iter_destroy(iter);
+	// 	bam_destroy1(b);
+	// 	bam_close(bam);
+	// }
 
 	test_that("FragmentCount can be incremented") {
 		FragmentThread f(
@@ -314,43 +314,41 @@ context("FragmentThread tests") {
 		expect_true(f.fragment_count == 1);
 	}
 
-	test_that("fetchCall can be used for bam_fetch properly") {
-		FragmentMap m;
-		m["AAT"] = {"AATG",3,25, "GG"};
-		m["AAG"] = {"AATG",3,60, "GG"}; 
-		m["AAC"] = {"AATG",3,50, "GG"};
-		m["ATA"] = {"AAGG",4,15, "GT"}; 
-		m["ACG"] = {"AAGG",4,25, "GT"};
-		m["ACA"] = {"AGTC",5,30, "GA"};
+	// test_that("fetchCall can be used for bam_fetch properly") {
+	// 	FragmentMap m;
+	// 	m["AAT"] = {"AATG",3,25, "GG"};
+	// 	m["AAG"] = {"AATG",3,60, "GG"}; 
+	// 	m["AAC"] = {"AATG",3,50, "GG"};
+	// 	m["ATA"] = {"AAGG",4,15, "GT"}; 
+	// 	m["ACG"] = {"AAGG",4,25, "GT"};
+	// 	m["ACA"] = {"AGTC",5,30, "GA"};
 
-		const char *bamPath = "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/sinto_output/demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam";
-		bamFile bam = bam_open(bamPath, "r");
-		bam_header_t *header = bam_header_read(bam); // bam.h
+	// 	const char *bamPath = "/Users/voogd.o/Documents/scPipeTesting/sc_atac_create_fragments/sinto_output/demux_testfastq_S1_L001_R1_001_aligned_tagged_sorted.bam";
+	// 	bamFile bam = bam_open(bamPath, "r");
+	// 	bam_header_t *header = bam_header_read(bam); // bam.h
 		
 		
-		FragmentThread *f = new FragmentThread (
-			nullptr, "chr21", bam_get_tid(header, "chr21"), 48129895, 
-			bamPath, nullptr,
-			10, "CB", "", NULL, 5000, 10, 10
-		);
+	// 	FragmentThread *f = new FragmentThread (
+	// 		nullptr, "chr21", bam_get_tid(header, "chr21"), 48129895, 
+	// 		bamPath, nullptr,
+	// 		10, "CB", "", NULL, 5000, 10, 10
+	// 	);
 
-		f->fragment_dict = m;
+	// 	f->fragment_dict = m;
 
-		bam1_t *b = bam_init1();
-		bam_iter_t iter = bam_iter_query(bam_index_load(f->bam.c_str()), f->tid, 0, f->end);
-		int ret = bam_iter_read(bam, iter, b);
+	// 	bam1_t *b = bam_init1();
+	// 	bam_iter_t iter = bam_iter_query(bam_index_load(f->bam.c_str()), f->tid, 0, f->end);
+	// 	int ret = bam_iter_read(bam, iter, b);
 
-		// b is the first segment
-		// updateFragmentDict
-		FragmentThread::fetchCall(b, (void *)f);
+	// 	// b is the first segment
+	// 	// updateFragmentDict
+	// 	FragmentThread::fetchCall(b, (void *)f);
 
-		FragmentStruct res1 = {"chr21", 9411277, -1, "TGAGTCACATTGTGAC", false};
-		expect_true(equalFragmentStruct(f->fragment_dict["TGAGTCACATTGTGAC#A00228:277:HFKLHDMXX:1:2167:2853:35336"], res1));
+	// 	FragmentStruct res1 = {"chr21", 9411277, -1, "TGAGTCACATTGTGAC", false};
+	// 	expect_true(equalFragmentStruct(f->fragment_dict["TGAGTCACATTGTGAC#A00228:277:HFKLHDMXX:1:2167:2853:35336"], res1));
 		
-		bam_iter_destroy(iter);
-		bam_destroy1(b);
-		bam_close(bam);
-	}
-
-
+	// 	bam_iter_destroy(iter);
+	// 	bam_destroy1(b);
+	// 	bam_close(bam);
+	// }
 }

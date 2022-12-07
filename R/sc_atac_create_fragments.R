@@ -49,58 +49,58 @@
 #' @import Rcpp
 #' @export
 sc_atac_create_fragments <- function(
-	inbam,
-	output_folder="",
-	min_mapq=30,
-	nproc=1,
-	cellbarcode="CB",
-	chromosomes="^chr",
-	readname_barcode=NULL,
-	cells=NULL,
-	max_distance=5000,
-	min_distance=10,
-	chunksize=500000) {
-	if(output_folder == ''){
-        output_folder = file.path(getwd(), "scPipe-atac-output")
+        inbam,
+        output_folder="",
+        min_mapq=30,
+        nproc=1,
+        cellbarcode="CB",
+        chromosomes="^chr",
+        readname_barcode=NULL,
+        cells=NULL,
+        max_distance=5000,
+        min_distance=10,
+        chunksize=500000) {
+    if(output_folder == ''){
+        output_folder <- file.path(getwd(), "scPipe-atac-output")
     }
 
     if (!dir.exists(output_folder)){
         dir.create(output_folder,recursive=TRUE)
-        cat("Output Directory Does Not Exist. Created Directory: ", output_folder, "\n")
+        message("Output Directory Does Not Exist. Created Directory: ", output_folder)
     }
 
     log_and_stats_folder <- file.path(output_folder, "scPipe_atac_stats")
     dir.create(log_and_stats_folder, showWarnings = FALSE)
     log_file <- file.path(log_and_stats_folder, "log_file.txt")
     if(!file.exists(log_file)) file.create(log_file)
-    cat(
-      paste0(
+    write(
+    c(
         "sc_atac_create_fragments starts at ",
         as.character(Sys.time()),
         "\n"
-      ),
-      file = log_file, append = TRUE)
+    ),
+    file = log_file, append = TRUE)
 
     # output = paste0(output_folder, "/fragments.bed")
 
-	chrom = get_chromosomes(inbam, keep_contigs=chromosomes) # List with names as contigs and elements as lengths
-	cells = read_cells(cells) # character vector / StringVector
+    chrom <- get_chromosomes(inbam, keep_contigs=chromosomes) # List with names as contigs and elements as lengths
+    cells <- read_cells(cells) # character vector / StringVector
 
-	sc_atac_create_fragments_cpp(inbam,
-								output_folder,
-								names(chrom),
-								as.integer(chrom),
-								min_mapq,
-								nproc,
-								cellbarcode,
-								chromosomes,
-								readname_barcode,
-								cells,
-								max_distance,
-								min_distance,
-								chunksize)
+    sc_atac_create_fragments_cpp(inbam,
+                                output_folder,
+                                names(chrom),
+                                as.integer(chrom),
+                                min_mapq,
+                                nproc,
+                                cellbarcode,
+                                chromosomes,
+                                readname_barcode,
+                                cells,
+                                max_distance,
+                                min_distance,
+                                chunksize)
 
-	invisible()
+    invisible()
 }
 
 #' Get Chromosomes
@@ -115,23 +115,23 @@ sc_atac_create_fragments <- function(
 #' @importFrom Rsamtools indexBam idxstatsBam
 #' @importFrom stats setNames
 get_chromosomes <- function(bam, keep_contigs="^chr") {
-	if (is.null(keep_contigs)) {
-		keep_contigs="."
-	}
-	if (!file.exists(paste0(bam, ".bai"))) {
-		Rsamtools::indexBam(bam)
-	}
+    if (is.null(keep_contigs)) {
+        keep_contigs <- "."
+    }
+    if (!file.exists(paste0(bam, ".bai"))) {
+        Rsamtools::indexBam(bam)
+    }
 
-	idxstats = Rsamtools::idxstatsBam(bam)
-	# regex = (?i)^chr
-	# above matches chr at start of string ignoring case ((?i) means ignore case)
-	# R version: grepl("^chr", ignore.case=TRUE)
-	contigs = grepl(keep_contigs, idxstats$seqnames, ignore.case=TRUE)
-	mapped = idxstats$mapped > 0
-	keep_contigs = idxstats[contigs & mapped, ]
-	conlen <- setNames(as.list(keep_contigs$seqlength), keep_contigs$seqnames)
+    idxstats <- Rsamtools::idxstatsBam(bam)
+    # regex = (?i)^chr
+    # above matches chr at start of string ignoring case ((?i) means ignore case)
+    # R version: grepl("^chr", ignore.case=TRUE)
+    contigs <- grepl(keep_contigs, idxstats$seqnames, ignore.case=TRUE)
+    mapped <- idxstats$mapped > 0
+    keep_contigs <- idxstats[contigs & mapped, ]
+    conlen <- setNames(as.list(keep_contigs$seqlength), keep_contigs$seqnames)
 
-	return(conlen)
+    return(conlen)
 }
 
 #' Read Cell barcode file
@@ -142,14 +142,14 @@ get_chromosomes <- function(bam, keep_contigs="^chr") {
 #' @return a character vector of the provided barcodes
 #' @importFrom data.table fread
 read_cells <- function(cells) {
-	if (is.null(cells)) return(NULL)
+    if (is.null(cells)) return(NULL)
 
-	if (file.exists(cells)) {
-		barcodes <- data.table::fread(cells, header=FALSE, data.table=FALSE)[[1]]
-	} else {
-		barcodes = strsplit(cells, ",")[[1]]
-	}
+    if (file.exists(cells)) {
+        barcodes <- data.table::fread(cells, header=FALSE, data.table=FALSE)[[1]]
+    } else {
+        barcodes <- strsplit(cells, ",")[[1]]
+    }
 
-	return (barcodes)
+    return (barcodes)
 
 }

@@ -36,100 +36,97 @@
 #' @export
 #'
 sc_atac_cell_calling <- function(mat, 
-                                 cell_calling, 
-                                 output_folder, 
-                                 genome_size    = NULL, 
-                                 cell_qc_metrics_file = NULL, 
-                                 lower          = NULL,
-                                 min_uniq_frags = 3000,
-                                 max_uniq_frags = 50000,
-                                 min_frac_peak = 0.3,
-                                 min_frac_tss = 0,
-                                 min_frac_enhancer = 0,
-                                 min_frac_promoter = 0.1,
-                                 max_frac_mito = 0.15){
+                                cell_calling, 
+                                output_folder, 
+                                genome_size    = NULL, 
+                                cell_qc_metrics_file = NULL, 
+                                lower          = NULL,
+                                min_uniq_frags = 3000,
+                                max_uniq_frags = 50000,
+                                min_frac_peak = 0.3,
+                                min_frac_tss = 0,
+                                min_frac_enhancer = 0,
+                                min_frac_promoter = 0.1,
+                                max_frac_mito = 0.15){
   
-  message("`", cell_calling, "` function is used for cell calling ... \n")
+    message("`", cell_calling, "` function is used for cell calling ... ")
 
-  selected_cells <- tryCatch(
-    {
-      if(cell_calling == "emptydrops") {
-        sc_atac_emptydrops_cell_calling(mat = mat, output_folder = output_folder, lower = lower)
-      }
-      else if(cell_calling == 'cellranger') {
-        sc_atac_cellranger_cell_calling(mat = mat, genome_size = genome_size, cell_qc_metrics_file = cell_qc_metrics_file)
-      } 
-    },
-    error = function(e) {
-      message(e)
-      message("\nWill now default to the filter method with the default qc cutoffs.")
-      message("min_uniq_frags = ", min_uniq_frags)
-      message("max_uniq_frags = ", max_uniq_frags)
-      message("min_frac_peak = ", min_frac_peak)
-      message("min_frac_tss = ", min_frac_tss)
-      message("min_frac_enhancer = ", min_frac_enhancer)
-      message("min_frac_promoter = ", min_frac_promoter)
-      message("max_frac_mito = ", max_frac_mito)
-      message("Running the filter method...")
-      sc_atac_filter_cell_calling(mtx = mat, 
-                                  cell_qc_metrics_file = cell_qc_metrics_file,
-                                  min_uniq_frags = min_uniq_frags,
-                                  max_uniq_frags = max_uniq_frags,
-                                  min_frac_peak = min_frac_peak,
-                                  min_frac_tss = min_frac_tss,
-                                  min_frac_enhancer = min_frac_enhancer,
-                                  min_frac_promoter = min_frac_promoter,
-                                  max_frac_mito = max_frac_mito)
-    }
-  )
+    selected_cells <- tryCatch({
+        if(cell_calling == "emptydrops") {
+          sc_atac_emptydrops_cell_calling(mat = mat, output_folder = output_folder, lower = lower)
+        }
+        else if(cell_calling == 'cellranger') {
+          sc_atac_cellranger_cell_calling(mat = mat, genome_size = genome_size, cell_qc_metrics_file = cell_qc_metrics_file)
+        } 
+    }, error = function(e) {
+        message(e)
+        message("\nWill now default to the filter method with the default qc cutoffs.")
+        message("min_uniq_frags = ", min_uniq_frags)
+        message("max_uniq_frags = ", max_uniq_frags)
+        message("min_frac_peak = ", min_frac_peak)
+        message("min_frac_tss = ", min_frac_tss)
+        message("min_frac_enhancer = ", min_frac_enhancer)
+        message("min_frac_promoter = ", min_frac_promoter)
+        message("max_frac_mito = ", max_frac_mito)
+        message("Running the filter method...")
+          sc_atac_filter_cell_calling(mtx = mat, 
+                                    cell_qc_metrics_file = cell_qc_metrics_file,
+                                    min_uniq_frags = min_uniq_frags,
+                                    max_uniq_frags = max_uniq_frags,
+                                    min_frac_peak = min_frac_peak,
+                                    min_frac_tss = min_frac_tss,
+                                    min_frac_enhancer = min_frac_enhancer,
+                                    min_frac_promoter = min_frac_promoter,
+                                    max_frac_mito = max_frac_mito)
+    })
   
-  if(cell_calling == 'filter') {
-    selected_cells <- sc_atac_filter_cell_calling(mtx = mat, 
-                                                  cell_qc_metrics_file = cell_qc_metrics_file,
-                                                  min_uniq_frags = min_uniq_frags,
-                                                  max_uniq_frags = max_uniq_frags,
-                                                  min_frac_peak = min_frac_peak,
-                                                  min_frac_tss = min_frac_tss,
-                                                  min_frac_enhancer = min_frac_enhancer,
-                                                  min_frac_promoter = min_frac_promoter,
-                                                  max_frac_mito = max_frac_mito)
-  } 
-  else if(isFALSE(cell_calling)) {
-    cat("No cell calling method was selected.\n")
-  }
-  else if (!cell_calling %in% c("emptydrops", "cellranger", "filter")) { # no legitimate cell calling method chosen, so just return the original matrix
-    cat(cell_calling, "was not an implemented cell calling method\n")
-  }
-  out_mat <- mat
-  barcodes     <- colnames(out_mat)
-  features     <- rownames(out_mat)
-  if (cell_calling %in% c("emptydrops", "cellranger", "filter")) {
-    # Only keep selected cells in matrix
-    out_mat      <- mat[, colnames(mat) %in% selected_cells]
+    if(cell_calling == 'filter') {
+        selected_cells <- sc_atac_filter_cell_calling(mtx = mat, 
+                                                    cell_qc_metrics_file = cell_qc_metrics_file,
+                                                    min_uniq_frags = min_uniq_frags,
+                                                    max_uniq_frags = max_uniq_frags,
+                                                    min_frac_peak = min_frac_peak,
+                                                    min_frac_tss = min_frac_tss,
+                                                    min_frac_enhancer = min_frac_enhancer,
+                                                    min_frac_promoter = min_frac_promoter,
+                                                    max_frac_mito = max_frac_mito)
+    } 
+    else if(isFALSE(cell_calling)) {
+        message("No cell calling method was selected.")
+    }
+    else if (!cell_calling %in% c("emptydrops", "cellranger", "filter")) { # no legitimate cell calling method chosen, so just return the original matrix
+        message(cell_calling, "was not an implemented cell calling method")
+    }
+    out_mat <- mat
     barcodes     <- colnames(out_mat)
     features     <- rownames(out_mat)
+    if (cell_calling %in% c("emptydrops", "cellranger", "filter")) {
+        # Only keep selected cells in matrix
+        out_mat      <- mat[, colnames(mat) %in% selected_cells]
+        barcodes     <- colnames(out_mat)
+        features     <- rownames(out_mat)
     
-    # cat("Number of called barcodes: ")
-    # cat(length(selected_cells))
-    # 
-    # cat("\nNumber of columns: ")
-    # cat(length(barcodes))
-    # cat("\n")
-    if (length(barcodes) == 0) {
-      stop("No cells were called...")
+        # cat("Number of called barcodes: ")
+        # cat(length(selected_cells))
+        # 
+        # cat("\nNumber of columns: ")
+        # cat(length(barcodes))
+        # cat("\n")
+        if (length(barcodes) == 0) {
+            stop("No cells were called...")
+        }
     }
-  }
   
-  # Store output matrix
-  # Matrix::writeMM(Matrix::Matrix(out_mat), file =file.path(output_folder, 'cell_called_matrix.mtx'))
-  cat("cell called and stored in ", output_folder, "\n")
-  utils::write.table(barcodes, file = file.path(output_folder, 'non_empty_barcodes.txt'), sep = '\t',
-              row.names = FALSE, quote = FALSE, col.names = FALSE)
-  utils::write.table(features, file = file.path(output_folder, 'non_empty_features.txt'), sep = '\t',
-              row.names = FALSE, quote = FALSE, col.names = FALSE)
+    # Store output matrix
+    # Matrix::writeMM(Matrix::Matrix(out_mat), file =file.path(output_folder, 'cell_called_matrix.mtx'))
+    message("cell called and stored in ", output_folder)
+    utils::write.table(barcodes, file = file.path(output_folder, 'non_empty_barcodes.txt'), sep = '\t',
+                row.names = FALSE, quote = FALSE, col.names = FALSE)
+    utils::write.table(features, file = file.path(output_folder, 'non_empty_features.txt'), sep = '\t',
+                row.names = FALSE, quote = FALSE, col.names = FALSE)
 
-  
-  return(out_mat)
+    
+    return(out_mat)
 }
 
 
@@ -230,44 +227,44 @@ sc_atac_cellranger_cell_calling <- function(mat, cell_qc_metrics_file, genome_si
   # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/cellranger_cell_caller.R
   # https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/algorithms/overview
   
-  frac_peak <- total_frags <- NULL
-  
-  # first filter barcodes by frac_in_peak
-  qc_per_bc <- data.table::fread(cell_qc_metrics_file)
-  peak_cov_frac <- min(0.05, nrow(mat) * 1000/genome_size)
-  qc_sele_bc <- qc_per_bc[frac_peak >= peak_cov_frac]
-  
-  # subtract counts due to contamination (rate 0.02)
-  CN <- max(1, round(stats::median(qc_sele_bc$total_frags)* 0.02))
-  qc_sele_bc[, 'total_frags' := total_frags -CN]
-  qc_sele_bc <- qc_sele_bc[total_frags >= 0]
-  
-  # fit two NB mixture model & using signal to noisy ratio to select cells
-  n_in_peak <- Matrix::colSums(mat)
-  n_in_peak <- n_in_peak[names(n_in_peak) %in% qc_sele_bc$bc]
-  
-  # Need countreg for FLXMRnegbin
-  if (!requireNamespace("countreg", quietly = TRUE)) {
-    stop("Install 'countreg' to use this function")
-      #utils::install.packages("countreg", repos="http://R-Forge.R-project.org")
-  }
+    frac_peak <- total_frags <- NULL
+    
+    # first filter barcodes by frac_in_peak
+    qc_per_bc <- data.table::fread(cell_qc_metrics_file)
+    peak_cov_frac <- min(0.05, nrow(mat) * 1000/genome_size)
+    qc_sele_bc <- qc_per_bc[frac_peak >= peak_cov_frac]
+    
+    # subtract counts due to contamination (rate 0.02)
+    CN <- max(1, round(stats::median(qc_sele_bc$total_frags)* 0.02))
+    qc_sele_bc[, 'total_frags' := total_frags -CN]
+    qc_sele_bc <- qc_sele_bc[total_frags >= 0]
+    
+    # fit two NB mixture model & using signal to noisy ratio to select cells
+    n_in_peak <- Matrix::colSums(mat)
+    n_in_peak <- n_in_peak[names(n_in_peak) %in% qc_sele_bc$bc]
+    
+    # Need countreg for FLXMRnegbin
+    if (!requireNamespace("countreg", quietly = TRUE)) {
+        stop("Install 'countreg' to use this function")
+        #utils::install.packages("countreg", repos="http://R-Forge.R-project.org")
+    }
 
-  fm0 <- flexmix::flexmix(n_in_peak ~ 1, k = 2, model = countreg::FLXMRnegbin())
-  prob1 <- flexmix::posterior(fm0)[, 1]
-  prob2 <- flexmix::posterior(fm0)[, 2]
-  mus <- flexmix::parameters(fm0)[1, ]
-  
-  if(mus[1] > mus[2]){
-    odd = prob1
-  } else {
-    odd = prob2
-  }
+    fm0 <- flexmix::flexmix(n_in_peak ~ 1, k = 2, model = countreg::FLXMRnegbin())
+    prob1 <- flexmix::posterior(fm0)[, 1]
+    prob2 <- flexmix::posterior(fm0)[, 2]
+    mus <- flexmix::parameters(fm0)[1, ]
+    
+    if(mus[1] > mus[2]){
+        odd <- prob1
+    } else {
+        odd <- prob2
+    }
 
-  aa = which(odd == 1)
+    aa <- which(odd == 1)
 
-  select.cells = names(n_in_peak)[aa]
+    select.cells <- names(n_in_peak)[aa]
 
-  return(select.cells)
+    return(select.cells)
 }
 
 
@@ -289,30 +286,30 @@ sc_atac_cellranger_cell_calling <- function(mat, cell_qc_metrics_file, genome_si
 #' @export
 #' 
 sc_atac_filter_cell_calling <- function(
-  mtx, 
-  cell_qc_metrics_file,
-  min_uniq_frags = 0,
-  max_uniq_frags = 50000,
-  min_frac_peak = 0.05,
-  min_frac_tss = 0,
-  min_frac_enhancer = 0,
-  min_frac_promoter = 0,
-  max_frac_mito = 0.2) {
-  
-  # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/filter_barcodes.R
-
-  total_frags <- frac_mito <- frac_peak <- frac_tss <- frac_promoter <- frac_enhancer <- NULL
+    mtx, 
+    cell_qc_metrics_file,
+    min_uniq_frags = 0,
+    max_uniq_frags = 50000,
+    min_frac_peak = 0.05,
+    min_frac_tss = 0,
+    min_frac_enhancer = 0,
+    min_frac_promoter = 0,
+    max_frac_mito = 0.2) {
     
-  qc_bc_stat <- data.table::fread(cell_qc_metrics_file)
+    # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/filter_barcodes.R
 
-  qc_sele <- qc_bc_stat[total_frags >= min_uniq_frags & total_frags <= max_uniq_frags &
-                        frac_mito <= max_frac_mito &
-                        frac_peak >= min_frac_peak &
-                        frac_tss >= min_frac_tss &
-                        frac_promoter >= min_frac_promoter &
-                        frac_enhancer >= min_frac_enhancer]
+    total_frags <- frac_mito <- frac_peak <- frac_tss <- frac_promoter <- frac_enhancer <- NULL
+        
+    qc_bc_stat <- data.table::fread(cell_qc_metrics_file)
 
-  return(qc_sele$bc)
+    qc_sele <- qc_bc_stat[total_frags >= min_uniq_frags & total_frags <= max_uniq_frags &
+                frac_mito <= max_frac_mito &
+                frac_peak >= min_frac_peak &
+                frac_tss >= min_frac_tss &
+                frac_promoter >= min_frac_promoter &
+                frac_enhancer >= min_frac_enhancer]
+
+    return(qc_sele$bc)
 }
 
 
@@ -327,50 +324,50 @@ sc_atac_filter_cell_calling <- function(
 #' @export
 #' 
 sc_atac_emptydrops_cell_calling <- function(
-  mat, 
-  output_folder,
-  lower = NULL) {
+    mat, 
+    output_folder,
+    lower = NULL) {
+    
+    #set.seed(2019)
+    
+    # generating the knee plot
+    my.counts <- Matrix::Matrix(mat)
+    br.out    <- DropletUtils::barcodeRanks(my.counts)
+    
+    # Making a plot
+    while (!is.null(grDevices::dev.list()))  grDevices::dev.off()
+    grDevices::png(file=paste0(output_folder, "/scPipe_atac_stats/knee_plot.png"))
+    plot(br.out$rank, br.out$total, log="xy", xlab="Rank", ylab="Total")
+    o <- order(br.out$rank)
+    graphics::lines(br.out$rank[o], br.out$fitted[o], col="red")
+    
+    graphics::abline(h=S4Vectors::metadata(br.out)$knee, col="dodgerblue", lty=2)
+    graphics::abline(h=S4Vectors::metadata(br.out)$inflection, col="forestgreen", lty=2)
+    graphics::legend("bottomleft", lty=2, col=c("dodgerblue", "forestgreen"), 
+            legend=c("knee", "inflection"))
+    grDevices::dev.off()
+    
+    if(is.null(lower)){
+        #lower <- floor(0.1*ncol(mat))
+        lower <- 1
+    }
+    cell.out <- DropletUtils::emptyDrops(mat, lower = lower)
+    # cell.out <- emptyDrops2(mat, lower = lower)
+    
+    filter.out <- cell.out[S4Vectors::complete.cases(cell.out), ]
+    
+    #saveRDS(filter.out, file = paste0(output_folder, '/EmptyDrop_obj.rds'))
+    #cat("Empty cases are removed and saved in ", output_folder, "\n")
   
-  #set.seed(2019)
-  
-  # generating the knee plot
-  my.counts <- Matrix::Matrix(mat)
-  br.out    <- DropletUtils::barcodeRanks(my.counts)
-  
-  # Making a plot
-  while (!is.null(grDevices::dev.list()))  grDevices::dev.off()
-  grDevices::png(file=paste0(output_folder, "/scPipe_atac_stats/knee_plot.png"))
-  plot(br.out$rank, br.out$total, log="xy", xlab="Rank", ylab="Total")
-  o <- order(br.out$rank)
-  graphics::lines(br.out$rank[o], br.out$fitted[o], col="red")
-  
-  graphics::abline(h=S4Vectors::metadata(br.out)$knee, col="dodgerblue", lty=2)
-  graphics::abline(h=S4Vectors::metadata(br.out)$inflection, col="forestgreen", lty=2)
-  graphics::legend("bottomleft", lty=2, col=c("dodgerblue", "forestgreen"), 
-         legend=c("knee", "inflection"))
-  grDevices::dev.off()
-  
-  if(is.null(lower)){
-    #lower <- floor(0.1*ncol(mat))
-    lower <- 1
-  }
-  cell.out <- DropletUtils::emptyDrops(mat, lower = lower)
-  # cell.out <- emptyDrops2(mat, lower = lower)
-  
-  filter.out <- cell.out[S4Vectors::complete.cases(cell.out), ]
-  
-  #saveRDS(filter.out, file = paste0(output_folder, '/EmptyDrop_obj.rds'))
-  #cat("Empty cases are removed and saved in ", output_folder, "\n")
-  
-  if(length(filter.out$FDR) > 0){
-    fdr <- 0.01
-    cat("FDR of 0.01 is assigned... \n")
-    filter.out <- filter.out[filter.out$FDR <= fdr, ]
-  } else{
-    message("insufficient unique points for computing knee/inflection points ... Use the output matrices with caution! \n")
-  }
-  
-  select.cells <- rownames(filter.out)
-  
-  return(select.cells)
+    if(length(filter.out$FDR) > 0){
+        fdr <- 0.01
+        message("FDR of 0.01 is assigned...")
+        filter.out <- filter.out[filter.out$FDR <= fdr, ]
+    } else{
+        message("insufficient unique points for computing knee/inflection points ... Use the output matrices with caution!")
+    }
+    
+    select.cells <- rownames(filter.out)
+    
+    return(select.cells)
 }
