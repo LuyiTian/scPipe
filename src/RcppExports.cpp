@@ -11,14 +11,14 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // check_barcode_reads
-bool check_barcode_reads(String fastq, String barcodeseqs, String barcodeRealname, int barcode_start, int barcode_length, int lines_to_search, double threshold);
+bool check_barcode_reads(Rcpp::String fastq, Rcpp::String barcodeseqs, Rcpp::String barcodeRealname, int barcode_start, int barcode_length, int lines_to_search, double threshold);
 RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcodeRealnameSEXP, SEXP barcode_startSEXP, SEXP barcode_lengthSEXP, SEXP lines_to_searchSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< String >::type fastq(fastqSEXP);
-    Rcpp::traits::input_parameter< String >::type barcodeseqs(barcodeseqsSEXP);
-    Rcpp::traits::input_parameter< String >::type barcodeRealname(barcodeRealnameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type fastq(fastqSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type barcodeseqs(barcodeseqsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type barcodeRealname(barcodeRealnameSEXP);
     Rcpp::traits::input_parameter< int >::type barcode_start(barcode_startSEXP);
     Rcpp::traits::input_parameter< int >::type barcode_length(barcode_lengthSEXP);
     Rcpp::traits::input_parameter< int >::type lines_to_search(lines_to_searchSEXP);
