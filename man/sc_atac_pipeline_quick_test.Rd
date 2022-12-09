@@ -6,6 +6,9 @@
 \usage{
 sc_atac_pipeline_quick_test()
 }
+\value{
+None (invisible `NULL`)
+}
 \description{
 A function that tests the pipeline on a small test sample (without duplicate removal)
 }

@@ -13,6 +13,10 @@ sc_atac_cellranger_cell_calling(mat, cell_qc_metrics_file, genome_size)
 
 \item{genome_size}{The size of the genome}
 }
+\value{
+a character vector of ???
+}
 \description{
-use the cellranger cell calling algorithm
+use the cellranger cell calling algorithm. Note: This function requires the 'countreg' package to be installed
+in order to run.
 }

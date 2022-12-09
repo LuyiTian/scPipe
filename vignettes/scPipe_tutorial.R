@@ -56,3 +56,26 @@ QC_metrics(sce) = sc_sample_qc
 demultiplex_info(sce) = cell_barcode_matching
 UMI_dup_info(sce) = UMI_duplication
 
+## ---- fig.height=7, fig.width=7-----------------------------------------------
+plot_demultiplex(sce)
+
+## ---- fig.height=7, fig.width=7-----------------------------------------------
+plot_UMI_dup(sce)
+
+## ---- warning=FALSE, message=FALSE--------------------------------------------
+sce = calculate_QC_metrics(sce)
+sce = detect_outlier(sce)
+
+## ---- fig.height=7, fig.width=7-----------------------------------------------
+plot_mapping(sce, percentage = TRUE, dataname = "sc_sample_data")
+
+## ---- warning=FALSE, message=FALSE, fig.height=7, fig.width=7-----------------
+plot_QC_pairs(sce)
+
+## -----------------------------------------------------------------------------
+sce = remove_outliers(sce)
+dim(sce)
+
+## -----------------------------------------------------------------------------
+sessionInfo()
+

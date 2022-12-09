@@ -32,6 +32,9 @@ sc_atac_create_report(
 
 \item{enhancer_file}{bed file fo the enhancer regions}
 }
+\value{
+the path of the output file
+}
 \description{
 Generates a HTML report using the output folder produced by the pipeline
 }

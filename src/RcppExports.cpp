@@ -11,14 +11,14 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // check_barcode_reads
-bool check_barcode_reads(String fastq, String barcodeseqs, String barcodeRealname, int barcode_start, int barcode_length, int lines_to_search, double threshold);
+bool check_barcode_reads(Rcpp::String fastq, Rcpp::String barcodeseqs, Rcpp::String barcodeRealname, int barcode_start, int barcode_length, int lines_to_search, double threshold);
 RcppExport SEXP _scPipe_check_barcode_reads(SEXP fastqSEXP, SEXP barcodeseqsSEXP, SEXP barcodeRealnameSEXP, SEXP barcode_startSEXP, SEXP barcode_lengthSEXP, SEXP lines_to_searchSEXP, SEXP thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< String >::type fastq(fastqSEXP);
-    Rcpp::traits::input_parameter< String >::type barcodeseqs(barcodeseqsSEXP);
-    Rcpp::traits::input_parameter< String >::type barcodeRealname(barcodeRealnameSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type fastq(fastqSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type barcodeseqs(barcodeseqsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::String >::type barcodeRealname(barcodeRealnameSEXP);
     Rcpp::traits::input_parameter< int >::type barcode_start(barcode_startSEXP);
     Rcpp::traits::input_parameter< int >::type barcode_length(barcode_lengthSEXP);
     Rcpp::traits::input_parameter< int >::type lines_to_search(lines_to_searchSEXP);
@@ -275,20 +275,20 @@ BEGIN_RCPP
 END_RCPP
 }
 // sc_atac_create_fragments_cpp
-void sc_atac_create_fragments_cpp(std::string inbam, std::string output, CharacterVector contigs, IntegerVector ends, unsigned int min_mapq, unsigned int nproc, std::string cellbarcode, std::string chromosomes, Nullable<String> readname_barcodeN, Nullable<StringVector> cellsN, unsigned int max_distance, unsigned int min_distance, unsigned int chunksize);
+void sc_atac_create_fragments_cpp(std::string inbam, std::string output, Rcpp::CharacterVector contigs, Rcpp::IntegerVector ends, unsigned int min_mapq, unsigned int nproc, std::string cellbarcode, std::string chromosomes, Rcpp::Nullable<Rcpp::String> readname_barcodeN, Rcpp::Nullable<Rcpp::StringVector> cellsN, unsigned int max_distance, unsigned int min_distance, unsigned int chunksize);
 RcppExport SEXP _scPipe_sc_atac_create_fragments_cpp(SEXP inbamSEXP, SEXP outputSEXP, SEXP contigsSEXP, SEXP endsSEXP, SEXP min_mapqSEXP, SEXP nprocSEXP, SEXP cellbarcodeSEXP, SEXP chromosomesSEXP, SEXP readname_barcodeNSEXP, SEXP cellsNSEXP, SEXP max_distanceSEXP, SEXP min_distanceSEXP, SEXP chunksizeSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type inbam(inbamSEXP);
     Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type contigs(contigsSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type ends(endsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type contigs(contigsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type ends(endsSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type min_mapq(min_mapqSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type nproc(nprocSEXP);
     Rcpp::traits::input_parameter< std::string >::type cellbarcode(cellbarcodeSEXP);
     Rcpp::traits::input_parameter< std::string >::type chromosomes(chromosomesSEXP);
-    Rcpp::traits::input_parameter< Nullable<String> >::type readname_barcodeN(readname_barcodeNSEXP);
-    Rcpp::traits::input_parameter< Nullable<StringVector> >::type cellsN(cellsNSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readname_barcodeN(readname_barcodeNSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::StringVector> >::type cellsN(cellsNSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type max_distance(max_distanceSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type min_distance(min_distanceSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type chunksize(chunksizeSEXP);

@@ -23,6 +23,9 @@ sc_atac_bam_tagging(
 
 \item{nthreads}{The number of threads}
 }
+\value{
+file path of the resultant demmultiplexed BAM file.
+}
 \description{
 Demultiplexes the reads
 }
@@ -30,10 +33,22 @@ Demultiplexes the reads
 sc_atac_bam_tagging()
 }
 \examples{
-\dontrun{
-sc_atac_bam_tagging(
-    inbam,
-    nthreads  = 6)
-}
+r1 <- system.file("extdata", "small_chr21_R1.fastq.gz", package="scPipe")
+r2 <- system.file("extdata", "small_chr21_R3.fastq.gz", package="scPipe")
+barcode_fastq <- system.file("extdata", "small_chr21_R2.fastq.gz", package="scPipe")
+out <- tempdir()
+
+sc_atac_trim_barcode(r1=r1, r2=r2, bc_file=barcode_fastq, output_folder=out)
+
+demux_r1 <- file.path(out, "demux_completematch_small_chr21_R1.fastq.gz")
+demux_r2 <- file.path(out, "demux_completematch_small_chr21_R3.fastq.gz")
+reference <- system.file("extdata", "small_chr21.fa", package="scPipe")
+
+aligned_bam <- sc_aligning(ref=reference, R1=demux_r1, R2=demux_r2, nthreads=6, output_folder=out)
+
+out_bam <- sc_atac_bam_tagging(
+   inbam = aligned_bam,
+   output_folder = out,
+   nthreads = 6)
 
 }

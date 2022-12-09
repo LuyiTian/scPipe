@@ -7,7 +7,6 @@
 #include <zlib.h>
 #include "Trie.h"
 #include "ResizeArray.h"
-using namespace Rcpp;
 using namespace std;
 
 
@@ -319,7 +318,7 @@ void Clean_Up(int num_barcode)
 }
 
 // [[Rcpp::export]]
-bool check_barcode_reads(String fastq, String barcodeseqs, String barcodeRealname,
+bool check_barcode_reads(Rcpp::String fastq, Rcpp::String barcodeseqs, Rcpp::String barcodeRealname,
                 int barcode_start, int barcode_length,
                 int lines_to_search, double threshold) {
 
@@ -349,7 +348,7 @@ bool check_barcode_reads(String fastq, String barcodeseqs, String barcodeRealnam
         // of the best spots
         search_result = (double) found / (double) (found + not_found);
         if (search_result >= threshold) {
-            Rprintf("Successful; continuing with program.\n");
+            Rcpp::Rcout << "Successful; continuing with program.\n";
             finish_program = true;
         } else {
             // we now need to search through a subset of the read to locate a better position for the barcode start
@@ -360,11 +359,14 @@ bool check_barcode_reads(String fastq, String barcodeseqs, String barcodeRealnam
             new_search_result = (double) found / (double) (found + not_found);
 
             if (new_search_result >= .5) {
-                Rprintf("Invalid barcode start index given, with only %f percent of reads containing a barcode match. However, a better barcode start location is %d, where %f percent of barcodes were found.\n", 
-                            search_result * 100, max_position, new_search_result * 100);
+                Rcpp::Rcout << "Invalid barcode start index given, with only " <<  search_result * 100
+                            << " percent of reads containing a barcode match. However, a better barcode start location is " << max_position
+                            << " , where " << new_search_result * 100 
+                            << " percent of barcodes were found.\n";
             } else {
-                Rprintf("Unsuccessful. No location was found with a high number of barcode matches. Did both %s and %s come from the same provider?\n", 
-                        barcodeRealname.get_cstring(), fastq_file.c_str());
+                Rcpp::Rcout << "Unsuccessful. No location was found with a high number of barcode matches. Did both " << barcodeRealname.get_cstring()
+                            << " and " << fastq_file.c_str() 
+                            << " come from the same provider?\n";
             }
             positions_found->Delete();
             delete positions_found;
@@ -374,7 +376,7 @@ bool check_barcode_reads(String fastq, String barcodeseqs, String barcodeRealnam
         barcodes_trie->Clear_Trie();
         delete barcodes_trie;
     } catch (std::exception &e) {
-        Rprintf("An error occured: %s\n", e.what());
+        Rcpp::Rcout << "An error occured: " <<  e.what() << "\n";
         exit(10);
     }
     return finish_program;

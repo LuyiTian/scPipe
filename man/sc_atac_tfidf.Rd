@@ -11,6 +11,9 @@ sc_atac_tfidf(binary.mat, output_folder = NULL)
 
 \item{output_folder}{The path of the output folder}
 }
+\value{
+None (invisible `NULL`)
+}
 \description{
 Takes the binary matrix and generate a TF-IDF so the clutering can take place on the reduced dimentions.
 }

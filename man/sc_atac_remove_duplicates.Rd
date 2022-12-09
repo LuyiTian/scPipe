@@ -13,12 +13,9 @@ sc_atac_remove_duplicates(inbam, samtools_path = NULL, output_folder = NULL)
 
 \item{output_folder}{The path of the output folder}
 }
+\value{
+file path to a bam file created from samtools markdup
+}
 \description{
 Takes in a BAM file and removes the PCR duplicates using the samtools markdup function. Requires samtools 1.10 or newer for statistics to be generated.
-}
-\examples{
-\dontrun{
-sc_atac_remove_duplicates(inbam) 
-}
-
 }
