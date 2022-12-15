@@ -7,6 +7,7 @@
 #' @description Generates an integrated SCE object with scRNA-Seq and scATAC-Seq data produced by the scPipe pipelines
 #' @param sce_list A list of SCE objects, named with the corresponding technologies
 #' @param sce_column_to_barcode_files A list of files containing the barcodes for each tech (if not needed then give a `NULL` entry)
+#' @param rev_comp A named list of technologies and logical flags specifying if reverse complements should be applyed for sequences (if not needed then provide a `NULL` entry)
 #' @param cell_line_info A list of files, each of which contains 2 columns corresponding to the barcode and cell line for each tech (if not needed then provide a `NULL` entry)
 #' @param barcode_match_file A .csv file with columns corresponding to the barcodes for each tech
 #' @param output_folder The path to the output folder
@@ -14,8 +15,9 @@
 #'
 #' @importFrom stats na.omit
 #' @importFrom tibble column_to_rownames
-#' @importFrom dplyr rename_with
-#' @importFrom S4Vectors rename
+#' @importFrom dplyr rename_with rename
+#' @importFrom MultiAssayExperiment MultiAssayExperiment
+#' @importFrom Biostrings reverseComplement DNAStringSet
 #' @examples
 #' \dontrun{
 #' sc_integrate(
@@ -124,7 +126,7 @@ sc_integrate <- function(sce_list,
             sce <- sce_list[[i]]
             tech <- techs[[i]]
             qc <- data.frame(colData(sce)) %>% dplyr::rename_with( ~ paste0(tech, "_", .x))
-            base::merge(qc, barcode_match_df, by.x = "row.names", by.y = techs[[i]], all.x = TRUE) %>% S4Vectors::rename(!!tech := "Row.names")
+            base::merge(qc, barcode_match_df, by.x = "row.names", by.y = techs[[i]], all.x = TRUE) %>% dplyr::rename(!!tech := "Row.names")
         })
         merged_qc <- Reduce(function(x, y) base::merge(x, y, all = TRUE), qc_dfs)
     }
@@ -159,12 +161,23 @@ sc_integrate <- function(sce_list,
 #'
 #' @importFrom tibble enframe
 #' @importFrom purrr simplify
+#' @importFrom ggplot2 ggplot aes geom_point theme_bw scale_colour_gradientn ggsave
+#' @importFrom dplyr left_join rename mutate
 #' @export
 sc_mae_plot_umap <- function(mae,
                                 by = NULL,
                                 output_file = NULL) {
     #set.seed(123)
     
+    if (!requireNamespace("RANN", quietly=TRUE)) {
+        stop("Install 'RANN' to use this function")
+    }
+    if (!requireNamespace("igraph", quietly=TRUE)) {
+        stop("Install 'igraph' to use this function")
+    }
+    if (!requireNamespace("umap", quietly=TRUE)) {
+        stop("Install 'umap' to use this function")
+    }
     umap_dfs <- lapply(seq_along(mae), function(i) {
         tech <- names(mae)[[i]]
         counts <- assays(mae)[[tech]]
@@ -221,25 +234,25 @@ sc_mae_plot_umap <- function(mae,
     names(umap_dfs) <- names(mae)
     
     umap_data <- do.call(rbind, umap_dfs)
-    if (!is.null(by)) {
-        g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
-        geom_point(aes(col = .data[[by]]), size = 2, alpha = 0.5) +
-        theme_bw(base_size = 14)
+    if (!is.null(by)) { 
+        g <- ggplot2::ggplot(umap_data, ggplot2::aes(x = UMAP1, y = UMAP2)) +
+        ggplot2::geom_point(ggplot2::aes(col = .data[[by]]), size = 2, alpha = 0.5) +
+        ggplot2::theme_bw(base_size = 14)
         if (is.numeric(umap_data[[by]])) {
-            g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
-                geom_point(aes(col = .data[[by]]), size = 2, alpha = 0.5) +
-                scale_colour_gradientn(colours=c("green","black")) +
-                theme_bw(base_size = 14)
+            g <- ggplot2::ggplot(umap_data, ggplot2::aes(x = UMAP1, y = UMAP2)) +
+                ggplot2::geom_point(ggplot2::aes(col = .data[[by]]), size = 2, alpha = 0.5) +
+                ggplot2::scale_colour_gradientn(colours=c("green","black")) +
+                ggplot2::theme_bw(base_size = 14)
         }
     } else {
-        g <- ggplot(umap_data, aes(x = UMAP1, y = UMAP2)) +
-        geom_point(aes(col = source), size = 2, alpha = 0.5) +
-        theme_bw(base_size = 14)
+        g <- ggplot2::ggplot(umap_data, ggplot2::aes(x = UMAP1, y = UMAP2)) +
+        ggplot2::geom_point(ggplot2::aes(col = source), size = 2, alpha = 0.5) +
+        ggplot2::theme_bw(base_size = 14)
     }
     
     if (!is.null(output_file)) {
         if (file.exists(output_file)) {
-            ggsave(output_file)
+            ggplot2::ggsave(output_file)
             message("Saved plot to", output_file)
         } else {
             message("The supplied output file path was invalid.")
@@ -254,6 +267,7 @@ sc_mae_plot_umap <- function(mae,
 #' @name TF.IDF.custom
 #' @title Returns the TF-IDF normalised version of a binary matrix
 #' @param binary.mat The binary matrix
+#' @param verbose boolean flag to print status messages
 #' @returns Returns the TF-IDF normalised version of a binary matrix
 #' @importFrom methods slot
 #' @importFrom Matrix colSums tcrossprod Diagonal rowSums

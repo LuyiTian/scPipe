@@ -376,8 +376,7 @@ bool check_barcode_reads(Rcpp::String fastq, Rcpp::String barcodeseqs, Rcpp::Str
         barcodes_trie->Clear_Trie();
         delete barcodes_trie;
     } catch (std::exception &e) {
-        Rcpp::Rcout << "An error occured: " <<  e.what() << "\n";
-        exit(10);
+        Rcpp::stop(e.what());
     }
     return finish_program;
 }

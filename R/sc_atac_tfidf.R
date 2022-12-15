@@ -80,7 +80,9 @@ sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
 #' @param sce The SingleCellExperiment object
 #'
 #' @returns A shiny object which represents the app. Printing the object or passing it to `shiny::runApp(...)` will run the app.
-#' @importFrom ggplot2 ggplot geom_point theme_bw geom_point aes scale_colour_gradientn
+#' @importFrom ggplot2 ggplot aes geom_point theme_bw scale_colour_gradientn 
+#' @importFrom plotly ggplotly plotlyOutput renderPlotly
+#' @importFrom shiny fluidPage titlePanel sidebarLayout sidebarPanel selectInput mainPanel shinyApp
 #' @export
 sc_interactive_umap_plot <- function(sce) {
     umap_data <- sc_get_umap_data(sce)
@@ -110,12 +112,12 @@ sc_interactive_umap_plot <- function(sce) {
     
     # Define server logic required to draw a histogram ----
     server <- function(input, output) {
-        output$umapPlot <- plotly::renderPlotly({
+        output$umapPlot <- plotly::renderPlotly({ 
             g <- ggplot2::ggplot(umap_data, ggplot2::aes(x = UMAP1, y = UMAP2, text = paste("barcode: ", barcode))) +
                 ggplot2::geom_point(ggplot2::aes(col = .data[[input$by]]), size = 2, alpha = 0.5) +
                 ggplot2::theme_bw(base_size = 14)
             if (is.numeric(umap_data[[input$by]])) {
-                g <- ggplot2::ggplot(umap_data, gglot2::aes(x = UMAP1, y = UMAP2, text = paste("barcode: ", barcode))) +
+                g <- ggplot2::ggplot(umap_data, ggplot2::aes(x = UMAP1, y = UMAP2, text = paste("barcode: ", barcode))) +
                 ggplot2::geom_point(ggplot2::aes(col = .data[[input$by]]), size = 2, alpha = 0.5) +
                 ggplot2::scale_colour_gradientn(colours = c("green", "red")) +
                 ggplot2::theme_bw(base_size = 14)
@@ -131,7 +133,7 @@ sc_interactive_umap_plot <- function(sce) {
 #' @name sc_get_umap_data
 #' @title Generates UMAP data from sce object
 #' @description Produces a DataFrame containing the UMAP dimensions, as well as all the colData of the sce object for each cell
-#' @param mae The SingleCellExperiment object
+#' @param sce The SingleCellExperiment object
 #' @param n_neighbours No. of neighbours for KNN 
 #'
 #' @returns A dataframe containing the UMAP dimensions, as well as all the colData of the sce object for each cell
@@ -139,26 +141,21 @@ sc_interactive_umap_plot <- function(sce) {
 #' @importFrom methods slot
 #' @importFrom purrr simplify
 #' @importFrom tibble enframe
+#' @importFrom dplyr left_join mutate rename
 #' @export
 sc_get_umap_data <- function(sce,
                                 n_neighbours = 30) {
     #set.seed(123)
     
+    if (!requireNamespace("RANN", quietly=TRUE)) {
+        stop("Install 'RANN' to use this function")
+    }
+    if (!requireNamespace("igraph", quietly=TRUE)) {
+        stop("Install 'igraph' to use this function")
+    }
+
     counts <- assay(sce)
     bin_mat <- as.matrix((counts>0)+0)
-    
-    TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
-        object <- binary.mat
-        npeaks       <- Matrix::colSums(x = object)
-        tf           <- Matrix::tcrossprod(x = as.matrix(object), y = Matrix::Diagonal(x = 1 / npeaks))
-        rsums        <- Matrix::rowSums(x = object)
-        idf          <- ncol(x = object) / rsums
-        norm.data    <- Matrix::Diagonal(n = length(x = idf), x = idf) %*% tf
-        scale.factor <- 1e4
-        methods::slot(object = norm.data, name = "x") <- log1p(x = methods::slot(object = norm.data, name = "x") * scale.factor)
-        norm.data[which(x = is.na(x = norm.data))] <- 0
-        return(norm.data)
-    }
     
     binary.mat <- TF.IDF.custom(bin_mat)
     n_bcs <- max(min(50, ncol(binary.mat), nrow(binary.mat))-1,0)

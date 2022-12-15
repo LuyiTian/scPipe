@@ -25,12 +25,6 @@ sc_atac_create_report(
 \item{feature_type}{A string indicating the type of the feature (`genome_bin` or `peak`)}
 
 \item{n_barcode_subset}{if you require only to visualise stats for a sample of barcodes to improve processing time (integer)}
-
-\item{tss_file}{bed file of the TSS regions}
-
-\item{promoter_file}{bed file of the promoter regions}
-
-\item{enhancer_file}{bed file fo the enhancer regions}
 }
 \value{
 the path of the output file

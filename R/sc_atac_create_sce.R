@@ -1,4 +1,3 @@
-
 ###########################################################
 # Create a SingleCell Experiment Object for scATAC-Seq data
 ###########################################################
@@ -7,11 +6,16 @@
 #'
 #' @param input_folder The output folder produced by the pipeline
 #' @param organism The type of the organism
+#' @param sample_name The name of the sample
 #' @param feature_type The type of the feature
 #' @param pheno_data The pheno data
 #' @param report Whether or not a HTML report should be produced
 #'
 #' @returns a SingleCellExperiment object created from the scATAC-Seq data provided
+#'
+#' @importFrom utils read.csv
+#' @importFrom tibble column_to_rownames
+#' @importFrom SingleCellExperiment SingleCellExperiment
 #' @examples
 #' \dontrun{
 #' sc_atac_create_sce(
@@ -51,8 +55,8 @@ sc_atac_create_sce <- function(input_folder  = NULL,
     
     #feature_cnt   <- readMM(file.path(input_folder, "sparse_matrix.mtx"))
     feature_cnt   <- readRDS(file.path(input_folder, "sparse_matrix.rds"))
-    cell_stats    <- read.csv(file.path(input_stats_folder, "filtered_stats_per_cell.csv"), row.names=1)
-    feature_stats <- read.csv(file.path(input_stats_folder, "filtered_stats_per_feature.csv"))
+    cell_stats    <- utils::read.csv(file.path(input_stats_folder, "filtered_stats_per_cell.csv"), row.names=1)
+    feature_stats <- utils::read.csv(file.path(input_stats_folder, "filtered_stats_per_feature.csv"))
     
 
     # need to change from here.... (check whether I need to filter before saving to the SCE object)
@@ -61,13 +65,13 @@ sc_atac_create_sce <- function(input_folder  = NULL,
     feature_cnt      <- feature_cnt[, order(c(colnames(feature_cnt)))]
     
     
-    qc <- read.csv(file.path(input_folder, "cell_qc_metrics.csv")) %>% tibble::column_to_rownames(var = "bc")
+    qc <- utils::read.csv(file.path(input_folder, "cell_qc_metrics.csv")) %>% tibble::column_to_rownames(var = "bc")
     cell_stats <- merge(x = cell_stats, y = qc, by = 0, all.x = TRUE) %>% tibble::column_to_rownames(var = "Row.names")
     cell_stats       <- cell_stats[order(c(rownames(cell_stats))), ]
     
 
     # generating the SCE object
-    sce                         <- SingleCellExperiment(assays = list(counts = feature_cnt))
+    sce                         <- SingleCellExperiment::SingleCellExperiment(assays = list(counts = feature_cnt))
 
     sce@metadata$scPipe$version <- packageVersion("scPipe")  # set version information
     

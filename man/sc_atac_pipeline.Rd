@@ -71,6 +71,10 @@ the fastq reads quality score are prioritised.}
 \item{id2_len}{barcode length for read 2, which is an extra parameter that is needed if the
 \code{bc_file} is in a \code{.csv} format.}
 
+\item{rmN}{ogical, whether to remove reads that contains N in UMI or cell barcode.}
+
+\item{rmlow}{logical, whether to remove reads that have low quality barcode sequences.}
+
 \item{organism}{The name of the organism e.g. hg38}
 
 \item{reference}{The reference genome file}

@@ -34,6 +34,11 @@
 #'    nthreads = 6)
 #'
 #' @importFrom data.table .N .SD
+#' @importFrom Rsamtools indexBam ScanBamParam BamFile scanBam
+#' @importFrom data.table dcast fwrite setDT set setnames
+#' @importFrom dplyr left_join
+#' @importFrom tibble tibble 
+#' @importFrom Matrix sparseMatrix
 #' @export
 sc_atac_bam_tagging <- function(inbam,
                                 output_folder = NULL,
