@@ -7,17 +7,12 @@
 #' @param promoters_file The path of the promoter annotation file 
 #' @param tss_file The path of the tss annotation file 
 #' @param enhs_file The path of the enhs annotation file 
-#' @param output_folder
+#' @param output_folder The path of the output folder for resultant files
 #' 
 #' @importFrom data.table fread setkey copy :=
-#' @importFrom utils write.csv
-#' @importFrom rtracklayer import
-#' @importFrom GenomicRanges makeGRangesFromDataFrame findOverlaps seqnames
-#' @importFrom tibble rownames_to_column
-#' @importFrom dplyr select group_by distinct mutate count 
-#' @importFrom S4Vectors queryHits
+
 #' 
-#' @returns Nothing.
+#' @returns Nothing (Invisible 'NULL')
 #' @export
 #' 
 sc_atac_create_cell_qc_metrics <- function(frags_file,

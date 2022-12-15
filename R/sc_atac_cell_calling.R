@@ -22,6 +22,7 @@
 #' @param min_frac_promoter The minimum proportion of fragments in a cell to overlap with a promoter sequence (used for \code{filter} cell calling)
 #' @param max_frac_mito The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)
 #'
+#' @importFrom utils write.table
 #' @examples
 #' \dontrun{
 #' sc_atac_cell_calling <- function(mat, 
@@ -217,10 +218,6 @@ sc_atac_cell_calling <- function(mat,
 #'
 #' @returns a character vector of ???
 #' 
-#' @importFrom data.table := fread
-#' @importFrom flexmix flexmix posterior parameters
-#' @importFrom stats median
-#' @importFrom Matrix colSums
 #' @export
 #' 
 sc_atac_cellranger_cell_calling <- function(mat, cell_qc_metrics_file, genome_size){
@@ -320,7 +317,6 @@ sc_atac_filter_cell_calling <- function(
 #' @param mat The input matrix
 #' @param output_folder The path of the output folder
 #' @param lower The lower threshold for the data if using the \code{emptydrops} function for cell calling.
-#' 
 #' @export
 #' 
 sc_atac_emptydrops_cell_calling <- function(
@@ -354,7 +350,7 @@ sc_atac_emptydrops_cell_calling <- function(
     cell.out <- DropletUtils::emptyDrops(mat, lower = lower)
     # cell.out <- emptyDrops2(mat, lower = lower)
     
-    filter.out <- cell.out[S4Vectors::complete.cases(cell.out), ]
+    filter.out <- cell.out[stats::complete.cases(cell.out), ]
     
     #saveRDS(filter.out, file = paste0(output_folder, '/EmptyDrop_obj.rds'))
     #cat("Empty cases are removed and saved in ", output_folder, "\n")

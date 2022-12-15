@@ -60,12 +60,6 @@ mapping positions. Default is 10 bp.}
 Number of BAM entries to read through before collapsing and writing
 fragments to disk. Higher chunksize will use more memory but will be
 faster.}
-
-\item{bam}{: str
-Path to BAM file}
-
-\item{fragment_path}{: str
-Path for output fragment file}
 }
 \value{
 returns NULL

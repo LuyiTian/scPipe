@@ -11,8 +11,8 @@
 
 #include "bam.h"
 #include <htslib/sam.h>
-#include "ThreadOutputFile.hpp"
-#include "Fragments.hpp"
+#include "ThreadOutputFile.h"
+#include "Fragments.h"
 
 
 class FragmentThread {

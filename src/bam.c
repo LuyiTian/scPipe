@@ -44,15 +44,15 @@ char *bam_format1(const bam_header_t *header, const bam1_t *b)
 	return str.s;
 }
 
-int bam_view1(const bam_header_t *header, const bam1_t *b)
-{
-	char *s = bam_format1(header, b);
-	int ret = -1;
-	if (!s) return -1;
-	if (puts(s) != EOF) ret = 0;
-	free(s);
-	return ret;
-}
+// int bam_view1(const bam_header_t *header, const bam1_t *b)
+// {
+// 	char *s = bam_format1(header, b);
+// 	int ret = -1;
+// 	if (!s) return -1;
+// 	if (puts(s) != EOF) ret = 0;
+// 	free(s);
+// 	return ret;
+// }
 
 int bam_validate1(const bam_header_t *header, const bam1_t *b)
 {

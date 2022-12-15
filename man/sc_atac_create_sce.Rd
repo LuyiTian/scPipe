@@ -18,6 +18,8 @@ sc_atac_create_sce(
 
 \item{organism}{The type of the organism}
 
+\item{sample_name}{The name of the sample}
+
 \item{feature_type}{The type of the feature}
 
 \item{pheno_data}{The pheno data}

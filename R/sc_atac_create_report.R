@@ -13,9 +13,6 @@
 #' @param sample_name A string indicating the name of the sample
 #' @param feature_type A string indicating the type of the feature (`genome_bin` or `peak`)
 #' @param n_barcode_subset if you require only to visualise stats for a sample of barcodes to improve processing time (integer)
-#' @param tss_file bed file of the TSS regions
-#' @param promoter_file bed file of the promoter regions
-#' @param enhancer_file bed file fo the enhancer regions
 #'
 #' @returns the path of the output file
 #' @export
@@ -28,6 +25,10 @@ sc_atac_create_report <- function(input_folder,
     
     if (!dir.exists(input_folder)){
         stop("The input folder could not be found at ", input_folder);
+    }
+
+    if (!requireNamespace("rmarkdown", quietly=TRUE)) {
+        stop("Install 'rmarkdown' to use this function")
     }
     
     if (!dir.exists(file.path(input_folder, "scPipe_atac_stats"))) {

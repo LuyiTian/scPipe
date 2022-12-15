@@ -33,7 +33,6 @@
 #'    output_folder = out,
 #'    nthreads = 6)
 #'
-#' @importFrom data.table .N .SD
 #' @export
 sc_atac_bam_tagging <- function(inbam,
                                 output_folder = NULL,

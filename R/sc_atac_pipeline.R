@@ -20,6 +20,8 @@
 #' \code{bc_file} is in a \code{.csv} format.
 #' @param id2_len barcode length for read 2, which is an extra parameter that is needed if the
 #' \code{bc_file} is in a \code{.csv} format.
+#' @param rmN ogical, whether to remove reads that contains N in UMI or cell barcode.
+#' @param rmlow logical, whether to remove reads that have low quality barcode sequences.
 #' @param organism The name of the organism e.g. hg38
 #' @param reference The reference genome file
 #' @param feature_type The feature type (either `genome_bin` or `peak`)

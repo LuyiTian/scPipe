@@ -43,6 +43,15 @@ Regular expression used to match chromosome names to include in the
 output file. Default is "(?i)^chr" (starts with "chr", case-insensitive).
 If None, use all chromosomes in the BAM file.}
 
+\item{readname_barcodeN}{: str, optional
+Regular expression used to match cell barocde stored in read name.
+If None (default), use read tags instead. Use "[^:]*" to match all characters
+before the first colon (":").}
+
+\item{cellsN}{: str
+File containing list of cell barcodes to retain. If None (default), use all cell barcodes
+found in the BAM file.}
+
 \item{max_distance}{: int, optional
 Maximum distance between integration sites for the fragment to be retained.
 Allows filtering of implausible fragments that likely result from incorrect
@@ -57,18 +66,6 @@ mapping positions. Default is 10 bp.}
 Number of BAM entries to read through before collapsing and writing
 fragments to disk. Higher chunksize will use more memory but will be
 faster.}
-
-\item{fragment_path}{: str
-Path for output fragment file}
-
-\item{readname_barcode}{: str, optional
-Regular expression used to match cell barocde stored in read name.
-If None (default), use read tags instead. Use "[^:]*" to match all characters
-before the first colon (":").}
-
-\item{cells}{: str
-File containing list of cell barcodes to retain. If None (default), use all cell barcodes
-found in the BAM file.}
 }
 \value{
 returns NULL

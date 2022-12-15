@@ -258,6 +258,10 @@ create_processed_report <- function(
             gene_id_type,
             report_name = "report"
             ) {
+
+    if (!requireNamespace("rmarkdown", quietly=TRUE)) {
+        stop("Install 'rmarkdown' to use this function.")
+    }
     fn <-  system.file("extdata", "report_template_slim.Rmd", package = "scPipe")
     tx <- readLines(fn)
     fill_report_field <- function(field, value) {

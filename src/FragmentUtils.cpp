@@ -1,8 +1,9 @@
+#include "Fragments.h"
+
 #include <string>
 #include <map>
 #include <functional>
 #include <sstream>
-#include "Fragments.hpp"
 
 std::string
 FragToString(FragmentStruct frag, bool chrom=true, bool start=true, bool end=true, bool bc=true) {

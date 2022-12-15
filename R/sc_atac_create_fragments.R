@@ -1,18 +1,12 @@
 #####################################################################
 # Generating Fragments for Aligned and Demultiplexed scATAC-Seq Reads
 #####################################################################
-
-
 #' @name sc_atac_create_fragments
 #' @title Generating the popular fragments for scATAC-Seq data
 #' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
 #'
 #' @param inbam The tagged, sorted and duplicate-free input BAM file
 #' @param output_folder The path of the output folder
-#' @param bam : str
-#'    Path to BAM file
-#' @param fragment_path : str
-#'    Path for output fragment file
 #' @param min_mapq : int
 #'    Minimum MAPQ to retain fragment
 #' @param nproc : int, optional
@@ -45,8 +39,6 @@
 #'
 #' @returns returns NULL
 #'
-#' @import Rhtslib
-#' @import Rcpp
 #' @export
 sc_atac_create_fragments <- function(
         inbam,
@@ -112,8 +104,6 @@ sc_atac_create_fragments <- function(
 #' @param keep_contigs regular expression used with grepl to filter reference names
 #'
 #' @return a named list where element names are chromosomes reference names and elements are integer lengths
-#' @importFrom Rsamtools indexBam idxstatsBam
-#' @importFrom stats setNames
 get_chromosomes <- function(bam, keep_contigs="^chr") {
     if (is.null(keep_contigs)) {
         keep_contigs <- "."
@@ -129,7 +119,7 @@ get_chromosomes <- function(bam, keep_contigs="^chr") {
     contigs <- grepl(keep_contigs, idxstats$seqnames, ignore.case=TRUE)
     mapped <- idxstats$mapped > 0
     keep_contigs <- idxstats[contigs & mapped, ]
-    conlen <- setNames(as.list(keep_contigs$seqlength), keep_contigs$seqnames)
+    conlen <- stats::setNames(as.list(keep_contigs$seqlength), keep_contigs$seqnames)
 
     return(conlen)
 }

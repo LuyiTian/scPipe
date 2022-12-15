@@ -8,6 +8,8 @@ TF.IDF.custom(binary.mat, verbose = TRUE)
 }
 \arguments{
 \item{binary.mat}{The binary matrix}
+
+\item{verbose}{boolean flag to print status messages}
 }
 \value{
 Returns the TF-IDF normalised version of a binary matrix

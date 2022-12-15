@@ -20,7 +20,6 @@
 #'
 #' @returns the file path of the output aligned BAM file
 #'
-#' @importFrom tibble add_row
 #' @examples
 #' \dontrun{
 #' sc_aligning(index_path,
@@ -30,7 +29,6 @@
 #'     nthreads  = 6) 
 #' }
 #'@export
-
 sc_aligning <- function (
     R1, 
     R2            = NULL,
