@@ -10,12 +10,7 @@
 #' @param output_folder The path of the output folder for resultant files
 #' 
 #' @importFrom data.table fread setkey copy :=
-#' @importFrom utils write.csv
-#' @importFrom rtracklayer import
-#' @importFrom GenomicRanges makeGRangesFromDataFrame findOverlaps seqnames
-#' @importFrom tibble rownames_to_column
-#' @importFrom dplyr select group_by distinct mutate count 
-#' @importFrom S4Vectors queryHits
+
 #' 
 #' @returns Nothing (Invisible 'NULL')
 #' @export

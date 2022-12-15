@@ -20,12 +20,6 @@
 #'
 #' @returns the file path of the output aligned BAM file
 #'
-#' @importFrom tibble add_row
-#' @importFrom Rsubread buildindex align
-#' @importFrom tibble add_row tibble
-#' @importFrom Rsamtools scanBam ScanBamParam BamFile idxstatsBam indexBam
-#' @importFrom utils write.csv
-#' @importFrom stringr str_remove regex
 #' @examples
 #' \dontrun{
 #' sc_aligning(index_path,

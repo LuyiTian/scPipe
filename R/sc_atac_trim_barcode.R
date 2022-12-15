@@ -135,7 +135,7 @@ sc_atac_trim_barcode <- function(
 
         if (!file.exists(r1)) {stop("read1 fastq file does not exist.")}
         
-        if ((valid_barcode_file != "") && file_ext(valid_barcode_file) != 'csv') {
+        if ((valid_barcode_file != "") && tools::file_ext(valid_barcode_file) != 'csv') {
             stop("Valid Barcode File must be a CSV")
         }
 
@@ -158,7 +158,7 @@ sc_atac_trim_barcode <- function(
         }
         message("Saving the output at location: \n", output_folder)
 
-        if(file_ext(bc_file) != "csv"){
+        if(tools::file_ext(bc_file) != "csv"){
             # fastq barcode files are provided, run the FASTQ method
             out_vec <- rcpp_sc_atac_trim_barcode_paired(
             output_folder,

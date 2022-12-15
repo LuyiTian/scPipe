@@ -44,22 +44,6 @@
 #' 
 #' @returns None (invisible `NULL`)
 #' 
-#' @importFrom BiocGenerics start end which strand start<- end<- as.data.frame
-#' @importFrom rlang .data
-#' @importFrom tidyr unite
-#' @importFrom Rsamtools indexFa
-#' @importFrom utils read.table write.table
-#' @importFrom data.table fread
-#' @importFrom dplyr group_by mutate ungroup tibble slice distinct select full_join
-#' @importFrom tibble rownames_to_column
-#' @importFrom purrr map_df
-#' @importFrom rtracklayer import
-#' @importFrom IRanges findOverlaps
-#' @importFrom GenomicRanges makeGRangesFromDataFrame ranges findOverlaps
-#' @importFrom GenomicAlignments ranges
-#' @importFrom Matrix sparseMatrix Matrix as.matrix rowSums colSums 
-#' @importFrom stats median na.omit
-#' @importFrom S4Vectors queryHits subjectHits
 #'
 #' @examples
 #' \dontrun{

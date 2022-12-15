@@ -9,7 +9,6 @@
 #' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
 #'
 #' @return returns NULL
-#' @importFrom ggplot2 ggplot geom_histogram stat_density ggtitle xlab ylab aes
 #' @export
 #'
 sc_atac_plot_fragments_per_cell <- function(sce) {
@@ -30,7 +29,6 @@ sc_atac_plot_fragments_per_cell <- function(sce) {
 #' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
 #'
 #' @return returns NULL
-#' @importFrom ggplot2 ggplot geom_histogram stat_density ggtitle xlab ylab aes
 #' @export
 sc_atac_plot_fragments_per_feature <- function(sce) {
     feature_stats <- as.data.frame(feature_info(sce))
@@ -51,7 +49,6 @@ sc_atac_plot_fragments_per_feature <- function(sce) {
 #' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
 #'
 #' @return returns NULL
-#' @importFrom ggplot2 ggplot geom_histogram stat_density ggtitle xlab ylab aes
 #' @export
 #'
 sc_atac_plot_features_per_cell <- function(sce) {
@@ -90,7 +87,6 @@ sc_atac_plot_features_per_cell_ordered <- function(sce) {
 #' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
 #'
 #' @return returns NULL
-#' @importFrom ggplot2 ggplot geom_histogram stat_density ggtitle xlab ylab aes
 #' @export
 #'
 sc_atac_plot_cells_per_feature <- function(sce) {
@@ -112,7 +108,6 @@ sc_atac_plot_cells_per_feature <- function(sce) {
 #' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
 #'
 #' @return returns NULL
-#' @importFrom ggplot2 ggplot geom_point geom_smooth ggtitle xlab ylab aes
 #' @export
 #'
 sc_atac_plot_fragments_features_per_cell <- function(sce) {
@@ -133,7 +128,6 @@ sc_atac_plot_fragments_features_per_cell <- function(sce) {
 #' @param sce The SingleExperimentObject produced by the sc_atac_create_sce function at the end of the pipeline
 #'
 #' @return returns NULL
-#' @importFrom ggplot2 ggplot geom_point geom_smooth ggtitle xlab ylab aes
 #' @export
 #'
 sc_atac_plot_fragments_cells_per_feature <- function(sce) {

@@ -16,10 +16,7 @@
 #'
 #' @return data.frame containing exon information in SAF format
 #'
-#' @importFrom tools file_ext
-#' @importFrom stringr str_remove
 #' @importFrom magrittr %>%
-#' @importFrom rtracklayer import
 #' @export
 #'
 #' @examples

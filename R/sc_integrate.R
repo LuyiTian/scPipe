@@ -13,11 +13,6 @@
 #' @param output_folder The path to the output folder
 #' @returns Returns a MultiAssayExperiment containing the scRNA-Seq and scATAC-Seq data produced by the scPipe pipelines
 #'
-#' @importFrom stats na.omit
-#' @importFrom tibble column_to_rownames
-#' @importFrom dplyr rename_with rename
-#' @importFrom MultiAssayExperiment MultiAssayExperiment
-#' @importFrom Biostrings reverseComplement DNAStringSet
 #' @examples
 #' \dontrun{
 #' sc_integrate(
@@ -159,10 +154,6 @@ sc_integrate <- function(sce_list,
 #' @param output_file The path of the output file
 #' @returns A ggplot2 object representing the UMAP plot
 #'
-#' @importFrom tibble enframe
-#' @importFrom purrr simplify
-#' @importFrom ggplot2 ggplot aes geom_point theme_bw scale_colour_gradientn ggsave
-#' @importFrom dplyr left_join rename mutate
 #' @export
 sc_mae_plot_umap <- function(mae,
                                 by = NULL,
@@ -269,8 +260,6 @@ sc_mae_plot_umap <- function(mae,
 #' @param binary.mat The binary matrix
 #' @param verbose boolean flag to print status messages
 #' @returns Returns the TF-IDF normalised version of a binary matrix
-#' @importFrom methods slot
-#' @importFrom Matrix colSums tcrossprod Diagonal rowSums
 #' @export
 TF.IDF.custom <- function(binary.mat, verbose = TRUE) {
     if (verbose) {

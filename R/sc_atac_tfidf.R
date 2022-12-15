@@ -17,8 +17,6 @@
 #' sc_atac_tfidf(binary.mat = final_binary_matrix) 
 #' }
 #' 
-#' @importFrom Matrix colSums tcrossprod Diagonal rowSums
-#' @importFrom methods slot
 #' @export
 #' 
 sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
@@ -80,9 +78,6 @@ sc_atac_tfidf <- function(binary.mat, output_folder = NULL) {
 #' @param sce The SingleCellExperiment object
 #'
 #' @returns A shiny object which represents the app. Printing the object or passing it to `shiny::runApp(...)` will run the app.
-#' @importFrom ggplot2 ggplot aes geom_point theme_bw scale_colour_gradientn 
-#' @importFrom plotly ggplotly plotlyOutput renderPlotly
-#' @importFrom shiny fluidPage titlePanel sidebarLayout sidebarPanel selectInput mainPanel shinyApp
 #' @export
 sc_interactive_umap_plot <- function(sce) {
     umap_data <- sc_get_umap_data(sce)
@@ -137,11 +132,6 @@ sc_interactive_umap_plot <- function(sce) {
 #' @param n_neighbours No. of neighbours for KNN 
 #'
 #' @returns A dataframe containing the UMAP dimensions, as well as all the colData of the sce object for each cell
-#' @importFrom Matrix colSums tcrossprod Diagonal rowSums
-#' @importFrom methods slot
-#' @importFrom purrr simplify
-#' @importFrom tibble enframe
-#' @importFrom dplyr left_join mutate rename
 #' @export
 sc_get_umap_data <- function(sce,
                                 n_neighbours = 30) {

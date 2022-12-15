@@ -104,8 +104,6 @@ sc_atac_create_fragments <- function(
 #' @param keep_contigs regular expression used with grepl to filter reference names
 #'
 #' @return a named list where element names are chromosomes reference names and elements are integer lengths
-#' @importFrom Rsamtools indexBam idxstatsBam
-#' @importFrom stats setNames
 get_chromosomes <- function(bam, keep_contigs="^chr") {
     if (is.null(keep_contigs)) {
         keep_contigs <- "."
@@ -121,7 +119,7 @@ get_chromosomes <- function(bam, keep_contigs="^chr") {
     contigs <- grepl(keep_contigs, idxstats$seqnames, ignore.case=TRUE)
     mapped <- idxstats$mapped > 0
     keep_contigs <- idxstats[contigs & mapped, ]
-    conlen <- setNames(as.list(keep_contigs$seqlength), keep_contigs$seqnames)
+    conlen <- stats::setNames(as.list(keep_contigs$seqlength), keep_contigs$seqnames)
 
     return(conlen)
 }

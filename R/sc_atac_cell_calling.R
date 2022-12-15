@@ -218,10 +218,6 @@ sc_atac_cell_calling <- function(mat,
 #'
 #' @returns a character vector of ???
 #' 
-#' @importFrom data.table := fread
-#' @importFrom flexmix flexmix posterior parameters
-#' @importFrom stats median
-#' @importFrom Matrix colSums
 #' @export
 #' 
 sc_atac_cellranger_cell_calling <- function(mat, cell_qc_metrics_file, genome_size){
@@ -321,13 +317,6 @@ sc_atac_filter_cell_calling <- function(
 #' @param mat The input matrix
 #' @param output_folder The path of the output folder
 #' @param lower The lower threshold for the data if using the \code{emptydrops} function for cell calling.
-#' 
-#' @importFrom grDevices png dev.off dev.list
-#' @importFrom graphics lines abline legend
-#' @importFrom S4Vectors metadata
-#' @importFrom stats complete.cases
-#' @importFrom DropletUtils emptyDrops barcodeRanks
-#' @importFrom Matrix Matrix
 #' @export
 #' 
 sc_atac_emptydrops_cell_calling <- function(
