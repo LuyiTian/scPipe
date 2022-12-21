@@ -54,7 +54,7 @@ jobs:
         config:
           - { os: ubuntu-latest, r: '4.2', bioc: '3.16', cont: "bioconductor/bioconductor_docker:RELEASE_3_16", rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest" }
           - { os: macOS-latest, r: '4.2', bioc: '3.16'}
-          - { os: windows-latest, r: '4.2', bioc: '3.16'}
+          # - { os: windows-latest, r: '4.2', bioc: '3.16'}
           ## Check https://github.com/r-lib/actions/tree/master/examples
           ## for examples using the http-user-agent
     env:
@@ -79,7 +79,7 @@ jobs:
       ## https://github.com/r-lib/actions/blob/master/examples/check-standard.yaml
       ## If they update their steps, we will also need to update ours.
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       ## R is already included in the Bioconductor docker images
       - name: Setup R from r-lib
@@ -147,6 +147,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           ## Edit below if you have any Windows system dependencies
+          remotes::install_cran("igraph", build = FALSE)
         shell: Rscript {0}
 
       - name: Install BiocManager
@@ -275,27 +276,17 @@ jobs:
         if: github.ref == 'refs/heads/master' && env.run_pkgdown == 'true' && runner.os == 'Linux'
         run: R CMD INSTALL .
 
-      - name: Build pkgdown site
+      - name: Build and deploy pkgdown site
         if: github.ref == 'refs/heads/master' && env.run_pkgdown == 'true' && runner.os == 'Linux'
-        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
-        shell: Rscript {0}
+        run: |
+          git config --local user.name "$GITHUB_ACTOR"
+          git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          Rscript -e "pkgdown::deploy_to_branch(new_process = FALSE)"
+        shell: bash {0}
         ## Note that you need to run pkgdown::deploy_to_branch(new_process = FALSE)
         ## at least one locally before this will work. This creates the gh-pages
         ## branch (erasing anything you haven't version controlled!) and
         ## makes the git history recognizable by pkgdown.
-
-      - name: Install deploy dependencies
-        if: github.ref == 'refs/heads/master' && env.run_pkgdown == 'true' && runner.os == 'Linux'
-        run: |
-          apt-get update && apt-get -y install rsync
-
-      - name: Deploy pkgdown site to GitHub pages 🚀
-        if: github.ref == 'refs/heads/master' && env.run_pkgdown == 'true' && runner.os == 'Linux'
-        uses: JamesIves/github-pages-deploy-action@releases/v4
-        with:
-          clean: false
-          branch: gh-pages
-          folder: docs
 
       - name: Upload check results
         if: failure()

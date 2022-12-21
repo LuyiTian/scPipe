@@ -208,19 +208,19 @@ sc_atac_cell_calling <- function(mat,
 #   return(stats)
 # }
 
-#' @name sc_atac_cellranger_cell_calling
-#' @title cellranger cell calling
-#' @description use the cellranger cell calling algorithm. Note: This function requires the 'countreg' package to be installed
-#' in order to run.
-#' 
-#' @param mat The input matrix
-#' @param cell_qc_metrics_file A file containing qc statistics for each cell
-#' @param genome_size The size of the genome
-#'
-#' @returns a character vector of ???
-#' 
-#' @export
-#' 
+# #' @name sc_atac_cellranger_cell_calling
+# #' @title cellranger cell calling
+# #' @description use the cellranger cell calling algorithm. Note: This function requires the 'countreg' package to be installed
+# #' in order to run.
+# #' 
+# #' @param mat The input matrix
+# #' @param cell_qc_metrics_file A file containing qc statistics for each cell
+# #' @param genome_size The size of the genome
+# #'
+# #' @returns a character vector of ???
+# #' 
+# #' @export
+# #' 
 # sc_atac_cellranger_cell_calling <- function(mat, cell_qc_metrics_file, genome_size){
 #   # https://github.com/wbaopaul/scATAC-pro/blob/master/scripts/src/cellranger_cell_caller.R
 #   # https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/algorithms/overview
