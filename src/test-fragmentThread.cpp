@@ -6,8 +6,8 @@
 #include <htslib/sam.h>
 
 #include "bam.h"
-#include "FragmentThread.hpp"
-#include "FragmentUtils.hpp"
+#include "FragmentThread.h"
+#include "FragmentUtils.h"
 
 bool equalFragmentStruct(FragmentStruct &a, FragmentStruct &b) {
 	return

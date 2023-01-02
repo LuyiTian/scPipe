@@ -68,10 +68,10 @@ sc_atac_peak_calling <- function(inbam,
     #                 cutoff_analysis = TRUE,
     #                 outdir          = output_folder)
     
-    proc <- basiliskStart(scPipe_env)
-    on.exit(basiliskStop(proc))
+    proc <- basilisk::basiliskStart(scPipe_env)
+    on.exit(basilisk::basiliskStop(proc))
 
-    basiliskRun(proc, function(inbam, genome_size, output) {
+    basilisk::basiliskRun(proc, function(inbam, genome_size, output) {
         macs <- reticulate::import("MACS3")
         system2("macs3", c("callpeak", "-t", 
                         inbam, 

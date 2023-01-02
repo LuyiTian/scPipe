@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "bam.h"
-#include "FragmentThread.hpp"
-#include "ThreadOutputFile.hpp"
+#include "FragmentThread.h"
+#include "ThreadOutputFile.h"
 
 // void merge_files(std::vector<std::string> files, std::string outname) {
 // 	std::ofstream outfile;
@@ -38,8 +38,6 @@
 //' @param output The path of the output folder
 //' @param contigs character vector of chromosome names from get_chromosomes()
 //' @param ends integer vector of reference lengths acquired from get_chromosomes()
-//' @param fragment_path : str
-//'    Path for output fragment file
 //' @param min_mapq : int
 //'    Minimum MAPQ to retain fragment
 //' @param nproc : int, optional
@@ -50,11 +48,11 @@
 //'    Regular expression used to match chromosome names to include in the
 //'    output file. Default is "(?i)^chr" (starts with "chr", case-insensitive).
 //'    If None, use all chromosomes in the BAM file.
-//' @param readname_barcode : str, optional
+//' @param readname_barcodeN : str, optional
 //'    Regular expression used to match cell barocde stored in read name.
 //'    If None (default), use read tags instead. Use "[^:]*" to match all characters
 //'    before the first colon (":").
-//' @param cells : str
+//' @param cellsN : str
 //'    File containing list of cell barcodes to retain. If None (default), use all cell barcodes
 //'    found in the BAM file.
 //' @param max_distance : int, optional

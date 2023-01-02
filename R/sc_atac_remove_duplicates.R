@@ -8,6 +8,7 @@
 #' @param output_folder The path of the output folder 
 #'
 #' @returns file path to a bam file created from samtools markdup
+#' @importFrom Rsamtools sortBam
 #' @export
 #' 
 sc_atac_remove_duplicates <- function(inbam, 
