@@ -400,7 +400,7 @@ sc_atac_feature_counting <- function(
     min_feature_width <- min(GenomicAlignments::ranges(feature.gr)@width)
     
     fragments <- data.table::fread(fragment_file, select=seq_len(5), header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
-    fragments.gr <- fragments %>% makeGRangesFromDataFrame(keep.extra.columns = TRUE)
+    fragments.gr <- fragments %>% GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE)
     
     # Compute overlaps with feature
     peak.overlaps <- GenomicRanges::findOverlaps(query = fragments.gr,
