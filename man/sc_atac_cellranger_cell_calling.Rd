@@ -2,14 +2,41 @@
 % Please edit documentation in R/sc_atac_cell_calling.R
 \name{sc_atac_cellranger_cell_calling}
 \alias{sc_atac_cellranger_cell_calling}
+\alias{sc_atac_filter_cell_calling}
 \title{cellranger cell calling}
 \usage{
-sc_atac_cellranger_cell_calling(mat, cell_qc_metrics_file, genome_size)
+sc_atac_filter_cell_calling(
+  mtx,
+  cell_qc_metrics_file,
+  min_uniq_frags = 0,
+  max_uniq_frags = 50000,
+  min_frac_peak = 0.05,
+  min_frac_tss = 0,
+  min_frac_enhancer = 0,
+  min_frac_promoter = 0,
+  max_frac_mito = 0.2
+)
 }
 \arguments{
-\item{mat}{The input matrix}
+\item{mtx}{The input matrix}
 
 \item{cell_qc_metrics_file}{A file containing qc statistics for each cell}
+
+\item{min_uniq_frags}{The minimum number of required unique fragments required for a cell}
+
+\item{max_uniq_frags}{The maximum number of required unique fragments required for a cell}
+
+\item{min_frac_peak}{The minimum proportion of fragments in a cell to overlap with a peak}
+
+\item{min_frac_tss}{The minimum proportion of fragments in a cell to overlap with a tss}
+
+\item{min_frac_enhancer}{The minimum proportion of fragments in a cell to overlap with a enhancer sequence}
+
+\item{min_frac_promoter}{The minimum proportion of fragments in a cell to overlap with a promoter sequence}
+
+\item{max_frac_mito}{The maximum proportion of fragments in a cell that are mitochondrial}
+
+\item{mat}{The input matrix}
 
 \item{genome_size}{The size of the genome}
 }
@@ -19,4 +46,6 @@ a character vector of ???
 \description{
 use the cellranger cell calling algorithm. Note: This function requires the 'countreg' package to be installed
 in order to run.
+
+specify various qc cutoffs to select the desired cells
 }
