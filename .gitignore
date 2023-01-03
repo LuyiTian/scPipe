@@ -11,5 +11,6 @@ src/*.o
 src/*.so
 sample_data/
 scPipe-atac-output/
+scPipe.BiocCheck/
 Rplots.pdf
 .DS_Store
