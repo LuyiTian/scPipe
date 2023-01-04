@@ -1,7 +1,7 @@
 Package: scPipe
 Title: Pipeline for single cell multi-omic data pre-processing
 Date: 2022-10-12
-Version: 2.1.1
+Version: 1.99.1
 Type: Package
 Authors@R: c(person("Luyi", "Tian", role=c("aut"), email="tian.l@wehi.edu.au"), 
         person("Shian", "Su", role=c("aut", "cre"), email="su.s@wehi.edu.au"), 
