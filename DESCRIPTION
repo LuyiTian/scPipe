@@ -76,7 +76,6 @@ URL: https://github.com/LuyiTian/scPipe
 BugReports: https://github.com/LuyiTian/scPipe
 Suggests: 
     BiocStyle,
-    countreg,
     DT,
     GenomicFeatures,
     grid,
