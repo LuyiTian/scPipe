@@ -6,7 +6,7 @@
 \usage{
 sc_atac_cell_calling(
   mat,
-  cell_calling,
+  cell_calling = "filter",
   output_folder,
   genome_size = NULL,
   cell_qc_metrics_file = NULL,
@@ -23,7 +23,8 @@ sc_atac_cell_calling(
 \arguments{
 \item{mat}{the feature by cell matrix.}
 
-\item{cell_calling}{the cell calling approach, possible options are "emptydrops" , "cellranger" and "filter".}
+\item{cell_calling}{the cell calling approach, possible options were "emptydrops" , "cellranger" and "filter".
+But we opten to using "filter" as it was most robust. "emptydrops" is still an opition for data with large umber of cells.}
 
 \item{output_folder}{output directory for the cell called matrix.}
 
@@ -49,15 +50,15 @@ sc_atac_cell_calling(
 }
 \description{
 the methods to call true cells are of various ways.
-implement (i.e. \code{filtering} from \code{scATAC-Pro} and \code{cellranger approach}).
+implement (i.e. \code{filtering} from \code{scATAC-Pro} as default
 }
 \examples{
 \dontrun{
-sc_atac_cell_calling <- function(mat, 
- cell_calling, 
- output_folder, 
- genome_size    = NULL, 
- cell_qc_metrics_file = NULL, 
+sc_atac_cell_calling <- function(mat,
+ cell_calling,
+ output_folder,
+ genome_size    = NULL,
+ cell_qc_metrics_file = NULL,
  lower          = NULL)
 }
 

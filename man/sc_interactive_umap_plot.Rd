@@ -9,6 +9,9 @@ sc_interactive_umap_plot(sce)
 \arguments{
 \item{sce}{The SingleCellExperiment object}
 }
+\value{
+A shiny object which represents the app. Printing the object or passing it to `shiny::runApp(...)` will run the app.
+}
 \description{
 Can colour the UMAP by any of the colData columns in the SCE object
 }

@@ -5,13 +5,10 @@
 #' @return data.frame containing ERCC annotation
 #'
 #' @examples
-#' \dontrun{
 #' ercc_anno <- get_ercc_anno()
-#' }
 #'
 #' @export
 #'
-
 get_ercc_anno <- function() {
     anno_import(system.file("extdata", "ERCC92_anno.gff3", package = "scPipe"))
 }

@@ -7,9 +7,12 @@
 sc_get_umap_data(sce, n_neighbours = 30)
 }
 \arguments{
-\item{n_neighbours}{No. of neighbours for KNN}
+\item{sce}{The SingleCellExperiment object}
 
-\item{mae}{The SingleCellExperiment object}
+\item{n_neighbours}{No. of neighbours for KNN}
+}
+\value{
+A dataframe containing the UMAP dimensions, as well as all the colData of the sce object for each cell
 }
 \description{
 Produces a DataFrame containing the UMAP dimensions, as well as all the colData of the sce object for each cell

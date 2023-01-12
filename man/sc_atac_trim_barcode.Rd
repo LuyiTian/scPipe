@@ -17,10 +17,10 @@ sc_atac_trim_barcode(
   rmlow = FALSE,
   min_qual = 20,
   num_below_min = 2,
-  id1_st = -1,
-  id1_len = -1,
-  id2_st = -1,
-  id2_len = -10,
+  id1_st = -0,
+  id1_len = 16,
+  id2_st = 0,
+  id2_len = 16,
   no_reverse_complement = FALSE
 )
 }
@@ -36,8 +36,8 @@ Currently, for the fastq approach, this can be a list of barcode files.}
 \item{valid_barcode_file}{optional file path of the valid (expected) barcode sequences to be found in the bc_file (.txt, can be txt.gz). 
 Must contain one barcode per line on the second column separated by a comma (default ="").
 If given, each barcode from bc_file is matched against the barcode of
-best fit (allowing a hamming distance of 1, prioritising barcodes with a higher mapping quality, as given by
-the fastq reads quality score)}
+best fit (allowing a hamming distance of 1). If a FASTQ \code{bc_file} is provided, barcodes with a higher mapping quality, as given by
+the fastq reads quality score are prioritised.}
 
 \item{output_folder}{the output dir for the demultiplexed fastq file, which will contain 
 fastq files with reformatted barcode and UMI into the read name. 
@@ -74,30 +74,45 @@ used for barcode error correction (only when barcode sequences are provided as f
 lets the function decide whether to use reverse complement, and TRUE forces the function to
 use the forward barcode sequences.}
 }
+\value{
+None (invisible `NULL`)
+}
 \description{
 single-cell data need to be demultiplexed in order to retain the information of the cell barcodes
 the data belong to. Here we reformat fastq files so barcode/s (and if available the UMI sequences) are moved from
 the sequence into the read name. Since scATAC-Seq data are mostly paired-end, both `r1` and `r2` are demultiplexed in this function.
 }
 \examples{
-\dontrun{
-using a barcode fastq file
+data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
+r1      <- file.path(data.folder, "small_chr21_R1.fastq.gz") 
+r2      <- file.path(data.folder, "small_chr21_R3.fastq.gz") 
+
+# Using a barcode fastq file:
+
+# barcodes in fastq format
+barcode_fastq      <- file.path(data.folder, "small_chr21_R2.fastq.gz") 
+
 sc_atac_trim_barcode (
 r1            = r1, 
 r2            = r2, 
 bc_file       = barcode_fastq,
 rmN           = TRUE,
 rmlow         = TRUE,
-output_folder = "")
+output_folder = tempdir())
 
-using a barcode csv file
+# Using a barcode csv file:
+
+# barcodes in .csv format
+barcode_1000       <- file.path(data.folder, "chr21_modified_barcode_1000.csv")
+
+\dontrun{
 sc_atac_trim_barcode (
 r1            = r1, 
 r2            = r2, 
-bc_file       = barcode_csv, 
+bc_file       = barcode_1000, 
 id1_st        = 0,
 rmN           = TRUE,
 rmlow         = TRUE,
-output_folder = "")
+output_folder = tempdir())
 }
 }

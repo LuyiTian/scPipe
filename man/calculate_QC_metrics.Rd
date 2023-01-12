@@ -30,17 +30,17 @@ ribosomal genes are retrived by GO term GO:0005840.
 \examples{
 data("sc_sample_data")
 data("sc_sample_qc")
-sce = SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
-organism(sce) = "mmusculus_gene_ensembl"
-gene_id_type(sce) = "ensembl_gene_id"
-QC_metrics(sce) = sc_sample_qc
-demultiplex_info(sce) = cell_barcode_matching
-UMI_dup_info(sce) = UMI_duplication
+sce <- SingleCellExperiment(assays = list(counts = as.matrix(sc_sample_data)))
+organism(sce) <- "mmusculus_gene_ensembl"
+gene_id_type(sce) <- "ensembl_gene_id"
+QC_metrics(sce) <- sc_sample_qc
+demultiplex_info(sce) <- cell_barcode_matching
+UMI_dup_info(sce) <- UMI_duplication
 
 # The sample qc data already run through function `calculate_QC_metrics`.
 # So we delete these columns and run `calculate_QC_metrics` to get them again:
 colnames(colnames(QC_metrics(sce)))
-QC_metrics(sce) = QC_metrics(sce)[,c("unaligned","aligned_unmapped","mapped_to_exon")]
+QC_metrics(sce) <- QC_metrics(sce)[,c("unaligned","aligned_unmapped","mapped_to_exon")]
 sce = calculate_QC_metrics(sce)
 colnames(QC_metrics(sce))
 

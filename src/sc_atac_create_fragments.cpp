@@ -7,11 +7,8 @@
 #include <memory>
 
 #include "bam.h"
-#include "FragmentThread.hpp"
-#include "ThreadOutputFile.hpp"
-
-using namespace Rcpp;
-
+#include "FragmentThread.h"
+#include "ThreadOutputFile.h"
 
 // void merge_files(std::vector<std::string> files, std::string outname) {
 // 	std::ofstream outfile;
@@ -34,15 +31,13 @@ using namespace Rcpp;
 // }
 
 //' @name sc_atac_create_fragments_cpp
-//' @title Generating the popular fragments for scATAC-Seq data using sinto
+//' @title Generating the popular fragments for scATAC-Seq data
 //' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
 //'
 //' @param inbam The tagged, sorted and duplicate-free input BAM file
 //' @param output The path of the output folder
 //' @param contigs character vector of chromosome names from get_chromosomes()
 //' @param ends integer vector of reference lengths acquired from get_chromosomes()
-//' @param fragment_path : str
-//'    Path for output fragment file
 //' @param min_mapq : int
 //'    Minimum MAPQ to retain fragment
 //' @param nproc : int, optional
@@ -53,11 +48,11 @@ using namespace Rcpp;
 //'    Regular expression used to match chromosome names to include in the
 //'    output file. Default is "(?i)^chr" (starts with "chr", case-insensitive).
 //'    If None, use all chromosomes in the BAM file.
-//' @param readname_barcode : str, optional
+//' @param readname_barcodeN : str, optional
 //'    Regular expression used to match cell barocde stored in read name.
 //'    If None (default), use read tags instead. Use "[^:]*" to match all characters
 //'    before the first colon (":").
-//' @param cells : str
+//' @param cellsN : str
 //'    File containing list of cell barcodes to retain. If None (default), use all cell barcodes
 //'    found in the BAM file.
 //' @param max_distance : int, optional
@@ -72,29 +67,30 @@ using namespace Rcpp;
 //'    Number of BAM entries to read through before collapsing and writing
 //'    fragments to disk. Higher chunksize will use more memory but will be
 //'    faster.
-//' @import Rhtslib
-//' @import Rcpp
+//'
+//' @returns returns NULL
+//'
 //' @useDynLib scPipe, .registration = TRUE
 // [[Rcpp::export]]
 void sc_atac_create_fragments_cpp(
 		std::string inbam,
 		std::string output,
-		CharacterVector contigs,
-		IntegerVector ends,
+		Rcpp::CharacterVector contigs,
+		Rcpp::IntegerVector ends,
 		unsigned int min_mapq,
 		unsigned int nproc,
 		std::string cellbarcode,
 		std::string chromosomes,
-		Nullable<String> readname_barcodeN,
-		Nullable<StringVector> cellsN,
+		Rcpp::Nullable<Rcpp::String> readname_barcodeN,
+		Rcpp::Nullable<Rcpp::StringVector> cellsN,
 		unsigned int max_distance,
 		unsigned int min_distance,
 		unsigned int chunksize
 		) {
 
-	StringVector cells = cellsN.isNotNull() ? StringVector(cellsN) : StringVector(0);
+	Rcpp::StringVector cells = cellsN.isNotNull() ? Rcpp::StringVector(cellsN) : Rcpp::StringVector(0);
 
-	String readname_barcode = readname_barcodeN.isNotNull() ? String(readname_barcodeN) : String();
+	Rcpp::String readname_barcode = readname_barcodeN.isNotNull() ? Rcpp::String(readname_barcodeN) : Rcpp::String();
 
 	std::string output_filename (output + "/fragments.bed");
 	std::shared_ptr<ThreadOutputFile> threadOutputFile = std::make_shared<ThreadOutputFile>(output_filename);
@@ -103,7 +99,7 @@ void sc_atac_create_fragments_cpp(
 	nproc = contigs.length();
 	Rcpp::Rcout << "Output folder name is: " << output << "\n";
 	for (int i = 0; i < (int)nproc; i++) {
-		std::string contig = String(contigs[i]).get_cstring();
+		std::string contig = Rcpp::String(contigs[i]).get_cstring();
 
 		// create the bam_header_t and find the tid for this contig
 		bamFile bam = bam_open(inbam.c_str(), "r"); // bam.h
@@ -134,5 +130,5 @@ void sc_atac_create_fragments_cpp(
 		th.join();
 	}
 
-	Rcout << "Output BED file: " << output_filename << "\n";
+	Rcpp::Rcout << "Output BED file: " << output_filename << "\n";
 }

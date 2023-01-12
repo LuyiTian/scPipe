@@ -44,45 +44,45 @@
 #' dim(sce)
 #'
 
-create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL, report=FALSE) {
-  gene_cnt = read.csv(file.path(datadir, "gene_count.csv"), row.names=1)
-  cell_stat = read.csv(file.path(datadir, "stat", "cell_stat.csv"), row.names=1)
-  demultiplex_stat = read.csv(file.path(datadir, "stat", "overall_stat.csv"))
-  UMI_dup_stat = read.csv(file.path(datadir, "stat", "UMI_duplication_count.csv"))
+create_sce_by_dir <- function(datadir, organism=NULL, gene_id_type=NULL, pheno_data=NULL, report=FALSE) {
+    gene_cnt <- read.csv(file.path(datadir, "gene_count.csv"), row.names=1)
+    cell_stat <- read.csv(file.path(datadir, "stat", "cell_stat.csv"), row.names=1)
+    demultiplex_stat <- read.csv(file.path(datadir, "stat", "overall_stat.csv"))
+    UMI_dup_stat <- read.csv(file.path(datadir, "stat", "UMI_duplication_count.csv"))
 
-  gene_cnt = gene_cnt[, order(colnames(gene_cnt))]
-  cell_stat = cell_stat[order(rownames(cell_stat)), ]
-
-
-  sce = SingleCellExperiment(assays = list(counts =as.matrix(gene_cnt)))
-  sce@metadata$scPipe$version = packageVersion("scPipe")  # set version information
-  if(!is.null(organism)){
-    organism(sce) = organism
-  }
-  if(!is.null(gene_id_type)){
-    gene_id_type(sce) = gene_id_type
-  }
-  QC_metrics(sce) = cell_stat
-  if(!is.null(pheno_data)){
-    colData(sce) = cbind(colData(sce), pheno_data[order(rownames(pheno_data)),])
-  }
-
-  demultiplex_info(sce) = demultiplex_stat
-  UMI_dup_info(sce) = UMI_dup_stat
-  #if(any(grepl("^ERCC-", rownames(sce)))){
-  #  isSpike(sce, "ERCC") <- grepl("^ERCC-", rownames(sce))
-  #}
+    gene_cnt <- gene_cnt[, order(colnames(gene_cnt))]
+    cell_stat <- cell_stat[order(rownames(cell_stat)), ]
 
 
-  if(report){
-    create_report(sample_name=basename(datadir),
-                  outdir=datadir,
-                  organism=organism,
-                  gene_id_type=gene_id_type)
-  }
+    sce <- SingleCellExperiment(assays = list(counts =as.matrix(gene_cnt)))
+    sce@metadata$scPipe$version <- packageVersion("scPipe")  # set version information
+    if(!is.null(organism)){
+        organism(sce) <- organism
+    }
+    if(!is.null(gene_id_type)){
+        gene_id_type(sce) <- gene_id_type
+    }
+    QC_metrics(sce) <- cell_stat
+    if(!is.null(pheno_data)){
+        colData(sce) <- cbind(colData(sce), pheno_data[order(rownames(pheno_data)),])
+    }
+
+    demultiplex_info(sce) <- demultiplex_stat
+    UMI_dup_info(sce) <- UMI_dup_stat
+    #if(any(grepl("^ERCC-", rownames(sce)))){
+    #  isSpike(sce, "ERCC") <- grepl("^ERCC-", rownames(sce))
+    #}
 
 
-  return(sce)
+    if(report){
+        create_report(sample_name=basename(datadir),
+                    outdir=datadir,
+                    organism=organism,
+                    gene_id_type=gene_id_type)
+    }
+
+
+    return(sce)
 }
 
 
@@ -138,97 +138,97 @@ create_sce_by_dir = function(datadir, organism=NULL, gene_id_type=NULL, pheno_da
 #'        gene_id_type="ensembl_gene_id")
 #' }
 #'
-create_report = function(sample_name,
-                         outdir,
-                         r1="NA",
-                         r2="NA",
-                         outfq="NA",
-                         read_structure=list(bs1=0, bl1=0, bs2=0, bl2=0, us=0, ul=0),
-                         filter_settings=list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
-                         align_bam="NA",
-                         genome_index="NA",
-                         map_bam="NA",
-                         exon_anno="NA",
-                         stnd=TRUE,
-                         fix_chr=FALSE,
-                         barcode_anno="NA",
-                         max_mis=1,
-                         UMI_cor=1,
-                         gene_fl=FALSE,
-                         organism,
-                         gene_id_type) {
-  fn = system.file("extdata", "report_template.Rmd", package = "scPipe")
-  tx = readLines(fn)
+create_report <- function(sample_name,
+                            outdir,
+                            r1="NA",
+                            r2="NA",
+                            outfq="NA",
+                            read_structure=list(bs1=0, bl1=0, bs2=0, bl2=0, us=0, ul=0),
+                            filter_settings=list(rmlow = TRUE, rmN = TRUE, minq = 20, numbq = 2),
+                            align_bam="NA",
+                            genome_index="NA",
+                            map_bam="NA",
+                            exon_anno="NA",
+                            stnd=TRUE,
+                            fix_chr=FALSE,
+                            barcode_anno="NA",
+                            max_mis=1,
+                            UMI_cor=1,
+                            gene_fl=FALSE,
+                            organism,
+                            gene_id_type) {
+    fn <- system.file("extdata", "report_template.Rmd", package = "scPipe")
+    tx <- readLines(fn)
 
-  tx = gsub(pattern = "SAMPLE_NAME__", replacement = sample_name, x = tx)
-  tx = gsub(pattern = "FQ1__", replacement = r1, x = tx)
-  if (!is.null(r2)) {
-    tx = gsub(pattern = "FQ2__", replacement = r2, x = tx)
-  }
-  else {
-    tx = gsub(pattern = "FQ2__", replacement = "NA", x = tx)
-  }
+    tx <- gsub(pattern = "SAMPLE_NAME__", replacement = sample_name, x = tx)
+    tx <- gsub(pattern = "FQ1__", replacement = r1, x = tx)
+    if (!is.null(r2)) {
+        tx <- gsub(pattern = "FQ2__", replacement = r2, x = tx)
+    }
+    else {
+        tx <- gsub(pattern = "FQ2__", replacement = "NA", x = tx)
+    }
 
-  tx = gsub(pattern = "FQOUT__", replacement = outfq, x = tx)
-  if (read_structure$bs1<0) {
-    tx = gsub(pattern = "BC1_INFO__", replacement = "NA", x = tx)
-  }
-  else {
-    tx = gsub(pattern = "BC1_INFO__", replacement =
-                paste0("start at position ", read_structure$bs1, ", length ", read_structure$bl1), x = tx)
-  }
+    tx <- gsub(pattern = "FQOUT__", replacement = outfq, x = tx)
+    if (read_structure$bs1<0) {
+        tx <- gsub(pattern = "BC1_INFO__", replacement = "NA", x = tx)
+    }
+    else {
+        tx <- gsub(pattern = "BC1_INFO__", replacement =
+                    paste0("start at position ", read_structure$bs1, ", length ", read_structure$bl1), x = tx)
+    }
 
-  tx = gsub(pattern = "BC2_INFO__", replacement =
-              paste0("start at position ", read_structure$bs2, ", length ", read_structure$bl2), x = tx)
-  tx = gsub(pattern = "UMI_INFO__", replacement =
-              paste0("start at position ", read_structure$us, ", length ", read_structure$ul), x = tx)
+    tx <- gsub(pattern = "BC2_INFO__", replacement =
+                paste0("start at position ", read_structure$bs2, ", length ", read_structure$bl2), x = tx)
+    tx <- gsub(pattern = "UMI_INFO__", replacement =
+                paste0("start at position ", read_structure$us, ", length ", read_structure$ul), x = tx)
 
-  tx = gsub(pattern = "RM_N__", replacement = as.character(filter_settings$rmN), x = tx)
-  tx = gsub(pattern = "RM_LOW__", replacement = as.character(filter_settings$rmlow), x = tx)
-  tx = gsub(pattern = "MIN_Q__", replacement = filter_settings$minq, x = tx)
-  tx = gsub(pattern = "NUM_BQ__", replacement = filter_settings$numbq, x = tx)
+    tx <- gsub(pattern = "RM_N__", replacement = as.character(filter_settings$rmN), x = tx)
+    tx <- gsub(pattern = "RM_LOW__", replacement = as.character(filter_settings$rmlow), x = tx)
+    tx <- gsub(pattern = "MIN_Q__", replacement = filter_settings$minq, x = tx)
+    tx <- gsub(pattern = "NUM_BQ__", replacement = filter_settings$numbq, x = tx)
 
-  tx = gsub(pattern = "BAM_ALIGN__", replacement = align_bam, x = tx)
-  tx = gsub(pattern = "G_INDEX__", replacement = genome_index, x = tx)
-  tx = gsub(pattern = "BAM_MAP__", replacement = map_bam, x = tx)
+    tx <- gsub(pattern = "BAM_ALIGN__", replacement = align_bam, x = tx)
+    tx <- gsub(pattern = "G_INDEX__", replacement = genome_index, x = tx)
+    tx <- gsub(pattern = "BAM_MAP__", replacement = map_bam, x = tx)
 
-  tx = gsub(pattern = "OUTDIR__", replacement = outdir, x = tx)
-  tx = gsub(pattern = "ANNO_GFF__", replacement = paste(exon_anno, collapse=", "), x = tx)
+    tx <- gsub(pattern = "OUTDIR__", replacement = outdir, x = tx)
+    tx <- gsub(pattern = "ANNO_GFF__", replacement = paste(exon_anno, collapse=", "), x = tx)
 
-  tx = gsub(pattern = "STND__", replacement = as.character(stnd), x = tx)
-  tx = gsub(pattern = "FIX_CHR__", replacement = as.character(fix_chr), x = tx)
-  tx = gsub(pattern = "BC_ANNO__", replacement = barcode_anno, x = tx)
-  tx = gsub(pattern = "MAX_MIS__", replacement = max_mis, x = tx)
+    tx <- gsub(pattern = "STND__", replacement = as.character(stnd), x = tx)
+    tx <- gsub(pattern = "FIX_CHR__", replacement = as.character(fix_chr), x = tx)
+    tx <- gsub(pattern = "BC_ANNO__", replacement = barcode_anno, x = tx)
+    tx <- gsub(pattern = "MAX_MIS__", replacement = max_mis, x = tx)
 
-  if (UMI_cor == 1) {
-    tx = gsub(pattern = "UMI_COR__", replacement = "simple correction and merge UMI with distance 1", x = tx)
-  }
-  else if (UMI_cor == 0) {
-    tx = gsub(pattern = "UMI_COR__", replacement = "no correction", x = tx)
-  }
-  else {
-    tx = gsub(pattern = "UMI_COR__", replacement = "unknown", x = tx)
-  }
+    if (UMI_cor == 1) {
+        tx <- gsub(pattern = "UMI_COR__", replacement = "simple correction and merge UMI with distance 1", x = tx)
+    }
+    else if (UMI_cor == 0) {
+        tx <- gsub(pattern = "UMI_COR__", replacement = "no correction", x = tx)
+    }
+    else {
+        tx <- gsub(pattern = "UMI_COR__", replacement = "unknown", x = tx)
+    }
 
-  # If organism and gene id type are not provided, delete them from param list
-  # of rmd. param$organism and param$gene_id_type will then return NULL when
-  # when used in code.
-  tx = gsub(pattern = "GENE_FL__", replacement = as.character(gene_fl), x = tx)
-  if(!missing(organism) && !is.null(organism)){
-      tx = gsub(pattern = "ORGANISM__", replacement = organism, x = tx)
-  }else{
-    tx = tx[!grepl(pattern = "ORGANISM__", x = tx)]
-  }
+    # If organism and gene id type are not provided, delete them from param list
+    # of rmd. param$organism and param$gene_id_type will then return NULL when
+    # when used in code.
+    tx <- gsub(pattern = "GENE_FL__", replacement = as.character(gene_fl), x = tx)
+    if(!missing(organism) && !is.null(organism)){
+        tx <- gsub(pattern = "ORGANISM__", replacement = organism, x = tx)
+    }else{
+        tx <- tx[!grepl(pattern = "ORGANISM__", x = tx)]
+    }
 
-  if(!missing(gene_id_type) && !is.null(gene_id_type)){
-      tx = gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
-  }else{
-    tx = tx[!grepl(pattern = "GENE_ID_TYPE__", x = tx)]
-  }
+    if(!missing(gene_id_type) && !is.null(gene_id_type)){
+        tx <- gsub(pattern = "GENE_ID_TYPE__", replacement = gene_id_type, x = tx)
+    }else{
+        tx <- tx[!grepl(pattern = "GENE_ID_TYPE__", x = tx)]
+    }
 
-  writeLines(tx, con=file.path(outdir, "report.Rmd"))
-  knitr::wrap_rmd(file.path(outdir, "report.Rmd"), width = 120, backup = NULL)
-  rmarkdown::render(file.path(outdir, "report.Rmd"), output_file = file.path(outdir, "report.html"), knit_root_dir = ".")
+    writeLines(tx, con=file.path(outdir, "report.Rmd"))
+    knitr::wrap_rmd(file.path(outdir, "report.Rmd"), width = 120, backup = NULL)
+    rmarkdown::render(file.path(outdir, "report.Rmd"), output_file = file.path(outdir, "report.html"), knit_root_dir = ".")
 }
 
 #' create_processed_report
@@ -241,6 +241,7 @@ create_report = function(sample_name,
 #' the commonly used id types are `external_gene_name`, `ensembl_gene_id` or `entrezgene`.
 #' @param report_name the name of the report .Rmd and .html files.
 #'
+#' @returns file path of the created compiled document.
 #' @examples
 #' \dontrun{
 #' create_report(
@@ -252,42 +253,45 @@ create_report = function(sample_name,
 #' @export
 
 create_processed_report <- function(
-  outdir = ".",
-  organism,
-  gene_id_type,
-  report_name = "report"
-) {
-  fn <-  system.file("extdata", "report_template_slim.Rmd", package = "scPipe")
-  tx <- readLines(fn)
-  fill_report_field <- function(field, value) {
+            outdir = ".",
+            organism,
+            gene_id_type,
+            report_name = "report"
+            ) {
 
-    pattern <- paste0(field, "__")
-
-    if (is.na(value)) {
-      tx <- tx[-grep(pattern, tx)]
-    } else {
-      gsub(pattern, value, tx)
+    if (!requireNamespace("rmarkdown", quietly=TRUE)) {
+        stop("Install 'rmarkdown' to use this function.")
     }
-  }
+    fn <-  system.file("extdata", "report_template_slim.Rmd", package = "scPipe")
+    tx <- readLines(fn)
+    fill_report_field <- function(field, value) {
+        pattern <- paste0(field, "__")
 
-  if (!missing(organism) && !is.null(organism)) {
-    tx <- fill_report_field("ORGANISM", organism)
-  } else {
-    tx <- fill_report_field("ORGANISM", NA)
-  }
+        if (is.na(value)) {
+        tx <- tx[-grep(pattern, tx)]
+        } else {
+        gsub(pattern, value, tx)
+        }
+    }
 
-  if (!missing(gene_id_type) && !is.null(gene_id_type)) {
-    tx <- fill_report_field("GENE_ID_TYPE", gene_id_type)
-  } else {
-    tx <- fill_report_field("GENE_ID_TYPE", NA)
-  }
+    if (!missing(organism) && !is.null(organism)) {
+        tx <- fill_report_field("ORGANISM", organism)
+    } else {
+        tx <- fill_report_field("ORGANISM", NA)
+    }
 
-  report_path <- file.path(outdir, paste0(report_name, ".Rmd"))
-  tx <- tx[!is.na(tx)]
-  writeLines(tx, con = report_path)
-  rmarkdown::render(
-      input = report_path,
-      envir = new.env(),
-      knit_root_dir = "."
-  )
+    if (!missing(gene_id_type) && !is.null(gene_id_type)) {
+        tx <- fill_report_field("GENE_ID_TYPE", gene_id_type)
+    } else {
+        tx <- fill_report_field("GENE_ID_TYPE", NA)
+    }
+
+    report_path <- file.path(outdir, paste0(report_name, ".Rmd"))
+    tx <- tx[!is.na(tx)]
+    writeLines(tx, con = report_path)
+    rmarkdown::render(
+        input = report_path,
+        envir = new.env(),
+        knit_root_dir = "."
+    )
 }

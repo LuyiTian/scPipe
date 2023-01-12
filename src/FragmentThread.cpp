@@ -16,9 +16,9 @@
 #include <htslib/sam.h>
 #include <htslib/hts.h>
 
-#include "ThreadOutputFile.hpp"
-#include "FragmentThread.hpp"
-#include "FragmentUtils.hpp"
+#include "ThreadOutputFile.h"
+#include "FragmentThread.h"
+#include "FragmentUtils.h"
 
 FragmentThread::FragmentThread(
 	std::shared_ptr<ThreadOutputFile> _fragfile,

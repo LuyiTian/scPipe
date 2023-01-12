@@ -20,9 +20,14 @@ sc_integrate(
 
 \item{sce_column_to_barcode_files}{A list of files containing the barcodes for each tech (if not needed then give a `NULL` entry)}
 
+\item{rev_comp}{A named list of technologies and logical flags specifying if reverse complements should be applyed for sequences (if not needed then provide a `NULL` entry)}
+
 \item{cell_line_info}{A list of files, each of which contains 2 columns corresponding to the barcode and cell line for each tech (if not needed then provide a `NULL` entry)}
 
 \item{output_folder}{The path to the output folder}
+}
+\value{
+Returns a MultiAssayExperiment containing the scRNA-Seq and scATAC-Seq data produced by the scPipe pipelines
 }
 \description{
 Generates an integrated SCE object with scRNA-Seq and scATAC-Seq data produced by the scPipe pipelines

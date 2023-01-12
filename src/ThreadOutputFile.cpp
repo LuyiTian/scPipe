@@ -2,8 +2,8 @@
 #include <string>
 #include <vector>
 
-#include "Fragments.hpp"
-#include "ThreadOutputFile.hpp"
+#include "Fragments.h"
+#include "ThreadOutputFile.h"
 
 
 ThreadOutputFile::ThreadOutputFile (const std::string &path) : _path(path) {

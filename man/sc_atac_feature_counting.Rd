@@ -34,7 +34,7 @@ sc_atac_feature_counting(
   min_frac_enhancer = 0,
   min_frac_promoter = 0.1,
   max_frac_mito = 0.15,
-  create_report = TRUE
+  create_report = FALSE
 )
 }
 \arguments{
@@ -97,6 +97,9 @@ sc_atac_feature_counting(
 \item{max_frac_mito}{The maximum proportion of fragments in a cell that are mitochondrial (used for \code{filter} cell calling)}
 
 \item{create_report}{Logical value to say whether to create the report or not (default = TRUE).}
+}
+\value{
+None (invisible `NULL`)
 }
 \description{
 feature matrix is created using a given demultiplexed BAM file and 

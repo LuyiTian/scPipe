@@ -18,11 +18,16 @@ sc_atac_create_sce(
 
 \item{organism}{The type of the organism}
 
+\item{sample_name}{The name of the sample}
+
 \item{feature_type}{The type of the feature}
 
 \item{pheno_data}{The pheno data}
 
 \item{report}{Whether or not a HTML report should be produced}
+}
+\value{
+a SingleCellExperiment object created from the scATAC-Seq data provided
 }
 \description{
 sc_atac_create_sce()

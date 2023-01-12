@@ -24,7 +24,10 @@ sc_atac_create_cell_qc_metrics(
 
 \item{enhs_file}{The path of the enhs annotation file}
 
-\item{output_folder}{}
+\item{output_folder}{The path of the output folder for resultant files}
+}
+\value{
+Nothing (Invisible 'NULL')
 }
 \description{
 uses the peak file and annotation files for features
