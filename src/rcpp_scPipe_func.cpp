@@ -421,7 +421,7 @@ std::vector<int> rcpp_sc_atac_trim_barcode_paired(
 		Rcpp::IntegerVector min_qual,
 		Rcpp::IntegerVector num_below_min,
 		Rcpp::LogicalVector no_reverse_complement) {
-  
+			
 	std::string c_outfq = Rcpp::as<std::string>(outfq);
 	std::string c_r1 = Rcpp::as<std::string>(r1);
 	std::vector<std::string> c_r2_list; 
