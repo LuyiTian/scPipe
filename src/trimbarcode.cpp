@@ -1,6 +1,6 @@
 #include "trimbarcode.h"
 
-#include <string.h>
+#include <string>
 #include <set>
 #include <zlib.h> // for reading compressed .fq file
 #include <stdio.h>
@@ -659,16 +659,29 @@ bool sc_atac_check_qual(const char *qual_s, int trim_n, int thr, int below_thr){
 void copySequenceIntoKseqName(kseq_t *seqNameDestination, const char *seqToCopy, size_t copyLength) {
 	const int new_name_length = seqNameDestination->name.l + copyLength + 1;
 	// allocate additional memory and move original read name
-	seqNameDestination->name.s = (char *)realloc(seqNameDestination->name.s, new_name_length);
-	memmove(seqNameDestination->name.s + copyLength + 1, seqNameDestination->name.s, seqNameDestination->name.l * sizeof(char));
-	// copy the sequence into the new name array
-	memcpy(seqNameDestination->name.s, seqToCopy, copyLength * sizeof(char));
-	// add separator
-	seqNameDestination->name.s[copyLength] = '#';
-	// is this necessary?
-	seqNameDestination->name.s[new_name_length] = '\0';
-}
 
+	std::string newName;
+	newName.reserve(new_name_length);
+	newName += seqToCopy;
+	newName += "#";
+	newName += seqNameDestination->name.s;
+
+	// copy the new name back into the kseq_t
+	free(seqNameDestination->name.s);
+	seqNameDestination->name.l = new_name_length;
+	seqNameDestination->name.s = (char *)malloc((newName.size() + 1) * sizeof(char));
+	strcpy(seqNameDestination->name.s, newName.c_str());
+	
+	// old code
+	// seqNameDestination->name.s = (char *)realloc(seqNameDestination->name.s, new_name_length);
+	// memmove(seqNameDestination->name.s + copyLength + 1, seqNameDestination->name.s, seqNameDestination->name.l * sizeof(char));
+	// // copy the sequence into the new name array
+	// memcpy(seqNameDestination->name.s, seqToCopy, copyLength * sizeof(char));
+	// // add separator
+	// seqNameDestination->name.s[copyLength] = '#';
+	// // is this necessary?
+	// seqNameDestination->name.s[new_name_length] = '\0';
+}
 
 // sc_atac_paired_fastq_to_fastq ------------------
 
@@ -685,10 +698,6 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
         int num_below_min,
 		bool no_reverse_complement
 ) {
-
-	Rcpp::Rcout << fq1_fn << "\n" << fq2_fn_list[0] << "\n" << fq3_fn << "\n" << fq_out << "\n" 
-		<< rmN << ", " << rmlow << "," << min_qual << "," << num_below_min << "," << no_reverse_complement << "\n";
-    
     // // get rid of kseq.h warnings
     // REMOVE_KSEQ_WARNINGS();
 
@@ -823,12 +832,7 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 			// nonconst pointer to const char, important as we redirect the pointer
 			const char * seq2_seq = seq2->seq.s; // if we match to a new barcode when doing barcode mismatch
 			
-
-			// Rcpp::Rcout << "\tseq to copy: " << seq2->seq.s << "," << seq2->seq.l << "\n";
-
-			// Rcout << "seq2_seq: " << seq2_seq << std::endl << std::endl;
 			seq_2_set.insert(std::string{seq2_seq});
-			// Rcout << "seq_2_set size: " << seq_2_set.size() << std::endl << std::endl;
 
 			// quality check before the heavy work of shifting barcodes around is done. Early break
 			if(rmlow) {
@@ -892,12 +896,8 @@ std::vector<int> sc_atac_paired_fastq_to_fastq(
 
 			copySequenceIntoKseqName(seq1, seq2_seq, seq2->seq.l);
 
-			// Rcpp::Rcout << "\t" << seq1->name.s << "\n";
-			// Rcpp::Rcout << "\t" << seq3->name.s << "\n";
-			
 			if (R3) {
 				copySequenceIntoKseqName(seq3, seq2_seq, seq2->seq.l);
-				// Rcpp::Rcout << "\t\t" << seq3->name.s << "\n";
 			}
             
 		}

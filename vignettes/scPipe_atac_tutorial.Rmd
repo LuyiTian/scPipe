@@ -310,7 +310,10 @@ sce <- sc_atac_pipeline(r1 = file.path(data.folder, "small_chr21_R1.fastq.gz"),
 
 Since the [scater](https://bioconductor.org/packages/release/scater) and [scran](https://bioconductor.org/packages/release/scran) packages both use the [SingleCellExperiment](https://bioconductor.org/packages/release/SingleCellExperiment) class, it will be easy to further process this data using these packages for normalization and visualization. Other packages such as [SC3](https://bioconductor.org/packages/release/SC3) may be useful for clustering and [MAST](https://bioconductor.org/packages/release/MAST) and [edgeR](https://bioconductor.org/packages/release/edgeR) for differential expression analysis.
 
-
+```{r, echo=FALSE, results='hide'}
+# cleanup tempfiles
+unlink(output_folder, recursive=TRUE)
+```
 # Session Information {-}
 ```{r}
 sessionInfo()
