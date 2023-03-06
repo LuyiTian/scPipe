@@ -44,7 +44,7 @@ data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
 Specify the output folder.
 
 ```{r}
-output_folder <- tempdir()
+output_folder <- paste0(tempdir(), "/scPipeATACVignette")
 ```
 
 # Fastq reformatting
