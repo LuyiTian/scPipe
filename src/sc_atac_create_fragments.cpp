@@ -1,3 +1,5 @@
+#include "sc_atac_create_fragments.h"
+
 #include <Rcpp.h>
 #include <R.h>
 #include <thread>
@@ -9,28 +11,32 @@
 #include "bam.h"
 #include "FragmentThread.h"
 #include "ThreadOutputFile.h"
+#include "utils.h"
 
-// void merge_files(std::vector<std::string> files, std::string outname) {
-// 	std::ofstream outfile;
-// 	outfile.open(outname, std::ios::out | std::ios::app);
-// 	for (auto i : files) {
-// 		std::ifstream infile(i);
-// 		std::string line;
-// 		if (infile.is_open()) {
-// 			while (std::getline(infile, line)) {
-// 				outfile << line << "\n";
-// 			}
-// 			infile.close();
-// 		}
-// 		if (remove(i.c_str())) {
-// 			// unsuccessful file removal
-// 			Rcout << "File " << i << " unsuccessfully deleted\n";
-// 		}
-// 	}
-// 	outfile.close();
-// }
 
-//' @name sc_atac_create_fragments_cpp
+void merge_files(std::vector<std::string> files, std::string outname) {
+    if (fileExists(outname)) {
+        remove(outname.c_str());
+    }
+	std::ofstream outfile;
+	outfile.open(outname, std::ios::out | std::ios::app);
+	for (auto i : files) {
+		std::ifstream infile(i);
+		std::string line;
+		if (infile.is_open()) {
+			while (std::getline(infile, line)) {
+				outfile << line << "\n";
+			}
+			infile.close();
+		}
+		if (remove(i.c_str())) {
+			// unsuccessful file removal
+			Rcpp::Rcout << "File " << i << " unsuccessfully deleted\n";
+		}
+	}
+	outfile.close();
+}
+//' @name cpp_sc_atac_create_fragments
 //' @title Generating the popular fragments for scATAC-Seq data
 //' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
 //'
@@ -48,11 +54,11 @@
 //'    Regular expression used to match chromosome names to include in the
 //'    output file. Default is "(?i)^chr" (starts with "chr", case-insensitive).
 //'    If None, use all chromosomes in the BAM file.
-//' @param readname_barcodeN : str, optional
+//' @param readname_barcode : str, optional
 //'    Regular expression used to match cell barocde stored in read name.
 //'    If None (default), use read tags instead. Use "[^:]*" to match all characters
 //'    before the first colon (":").
-//' @param cellsN : str
+//' @param cells : str
 //'    File containing list of cell barcodes to retain. If None (default), use all cell barcodes
 //'    found in the BAM file.
 //' @param max_distance : int, optional
@@ -70,36 +76,31 @@
 //'
 //' @returns returns NULL
 //'
-//' @useDynLib scPipe, .registration = TRUE
-// [[Rcpp::export]]
-void sc_atac_create_fragments_cpp(
+void cpp_sc_atac_create_fragments(
 		std::string inbam,
 		std::string output,
-		Rcpp::CharacterVector contigs,
-		Rcpp::IntegerVector ends,
+		std::vector<std::string> contigs,
+	    std::vector<int> ends,
 		unsigned int min_mapq,
 		unsigned int nproc,
 		std::string cellbarcode,
 		std::string chromosomes,
-		Rcpp::Nullable<Rcpp::String> readname_barcodeN,
-		Rcpp::Nullable<Rcpp::StringVector> cellsN,
+		std::string readname_barcode,
+		std::vector<std::string> cells,
 		unsigned int max_distance,
 		unsigned int min_distance,
 		unsigned int chunksize
 		) {
-
-	Rcpp::StringVector cells = cellsN.isNotNull() ? Rcpp::StringVector(cellsN) : Rcpp::StringVector(0);
-
-	Rcpp::String readname_barcode = readname_barcodeN.isNotNull() ? Rcpp::String(readname_barcodeN) : Rcpp::String();
-
+			
 	std::string output_filename (output + "/fragments.bed");
-	std::shared_ptr<ThreadOutputFile> threadOutputFile = std::make_shared<ThreadOutputFile>(output_filename);
+	std::vector<std::string> outputs;
 
 	std::vector<std::thread> pool;
-	nproc = contigs.length();
+	nproc = contigs.size(); // how can we accomodate a different number of processes if user specifices?
 	Rcpp::Rcout << "Output folder name is: " << output << "\n";
+
 	for (int i = 0; i < (int)nproc; i++) {
-		std::string contig = Rcpp::String(contigs[i]).get_cstring();
+		std::string contig = contigs[i];
 
 		// create the bam_header_t and find the tid for this contig
 		bamFile bam = bam_open(inbam.c_str(), "r"); // bam.h
@@ -107,8 +108,12 @@ void sc_atac_create_fragments_cpp(
 		int tid = bam_get_tid(header, contig.c_str()); // bam.h
 		bam_close(bam);
 
+		std::string threadOut = output + "/tmp" + std::to_string(i);
+
+    	if (fileExists(threadOut)) remove(threadOut.c_str());
+
 		FragmentThread frag (
-			threadOutputFile,
+			threadOut,
 			contig,
 			tid,
 			ends[i],
@@ -116,19 +121,22 @@ void sc_atac_create_fragments_cpp(
 			header,
 			min_mapq,
 			cellbarcode,
-			readname_barcode.get_cstring(),
+			readname_barcode,
 			cells,
 			max_distance,
 			min_distance,
 			chunksize
 		);
 
+		outputs.push_back(threadOut);
 		pool.push_back(std::thread(frag));
 	}
 
 	for (auto &th : pool) {
 		th.join();
 	}
-
+	
+	// need to join the outputs
+	merge_files(outputs, output_filename);
 	Rcpp::Rcout << "Output BED file: " << output_filename << "\n";
 }

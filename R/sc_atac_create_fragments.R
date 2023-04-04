@@ -73,8 +73,13 @@ sc_atac_create_fragments <- function(
     ),
     file = log_file, append = TRUE)
 
-    # output = paste0(output_folder, "/fragments.bed")
-
+    output = paste0(output_folder, "/fragments.bed")
+    if (file.exists(output)) {
+        message("Fragment output file already exists: ", output)
+        return(invisible())
+    }
+    if (file.exists(paste0(output_folder, "tmpDebug0"))) file.remove(paste0(output_folder, "tmpDebug0"))
+    
     chrom <- get_chromosomes(inbam, keep_contigs=chromosomes) # List with names as contigs and elements as lengths
     cells <- read_cells(cells) # character vector / StringVector
 

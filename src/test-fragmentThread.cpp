@@ -164,7 +164,7 @@ context("FragmentThread tests") {
 		// frags = {'AAT': ['AATG', 3, 25, 'GG', True], 'AAG': ['AATG', 3, 60, 'GG', False], 'AAC': ['AATG', 3, 50, 'GG', True], 'ATA': ['AAGG', 4, 15, 'GT', False], 'ACG': ['AAGG', 4, 25, 'GT', False], 'ACA': ['AGTC', 5, 30, 'GA', True]}
 	
 		FragmentThread f (nullptr, "A", 1, 30, "BAM", nullptr, 0, 
-			"AA", "readname", Rcpp::CharacterVector(), 5, 0, 10);
+			"AA", "readname", std::vector<std::string>(), 5, 0, 10);
 
 		f.fragment_dict = m;
 		FragmentMap complete = f.findCompleteFragments(200);
@@ -240,7 +240,7 @@ context("FragmentThread tests") {
 
 	test_that("Fragment Dict can be correctly added to") {
 		FragmentThread f (nullptr, "A", 1, 30, "BAM", nullptr, 0, 
-			"CB", "readname", Rcpp::CharacterVector(), 5000, 10, 10);
+			"CB", "readname", std::vector<std::string>(), 5000, 10, 10);
 
 
 		// check default case of fragment does not exist in dictionary
@@ -306,7 +306,7 @@ context("FragmentThread tests") {
 		FragmentThread f(
 			nullptr, "chr21", 0, 48129895, 
 			"BAM", nullptr,
-			10, "CB", "", NULL, 5000, 10, 10
+			10, "CB", "", std::vector<std::string>(), 5000, 10, 10
 		);
 
 		expect_true(f.fragment_count == 0);

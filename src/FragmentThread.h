@@ -8,7 +8,6 @@
 #include <Rcpp.h>
 #include <memory>
 
-
 #include "bam.h"
 #include <htslib/sam.h>
 #include "ThreadOutputFile.h"
@@ -18,7 +17,7 @@
 class FragmentThread {
 	public:
 		FragmentThread(
-			std::shared_ptr<ThreadOutputFile>,
+			std::string,
 			std::string,
 			int,
 			unsigned int,
@@ -27,7 +26,7 @@ class FragmentThread {
 			unsigned int,
 			std::string,
 			std::string,
-			Rcpp::StringVector,
+			std::vector<std::string>,
 			unsigned int,
 			unsigned int,
 			unsigned int
@@ -35,25 +34,6 @@ class FragmentThread {
 
 		FragmentThread(const FragmentThread &);
 
-		std::string contig;
-		int tid;
-		unsigned int end;
-		std::string bam;
-		bam_header_t *bam_header;
-		unsigned int min_mapq;
-		std::string cellbarcode;
-		std::string readname_barcode;
-		Rcpp::StringVector cells;
-		unsigned int max_distance;
-		unsigned int min_distance;
-		unsigned int chunksize;
-		
-		unsigned int fragment_count;
-
-		FragmentMap fragment_dict;
-
-		std::shared_ptr<ThreadOutputFile> fragfile;
-		
 		//////////////////////////////////////////////////////
 		////////   Static methods for FragmentThread   ///////
 		//////////////////////////////////////////////////////
@@ -96,7 +76,31 @@ class FragmentThread {
 
 		bool updateFragmentCount();
 
-		void writeFragments(const unsigned int);
+		void completeCollapseAndWriteFragments(const unsigned int);
+	
+	public:
+		std::string contig;
+		int tid;
+		unsigned int end;
+		std::string bam;
+		bam_header_t *bam_header;
+		unsigned int min_mapq;
+		std::string cellbarcode;
+		std::string readname_barcode;
+		std::vector<std::string> cells;
+		unsigned int max_distance;
+		unsigned int min_distance;
+		unsigned int chunksize;
+		
+		unsigned int fragment_count;
+
+		FragmentMap fragment_dict;
+		
+	private:
+
+		ThreadOutputFile debug;
+
+		ThreadOutputFile fragfile;
 };
 
 #endif
