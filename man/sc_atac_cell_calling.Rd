@@ -23,7 +23,7 @@ sc_atac_cell_calling(
 \arguments{
 \item{mat}{the feature by cell matrix.}
 
-\item{cell_calling}{the cell calling approach, possible options were "emptydrops" , "cellranger" and "filter". 
+\item{cell_calling}{the cell calling approach, possible options were "emptydrops" , "cellranger" and "filter".
 But we opten to using "filter" as it was most robust. "emptydrops" is still an opition for data with large umber of cells.}
 
 \item{output_folder}{output directory for the cell called matrix.}
@@ -54,11 +54,11 @@ implement (i.e. \code{filtering} from \code{scATAC-Pro} as default
 }
 \examples{
 \dontrun{
-sc_atac_cell_calling <- function(mat, 
- cell_calling, 
- output_folder, 
- genome_size    = NULL, 
- cell_qc_metrics_file = NULL, 
+sc_atac_cell_calling <- function(mat,
+ cell_calling,
+ output_folder,
+ genome_size    = NULL,
+ cell_qc_metrics_file = NULL,
  lower          = NULL)
 }
 

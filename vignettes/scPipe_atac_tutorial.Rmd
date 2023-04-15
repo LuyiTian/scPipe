@@ -44,7 +44,7 @@ data.folder <- system.file("extdata", package = "scPipe", mustWork = TRUE)
 Specify the output folder.
 
 ```{r}
-output_folder <- tempdir()
+output_folder <- paste0(tempdir(), "/scPipeATACVignette")
 ```
 
 # Fastq reformatting
@@ -70,8 +70,8 @@ The pipeline starts with fastq file reformatting. We move the barcode and UMI se
 sc_atac_trim_barcode (r1            = r1, 
                       r2            = r2, 
                       bc_file       = barcode_fastq, 
-                      rmN           = TRUE,
-                      rmlow         = TRUE,
+                      rmN           = FALSE,
+                      rmlow         = FALSE,
                       output_folder = output_folder)
 ```
 
@@ -161,7 +161,9 @@ sc_atac_create_fragments(inbam = sorted_tagged_bam,
 
 Similar to many other tools, the the ability to call peaks on a pseudo-bulk level on the demultiplexed reads has also been incorporated. `MACS3` is used underneath to achieve this functionality. If the genome size is not provided then it will be roughly estimated.
 
-```{r}
+```{r, eval=FALSE}
+# CHECK IF THE .narrowPeak file is small enough to include in the package,
+# otherwise, we need to make this basilisk call work??
 sc_atac_peak_calling(inbam = sorted_tagged_bam, 
                      ref = reference,
                      genome_size = NULL,
@@ -178,7 +180,7 @@ Accepted format of the `feature_input` should be either a BED format (i.e. forma
 
 Note: avoid using input BAM files larger than 8GB for best performance
 
-```{r,eval=FALSE}
+```{r, eval=FALSE}
 features          <- file.path(output_folder, "NA_peaks.narrowPeak")
 
 sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.bed"),
@@ -223,9 +225,14 @@ For the `filter` cell-calling method, there are a variety of QC metrics that can
 * `min_frac_promoter`
 * `max_frac_mito`
 
-```{r}
-features          <- file.path(output_folder, "NA_peaks.narrowPeak")
 
+```{r,eval=FALSE}
+features          <- file.path(output_folder, "NA_peaks.narrowPeak")
+```
+```{r, eval=TRUE, echo=FALSE}
+features          <- file.path(data.folder, "NA_peaks.narrowPeak")
+```
+```{r}
 sc_atac_feature_counting (fragment_file = file.path(output_folder, "fragments.bed"),
                           feature_input = features, 
                           bam_tags      = list(bc="CB", mb="OX"), 
@@ -303,7 +310,10 @@ sce <- sc_atac_pipeline(r1 = file.path(data.folder, "small_chr21_R1.fastq.gz"),
 
 Since the [scater](https://bioconductor.org/packages/release/scater) and [scran](https://bioconductor.org/packages/release/scran) packages both use the [SingleCellExperiment](https://bioconductor.org/packages/release/SingleCellExperiment) class, it will be easy to further process this data using these packages for normalization and visualization. Other packages such as [SC3](https://bioconductor.org/packages/release/SC3) may be useful for clustering and [MAST](https://bioconductor.org/packages/release/MAST) and [edgeR](https://bioconductor.org/packages/release/edgeR) for differential expression analysis.
 
-
+```{r, echo=FALSE, results='hide'}
+# cleanup tempfiles
+unlink(output_folder, recursive=TRUE)
+```
 # Session Information {-}
 ```{r}
 sessionInfo()
