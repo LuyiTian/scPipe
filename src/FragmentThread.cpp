@@ -1,3 +1,5 @@
+#include "FragmentThread.h"
+
 #include <Rcpp.h>
 #include <string>
 #include <cstring>
@@ -17,11 +19,11 @@
 #include <htslib/hts.h>
 
 #include "ThreadOutputFile.h"
-#include "FragmentThread.h"
 #include "FragmentUtils.h"
 
 FragmentThread::FragmentThread(
-	std::shared_ptr<ThreadOutputFile> _fragfile,
+	// std::shared_ptr<ThreadOutputFile> _fragfile,
+	std::string _fragfile,
 	std::string _contig,
 	int _tid,
 	unsigned int _end,
@@ -30,7 +32,7 @@ FragmentThread::FragmentThread(
 	unsigned int _min_mapq,
 	std::string _cellbarcode,
 	std::string _readname_barcode,
-	Rcpp::StringVector _cells,
+	std::vector<std::string> _cells,
 	unsigned int _max_distance,
 	unsigned int _min_distance,
 	unsigned int _chunksize
@@ -50,7 +52,9 @@ FragmentThread::FragmentThread(
 	
 	this->fragment_count = 0;
 
-	this->fragfile = _fragfile;
+	this->fragfile.setFile(_fragfile);
+
+	// this->debug.setFile("/stornext/Home/data/allstaff/v/voogd.o/scPipeATACTiming/outputs/d3Haoyu/tmpDebug0");
 }
 
 FragmentThread::FragmentThread(const FragmentThread &old) {
@@ -71,7 +75,10 @@ FragmentThread::FragmentThread(const FragmentThread &old) {
 
 	this->fragment_dict = FragmentMap(old.fragment_dict);
 
-	this->fragfile = old.fragfile;
+	// this->fragfile(old.fragfile.getPath());
+	this->fragfile.setFile(old.fragfile.getPath());
+
+	// this->debug.setFile(old.debug.getPath());
 }
 
 
@@ -110,10 +117,10 @@ FragmentThread::updateFragmentDict(const bam1_t *seqment) {
 	// if we have cells (to retain) and found a barcode
 	// we can make sure that we actually should process this read
 	// at all. If not, just return
-	if (this->cells.length() != 0 && cell_barcode.length() != 0) {
+	if (this->cells.size() != 0 && cell_barcode.length() != 0) {
 		bool contains = false;
 		for (auto it = cells.begin(); it != cells.end(); it++) {
-			if (std::strcmp(cell_barcode.c_str(), *it) == 0) {
+			if (std::strcmp(cell_barcode.c_str(), (*it).c_str()) == 0) {
 				contains = true;
 				break;
 			}
@@ -125,32 +132,34 @@ FragmentThread::updateFragmentDict(const bam1_t *seqment) {
 
 	unsigned int mapq = (unsigned int) bam_mapping_qual(seqment); // FragmentThread.hpp
 	// recording a fragment requires a minimum mapping quality
-	if (mapq >= this->min_mapq) {
-		char *qname = bam1_qname(seqment); // bam.h
-		int32_t rstart = bam_alignment_start(seqment); // FragmentThread.hpp
-		int32_t rend = bam_endpos(seqment); // sam.h
-		bool is_reverse = bam1_strand(seqment); // bam.h
-
-		if (rstart == -1 || rend == -1) {
-			return;
-		}
-
-		// Correct start and end for 9bp Tn5 shift
-		if (is_reverse) {
-			rend = rend - 5;
-		} else {
-			rstart = rstart + 4;
-		}
-
-		this->addToFragments(
-			qname,
-			this->contig,
-			rstart,
-			rend,
-			cell_barcode,
-			is_reverse
-		);
+	if (mapq < this->min_mapq) {
+		return;
 	}
+
+	char *qname = bam1_qname(seqment); // bam.h
+	int32_t rstart = bam_alignment_start(seqment); // FragmentThread.hpp
+	int32_t rend = bam_endpos(seqment); // sam.h
+	bool is_reverse = bam1_strand(seqment); // bam.h
+
+	if (rstart == -1 || rend == -1) {
+		return;
+	}
+
+	// Correct start and end for 9bp Tn5 shift
+	if (is_reverse) {
+		rend = rend - 5;
+	} else {
+		rstart = rstart + 4;
+	}
+
+	this->addToFragments(
+		qname,
+		this->contig,
+		rstart,
+		rend,
+		cell_barcode,
+		is_reverse
+	);
 }
 
 //' Add new fragment information to the fragment dictionary
@@ -245,23 +254,23 @@ FragmentThread::operator() () {
 
 	bamFile bam = bam_open(this->bam.c_str(), "r"); // bam.h
 	bam_index_t *index = bam_index_load(this->bam.c_str()); // bam.h
+
 	bam_fetch(bam, index, this->tid, 0, this->end, this, &FragmentThread::fetchCall);
-	
-	
+
 	// for the final writeFragments call, pass in inf 
-	this->writeFragments(4294967295); // 4294967295 is max unsigned int
+	this->completeCollapseAndWriteFragments(4294967295); // 4294967295 is max unsigned int
 
 	bam_close(bam); // bam.h
 }
 
 
 void
-FragmentThread::writeFragments(unsigned int current_position) {
+FragmentThread::completeCollapseAndWriteFragments(unsigned int current_position) {
 	FragmentMap complete = this->findCompleteFragments(current_position);
 
 	std::vector<FragmentStruct> collapsed = FragmentThread::collapseFragments(complete);
-	
-	this->fragfile->write(collapsed);
+
+	this->fragfile.write(collapsed);
 }
 
 
@@ -297,7 +306,7 @@ FragmentThread::fetchCall(const bam1_t *b, void *data) {
 	if (frag->updateFragmentCount()) {
 		// Find the complete fragments, remove from the fragment dict,
 		// collapse them and then write to file
-		frag->writeFragments((unsigned int) bam_alignment_start(b));
+		frag->completeCollapseAndWriteFragments((unsigned int) bam_alignment_start(b));
 	}
 
 	return 1; // safe return value

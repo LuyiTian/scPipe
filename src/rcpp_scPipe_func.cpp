@@ -6,6 +6,7 @@
 #include "transcriptmapping.h"
 #include "detect_barcode.h"
 #include "Timer.h"
+#include "sc_atac_create_fragments.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -322,12 +323,58 @@ void rcpp_sc_detect_bc(Rcpp::CharacterVector infq,
 
 
 
+//' @useDynLib scPipe, .registration = TRUE
+// [[Rcpp::export]]
+void sc_atac_create_fragments_cpp(
+		std::string inbam,
+		std::string output,
+		Rcpp::CharacterVector contigs,
+		Rcpp::IntegerVector ends,
+		unsigned int min_mapq,
+		unsigned int nproc,
+		std::string cellbarcode,
+		std::string chromosomes,
+		Rcpp::Nullable<Rcpp::String> readname_barcodeN,
+		Rcpp::Nullable<Rcpp::StringVector> cellsN,
+		unsigned int max_distance,
+		unsigned int min_distance,
+		unsigned int chunksize
+		) {
 
+  Rcpp::StringVector cells = cellsN.isNotNull() ? Rcpp::StringVector(cellsN) : Rcpp::StringVector(0);
 
+	std::string readname_barcode = (readname_barcodeN.isNotNull() ? Rcpp::String(readname_barcodeN) : Rcpp::String()).get_cstring();
 
+  std::vector<std::string> contigsC;
+  for (int i = 0; i < contigs.size(); i++) {
+    contigsC.push_back(Rcpp::as<std::string>(contigs[i]));
+  }
 
+  std::vector<int> endsC;
+  for (int i = 0; i < ends.size(); i++) {
+    endsC.push_back(ends[i]);
+  }
 
+  std::vector<std::string> cellsC;
+  for(int i = 0; i < cells.size(); i++) {
+    cellsC.push_back(Rcpp::as<std::string>(cells[i]));
+  }
 
+  cpp_sc_atac_create_fragments(
+    inbam, 
+    output, 
+    contigsC, 
+    endsC, 
+    min_mapq, 
+    nproc, 
+    cellbarcode, 
+    chromosomes, 
+    readname_barcode, 
+    cellsC, 
+    max_distance, 
+    min_distance, 
+    chunksize);
+}
 
 
 

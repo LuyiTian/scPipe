@@ -189,6 +189,28 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// sc_atac_create_fragments_cpp
+void sc_atac_create_fragments_cpp(std::string inbam, std::string output, Rcpp::CharacterVector contigs, Rcpp::IntegerVector ends, unsigned int min_mapq, unsigned int nproc, std::string cellbarcode, std::string chromosomes, Rcpp::Nullable<Rcpp::String> readname_barcodeN, Rcpp::Nullable<Rcpp::StringVector> cellsN, unsigned int max_distance, unsigned int min_distance, unsigned int chunksize);
+RcppExport SEXP _scPipe_sc_atac_create_fragments_cpp(SEXP inbamSEXP, SEXP outputSEXP, SEXP contigsSEXP, SEXP endsSEXP, SEXP min_mapqSEXP, SEXP nprocSEXP, SEXP cellbarcodeSEXP, SEXP chromosomesSEXP, SEXP readname_barcodeNSEXP, SEXP cellsNSEXP, SEXP max_distanceSEXP, SEXP min_distanceSEXP, SEXP chunksizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type inbam(inbamSEXP);
+    Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type contigs(contigsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type ends(endsSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type min_mapq(min_mapqSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type nproc(nprocSEXP);
+    Rcpp::traits::input_parameter< std::string >::type cellbarcode(cellbarcodeSEXP);
+    Rcpp::traits::input_parameter< std::string >::type chromosomes(chromosomesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readname_barcodeN(readname_barcodeNSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::StringVector> >::type cellsN(cellsNSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type max_distance(max_distanceSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type min_distance(min_distanceSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type chunksize(chunksizeSEXP);
+    sc_atac_create_fragments_cpp(inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize);
+    return R_NilValue;
+END_RCPP
+}
 // rcpp_sc_atac_trim_barcode
 std::vector<int> rcpp_sc_atac_trim_barcode(Rcpp::CharacterVector outfq, Rcpp::CharacterVector r1, Rcpp::CharacterVector r3, Rcpp::StringVector barcode_file, Rcpp::CharacterVector valid_barcode_file, Rcpp::NumericVector umi_start, Rcpp::NumericVector umi_len, Rcpp::CharacterVector umi_in, Rcpp::LogicalVector write_gz, Rcpp::LogicalVector rmN, Rcpp::LogicalVector rmlow, Rcpp::IntegerVector min_qual, Rcpp::IntegerVector num_below_min, Rcpp::IntegerVector id1_st, Rcpp::IntegerVector id1_len, Rcpp::IntegerVector id2_st, Rcpp::IntegerVector id2_len);
 RcppExport SEXP _scPipe_rcpp_sc_atac_trim_barcode(SEXP outfqSEXP, SEXP r1SEXP, SEXP r3SEXP, SEXP barcode_fileSEXP, SEXP valid_barcode_fileSEXP, SEXP umi_startSEXP, SEXP umi_lenSEXP, SEXP umi_inSEXP, SEXP write_gzSEXP, SEXP rmNSEXP, SEXP rmlowSEXP, SEXP min_qualSEXP, SEXP num_below_minSEXP, SEXP id1_stSEXP, SEXP id1_lenSEXP, SEXP id2_stSEXP, SEXP id2_lenSEXP) {
@@ -274,28 +296,6 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// sc_atac_create_fragments_cpp
-void sc_atac_create_fragments_cpp(std::string inbam, std::string output, Rcpp::CharacterVector contigs, Rcpp::IntegerVector ends, unsigned int min_mapq, unsigned int nproc, std::string cellbarcode, std::string chromosomes, Rcpp::Nullable<Rcpp::String> readname_barcodeN, Rcpp::Nullable<Rcpp::StringVector> cellsN, unsigned int max_distance, unsigned int min_distance, unsigned int chunksize);
-RcppExport SEXP _scPipe_sc_atac_create_fragments_cpp(SEXP inbamSEXP, SEXP outputSEXP, SEXP contigsSEXP, SEXP endsSEXP, SEXP min_mapqSEXP, SEXP nprocSEXP, SEXP cellbarcodeSEXP, SEXP chromosomesSEXP, SEXP readname_barcodeNSEXP, SEXP cellsNSEXP, SEXP max_distanceSEXP, SEXP min_distanceSEXP, SEXP chunksizeSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type inbam(inbamSEXP);
-    Rcpp::traits::input_parameter< std::string >::type output(outputSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type contigs(contigsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type ends(endsSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type min_mapq(min_mapqSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type nproc(nprocSEXP);
-    Rcpp::traits::input_parameter< std::string >::type cellbarcode(cellbarcodeSEXP);
-    Rcpp::traits::input_parameter< std::string >::type chromosomes(chromosomesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::String> >::type readname_barcodeN(readname_barcodeNSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::StringVector> >::type cellsN(cellsNSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type max_distance(max_distanceSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type min_distance(min_distanceSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type chunksize(chunksizeSEXP);
-    sc_atac_create_fragments_cpp(inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize);
-    return R_NilValue;
-END_RCPP
-}
 // get_all_TSS_bins
 DataFrame get_all_TSS_bins(DataFrame tss_df, int range, int bin_size);
 RcppExport SEXP _scPipe_get_all_TSS_bins(SEXP tss_dfSEXP, SEXP rangeSEXP, SEXP bin_sizeSEXP) {
@@ -323,12 +323,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_scPipe_rcpp_sc_clean_bam", (DL_FUNC) &_scPipe_rcpp_sc_clean_bam, 10},
     {"_scPipe_rcpp_sc_gene_counting", (DL_FUNC) &_scPipe_rcpp_sc_gene_counting, 4},
     {"_scPipe_rcpp_sc_detect_bc", (DL_FUNC) &_scPipe_rcpp_sc_detect_bc, 9},
+    {"_scPipe_sc_atac_create_fragments_cpp", (DL_FUNC) &_scPipe_sc_atac_create_fragments_cpp, 13},
     {"_scPipe_rcpp_sc_atac_trim_barcode", (DL_FUNC) &_scPipe_rcpp_sc_atac_trim_barcode, 17},
     {"_scPipe_rcpp_sc_atac_trim_barcode_paired", (DL_FUNC) &_scPipe_rcpp_sc_atac_trim_barcode_paired, 11},
     {"_scPipe_rcpp_sc_atac_bam_tagging", (DL_FUNC) &_scPipe_rcpp_sc_atac_bam_tagging, 5},
     {"_scPipe_rcpp_fasta_bin_bed_file", (DL_FUNC) &_scPipe_rcpp_fasta_bin_bed_file, 3},
     {"_scPipe_rcpp_append_chr_to_bed_file", (DL_FUNC) &_scPipe_rcpp_append_chr_to_bed_file, 2},
-    {"_scPipe_sc_atac_create_fragments_cpp", (DL_FUNC) &_scPipe_sc_atac_create_fragments_cpp, 13},
     {"_scPipe_get_all_TSS_bins", (DL_FUNC) &_scPipe_get_all_TSS_bins, 3},
     {"run_testthat_tests", (DL_FUNC) &run_testthat_tests, 1},
     {NULL, NULL, 0}

@@ -355,8 +355,7 @@ sc_atac_feature_counting <- function(
         promoters_file <- file.path(anno_paths, paste0(organism, "_promoter.bed.gz"))
         tss_file <- file.path(anno_paths, paste0(organism, "_tss.bed.gz"))
         enhs_file <- file.path(anno_paths, paste0(organism, "_enhancer.bed.gz"))
-    }
-    else if (!all(file.exists(c(promoters_file, tss_file, enhs_file)))) {
+    } else if (!all(file.exists(c(promoters_file, tss_file, enhs_file)))) {
         stop("One of the annotation files could not be located. Please make sure their paths are valid.")
     }
 
@@ -400,7 +399,7 @@ sc_atac_feature_counting <- function(
     min_feature_width <- min(GenomicAlignments::ranges(feature.gr)@width)
     
     fragments <- data.table::fread(fragment_file, select=seq_len(5), header = FALSE, col.names = c("seqnames", "start", "end", "barcode", "count")) 
-    fragments.gr <- fragments %>% makeGRangesFromDataFrame(keep.extra.columns = TRUE)
+    fragments.gr <- fragments %>% GenomicRanges::makeGRangesFromDataFrame(keep.extra.columns = TRUE)
     
     # Compute overlaps with feature
     peak.overlaps <- GenomicRanges::findOverlaps(query = fragments.gr,
@@ -645,7 +644,7 @@ sc_atac_feature_counting <- function(
 
     # Add annotation overlap information to the feature information data frame
     message("Computing feature QC metrics")
-    features_in_matrix <- unique_feature.gr[paste(seqnames(unique_feature.gr), GenomicAlignments::ranges(unique_feature.gr), sep=":") %in% info_per_feature$feature]
+    features_in_matrix <- unique_feature.gr[paste(GenomicRanges::seqnames(unique_feature.gr), GenomicRanges::ranges(unique_feature.gr), sep=":") %in% info_per_feature$feature]
 
     pro.gr <- rtracklayer::import(promoters_file)
     enhs.gr <- rtracklayer::import(enhs_file)

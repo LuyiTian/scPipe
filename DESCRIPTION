@@ -67,6 +67,7 @@ Imports:
     tidyr,
     tools,
     utils,
+    vctrs (>= 0.5.2)
 SystemRequirements: C++11, GNU make
 License: GPL (>= 2)
 Encoding: UTF-8
@@ -85,7 +86,7 @@ Suggests:
     locStra,
     plotly,
     rmarkdown,
-	RColorBrewer,
+    RColorBrewer,
     readr,
     reshape2,
     RANN,

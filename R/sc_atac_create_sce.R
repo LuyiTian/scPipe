@@ -100,7 +100,7 @@ sc_atac_create_sce <- function(input_folder  = NULL,
     feature_info(sce) <- feature_stats
     saveRDS(sce, file = file.path(input_folder, "scPipe_atac_SCEobject.rds"))
     
-    message("SCE object is saved in:\n\t", output_folder,"/scPipe_atac_SCEobject.rds")
+    message("SCE object is saved in:\n\t", input_folder,"/scPipe_atac_SCEobject.rds")
     
     if(report){
         sc_atac_create_report(input_folder  = file.path(input_folder),

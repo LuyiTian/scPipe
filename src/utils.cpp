@@ -1,5 +1,20 @@
 #include "utils.h"
 
+#include "config_hts.h"
+#include "Gene.h"
+#include "global_config.h"
+
+#include <string>
+#include <fstream>
+#include <stdexcept>
+#include <map>
+#include <sstream>
+#include <vector>
+#include <iomanip>
+#include <zlib.h>
+#include <Rcpp.h>
+#include <sys/stat.h>
+
 using namespace Rcpp;
 
 using std::ifstream;
@@ -119,6 +134,15 @@ void file_error(const char *filename) {
     stringstream err_msg;
     err_msg << "Can't open file: " << filename << "\n";
     Rcpp::stop(err_msg.str());
+}
+
+// check file exists
+bool fileExists(const std::string& filename) {
+    struct stat buf;
+    if (stat(filename.c_str(), &buf) != -1) {
+        return true;
+    }
+    return false;
 }
 
 

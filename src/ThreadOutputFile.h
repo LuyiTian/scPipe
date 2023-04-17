@@ -11,15 +11,19 @@
 
 class ThreadOutputFile {
 	public:
-		ThreadOutputFile (const std::string &);
+		ThreadOutputFile();
+		ThreadOutputFile (std::string, int);
 
-		void write(const std::vector<FragmentStruct> &);
-
+		void open();
+		void setFile(std::string);
+        void write(const std::vector<FragmentStruct> &);
+		void debugWrite(const std::string &);
+		void debugWrite(std::vector<const char *>);
 		~ThreadOutputFile();
 	
+		std::string getPath() const;
 	private:
 		std::string _path;
-		std::mutex _writerMutex;
 		std::ofstream outputFile;
 };
 

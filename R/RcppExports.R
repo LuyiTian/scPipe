@@ -41,6 +41,11 @@ rcpp_sc_detect_bc <- function(infq, outcsv, prefix, bc_len, max_reads, number_of
     invisible(.Call(`_scPipe_rcpp_sc_detect_bc`, infq, outcsv, prefix, bc_len, max_reads, number_of_cells, min_count, max_mismatch, white_list))
 }
 
+#' @useDynLib scPipe, .registration = TRUE
+sc_atac_create_fragments_cpp <- function(inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize) {
+    invisible(.Call(`_scPipe_sc_atac_create_fragments_cpp`, inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize))
+}
+
 rcpp_sc_atac_trim_barcode <- function(outfq, r1, r3, barcode_file, valid_barcode_file, umi_start, umi_len, umi_in, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len) {
     .Call(`_scPipe_rcpp_sc_atac_trim_barcode`, outfq, r1, r3, barcode_file, valid_barcode_file, umi_start, umi_len, umi_in, write_gz, rmN, rmlow, min_qual, num_below_min, id1_st, id1_len, id2_st, id2_len)
 }
@@ -59,51 +64,6 @@ rcpp_fasta_bin_bed_file <- function(in_filename, out_filename, bin_size) {
 
 rcpp_append_chr_to_bed_file <- function(in_filename, out_filename) {
     invisible(.Call(`_scPipe_rcpp_append_chr_to_bed_file`, in_filename, out_filename))
-}
-
-#' @name sc_atac_create_fragments_cpp
-#' @title Generating the popular fragments for scATAC-Seq data
-#' @description Takes in a tagged and sorted BAM file and outputs the associated fragments in a .bed file
-#'
-#' @param inbam The tagged, sorted and duplicate-free input BAM file
-#' @param output The path of the output folder
-#' @param contigs character vector of chromosome names from get_chromosomes()
-#' @param ends integer vector of reference lengths acquired from get_chromosomes()
-#' @param min_mapq : int
-#'    Minimum MAPQ to retain fragment
-#' @param nproc : int, optional
-#'    Number of processors to use. Default is 1.
-#' @param cellbarcode : str
-#'   Tag used for cell barcode. Default is CB (used by cellranger)
-#' @param chromosomes : str, optional
-#'    Regular expression used to match chromosome names to include in the
-#'    output file. Default is "(?i)^chr" (starts with "chr", case-insensitive).
-#'    If None, use all chromosomes in the BAM file.
-#' @param readname_barcodeN : str, optional
-#'    Regular expression used to match cell barocde stored in read name.
-#'    If None (default), use read tags instead. Use "[^:]*" to match all characters
-#'    before the first colon (":").
-#' @param cellsN : str
-#'    File containing list of cell barcodes to retain. If None (default), use all cell barcodes
-#'    found in the BAM file.
-#' @param max_distance : int, optional
-#'    Maximum distance between integration sites for the fragment to be retained.
-#'    Allows filtering of implausible fragments that likely result from incorrect
-#'    mapping positions. Default is 5000 bp.
-#' @param min_distance : int, optional
-#'    Minimum distance between integration sites for the fragment to be retained.
-#'    Allows filtering implausible fragments that likely result from incorrect
-#'    mapping positions. Default is 10 bp.
-#' @param chunksize : int
-#'    Number of BAM entries to read through before collapsing and writing
-#'    fragments to disk. Higher chunksize will use more memory but will be
-#'    faster.
-#'
-#' @returns returns NULL
-#'
-#' @useDynLib scPipe, .registration = TRUE
-sc_atac_create_fragments_cpp <- function(inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize) {
-    invisible(.Call(`_scPipe_sc_atac_create_fragments_cpp`, inbam, output, contigs, ends, min_mapq, nproc, cellbarcode, chromosomes, readname_barcodeN, cellsN, max_distance, min_distance, chunksize))
 }
 
 get_all_TSS_bins <- function(tss_df, range, bin_size) {
