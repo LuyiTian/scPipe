@@ -1,6 +1,6 @@
 ---
-title: "scPipe: a flexible data preprocessing pipeline for single-cell data"
-author: "Shani Amarasinghe, Phil Yang"
+title: "scPipe: a flexible data preprocessing pipeline for scATAC-Seq data"
+author: "Shani Amarasinghe, Phil Yang, Oliver Voogd"
 date: "`r Sys.Date()`"
 output: 
     BiocStyle::html_document:
