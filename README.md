@@ -41,7 +41,7 @@ BiocManager::install("scPipe")
 
 ```{r}
 install.packages("devtools")
-devtools::install_github("shaniAmare/scPipe")
+devtools::install_github("LuyiTian/scPipe")
 ```
 
 ## Getting started
